@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="log-dir">./target/logs/</Property>
+        <Property name="file-all-filename">${log-dir}/app</Property>
+        <Property name="file-sql-filename">${log-dir}/sql</Property>
+    </Properties>
+    <filter/>
+    <Appenders>
+        <RollingFile name="file-all" fileName="${file-all-filename}.log" filePattern="${file-all-filename}.%i.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="file-sql" fileName="${file-sql-filename}.log" filePattern="${file-sql-filename}.%i.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.hibernate.SQL" level="debug">
+            <AppenderRef ref="file-sql"/>
+        </Logger>
+        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace">
+            <AppenderRef ref="file-sql"/>
+        </Logger>
+        <Logger name="sql-debug" level="debug">
+            <AppenderRef ref="file-sql"/>
+        </Logger>
+        <Root level="INFO">
+            <AppenderRef ref="file-all"/>
+        </Root>
+    </Loggers>
+</Configuration>
