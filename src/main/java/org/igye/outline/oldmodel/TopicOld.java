@@ -16,7 +16,6 @@ public class TopicOld {
 
     @ManyToOne
     @JoinColumn(name="\"paragraphId\"")
-    @OrderColumn(name = "\"order\"")
     private ParagraphOld paragraph;
 
     @Column(name = "\"title\"")
@@ -64,5 +63,16 @@ public class TopicOld {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    @Override
+    public String toString() {
+        return "TopicOld{" +
+                "id=" + id +
+                ", paragraph=" + paragraph +
+                ", title='" + title + '\'' +
+                ", images=" + images +
+                ", tags=" + tags +
+                '}';
     }
 }

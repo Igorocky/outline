@@ -22,9 +22,10 @@ public class ParagraphOld {
     @OneToMany
     @OrderColumn(name = "\"order\"")
     @JoinColumn(name = "\"paragraphId\"")
-    private List<ParagraphOld> childrenParagraphs;
+    private List<ParagraphOld> childParagraphs;
 
     @OneToMany(mappedBy = "paragraph")
+    @OrderColumn(name = "\"order\"")
     private List<TopicOld> topics = new ArrayList<>();
 
     public Long getId() {
@@ -59,11 +60,20 @@ public class ParagraphOld {
         this.id = id;
     }
 
-    public List<ParagraphOld> getChildrenParagraphs() {
-        return childrenParagraphs;
+    public List<ParagraphOld> getChildParagraphs() {
+        return childParagraphs;
     }
 
-    public void setChildrenParagraphs(List<ParagraphOld> childrenParagraphs) {
-        this.childrenParagraphs = childrenParagraphs;
+    public void setChildParagraphs(List<ParagraphOld> childParagraphs) {
+        this.childParagraphs = childParagraphs;
+    }
+
+    @Override
+    public String toString() {
+        return "ParagraphOld{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", parent=" + parent +
+                '}';
     }
 }

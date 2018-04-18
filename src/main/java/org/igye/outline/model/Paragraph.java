@@ -1,11 +1,15 @@
 package org.igye.outline.model;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.hibernate.annotations.CascadeType.*;
 
 @Entity
 public class Paragraph {
@@ -23,14 +27,17 @@ public class Paragraph {
     private Paragraph parentParagraph;
 
     @OneToMany(mappedBy = "parentParagraph")
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
-    private List<Paragraph> childParagraphs;
+    private List<Paragraph> childParagraphs = new ArrayList<>();
 
     @OneToMany(mappedBy = "paragraph")
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
     private List<Topic> topics = new ArrayList<>();
 
     @ManyToMany
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
     private Set<Tag> tags = new HashSet<>();
 
     public Long getId() {
@@ -69,12 +76,22 @@ public class Paragraph {
         this.childParagraphs = childParagraphs;
     }
 
+    public void addChildParagraph(Paragraph paragraph) {
+        getChildParagraphs().add(paragraph);
+        paragraph.setParentParagraph(this);
+    }
+
     public List<Topic> getTopics() {
         return topics;
     }
 
     public void setTopics(List<Topic> topics) {
         this.topics = topics;
+    }
+
+    public void addTopic(Topic topic) {
+        getTopics().add(topic);
+        topic.setParagraph(this);
     }
 
     public Set<Tag> getTags() {

@@ -1,5 +1,6 @@
 package org.igye.outline.model;
 
+import org.hibernate.annotations.Cascade;
 import org.igye.outline.typeconverters.ListConverter;
 
 import javax.persistence.*;
@@ -8,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.hibernate.annotations.CascadeType.*;
 
 @Entity
 public class Topic {
@@ -29,6 +32,7 @@ public class Topic {
     private List<String> images = new ArrayList<>();
 
     @ManyToMany
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
     private Set<Tag> tags = new HashSet<>();
 
     public Long getId() {

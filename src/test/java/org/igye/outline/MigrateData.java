@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.igye.outline.datamigration.MigrateConfig;
 import org.igye.outline.datamigration.Migrator;
+import org.igye.outline.model.User;
 import org.igye.outline.oldmodel.ParagraphOld;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,14 +26,11 @@ public class MigrateData {
     @Test
     @Commit
     public void migrate() {
-        LOG.info("start");
-        List<ParagraphOld> paragraphOlds = migrator.loadAllTopics();
-        for (ParagraphOld paragraphOld : paragraphOlds) {
-            System.out.println(paragraphOld.getName());
-            for (ParagraphOld child : paragraphOld.getChildrenParagraphs()) {
-                System.out.println("    " + child.getName());
-            }
-        }
+        List<ParagraphOld> paragraphOlds = migrator.loadOldData();
+        User owner = new User();
+        owner.setName("igor");
+        owner.setPassword("igor");
+        migrator.saveNewData(owner, paragraphOlds);
     }
 
 
