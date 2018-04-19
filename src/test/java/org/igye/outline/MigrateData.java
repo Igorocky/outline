@@ -13,12 +13,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.File;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MigrateConfig.class)
 public class MigrateData {
     private static final Logger LOG = LogManager.getLogger(MigrateData.class);
+    private String oldImagesDir = "D:\\Books\\math\\zorich-img";
+    private String newImagesDir = "D:\\Books\\math\\zorich2-img";
 
     @Autowired
     private Migrator migrator;
@@ -26,11 +29,17 @@ public class MigrateData {
     @Test
     @Commit
     public void migrate() {
-        List<ParagraphOld> paragraphOlds = migrator.loadOldData();
+        for (String file: new File(newImagesDir).list()) {
+            if (!".".equals(file) && !"..".equals(file)) {
+                throw new RuntimeException("newImagesDir is not empty.");
+            }
+        }
+        List<ParagraphOld> paragraphsOld = migrator.loadOldData();
         User owner = new User();
         owner.setName("igor");
         owner.setPassword("igor");
-        migrator.saveNewData(owner, paragraphOlds);
+        migrator.saveNewData(owner, paragraphsOld);
+        migrator.migrateImages(oldImagesDir, newImagesDir, paragraphsOld);
     }
 
 
