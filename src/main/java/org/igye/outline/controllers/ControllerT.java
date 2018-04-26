@@ -1,4 +1,4 @@
-package org.igye.outline;
+package org.igye.outline.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
