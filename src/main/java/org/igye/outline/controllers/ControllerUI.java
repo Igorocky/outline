@@ -63,15 +63,17 @@ public class ControllerUI {
 
     @PostMapping(CHANGE_PASSWORD)
     public String changePasswordPost(Model model, ChangePasswordForm changePasswordForm) {
+        model.addAttribute("changePasswordForm", changePasswordForm);
         if (!changePasswordForm.getNewPassword1().equals(changePasswordForm.getNewPassword2()) ||
                 StringUtils.isEmpty(StringUtils.trim(changePasswordForm.getNewPassword1()))) {
-            model.addAttribute("changePasswordForm", changePasswordForm);
             return CHANGE_PASSWORD;
-        } else {
-            authenticator.changePassword(
-                    sessionData.getUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
-            );
+        } else if(authenticator.changePassword(
+                sessionData.getUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
+        )) {
             return HOME;
+        } else {
+
+            return CHANGE_PASSWORD;
         }
     }
 

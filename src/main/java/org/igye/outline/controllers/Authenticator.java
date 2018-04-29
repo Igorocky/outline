@@ -34,11 +34,14 @@ public class Authenticator {
     }
 
     @Transactional
-    public void changePassword(User userNp, String oldPassword, String newPassword) {
+    public boolean changePassword(User userNp, String oldPassword, String newPassword) {
         if (BCrypt.checkpw(oldPassword, userNp.getPassword())) {
             Session session = sessionFactory.getCurrentSession();
             User user = (User) session.merge(userNp);
             user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt(BCRYPT_SALT_ROUNDS)));
+            return true;
+        } else {
+            return false;
         }
     }
 }
