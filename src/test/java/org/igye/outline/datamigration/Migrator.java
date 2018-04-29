@@ -6,6 +6,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Role;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.igye.outline.oldmodel.ParagraphOld;
@@ -62,6 +63,12 @@ public class Migrator {
         for (ParagraphOld paragraphOld: paragraphsOld) {
             rootParagraph.addChildParagraph(convertOldParagraph(paragraphOld));
         }
+
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+        owner.getRoles().add(adminRole);
+
+        session.persist(adminRole);
         session.persist(owner);
         session.persist(rootParagraph);
     }

@@ -1,13 +1,13 @@
 package org.igye.outline.model;
 
 public class SessionData {
-    private String login;
+    private User user;
 
-    public String getLogin() {
-        return login;
+    public User getUser() {
+        return user;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setUser(User user) {
+        this.user = user;
     }
 }
