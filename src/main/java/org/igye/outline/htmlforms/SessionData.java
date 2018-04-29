@@ -1,4 +1,6 @@
-package org.igye.outline.model;
+package org.igye.outline.htmlforms;
+
+import org.igye.outline.model.User;
 
 public class SessionData {
     private User user;

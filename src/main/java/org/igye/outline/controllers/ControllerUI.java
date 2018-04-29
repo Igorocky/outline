@@ -1,11 +1,12 @@
 package org.igye.outline.controllers;
 
-import org.igye.outline.model.LoginData;
-import org.igye.outline.model.SessionData;
+import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.htmlforms.ChangePasswordForm;
+import org.igye.outline.htmlforms.LoginForm;
+import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,9 +16,9 @@ import java.util.Optional;
 
 @Controller
 public class ControllerUI {
-
-    public static final String LOGIN_DATA = "loginData";
-
+    public static final String HOME = "home";
+    public static final String CHANGE_PASSWORD = "changePassword";
+    public static final String LOGIN = "login";
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -28,36 +29,54 @@ public class ControllerUI {
         return "paragraphs";
     }
 
-    @GetMapping("login")
+    @GetMapping(LOGIN)
     public String login(Model model) {
-        model.addAttribute("loginData", new LoginData());
-        return "login";
+        model.addAttribute("loginForm", new LoginForm());
+        return LOGIN;
     }
 
-    @PostMapping("login")
-    @Transactional
-    public String loginPost(Model model, LoginData loginData) {
-        Optional<User> userOptional = authenticator.authenticate(loginData.getLogin(), loginData.getPassword());
+    @PostMapping(LOGIN)
+    public String loginPost(Model model, LoginForm loginForm) {
+        Optional<User> userOptional = authenticator.authenticate(loginForm.getLogin(), loginForm.getPassword());
         if (userOptional.isPresent()) {
             sessionData.setUser(userOptional.get());
-            return "redirect:/home";
+            return "redirect:/" + HOME;
         } else {
             sessionData.setUser(null);
-            model.addAttribute(LOGIN_DATA, loginData);
-            return "login";
+            model.addAttribute(LOGIN + "Form", loginForm);
+            return LOGIN;
         }
     }
 
     @RequestMapping("logout")
-    @Transactional
     public String logout() {
         sessionData.setUser(null);
-        return "redirect:/login";
+        return "redirect:/" + LOGIN;
     }
 
-    @GetMapping("home")
+    @GetMapping(CHANGE_PASSWORD)
+    public String changePassword(Model model) {
+        ChangePasswordForm changePasswordForm = new ChangePasswordForm();
+        model.addAttribute("changePasswordForm", changePasswordForm);
+        return "changePassword";
+    }
+
+    @PostMapping(CHANGE_PASSWORD)
+    public String changePasswordPost(Model model, ChangePasswordForm changePasswordForm) {
+        if (!sessionData.getUser().getPassword().equals(changePasswordForm.getOldPassword()) ||
+                !changePasswordForm.getNewPassword1().equals(changePasswordForm.getNewPassword2()) ||
+                StringUtils.isEmpty(StringUtils.trim(changePasswordForm.getNewPassword1()))) {
+            model.addAttribute("changePasswordForm", changePasswordForm);
+            return CHANGE_PASSWORD;
+        } else {
+            authenticator.changePassword(sessionData.getUser(), changePasswordForm.getNewPassword1());
+            return HOME;
+        }
+    }
+
+    @GetMapping(HOME)
     public String home() {
-        return "home";
+        return HOME;
     }
 
 }

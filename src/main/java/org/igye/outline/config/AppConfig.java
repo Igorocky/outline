@@ -2,7 +2,7 @@ package org.igye.outline.config;
 
 import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.controllers.SessionInterceptor;
-import org.igye.outline.model.SessionData;
+import org.igye.outline.htmlforms.SessionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;

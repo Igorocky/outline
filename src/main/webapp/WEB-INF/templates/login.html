@@ -1,7 +1,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<form action="/login" th:object="${loginData}" method="post">
+<form th:action="${(#mvc.url('CUI#loginPost')).build()}" th:object="${loginForm}" method="post">
     <table>
         <tr>
             <td>Login</td>
@@ -9,7 +9,7 @@
         </tr>
         <tr>
             <td>Password</td>
-            <td><input type="text" th:field="*{password}"/></td>
+            <td><input type="password" th:field="*{password}"/></td>
         </tr>
         <tr>
             <td></td>

@@ -6,6 +6,7 @@ import org.igye.outline.datamigration.MigrateConfig;
 import org.igye.outline.datamigration.Migrator;
 import org.igye.outline.model.User;
 import org.igye.outline.oldmodel.ParagraphOld;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class MigrateData {
 
     @Test
     @Commit
+    @Ignore
     public void migrate() {
         for (String file: new File(newImagesDir).list()) {
             if (!".".equals(file) && !"..".equals(file)) {

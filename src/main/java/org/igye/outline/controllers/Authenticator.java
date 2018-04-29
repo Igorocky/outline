@@ -30,4 +30,11 @@ public class Authenticator {
             return Optional.of(users.get(0));
         }
     }
+
+    @Transactional
+    public void changePassword(User userNp, String newPassword) {
+        Session session = sessionFactory.getCurrentSession();
+        User user = (User) session.merge(userNp);
+        user.setPassword(newPassword);
+    }
 }

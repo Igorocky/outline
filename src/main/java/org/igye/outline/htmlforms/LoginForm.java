@@ -1,6 +1,6 @@
-package org.igye.outline.model;
+package org.igye.outline.htmlforms;
 
-public class LoginData {
+public class LoginForm {
     private String login;
     private String password;
 

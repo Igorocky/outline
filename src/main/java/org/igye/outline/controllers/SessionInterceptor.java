@@ -1,6 +1,6 @@
 package org.igye.outline.controllers;
 
-import org.igye.outline.model.SessionData;
+import org.igye.outline.htmlforms.SessionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
