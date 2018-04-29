@@ -1,0 +1,24 @@
+Index: src/main/java/org/igye/outline/controllers/SessionInterceptor.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/org/igye/outline/controllers/SessionInterceptor.java	(date 1525025462000)
++++ src/main/java/org/igye/outline/controllers/SessionInterceptor.java	(date 1525027212764)
+@@ -11,10 +11,16 @@
+ public class SessionInterceptor implements HandlerInterceptor {
+     @Autowired
+     private SessionData sessionData;
++    @Autowired
++    private Authenticator authenticator;
+ 
+     @Override
+     public boolean preHandle(HttpServletRequest request,
+                              HttpServletResponse response, Object handler) throws Exception {
++        if (sessionData.getUser() == null) {
++            authenticator.authenticate("igor", "pwd");
++            return true;
++        }
+         if (request.getRequestURI().startsWith("/js/")) {
+             return true;
+         } else if (sessionData.getUser() == null) {
