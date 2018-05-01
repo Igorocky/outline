@@ -1,11 +1,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
+<div th:replace="common-header :: header"></div>
 
 HOME
-
-<a th:href="${(#mvc.url('CUI#logout')).build()}">Logout</a>&nbsp;
-<a th:href="${(#mvc.url('CUI#changePassword')).build()}">Change password</a>&nbsp;
-
 
 </body>
 </html>

@@ -1,0 +1,11 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="header">
+    <span th:text="${sessionData.user.name}">UserName</span>&nbsp;
+    <a th:href="${(#mvc.url('CUI#logout')).build()}" href="#">Logout</a>&nbsp;
+    <a th:href="${(#mvc.url('CUI#changePassword')).build()}" href="#">Change password</a>&nbsp;
+</div>
+
+</body>
+</html>

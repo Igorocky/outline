@@ -78,7 +78,8 @@ public class ControllerUI {
     }
 
     @GetMapping(HOME)
-    public String home() {
+    public String home(Model model) {
+        model.addAttribute("sessionData", sessionData);
         return HOME;
     }
 
