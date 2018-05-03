@@ -1,6 +1,7 @@
 package org.igye.outline.controllers;
 
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.data.Dao;
 import org.igye.outline.htmlforms.ChangePasswordForm;
 import org.igye.outline.htmlforms.LoginForm;
 import org.igye.outline.htmlforms.SessionData;
@@ -17,17 +18,16 @@ import java.util.Optional;
 @Controller
 public class ControllerUI {
     public static final String HOME = "home";
+    public static final String PARAGRAPH = "paragraph";
     public static final String CHANGE_PASSWORD = "changePassword";
     public static final String LOGIN = "login";
+
     @Autowired
     private SessionData sessionData;
     @Autowired
     private Authenticator authenticator;
-
-    @GetMapping("paragraphs")
-    public String hello() {
-        return "paragraphs";
-    }
+    @Autowired
+    private Dao dao;
 
     @GetMapping(LOGIN)
     public String login(Model model) {
@@ -79,8 +79,19 @@ public class ControllerUI {
 
     @GetMapping(HOME)
     public String home(Model model) {
-        model.addAttribute("sessionData", sessionData);
+        initModel(model);
         return HOME;
+    }
+
+    @GetMapping(PARAGRAPH)
+    public String paragraph(Model model, Optional<Long> id) {
+        initModel(model);
+        model.addAttribute("paragraph", dao.loadParagraphById(id, sessionData.getUser()));
+        return PARAGRAPH;
+    }
+
+    private void initModel(Model model) {
+        model.addAttribute("sessionData", sessionData);
     }
 
 }

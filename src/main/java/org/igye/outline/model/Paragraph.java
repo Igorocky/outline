@@ -13,6 +13,8 @@ import static org.hibernate.annotations.CascadeType.*;
 
 @Entity
 public class Paragraph {
+    public static final String ROOT_NAME = "root";
+
     @Id
     @GeneratedValue
     private Long id;
@@ -79,6 +81,7 @@ public class Paragraph {
     public void addChildParagraph(Paragraph paragraph) {
         getChildParagraphs().add(paragraph);
         paragraph.setParentParagraph(this);
+        paragraph.setOwner(getOwner());
     }
 
     public List<Topic> getTopics() {
@@ -92,6 +95,7 @@ public class Paragraph {
     public void addTopic(Topic topic) {
         getTopics().add(topic);
         topic.setParagraph(this);
+        topic.setOwner(getOwner());
     }
 
     public Set<Tag> getTags() {

@@ -1,0 +1,14 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="common-header :: header"></div>
+
+<table>
+    <tr th:each="childPar : ${paragraph.childParagraphs}">
+        <td>
+            <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

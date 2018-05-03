@@ -22,7 +22,7 @@ public class Topic {
     private User owner;
 
     @NotNull
-    private String title;
+    private String name;
 
     @NotNull
     @ManyToOne
@@ -47,12 +47,12 @@ public class Topic {
         this.owner = owner;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Paragraph getParagraph() {

@@ -19,11 +19,10 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.igye.outline.model.Paragraph.ROOT_NAME;
 
 
 @Component
@@ -48,6 +47,7 @@ public class Migrator {
                 "from ParagraphOld p where p.parent is null",
                 ParagraphOld.class
         ).getResultList();
+        Collections.sort(res, (o1, o2) -> (int) (o1.getId() - o2.getId()));
         loadChildren(res);
 
         return res;
@@ -58,11 +58,12 @@ public class Migrator {
         Session session = sessionFactoryNewDb.getCurrentSession();
 
         Paragraph rootParagraph = new Paragraph();
-        rootParagraph.setName("root");
+        rootParagraph.setName(ROOT_NAME);
         rootParagraph.setOwner(owner);
         for (ParagraphOld paragraphOld: paragraphsOld) {
             rootParagraph.addChildParagraph(convertOldParagraph(paragraphOld));
         }
+        setOwnerRecursively(owner, rootParagraph);
 
         Role adminRole = new Role();
         adminRole.setName("ADMIN");
@@ -122,7 +123,7 @@ public class Migrator {
 
     private Topic convertOldTopic(TopicOld topicOld) {
         Topic topic = new Topic();
-        topic.setTitle(topicOld.getTitle());
+        topic.setName(topicOld.getTitle());
         topic.setImages(topicOld.getImages());
         topic.getTags().addAll(topicOld.getTags().stream().map(str -> tagCollection.getTag(str)).collect(Collectors.toList()));
         return topic;
@@ -157,7 +158,7 @@ public class Migrator {
 
     private Topic findTopicByTitle(List<Topic> topics, String topicTitle, String paragraphTitle) {
         for (Topic topic: topics) {
-            if (topic.getTitle().equals(topicTitle) && topic.getParagraph().getName().equals(paragraphTitle)) {
+            if (topic.getName().equals(topicTitle) && topic.getParagraph().getName().equals(paragraphTitle)) {
                 return topic;
             }
         }
@@ -186,6 +187,16 @@ public class Migrator {
         for (ParagraphOld paragraphOld : paragraphOlds) {
             loadChildren(paragraphOld.getChildParagraphs());
             Hibernate.initialize(paragraphOld.getTopics());
+        }
+    }
+
+    private void setOwnerRecursively(User owner, Paragraph paragraph) {
+        paragraph.setOwner(owner);
+        for (Paragraph childPar : paragraph.getChildParagraphs()) {
+            setOwnerRecursively(owner, childPar);
+            for (Topic topic : childPar.getTopics()) {
+                topic.setOwner(owner);
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public class Authenticator {
     public static int BCRYPT_SALT_ROUNDS = 10;
+
     @Autowired
     private SessionFactory sessionFactory;
 
