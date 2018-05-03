@@ -2,6 +2,7 @@ package org.igye.outline.data;
 
 import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.NoResultException;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +73,7 @@ public class DaoTest extends AbstractHibernateTest {
     }
 
     @Test
-    public void loadParagraphById_should_select_paragraph_by_parent_id() {
+    public void loadParagraphById_should_select_paragraph_by_id() {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
@@ -155,5 +157,94 @@ public class DaoTest extends AbstractHibernateTest {
         assertEquals("T1", paragraph.getTopics().get(0).getName());
         assertEquals("T3", paragraph.getTopics().get(1).getName());
         assertEquals("T2", paragraph.getTopics().get(2).getName());
+    }
+
+    @Test(expected = NoResultException.class)
+    public void loadParagraphById_should_fail_when_requested_paragraph_has_different_owner() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                .user("owner1").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("P1")
+                        )
+                ).user("owner2").children(b -> b
+                        .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("P2").save()
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph savedParagraph = (Paragraph) saved.get(1);
+
+        //when
+        Paragraph paragraph = dao.loadParagraphById(Optional.of(savedParagraph.getId()), owner);
+
+        //then an exception should be thrown
+    }
+
+    @Test
+    public void loadTopicById_should_load_topic_belonging_to_the_specified_user() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner1").children(b -> b
+                                .paragraph(ROOT_NAME).children(b2 -> b2
+                                        .paragraph("P1")
+                                        .paragraph("P2").children(b3->b3
+                                                .topic("T1")
+                                                .topic("T3")
+                                                .topic("T2")
+                                        )
+                                        .paragraph("P3")
+                                )
+                        ).user("owner2").save().children(b -> b
+                                .paragraph(ROOT_NAME).children(b2 -> b2
+                                        .paragraph("P1")
+                                        .paragraph("P2").children(b3->b3
+                                                .topic("T10")
+                                                .topic("T30").save()
+                                                .topic("T20")
+                                        )
+                                        .paragraph("P3")
+                                )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
+
+        //then
+        assertEquals("T30", topic.getName());
+    }
+
+    @Test(expected = NoResultException.class)
+    public void loadTopicById_should_fail_when_requested_topic_has_different_owner() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner1").save().children(b -> b
+                                .paragraph(ROOT_NAME).children(b2 -> b2
+                                        .paragraph("P2").children(b3->b3
+                                                .topic("T2")
+                                        )
+                                )
+                        ).user("owner2").children(b -> b
+                                .paragraph(ROOT_NAME).children(b2 -> b2
+                                        .paragraph("P3").children(b3->b3
+                                                .topic("T30").save()
+                                        )
+                                )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
+
+        //then an exception should be thrown
     }
 }

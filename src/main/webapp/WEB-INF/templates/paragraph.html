@@ -8,6 +8,11 @@
             <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
         </td>
     </tr>
+    <tr th:each="topic : ${paragraph.topics}">
+        <td>
+            - <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a>
+        </td>
+    </tr>
 </table>
 
 </body>

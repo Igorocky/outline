@@ -3,6 +3,7 @@ package org.igye.outline.data;
 import org.hibernate.Hibernate;
 import org.hibernate.SessionFactory;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,16 @@ public class Dao {
         Hibernate.initialize(paragraph.getTopics());
         Hibernate.initialize(paragraph.getTags());
         return paragraph;
+    }
+
+    @Transactional
+    public Topic loadTopicById(Long id, User owner) {
+        return sessionFactory.getCurrentSession().createQuery(
+                "from Topic t where t.id = :id and owner = :owner", Topic.class
+        )
+                .setParameter("id", id)
+                .setParameter("owner", owner)
+                .getSingleResult();
     }
 
     @Transactional(propagation = MANDATORY)

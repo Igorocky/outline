@@ -1,0 +1,12 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="common-header :: header"></div>
+
+<div th:text="${topic.name}"/>
+
+<div th:each="imgName : ${topic.images}">
+    <img th:src="@{/topicImg/{topicId}/{imgName}(topicId=${topic.id},imgName=${imgName})}">
+</div>
+
+</body>
+</html>
