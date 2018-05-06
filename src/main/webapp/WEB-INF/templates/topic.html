@@ -4,6 +4,8 @@
 
 <div th:text="${topic.name}"/>
 <div>
+    <a th:unless="${isFirstTopic}" th:href="@{prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>
+    <span th:if="${isFirstTopic}">This is the first topic.</span>
     <a th:unless="${isLastTopic}" th:href="@{nextTopic(id=${topic.id})}">Next&gt;&gt;</a>
     <span th:if="${isLastTopic}">This is the last topic.</span>
 </div>

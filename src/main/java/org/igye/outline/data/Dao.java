@@ -44,21 +44,37 @@ public class Dao {
 
     @Transactional
     public Optional<Topic> nextTopic(Long currentTopicId, User owner) {
+        return nextTopic(currentTopicId, owner, true);
+    }
+
+    @Transactional
+    public Optional<Topic> prevTopic(Long currentTopicId, User owner) {
+        return nextTopic(currentTopicId, owner, false);
+    }
+
+    @Transactional(propagation = MANDATORY)
+    public Optional<Topic> nextTopic(Long currentTopicId, User owner, boolean direction) {
         Topic curTopic = loadTopicById(currentTopicId, owner);
         Paragraph paragraph = curTopic.getParagraph();
         List<Topic> topics = paragraph.getTopics();
         Optional<Topic> nextTopic = Optional.empty();
         for (int i = 0; i < topics.size(); i++) {
-            if (currentTopicId.equals(topics.get(i).getId()) && i < topics.size() - 1) {
-                nextTopic = Optional.of(topics.get(i + 1));
+            if (currentTopicId.equals(topics.get(i).getId()) && (direction ? i < topics.size() - 1 : i > 0)) {
+                nextTopic = Optional.of(topics.get(i + (direction ? 1 : -1)));
                 break;
             }
         }
         if (nextTopic.isPresent()) {
             return nextTopic;
         } else if (!isBook(curTopic.getParagraph())) {
-            return findNextParagraphWithTopics(curTopic.getParagraph())
-                    .map(p -> p.getTopics().iterator().next());
+            return findNextParagraphWithTopics(curTopic.getParagraph() ,direction)
+                    .map(p -> {
+                        if (direction) {
+                            return p.getTopics().get(0);
+                        } else {
+                            return p.getTopics().get(p.getTopics().size()-1);
+                        }
+                    });
         } else {
             return Optional.empty();
         }
@@ -87,18 +103,15 @@ public class Dao {
     }
 
     @Transactional(propagation = MANDATORY)
-    protected Optional<Paragraph> findNextParagraphWithTopics(Paragraph startParagraph) {
-        if (startParagraph.getParentParagraph() == null) {
-            return Optional.empty();
-        } else {
-            Paragraph curPar = startParagraph.getParentParagraph();
-            Optional<Tree<Paragraph>> parOpt = findNextNode(
-                    paragraph2Tree(curPar),
-                    new ArrayList<>(Arrays.asList(paragraph2Tree(startParagraph))),
-                    p -> !p.getOrig().getTopics().isEmpty()
-            );
-            return parOpt.map(t -> t.getOrig());
-        }
+    protected Optional<Paragraph> findNextParagraphWithTopics(Paragraph startParagraph, boolean direction) {
+        Paragraph curPar = startParagraph.getParentParagraph();
+        Optional<Tree<Paragraph>> parOpt = findNextNode(
+                paragraph2Tree(curPar),
+                new ArrayList<>(Arrays.asList(paragraph2Tree(startParagraph))),
+                p -> !p.getOrig().getTopics().isEmpty(),
+                direction
+        );
+        return parOpt.map(t -> t.getOrig());
 
     }
 
@@ -142,20 +155,21 @@ public class Dao {
         T getOrig();
     }
 
-    private <T> Optional<Tree<T>> findNextNode(Tree<T> curNode, List<Tree<T>> seen, Function<Tree<T>, Boolean> condition) {
+    private <T> Optional<Tree<T>> findNextNode(Tree<T> curNode, List<Tree<T>> seen,
+                                               Function<Tree<T>, Boolean> condition, boolean direction) {
         if (condition.apply(curNode)) {
             return Optional.of(curNode);
         } else {
-            Optional<Tree> leftmostNotSeenOpt = findLeftmostNotSeen(curNode.children(), seen);
+            Optional<Tree> leftmostNotSeenOpt = findLeftmostNotSeen(curNode.children(), seen, direction);
             if (leftmostNotSeenOpt.isPresent()) {
                 Tree leftmostNotSeen = leftmostNotSeenOpt.get();
                 seen.add(leftmostNotSeen);
-                return findNextNode(leftmostNotSeen, seen, condition);
+                return findNextNode(leftmostNotSeen, seen, condition, direction);
             } else {
                 seen.add(curNode);
                 if (!curNode.isRoot()) {
                     seen.add(curNode.parent().get());
-                    return findNextNode(curNode.parent().get(), seen, condition);
+                    return findNextNode(curNode.parent().get(), seen, condition, direction);
                 } else {
                     return Optional.empty();
                 }
@@ -163,9 +177,9 @@ public class Dao {
         }
     }
 
-    private <T> Optional<Tree> findLeftmostNotSeen(List<Tree<T>> list, List<Tree<T>> seen) {
+    private <T> Optional<Tree> findLeftmostNotSeen(List<Tree<T>> list, List<Tree<T>> seen, boolean direction) {
         Optional<Tree> res = Optional.empty();
-        for (int i = list.size() - 1; i >= 0; i--) {
+        for (int i = (direction? list.size() - 1 : 0); (direction? i >= 0 : i < list.size()); i += (direction? -1 : 1)) {
             if (contains(seen, list.get(i))) {
                 return res;
             } else {

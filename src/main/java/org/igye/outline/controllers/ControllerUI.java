@@ -30,6 +30,7 @@ public class ControllerUI {
     public static final String PARAGRAPH = "paragraph";
     public static final String TOPIC = "topic";
     public static final String NEXT_TOPIC = "nextTopic";
+    public static final String PREV_TOPIC = "prevTopic";
     public static final String CHANGE_PASSWORD = "changePassword";
     public static final String LOGIN = "login";
 
@@ -105,13 +106,19 @@ public class ControllerUI {
     }
 
     @GetMapping(TOPIC)
-    public String topic(Model model, Long id, Optional<Boolean> checkNext) {
+    public String topic(Model model, Long id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext) {
         initModel(model);
         model.addAttribute("topic", dao.loadTopicById(id, sessionData.getUser()));
         if (checkNext.orElse(false)) {
             Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
             if (!nextTopicOpt.isPresent()) {
                 model.addAttribute("isLastTopic", true);
+            }
+        }
+        if (checkPrev.orElse(false)) {
+            Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
+            if (!prevTopicOpt.isPresent()) {
+                model.addAttribute("isFirstTopic", true);
             }
         }
         return TOPIC;
@@ -136,6 +143,32 @@ public class ControllerUI {
                     .path(TOPIC)
                     .queryParam("id", topic.getId())
                     .queryParam("checkNext", true)
+                    .toUriString();
+
+        }
+
+        return redirect(redirectUri);
+    }
+
+    @GetMapping(PREV_TOPIC)
+    public String prevTopic(Model model, Long id) {
+        initModel(model);
+        Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
+        String redirectUri = null;
+        if (prevTopicOpt.isPresent()) {
+            model.addAttribute("topic", prevTopicOpt.get());
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(TOPIC)
+                    .queryParam("id", prevTopicOpt.get().getId())
+                    .toUriString();
+        } else {
+            model.addAttribute("isFirstTopic", true);
+            Topic topic = dao.loadTopicById(id, sessionData.getUser());
+            model.addAttribute("topic", topic);
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(TOPIC)
+                    .queryParam("id", topic.getId())
+                    .queryParam("checkPrev", true)
                     .toUriString();
 
         }

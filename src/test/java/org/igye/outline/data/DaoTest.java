@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
@@ -456,5 +455,213 @@ public class DaoTest extends AbstractHibernateTest {
 
         //then
         assertEquals("T3", nextTopic.getName());
+    }
+
+    @Test
+    public void prevTopic_should_load_correct_topic_in_the_same_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .topic("T1")
+                                        .topic("T2").save()
+                                        .topic("T3")
+                                )
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic topic = dao.prevTopic(savedTopic.getId(), owner).get();
+
+        //then
+        assertEquals("T1", topic.getName());
+    }
+
+    @Test
+    public void prevTopic_should_load_correct_topic_in_prev_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .paragraph("P1").children(b4->b4
+                                                .topic("T1")
+                                                .topic("T2")
+                                                .topic("T3")
+                                        )
+                                        .paragraph("P2").children(b4->b4
+                                                .topic("T4").save()
+                                                .topic("T5")
+                                                .topic("T6")
+                                        )
+                                )
+                                .paragraph("Book2").children(b3->b3
+                                        .topic("T7")
+                                        .topic("T8")
+                                        .topic("T9")
+                                )
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic topic = dao.prevTopic(savedTopic.getId(), owner).get();
+
+        //then
+        assertEquals("T3", topic.getName());
+    }
+
+    @Test
+    public void prevTopic_should_return_none_for_the_first_topic_in_the_book_of_one_level() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .topic("T1")
+                                        .topic("T2")
+                                        .topic("T3")
+                                )
+                                .paragraph("Book2").children(b3->b3
+                                        .topic("T4").save()
+                                        .topic("T5")
+                                        .topic("T6")
+                                )
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Optional<Topic> topicOpt = dao.prevTopic(savedTopic.getId(), owner);
+
+        //then
+        assertFalse(topicOpt.isPresent());
+    }
+
+    @Test
+    public void prevTopic_should_return_none_for_the_first_topic_in_the_book_of_few_levels() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .topic("T4")
+                                        .topic("T5")
+                                        .topic("T6")
+                                )
+                                .paragraph("Book2").children(b3->b3
+                                        .paragraph("P1").children(b4->b4
+                                                .topic("T1").save()
+                                                .topic("T2")
+                                                .topic("T3")
+                                        )
+                                        .paragraph("P2").children(b4->b4
+                                                .topic("T4")
+                                                .topic("T5")
+                                                .topic("T6")
+                                        )
+                                )
+
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Optional<Topic> topicOpt = dao.prevTopic(savedTopic.getId(), owner);
+
+        //then
+        assertFalse(topicOpt.isPresent());
+    }
+
+    @Test
+    public void prevTopic_it_should_be_possible_to_traverse_all_topics_in_reverse_order() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book2").children(b3->b3
+                                        .topic("T5")
+                                        .topic("T6")
+                                        .topic("T7")
+                                )
+                                .paragraph("Book1").children(b3->b3
+                                        .paragraph("P1").children(b4->b4
+                                                .topic("T1")
+                                                .topic("T2")
+                                        )
+                                        .paragraph("P2").children(b4->b4
+                                                .topic("T3")
+                                                .topic("T4").save()
+                                        )
+                                )
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        List<Topic> allTopics = new ArrayList<>();
+        Optional<Topic> prevTopicOpt = Optional.of(savedTopic);
+        while (prevTopicOpt.isPresent()) {
+            allTopics.add(prevTopicOpt.get());
+            prevTopicOpt = dao.prevTopic(prevTopicOpt.get().getId(), owner);
+        }
+
+        //then
+        assertEquals(4, allTopics.size());
+        assertEquals("T4", allTopics.get(0).getName());
+        assertEquals("T3", allTopics.get(1).getName());
+        assertEquals("T2", allTopics.get(2).getName());
+        assertEquals("T1", allTopics.get(3).getName());
+    }
+
+    @Test
+    public void prevTopic_should_skip_empty_terminal_paragraphs() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .paragraph("P1").children(b4->b4
+                                                .topic("T1")
+                                                .topic("T2")
+                                        )
+                                        .paragraph("P2").children(b4->b4
+                                                .paragraph("P3").children(b5->b5
+                                                )
+                                        )
+                                        .paragraph("P4").children(b4->b4
+                                                .topic("T3").save()
+                                                .topic("T4")
+                                        )
+                                )
+                            )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic nextTopic = dao.prevTopic(savedTopic.getId(), owner).get();
+
+        //then
+        assertEquals("T2", nextTopic.getName());
     }
 }
