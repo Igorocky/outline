@@ -6,13 +6,18 @@
 
 <div th:text="${topic.name}"/>
 <div>
-    <a th:unless="${isFirstTopic}" th:href="@{prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>
+    <a th:unless="${isFirstTopic}" th:href="@{/prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>
     <span th:if="${isFirstTopic}">This is the first topic.</span>
-    <a th:unless="${isLastTopic}" th:href="@{nextTopic(id=${topic.id})}">Next&gt;&gt;</a>
+    <a th:unless="${isLastTopic}" th:href="@{/nextTopic(id=${topic.id})}">Next&gt;&gt;</a>
     <span th:if="${isLastTopic}">This is the last topic.</span>
 </div>
 
-<div th:each="imgName : ${topic.images}">
+<div>
+    <a th:unless="${showImages}" th:href="@{/topic(id=${topic.id},showImages=true)}">Show images</a>&nbsp;
+    <a th:if="${showImages}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
+</div>
+
+<div th:if="${showImages}" th:each="imgName : ${topic.images}">
     <img th:src="@{/topicImg/{topicId}/{imgName}(topicId=${topic.id},imgName=${imgName})}">
 </div>
 

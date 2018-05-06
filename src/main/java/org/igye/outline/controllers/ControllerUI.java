@@ -109,7 +109,8 @@ public class ControllerUI {
     }
 
     @GetMapping(TOPIC)
-    public String topic(Model model, Long id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext) {
+    public String topic(Model model, Long id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
+                        Optional<Boolean> showImages) {
         initModel(model);
         Topic topic = dao.loadTopicById(id, sessionData.getUser());
         model.addAttribute("topic", topic);
@@ -126,6 +127,7 @@ public class ControllerUI {
             }
         }
         addPath(model, topic.getParagraph());
+        showImages.map(b -> model.addAttribute("showImages", b));
 
         return TOPIC;
     }
