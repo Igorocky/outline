@@ -3,6 +3,10 @@
 <div th:replace="common-header :: header"></div>
 
 <div th:text="${topic.name}"/>
+<div>
+    <a th:unless="${isLastTopic}" th:href="@{nextTopic(id=${topic.id})}">Next&gt;&gt;</a>
+    <span th:if="${isLastTopic}">This is the last topic.</span>
+</div>
 
 <div th:each="imgName : ${topic.images}">
     <img th:src="@{/topicImg/{topicId}/{imgName}(topicId=${topic.id},imgName=${imgName})}">

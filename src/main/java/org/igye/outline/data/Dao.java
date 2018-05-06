@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.springframework.transaction.annotation.Propagation.MANDATORY;
@@ -40,6 +42,28 @@ public class Dao {
                 .getSingleResult();
     }
 
+    @Transactional
+    public Optional<Topic> nextTopic(Long currentTopicId, User owner) {
+        Topic curTopic = loadTopicById(currentTopicId, owner);
+        Paragraph paragraph = curTopic.getParagraph();
+        List<Topic> topics = paragraph.getTopics();
+        Optional<Topic> nextTopic = Optional.empty();
+        for (int i = 0; i < topics.size(); i++) {
+            if (currentTopicId.equals(topics.get(i).getId()) && i < topics.size() - 1) {
+                nextTopic = Optional.of(topics.get(i + 1));
+                break;
+            }
+        }
+        if (nextTopic.isPresent()) {
+            return nextTopic;
+        } else if (!isBook(curTopic.getParagraph())) {
+            return findNextParagraphWithTopics(curTopic.getParagraph())
+                    .map(p -> p.getTopics().iterator().next());
+        } else {
+            return Optional.empty();
+        }
+    }
+
     @Transactional(propagation = MANDATORY)
     protected Paragraph loadRootParagraph(User owner) {
         return sessionFactory.getCurrentSession().createQuery(
@@ -60,5 +84,108 @@ public class Dao {
                 .setParameter("id", id)
                 .setParameter("owner", owner)
                 .getSingleResult();
+    }
+
+    @Transactional(propagation = MANDATORY)
+    protected Optional<Paragraph> findNextParagraphWithTopics(Paragraph startParagraph) {
+        if (startParagraph.getParentParagraph() == null) {
+            return Optional.empty();
+        } else {
+            Paragraph curPar = startParagraph.getParentParagraph();
+            Optional<Tree<Paragraph>> parOpt = findNextNode(
+                    paragraph2Tree(curPar),
+                    new ArrayList<>(Arrays.asList(paragraph2Tree(startParagraph))),
+                    p -> !p.getOrig().getTopics().isEmpty()
+            );
+            return parOpt.map(t -> t.getOrig());
+        }
+
+    }
+
+    private Tree<Paragraph> paragraph2Tree(Paragraph paragraph) {
+        return new Tree<Paragraph>() {
+            @Override
+            public List<Tree<Paragraph>> children() {
+                return paragraph.getChildParagraphs().stream()
+                        .map(p -> paragraph2Tree(p))
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public Optional<Tree<Paragraph>> parent() {
+                return paragraph.getParentParagraph() != null ?
+                        Optional.of(paragraph2Tree(paragraph.getParentParagraph())) : Optional.empty();
+            }
+
+            @Override
+            public boolean isRoot() {
+                return isBook(paragraph);
+            }
+
+            @Override
+            public boolean isEqual(Tree<Paragraph> other) {
+                return paragraph.getId().equals(other.getOrig().getId());
+            }
+
+            @Override
+            public Paragraph getOrig() {
+                return paragraph;
+            }
+        };
+    }
+
+    interface Tree<T> {
+        List<Tree<T>> children();
+        Optional<Tree<T>> parent();
+        boolean isRoot();
+        boolean isEqual(Tree<T> other);
+        T getOrig();
+    }
+
+    private <T> Optional<Tree<T>> findNextNode(Tree<T> curNode, List<Tree<T>> seen, Function<Tree<T>, Boolean> condition) {
+        if (condition.apply(curNode)) {
+            return Optional.of(curNode);
+        } else {
+            Optional<Tree> leftmostNotSeenOpt = findLeftmostNotSeen(curNode.children(), seen);
+            if (leftmostNotSeenOpt.isPresent()) {
+                Tree leftmostNotSeen = leftmostNotSeenOpt.get();
+                seen.add(leftmostNotSeen);
+                return findNextNode(leftmostNotSeen, seen, condition);
+            } else {
+                seen.add(curNode);
+                if (!curNode.isRoot()) {
+                    seen.add(curNode.parent().get());
+                    return findNextNode(curNode.parent().get(), seen, condition);
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }
+    }
+
+    private <T> Optional<Tree> findLeftmostNotSeen(List<Tree<T>> list, List<Tree<T>> seen) {
+        Optional<Tree> res = Optional.empty();
+        for (int i = list.size() - 1; i >= 0; i--) {
+            if (contains(seen, list.get(i))) {
+                return res;
+            } else {
+                res = Optional.of(list.get(i));
+            }
+        }
+        return res;
+    }
+
+    private <T> boolean contains(List<Tree<T>> seen, Tree<T> tree) {
+        for (Tree t: seen) {
+            if (t.isEqual(tree)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isBook(Paragraph paragraph) {
+        Paragraph parent = paragraph.getParentParagraph();
+        return Paragraph.ROOT_NAME.equals(parent.getName()) && parent.getParentParagraph() == null;
     }
 }

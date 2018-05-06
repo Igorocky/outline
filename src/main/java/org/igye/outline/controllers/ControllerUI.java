@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class ControllerUI {
     public static final String HOME = "home";
     public static final String PARAGRAPH = "paragraph";
     public static final String TOPIC = "topic";
+    public static final String NEXT_TOPIC = "nextTopic";
     public static final String CHANGE_PASSWORD = "changePassword";
     public static final String LOGIN = "login";
 
@@ -52,7 +54,7 @@ public class ControllerUI {
         Optional<User> userOptional = authenticator.authenticate(loginForm.getLogin(), loginForm.getPassword());
         if (userOptional.isPresent()) {
             sessionData.setUser(userOptional.get());
-            return "redirect:/" + HOME;
+            return redirect(HOME);
         } else {
             sessionData.setUser(null);
             model.addAttribute(LOGIN + "Form", loginForm);
@@ -63,7 +65,7 @@ public class ControllerUI {
     @RequestMapping("logout")
     public String logout() {
         sessionData.setUser(null);
-        return "redirect:/" + LOGIN;
+        return redirect(LOGIN);
     }
 
     @GetMapping(CHANGE_PASSWORD)
@@ -103,10 +105,42 @@ public class ControllerUI {
     }
 
     @GetMapping(TOPIC)
-    public String topic(Model model, Long id) {
+    public String topic(Model model, Long id, Optional<Boolean> checkNext) {
         initModel(model);
         model.addAttribute("topic", dao.loadTopicById(id, sessionData.getUser()));
+        if (checkNext.orElse(false)) {
+            Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
+            if (!nextTopicOpt.isPresent()) {
+                model.addAttribute("isLastTopic", true);
+            }
+        }
         return TOPIC;
+    }
+
+    @GetMapping(NEXT_TOPIC)
+    public String nextTopic(Model model, Long id) {
+        initModel(model);
+        Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
+        String redirectUri = null;
+        if (nextTopicOpt.isPresent()) {
+            model.addAttribute("topic", nextTopicOpt.get());
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(TOPIC)
+                    .queryParam("id", nextTopicOpt.get().getId())
+                    .toUriString();
+        } else {
+            model.addAttribute("isLastTopic", true);
+            Topic topic = dao.loadTopicById(id, sessionData.getUser());
+            model.addAttribute("topic", topic);
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(TOPIC)
+                    .queryParam("id", topic.getId())
+                    .queryParam("checkNext", true)
+                    .toUriString();
+
+        }
+
+        return redirect(redirectUri);
     }
 
     @GetMapping("topicImg/{topicId}/{imgName}")
@@ -127,4 +161,7 @@ public class ControllerUI {
         model.addAttribute("sessionData", sessionData);
     }
 
+    private String redirect(String url) {
+        return "redirect:/" + url;
+    }
 }
