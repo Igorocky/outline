@@ -222,6 +222,35 @@ public class DaoTest extends AbstractHibernateTest {
         assertEquals("T30", topic.getName());
     }
 
+    @Test
+    public void loadTopicById_should_load_all_parent_paragraphs() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner1").save().children(b -> b
+                                .paragraph(ROOT_NAME).children(b2 -> b2
+                                        .paragraph("P1").children(b3->b3
+                                            .paragraph("P2").children(b4->b4
+                                                .paragraph("P3").children(b5->b5
+                                                        .topic("T1").save()
+                                                )
+                                            )
+                                        )
+                                )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Topic savedTopic = (Topic) saved.get(1);
+
+        //when
+        Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
+
+        //then
+        assertEquals("P3", topic.getParagraph().getName());
+        assertEquals("P2", topic.getParagraph().getParentParagraph().getName());
+        assertEquals("P1", topic.getParagraph().getParentParagraph().getParentParagraph().getName());
+    }
+
     @Test(expected = NoResultException.class)
     public void loadTopicById_should_fail_when_requested_topic_has_different_owner() {
         //given

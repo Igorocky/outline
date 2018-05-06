@@ -9,6 +9,7 @@ import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ChangePasswordForm;
 import org.igye.outline.htmlforms.LoginForm;
 import org.igye.outline.htmlforms.SessionData;
+import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class ControllerUI {
@@ -101,14 +102,17 @@ public class ControllerUI {
     @GetMapping(PARAGRAPH)
     public String paragraph(Model model, Optional<Long> id) {
         initModel(model);
-        model.addAttribute("paragraph", dao.loadParagraphById(id, sessionData.getUser()));
+        Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
+        model.addAttribute("paragraph", paragraph);
+        addPath(model, paragraph);
         return PARAGRAPH;
     }
 
     @GetMapping(TOPIC)
     public String topic(Model model, Long id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext) {
         initModel(model);
-        model.addAttribute("topic", dao.loadTopicById(id, sessionData.getUser()));
+        Topic topic = dao.loadTopicById(id, sessionData.getUser());
+        model.addAttribute("topic", topic);
         if (checkNext.orElse(false)) {
             Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
             if (!nextTopicOpt.isPresent()) {
@@ -121,6 +125,8 @@ public class ControllerUI {
                 model.addAttribute("isFirstTopic", true);
             }
         }
+        addPath(model, topic.getParagraph());
+
         return TOPIC;
     }
 
@@ -194,7 +200,24 @@ public class ControllerUI {
         model.addAttribute("sessionData", sessionData);
     }
 
+    private void addPath(Model model, Paragraph paragraph) {
+        List<Paragraph> path = buildPath(paragraph);
+        Collections.reverse(path);
+        model.addAttribute("path", path);
+    }
+
     private String redirect(String url) {
         return "redirect:/" + url;
+    }
+
+    private List<Paragraph> buildPath(Paragraph paragraph) {
+        if (paragraph == null || paragraph.getParentParagraph() == null) {
+            return new ArrayList<>();
+        } else {
+            List<Paragraph> res = new ArrayList<>();
+            res.add(paragraph);
+            res.addAll(buildPath(paragraph.getParentParagraph()));
+            return res;
+        }
     }
 }

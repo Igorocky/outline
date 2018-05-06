@@ -2,6 +2,8 @@
 <body>
 <div th:replace="common-header :: header"></div>
 
+<div th:replace="path :: path"/>
+
 <div th:text="${topic.name}"/>
 <div>
     <a th:unless="${isFirstTopic}" th:href="@{prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>

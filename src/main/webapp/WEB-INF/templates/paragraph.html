@@ -2,6 +2,8 @@
 <body>
 <div th:replace="common-header :: header"></div>
 
+<div th:replace="path :: path"/>
+
 <table>
     <tr th:each="childPar : ${paragraph.childParagraphs}">
         <td>
