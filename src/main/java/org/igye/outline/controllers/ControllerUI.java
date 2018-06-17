@@ -37,6 +37,7 @@ public class ControllerUI {
     public static final String PREV_TOPIC = "prevTopic";
     public static final String CHANGE_PASSWORD = "changePassword";
     public static final String EDIT_USER = "editUser";
+    public static final String REMOVE_USER = "removeUser";
     public static final String LOGIN = "login";
     public static final String USERS = "users";
 
@@ -155,6 +156,12 @@ public class ControllerUI {
                 return redirect(USERS);
             }
         }
+    }
+
+    @PostMapping(REMOVE_USER)
+    public String removeUser(Model model, Long id) {
+        dao.removeUser(sessionData.getUser(), id);
+        return redirect(USERS);
     }
 
     @GetMapping(HOME)

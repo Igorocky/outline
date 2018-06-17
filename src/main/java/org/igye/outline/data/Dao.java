@@ -63,6 +63,18 @@ public class Dao {
     }
 
     @Transactional
+    public void removeUser(User requestor, Long userIdToRemove) {
+        if (!isAdmin(requestor)) {
+            OutlineUtils.accessDenied();
+        } else {
+            sessionFactory.getCurrentSession()
+                    .createQuery("delete User where id = :id")
+                    .setParameter("id", userIdToRemove)
+                    .executeUpdate();
+        }
+    }
+
+    @Transactional
     public List<Role> loadRoles() {
         return sessionFactory.getCurrentSession().createQuery("from Role", Role.class).getResultList();
     }

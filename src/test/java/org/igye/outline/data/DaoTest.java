@@ -828,4 +828,27 @@ public class DaoTest extends AbstractHibernateTest {
         );
         Assert.assertEquals((Integer) 1, size);
     }
+
+    @Test
+    public void removeUser_should_remove_user() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).save()
+                        .user("toBeRemoved").save()
+                        .getResults()
+        );
+        User admin = (User) saved.get(0);
+        User userToBeRemoved = (User) saved.get(1);
+
+        //when
+        dao.removeUser(admin, userToBeRemoved.getId());
+
+        //then
+        Integer size = transactionTemplate.execute(status ->
+                getCurrentSession().createQuery("from User", User.class)
+                        .getResultList().size()
+        );
+        Assert.assertEquals((Integer) 1, size);
+    }
 }

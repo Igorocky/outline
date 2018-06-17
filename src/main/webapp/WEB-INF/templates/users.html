@@ -3,7 +3,43 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+        } );
+        function removeUser(id, name) {
+            const question = "Remove user " + name + "?";
+            $( "#dialog-text" ).text(question);
+            $( "#dialog-confirm" ).dialog({
+                title:question,
+                buttons: {
+                    "Remove": function() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/removeUser?id=" + id,
+                            success: function () {
+                                window.location = "/users";
+                            }
+                        });
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-confirm" ).dialog('open');
+        }
+    </script>
 </head>
 <body>
 <div th:replace="common-header :: header"></div>
@@ -25,12 +61,20 @@
             </td>
             <td>
                 <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
+                <a href="#" th:onclick="'removeUser(' + ${user.id} + ',\'' + ${user.name} + '\')'">Remove</a>&nbsp;
             </td>
         </tr>
         <tr><td>Login1</td><td>role1, role2</td><td>Edit</td></tr>
         <tr><td>Login2</td><td>role1, role2</td><td>Edit</td></tr>
     </tbody>
 </table>
+
+<div id="dialog-confirm">
+    <p>
+        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="dialog-text"></span>
+    </p>
+</div>
 
 </body>
 </html>
