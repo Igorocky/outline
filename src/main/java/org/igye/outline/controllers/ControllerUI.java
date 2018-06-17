@@ -100,11 +100,13 @@ public class ControllerUI {
     @GetMapping(EDIT_USER)
     public String editUser(Model model, Optional<Long> userId) {
         initModel(model);
+        model.addAttribute("allRoles", dao.loadRoles());
         EditUserForm editUserForm = new EditUserForm();
         userId.ifPresent(id -> {
             User user = dao.loadUser(sessionData.getUser(), id);
             editUserForm.setId(user.getId());
             editUserForm.setName(user.getName());
+            editUserForm.getRoles().addAll(user.getRoles().stream().map(r -> r.getId()).collect(Collectors.toSet()));
         });
         model.addAttribute("editUserForm", editUserForm);
         return EDIT_USER;
@@ -113,6 +115,7 @@ public class ControllerUI {
     @PostMapping(EDIT_USER)
     public String editUserPost(Model model, EditUserForm editUserForm) {
         model.addAttribute("editUserForm", editUserForm);
+        model.addAttribute("allRoles", dao.loadRoles());
         if (editUserForm.getId() == null) {
             if (!editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2()) ||
                     StringUtils.isEmpty(StringUtils.trim(editUserForm.getNewPassword1()))) {
@@ -121,6 +124,11 @@ public class ControllerUI {
                 User newUser = new User();
                 newUser.setName(editUserForm.getName());
                 newUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
+                newUser.setRoles(
+                        dao.loadRoles().stream().filter(
+                                role -> editUserForm.getRoles().contains(role.getId())
+                        ).collect(Collectors.toSet())
+                );
                 dao.mergeUser(sessionData.getUser(), newUser);
                 return redirect(USERS);
             }
@@ -129,15 +137,20 @@ public class ControllerUI {
             if (passwordWasChanged && !editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2())) {
                 return EDIT_USER;
             } else {
-                User oldUser = dao.loadUser(sessionData.getUser(), editUserForm.getId());
                 User updatedUser = new User();
                 updatedUser.setId(editUserForm.getId());
                 updatedUser.setName(editUserForm.getName());
                 if (passwordWasChanged) {
                     updatedUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
                 } else {
+                    User oldUser = dao.loadUser(sessionData.getUser(), editUserForm.getId());
                     updatedUser.setPassword(oldUser.getPassword());
                 }
+                updatedUser.setRoles(
+                        dao.loadRoles().stream().filter(
+                                role -> editUserForm.getRoles().contains(role.getId())
+                        ).collect(Collectors.toSet())
+                );
                 dao.mergeUser(sessionData.getUser(), updatedUser);
                 return redirect(USERS);
             }

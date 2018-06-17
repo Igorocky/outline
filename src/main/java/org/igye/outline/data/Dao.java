@@ -33,7 +33,7 @@ public class Dao {
             return OutlineUtils.accessDenied();
         } else {
             return sessionFactory.getCurrentSession().createQuery(
-                    "from User u LEFT JOIN FETCH u.roles",
+                    "select distinct u from User u LEFT JOIN FETCH u.roles",
                     User.class
             )
                     .getResultList();
@@ -46,7 +46,7 @@ public class Dao {
             return OutlineUtils.accessDenied();
         } else {
             return sessionFactory.getCurrentSession().createQuery(
-                    "from User u LEFT JOIN FETCH u.roles where u.id = :id",
+                    "select distinct u from User u LEFT JOIN FETCH u.roles where u.id = :id",
                     User.class
                     ).setParameter("id", id)
                             .getSingleResult();
@@ -60,6 +60,11 @@ public class Dao {
         } else {
             sessionFactory.getCurrentSession().merge(updatedUser);
         }
+    }
+
+    @Transactional
+    public List<Role> loadRoles() {
+        return sessionFactory.getCurrentSession().createQuery("from Role", Role.class).getResultList();
     }
 
     @Transactional

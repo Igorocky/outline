@@ -21,7 +21,7 @@
         <tr th:each="user : ${users}">
             <td th:text="${user.name}"></td>
             <td>
-                <span th:each="role,iterStat : ${user.roles}" th:text="${role.name} + (${iterStat.first}?'':', ')"></span>
+                <span th:each="role,iterStat : ${user.roles}" th:text="(${iterStat.first}?'':', ') + ${role.name}"></span>
             </td>
             <td>
                 <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;

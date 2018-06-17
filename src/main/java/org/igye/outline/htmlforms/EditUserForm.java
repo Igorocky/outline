@@ -1,8 +1,12 @@
 package org.igye.outline.htmlforms;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class EditUserForm {
     private Long id;
     private String name;
+    private Set<Long> roles = new HashSet<>();
     private String newPassword1;
     private String newPassword2;
 
@@ -36,5 +40,13 @@ public class EditUserForm {
 
     public void setNewPassword2(String newPassword2) {
         this.newPassword2 = newPassword2;
+    }
+
+    public Set<Long> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Long> roles) {
+        this.roles = roles;
     }
 }

@@ -760,6 +760,26 @@ public class DaoTest extends AbstractHibernateTest {
     }
 
     @Test
+    public void loadUsers_should_not_duplicate_users_when_each_user_has_more_than_1_roles() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).role("role1").save()
+                        .user("user1").role("role2").role("role3")
+                        .getResults()
+        );
+        User admin = (User) saved.get(0);
+
+        //when
+        List<User> users = dao.loadUsers(admin);
+
+        //then
+        assertEquals(2, users.size());
+        Set<String> names = users.stream().map(u -> u.getName()).collect(Collectors.toSet());
+        Assert.assertEquals(ImmutableSet.of("admin", "user1"), names);
+    }
+
+    @Test
     public void mergeUser_should_create_new_user() {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
