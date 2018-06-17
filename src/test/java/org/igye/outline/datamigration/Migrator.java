@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.Topic;
@@ -13,6 +14,7 @@ import org.igye.outline.oldmodel.ParagraphOld;
 import org.igye.outline.oldmodel.TopicOld;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
@@ -54,8 +56,29 @@ public class Migrator {
     }
 
     @Transactional(transactionManager = "transactionManagerNewDb")
-    public void saveNewData(User owner, List<ParagraphOld> paragraphsOld) {
+    public void createSchema() {
         Session session = sessionFactoryNewDb.getCurrentSession();
+
+        User admin = new User();
+        admin.setName("admin");
+        admin.setPassword(BCrypt.hashpw("admin", BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS)));
+
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+        admin.getRoles().add(adminRole);
+
+        session.persist(adminRole);
+        session.persist(admin);
+    }
+
+    @Transactional(transactionManager = "transactionManagerNewDb")
+    public void saveNewData(String ownerUserName, List<ParagraphOld> paragraphsOld) {
+        Session session = sessionFactoryNewDb.getCurrentSession();
+
+        User owner = session.createQuery("from User u where u.name = :userName", User.class)
+                .setParameter("userName", ownerUserName)
+                .getSingleResult();
+
 
         Paragraph rootParagraph = new Paragraph();
         rootParagraph.setName(ROOT_NAME);
@@ -65,12 +88,6 @@ public class Migrator {
         }
         setOwnerRecursively(owner, rootParagraph);
 
-        Role adminRole = new Role();
-        adminRole.setName("ADMIN");
-        owner.getRoles().add(adminRole);
-
-        session.persist(adminRole);
-        session.persist(owner);
         session.persist(rootParagraph);
     }
 

@@ -28,9 +28,9 @@ public class MigrateConfig {
     @Bean
     public DataSource dataSourceNewDb() {
         JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL("jdbc:h2:tcp://localhost:9092/zorich2");
-        ds.setUser("zorich2");
-        ds.setPassword("zorich2");
+        ds.setURL("jdbc:h2:tcp://localhost:9092/###");
+        ds.setUser("###");
+        ds.setPassword("###");
         return ds;
     }
 
@@ -59,7 +59,8 @@ public class MigrateConfig {
         props.put("hibernate.format_sql", "true");
         props.put("hibernate.use_sql_comments", "true");
 //            props.put("hibernate.show_sql", "true");
-        props.put("hibernate.hbm2ddl.auto", "create");
+//        props.put("hibernate.hbm2ddl.auto", "create");
+        props.put("hibernate.hbm2ddl.auto", "validate");
         res.setHibernateProperties(props);
         return res;
     }

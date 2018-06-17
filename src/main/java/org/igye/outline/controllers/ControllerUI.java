@@ -127,7 +127,7 @@ public class ControllerUI {
             }
         }
         addPath(model, topic.getParagraph());
-        showImages.map(b -> model.addAttribute("showImages", b));
+        showImages.ifPresent(b -> model.addAttribute("showImages", b));
 
         return TOPIC;
     }

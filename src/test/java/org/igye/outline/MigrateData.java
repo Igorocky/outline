@@ -32,7 +32,14 @@ public class MigrateData {
     @Test
     @Commit
     @Ignore
-    public void migrate() {
+    public void createSchema() {
+        migrator.createSchema();
+    }
+
+    @Test
+    @Commit
+    @Ignore
+    public void migrateData() {
         for (String file: new File(newImagesDir).list()) {
             if (!".".equals(file) && !"..".equals(file)) {
                 throw new RuntimeException("newImagesDir is not empty.");
@@ -40,9 +47,7 @@ public class MigrateData {
         }
         List<ParagraphOld> paragraphsOld = migrator.loadOldData();
         User owner = new User();
-        owner.setName("igor");
-        owner.setPassword(BCrypt.hashpw("igor", BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS)));
-        migrator.saveNewData(owner, paragraphsOld);
+        migrator.saveNewData("qweqweqwe", paragraphsOld);
         migrator.migrateImages(oldImagesDir, newImagesDir, paragraphsOld);
     }
 
