@@ -1,0 +1,36 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<div th:replace="common-header :: header"></div>
+<a th:href="@{editUser}" href="#">Create User</a>&nbsp;
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>login</th>
+            <th>roles</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody th:remove="all-but-first">
+        <tr th:each="user : ${users}">
+            <td th:text="${user.name}"></td>
+            <td>
+                <span th:each="role,iterStat : ${user.roles}" th:text="${role.name} + (${iterStat.first}?'':', ')"></span>
+            </td>
+            <td>
+                <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
+            </td>
+        </tr>
+        <tr><td>Login1</td><td>role1, role2</td><td>Edit</td></tr>
+        <tr><td>Login2</td><td>role1, role2</td><td>Edit</td></tr>
+    </tbody>
+</table>
+
+</body>
+</html>

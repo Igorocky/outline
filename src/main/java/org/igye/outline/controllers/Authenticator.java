@@ -1,5 +1,6 @@
 package org.igye.outline.controllers;
 
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.exceptions.OutlineException;
@@ -30,7 +31,9 @@ public class Authenticator {
         } else if (!BCrypt.checkpw(password, users.get(0).getPassword())) {
             return Optional.empty();
         } else {
-            return Optional.of(users.get(0));
+            User user = users.get(0);
+            Hibernate.initialize(user.getRoles());
+            return Optional.of(user);
         }
     }
 

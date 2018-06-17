@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.igye.outline.data.Dao;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ChangePasswordForm;
+import org.igye.outline.htmlforms.EditUserForm;
 import org.igye.outline.htmlforms.LoginForm;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Paragraph;
@@ -14,6 +15,7 @@ import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class ControllerUI {
@@ -33,7 +36,9 @@ public class ControllerUI {
     public static final String NEXT_TOPIC = "nextTopic";
     public static final String PREV_TOPIC = "prevTopic";
     public static final String CHANGE_PASSWORD = "changePassword";
+    public static final String EDIT_USER = "editUser";
     public static final String LOGIN = "login";
+    public static final String USERS = "users";
 
     @Value("${topic.images.location}")
     private String topicImagesLocation;
@@ -74,7 +79,7 @@ public class ControllerUI {
     public String changePassword(Model model) {
         ChangePasswordForm changePasswordForm = new ChangePasswordForm();
         model.addAttribute("changePasswordForm", changePasswordForm);
-        return "changePassword";
+        return CHANGE_PASSWORD;
     }
 
     @PostMapping(CHANGE_PASSWORD)
@@ -86,10 +91,56 @@ public class ControllerUI {
         } else if(authenticator.changePassword(
                 sessionData.getUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
         )) {
-            return HOME;
+            return redirect(HOME);
         } else {
-
             return CHANGE_PASSWORD;
+        }
+    }
+
+    @GetMapping(EDIT_USER)
+    public String editUser(Model model, Optional<Long> userId) {
+        initModel(model);
+        EditUserForm editUserForm = new EditUserForm();
+        userId.ifPresent(id -> {
+            User user = dao.loadUser(sessionData.getUser(), id);
+            editUserForm.setId(user.getId());
+            editUserForm.setName(user.getName());
+        });
+        model.addAttribute("editUserForm", editUserForm);
+        return EDIT_USER;
+    }
+
+    @PostMapping(EDIT_USER)
+    public String editUserPost(Model model, EditUserForm editUserForm) {
+        model.addAttribute("editUserForm", editUserForm);
+        if (editUserForm.getId() == null) {
+            if (!editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2()) ||
+                    StringUtils.isEmpty(StringUtils.trim(editUserForm.getNewPassword1()))) {
+                return EDIT_USER;
+            } else {
+                User newUser = new User();
+                newUser.setName(editUserForm.getName());
+                newUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
+                dao.mergeUser(sessionData.getUser(), newUser);
+                return redirect(USERS);
+            }
+        } else {
+            boolean passwordWasChanged = !StringUtils.isEmpty(StringUtils.trim(editUserForm.getNewPassword1()));
+            if (passwordWasChanged && !editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2())) {
+                return EDIT_USER;
+            } else {
+                User oldUser = dao.loadUser(sessionData.getUser(), editUserForm.getId());
+                User updatedUser = new User();
+                updatedUser.setId(editUserForm.getId());
+                updatedUser.setName(editUserForm.getName());
+                if (passwordWasChanged) {
+                    updatedUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
+                } else {
+                    updatedUser.setPassword(oldUser.getPassword());
+                }
+                dao.mergeUser(sessionData.getUser(), updatedUser);
+                return redirect(USERS);
+            }
         }
     }
 
@@ -198,8 +249,23 @@ public class ControllerUI {
         }
     }
 
+    @GetMapping(USERS)
+    public String users(Model model) {
+        initModel(model);
+        model.addAttribute("users", dao.loadUsers(sessionData.getUser()));
+        return USERS;
+    }
+
+
     private void initModel(Model model) {
         model.addAttribute("sessionData", sessionData);
+        model.addAttribute(
+                "isAdmin",
+                sessionData.getUser().getRoles().stream()
+                        .map(r -> r.getName())
+                        .collect(Collectors.toSet())
+                        .contains(Dao.ADMIN_ROLE_NAME)
+        );
     }
 
     private void addPath(Model model, Paragraph paragraph) {
@@ -221,5 +287,9 @@ public class ControllerUI {
             res.addAll(buildPath(paragraph.getParentParagraph()));
             return res;
         }
+    }
+
+    private String hashPwd(String pwd) {
+        return BCrypt.hashpw(pwd, BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS));
     }
 }

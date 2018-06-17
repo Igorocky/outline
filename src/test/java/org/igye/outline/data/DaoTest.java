@@ -1,9 +1,12 @@
 package org.igye.outline.data;
 
+import com.google.common.collect.ImmutableSet;
 import org.igye.outline.AbstractHibernateTest;
+import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.assertEquals;
@@ -692,5 +697,115 @@ public class DaoTest extends AbstractHibernateTest {
 
         //then
         assertEquals("T2", nextTopic.getName());
+    }
+
+    @Test(expected = OutlineException.class)
+    public void loadUsers_should_throw_an_exception_for_a_user_who_is_not_an_admin() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME)
+                        .user("user1").save()
+                        .user("user2")
+                        .getResults()
+        );
+        User user = (User) saved.get(0);
+
+        //when
+        List<User> users = dao.loadUsers(user);
+
+        //then
+        //exception should be thrown
+    }
+
+    @Test
+    public void loadUsers_should_return_nonempty_list_for_a_user_who_is_an_admin() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).save()
+                        .user("user1")
+                        .user("user2")
+                        .getResults()
+        );
+        User user = (User) saved.get(0);
+
+        //when
+        List<User> users = dao.loadUsers(user);
+
+        //then
+        Set<String> names = users.stream().map(u -> u.getName()).collect(Collectors.toSet());
+        Assert.assertEquals(ImmutableSet.of("admin","user1","user2"), names);
+    }
+
+    @Test
+    public void loadUsers_should_fetch_roles_for_each_user() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).role("role1").save()
+                        .user("user1").role("role2")
+                        .getResults()
+        );
+        User user = (User) saved.get(0);
+
+        //when
+        List<User> users = dao.loadUsers(user);
+
+        //then
+        Set<String> roles = users.stream()
+                .flatMap(u -> u.getRoles().stream().map(r -> r.getName()))
+                .collect(Collectors.toSet());
+        Assert.assertEquals(ImmutableSet.of(Dao.ADMIN_ROLE_NAME,"role1","role2"), roles);
+    }
+
+    @Test
+    public void mergeUser_should_create_new_user() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).save()
+                        .getResults()
+        );
+        User admin = (User) saved.get(0);
+        User userToBeSaved = new User();
+        userToBeSaved.setName("userToBeSaved");
+        userToBeSaved.setPassword("ddddd");
+
+        //when
+        dao.mergeUser(admin, userToBeSaved);
+
+        //then
+        Integer size = transactionTemplate.execute(status ->
+                getCurrentSession().createQuery("from User where name = :name", User.class)
+                        .setParameter("name", "userToBeSaved")
+                        .getResultList().size()
+        );
+        Assert.assertEquals((Integer) 1, size);
+    }
+
+    @Test
+    public void mergeUser_should_update_existing_user() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(Dao.ADMIN_ROLE_NAME).save()
+                        .user("toBeChanged").save()
+                        .getResults()
+        );
+        User admin = (User) saved.get(0);
+        User userToBeChanged = (User) saved.get(1);
+        userToBeChanged.setName("newName");
+
+        //when
+        dao.mergeUser(admin, userToBeChanged);
+
+        //then
+        Integer size = transactionTemplate.execute(status ->
+                getCurrentSession().createQuery("from User where name = :name", User.class)
+                        .setParameter("name", "newName")
+                        .getResultList().size()
+        );
+        Assert.assertEquals((Integer) 1, size);
     }
 }

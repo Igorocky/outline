@@ -2,14 +2,19 @@ package org.igye.outline.data;
 
 import org.hibernate.Hibernate;
 import org.hibernate.SessionFactory;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Role;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,8 +23,44 @@ import static org.springframework.transaction.annotation.Propagation.MANDATORY;
 
 @Component
 public class Dao {
+    public static final String ADMIN_ROLE_NAME = "ADMIN";
     @Autowired
     private SessionFactory sessionFactory;
+
+    @Transactional
+    public List<User> loadUsers(User user) {
+        if (!isAdmin(user)) {
+            return OutlineUtils.accessDenied();
+        } else {
+            return sessionFactory.getCurrentSession().createQuery(
+                    "from User u LEFT JOIN FETCH u.roles",
+                    User.class
+            )
+                    .getResultList();
+        }
+    }
+
+    @Transactional
+    public User loadUser(User user, Long id) {
+        if (!isAdmin(user)) {
+            return OutlineUtils.accessDenied();
+        } else {
+            return sessionFactory.getCurrentSession().createQuery(
+                    "from User u LEFT JOIN FETCH u.roles where u.id = :id",
+                    User.class
+                    ).setParameter("id", id)
+                            .getSingleResult();
+        }
+    }
+
+    @Transactional
+    public void mergeUser(User user, User updatedUser) {
+        if (!isAdmin(user)) {
+            OutlineUtils.accessDenied();
+        } else {
+            sessionFactory.getCurrentSession().merge(updatedUser);
+        }
+    }
 
     @Transactional
     public Paragraph loadParagraphById(Optional<Long> idOpt, User owner) {
@@ -115,6 +156,15 @@ public class Dao {
 
     }
 
+    private Role loadRole(String name) {
+        return sessionFactory.getCurrentSession().createQuery(
+                "from Role r where r.name = :name",
+                Role.class
+        )
+                .setParameter("name", name)
+                .getSingleResult();
+    }
+
     private Tree<Paragraph> paragraph2Tree(Paragraph paragraph) {
         return new Tree<Paragraph>() {
             @Override
@@ -201,5 +251,9 @@ public class Dao {
     private boolean isBook(Paragraph paragraph) {
         Paragraph parent = paragraph.getParentParagraph();
         return Paragraph.ROOT_NAME.equals(parent.getName()) && parent.getParentParagraph() == null;
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getRoles().contains(loadRole(ADMIN_ROLE_NAME));
     }
 }

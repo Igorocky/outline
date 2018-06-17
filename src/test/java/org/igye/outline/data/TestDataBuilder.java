@@ -1,15 +1,10 @@
 package org.igye.outline.data;
 
 import org.hibernate.Session;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Tag;
-import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
+import org.igye.outline.model.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 public class TestDataBuilder {
@@ -17,7 +12,6 @@ public class TestDataBuilder {
     private User currentUser;
     private Paragraph parentParagraph;
     private Object currentObject;
-    private Set<Tag> tags = new HashSet<>();
     private List<Object> results = new ArrayList<>();
 
     public TestDataBuilder(Session session) {
@@ -28,12 +22,11 @@ public class TestDataBuilder {
         session.createQuery("delete from Tag").executeUpdate();
     }
 
-    public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph, Set<Tag> tags) {
+    public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph) {
         this.session = session;
         this.currentObject = currentObject;
         this.currentUser = currentUser;
         this.parentParagraph = parentParagraph;
-        this.tags = tags;
     }
 
     public TestDataBuilder user(String name) {
@@ -43,6 +36,24 @@ public class TestDataBuilder {
         session.persist(user);
         currentUser = user;
         currentObject = user;
+        return this;
+    }
+
+    public TestDataBuilder role(String roleName) {
+        List<Role> roles = session.createQuery("from Role where name = :name", Role.class)
+                .setParameter("name", roleName)
+                .getResultList();
+        Role role = null;
+        if (roles.isEmpty()) {
+            role = new Role();
+            role.setName(roleName);
+            session.persist(role);
+        } else if (roles.size() > 1) {
+            throw new TestDataBuilderException("roles.size() > 1");
+        } else {
+            role = roles.get(0);
+        }
+        currentUser.getRoles().add(role);
         return this;
     }
 
@@ -72,16 +83,25 @@ public class TestDataBuilder {
     }
 
     public TestDataBuilder tag(String tagStr) {
-        Tag tag = tags.stream().filter(t -> t.getName().equals(tagStr)).findFirst().orElseGet(() -> {
-            Tag t = new Tag();
-            t.setName(tagStr);
-            session.persist(t);
-            return t;
-        });
+        List<Tag> tags = session.createQuery("from Tag where name = :name", Tag.class)
+                .setParameter("name", tagStr)
+                .getResultList();
+        Tag tag = null;
+        if (tags.isEmpty()) {
+            tag = new Tag();
+            tag.setName(tagStr);
+            session.persist(tag);
+        } else if (tags.size() > 1) {
+            throw new TestDataBuilderException("tags.size() > 1");
+        } else {
+            tag = tags.get(0);
+        }
+        Tag finalTag = tag;
+
         processForCurrentObject(
                 user -> null,
-                paragraph -> paragraph.getTags().add(tag),
-                topic -> topic.getTags().add(tag)
+                paragraph -> paragraph.getTags().add(finalTag),
+                topic -> topic.getTags().add(finalTag)
         );
         return this;
     }
@@ -102,9 +122,9 @@ public class TestDataBuilder {
 
     public TestDataBuilder children(Function<TestDataBuilder, TestDataBuilder> childrenBuilder) {
         TestDataBuilder newBuilder = processForCurrentObject(
-                user -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph, tags),
-                paragraph -> new TestDataBuilder(session, currentObject, currentUser, (Paragraph) currentObject, tags),
-                topic -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph, tags)
+                user -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph),
+                paragraph -> new TestDataBuilder(session, currentObject, currentUser, (Paragraph) currentObject),
+                topic -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph)
         );
         results.addAll(childrenBuilder.apply(newBuilder).getResults());
         return this;
