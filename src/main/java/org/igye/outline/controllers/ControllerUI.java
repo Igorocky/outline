@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.igye.outline.data.Dao;
+import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ChangePasswordForm;
 import org.igye.outline.htmlforms.EditUserForm;
@@ -15,7 +16,6 @@ import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +23,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.igye.outline.common.OutlineUtils.hashPwd;
 
 @Controller
 public class ControllerUI {
@@ -50,6 +55,8 @@ public class ControllerUI {
     private Authenticator authenticator;
     @Autowired
     private Dao dao;
+    @Autowired
+    private UserDao userDao;
 
     @GetMapping(LOGIN)
     public String login(Model model) {
@@ -101,10 +108,10 @@ public class ControllerUI {
     @GetMapping(EDIT_USER)
     public String editUser(Model model, Optional<Long> userId) {
         initModel(model);
-        model.addAttribute("allRoles", dao.loadRoles());
+        model.addAttribute("allRoles", userDao.loadRoles());
         EditUserForm editUserForm = new EditUserForm();
         userId.ifPresent(id -> {
-            User user = dao.loadUser(sessionData.getUser(), id);
+            User user = userDao.loadUser(sessionData.getUser(), id);
             editUserForm.setId(user.getId());
             editUserForm.setName(user.getName());
             editUserForm.getRoles().addAll(user.getRoles().stream().map(r -> r.getId()).collect(Collectors.toSet()));
@@ -116,21 +123,18 @@ public class ControllerUI {
     @PostMapping(EDIT_USER)
     public String editUserPost(Model model, EditUserForm editUserForm) {
         model.addAttribute("editUserForm", editUserForm);
-        model.addAttribute("allRoles", dao.loadRoles());
+        model.addAttribute("allRoles", userDao.loadRoles());
         if (editUserForm.getId() == null) {
             if (!editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2()) ||
                     StringUtils.isEmpty(StringUtils.trim(editUserForm.getNewPassword1()))) {
                 return EDIT_USER;
             } else {
-                User newUser = new User();
-                newUser.setName(editUserForm.getName());
-                newUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
-                newUser.setRoles(
-                        dao.loadRoles().stream().filter(
-                                role -> editUserForm.getRoles().contains(role.getId())
-                        ).collect(Collectors.toSet())
+                userDao.createUser(
+                        sessionData.getUser(),
+                        editUserForm.getName(),
+                        editUserForm.getNewPassword1(),
+                        editUserForm.getRoles()
                 );
-                dao.mergeUser(sessionData.getUser(), newUser);
                 return redirect(USERS);
             }
         } else {
@@ -138,21 +142,21 @@ public class ControllerUI {
             if (passwordWasChanged && !editUserForm.getNewPassword1().equals(editUserForm.getNewPassword2())) {
                 return EDIT_USER;
             } else {
-                User updatedUser = new User();
-                updatedUser.setId(editUserForm.getId());
-                updatedUser.setName(editUserForm.getName());
-                if (passwordWasChanged) {
-                    updatedUser.setPassword(hashPwd(editUserForm.getNewPassword1()));
-                } else {
-                    User oldUser = dao.loadUser(sessionData.getUser(), editUserForm.getId());
-                    updatedUser.setPassword(oldUser.getPassword());
-                }
-                updatedUser.setRoles(
-                        dao.loadRoles().stream().filter(
-                                role -> editUserForm.getRoles().contains(role.getId())
-                        ).collect(Collectors.toSet())
+                userDao.updateUser(
+                        sessionData.getUser(),
+                        editUserForm.getId(),
+                        user -> {
+                            user.setName(editUserForm.getName());
+                            if (passwordWasChanged) {
+                                user.setPassword(hashPwd(editUserForm.getNewPassword1()));
+                            }
+                            user.setRoles(
+                                    userDao.loadRoles().stream().filter(
+                                            role -> editUserForm.getRoles().contains(role.getId())
+                                    ).collect(Collectors.toSet())
+                            );
+                        }
                 );
-                dao.mergeUser(sessionData.getUser(), updatedUser);
                 return redirect(USERS);
             }
         }
@@ -160,14 +164,14 @@ public class ControllerUI {
 
     @PostMapping(REMOVE_USER)
     public String removeUser(Model model, Long id) {
-        dao.removeUser(sessionData.getUser(), id);
+        userDao.removeUser(sessionData.getUser(), id);
         return redirect(USERS);
     }
 
     @GetMapping(HOME)
     public String home(Model model) {
         initModel(model);
-        return HOME;
+        return redirect(PARAGRAPH);
     }
 
     @GetMapping(PARAGRAPH)
@@ -272,20 +276,14 @@ public class ControllerUI {
     @GetMapping(USERS)
     public String users(Model model) {
         initModel(model);
-        model.addAttribute("users", dao.loadUsers(sessionData.getUser()));
+        model.addAttribute("users", userDao.loadUsers(sessionData.getUser()));
         return USERS;
     }
 
 
     private void initModel(Model model) {
         model.addAttribute("sessionData", sessionData);
-        model.addAttribute(
-                "isAdmin",
-                sessionData.getUser().getRoles().stream()
-                        .map(r -> r.getName())
-                        .collect(Collectors.toSet())
-                        .contains(Dao.ADMIN_ROLE_NAME)
-        );
+        model.addAttribute("isAdmin", userDao.isAdmin(sessionData.getUser()));
     }
 
     private void addPath(Model model, Paragraph paragraph) {
@@ -307,9 +305,5 @@ public class ControllerUI {
             res.addAll(buildPath(paragraph.getParentParagraph()));
             return res;
         }
-    }
-
-    private String hashPwd(String pwd) {
-        return BCrypt.hashpw(pwd, BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS));
     }
 }

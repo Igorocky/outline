@@ -6,7 +6,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.controllers.Authenticator;
-import org.igye.outline.data.Dao;
+import org.igye.outline.data.UserDao;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.Topic;
@@ -65,7 +65,7 @@ public class Migrator {
         admin.setPassword(BCrypt.hashpw("admin", BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS)));
 
         Role adminRole = new Role();
-        adminRole.setName(Dao.ADMIN_ROLE_NAME);
+        adminRole.setName(UserDao.ADMIN_ROLE_NAME);
         admin.getRoles().add(adminRole);
 
         session.persist(adminRole);

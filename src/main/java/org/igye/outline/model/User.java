@@ -17,7 +17,7 @@ public class User {
     @NotNull
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
 
     public Long getId() {

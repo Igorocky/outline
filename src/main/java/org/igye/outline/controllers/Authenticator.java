@@ -3,6 +3,7 @@ package org.igye.outline.controllers;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class Authenticator {
             return Optional.empty();
         } else if (users.size() > 1) {
             throw new OutlineException("users.size() > 1");
-        } else if (!BCrypt.checkpw(password, users.get(0).getPassword())) {
+        } else if (!OutlineUtils.checkPwd(password, users.get(0).getPassword())) {
             return Optional.empty();
         } else {
             User user = users.get(0);
