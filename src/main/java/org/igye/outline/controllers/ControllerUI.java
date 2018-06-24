@@ -46,6 +46,9 @@ public class ControllerUI {
     @Value("${topic.images.location}")
     private String topicImagesLocation;
 
+    @Value("${app.version}")
+    private String version;
+
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -277,6 +280,11 @@ public class ControllerUI {
         return USERS;
     }
 
+    @GetMapping("version")
+    @ResponseBody
+    public String version() {
+        return version;
+    }
 
     private void initModel(Model model) {
         model.addAttribute("sessionData", sessionData);
