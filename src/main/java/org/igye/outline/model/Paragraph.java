@@ -1,13 +1,11 @@
 package org.igye.outline.model;
 
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hibernate.annotations.CascadeType.*;
 
@@ -17,7 +15,8 @@ public class Paragraph {
 
     @Id
     @GeneratedValue
-    private Long id;
+    @Type(type = "uuid-char")
+    private UUID id;
 
     @ManyToOne
     private User owner;
@@ -42,7 +41,7 @@ public class Paragraph {
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
     private Set<Tag> tags = new HashSet<>();
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

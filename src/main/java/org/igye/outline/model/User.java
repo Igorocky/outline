@@ -1,15 +1,19 @@
 package org.igye.outline.model;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 public class User {
     @Id
     @GeneratedValue
-    private Long id;
+    @Type(type = "uuid-char")
+    private UUID id;
 
     @NotNull
     @Column(unique = true)
@@ -20,11 +24,11 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -1,11 +1,12 @@
 package org.igye.outline.datamigration;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.igye.outline.controllers.Authenticator;
+import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
@@ -15,7 +16,6 @@ import org.igye.outline.oldmodel.ParagraphOld;
 import org.igye.outline.oldmodel.TopicOld;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.igye.outline.model.Paragraph.ROOT_NAME;
 
 
 @Component
@@ -37,8 +35,13 @@ public class Migrator {
     private SessionFactory sessionFactoryOldDb;
 
     @Autowired
-    @Qualifier("sessionFactoryNewDb")
     private SessionFactory sessionFactoryNewDb;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private Dao dao;
 
     @Autowired
     private TagCollection tagCollection;
@@ -56,23 +59,20 @@ public class Migrator {
         return res;
     }
 
-    @Transactional(transactionManager = "transactionManagerNewDb")
+    @Transactional
     public void createSchema() {
         Session session = sessionFactoryNewDb.getCurrentSession();
 
-        User admin = new User();
-        admin.setName("admin");
-        admin.setPassword(BCrypt.hashpw("admin", BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS)));
-
         Role adminRole = new Role();
         adminRole.setName(UserDao.ADMIN_ROLE_NAME);
-        admin.getRoles().add(adminRole);
+        session.save(adminRole);
 
-        session.persist(adminRole);
-        session.persist(admin);
+        User fakeAdminUser = new User();
+        fakeAdminUser.getRoles().add(adminRole);
+        userDao.createUser(fakeAdminUser, "admin", "admin", ImmutableSet.of(adminRole.getId()));
     }
 
-    @Transactional(transactionManager = "transactionManagerNewDb")
+    @Transactional
     public void saveNewData(String ownerUserName, List<ParagraphOld> paragraphsOld) {
         Session session = sessionFactoryNewDb.getCurrentSession();
 
@@ -81,15 +81,11 @@ public class Migrator {
                 .getSingleResult();
 
 
-        Paragraph rootParagraph = new Paragraph();
-        rootParagraph.setName(ROOT_NAME);
-        rootParagraph.setOwner(owner);
+        Paragraph rootParagraph = dao.loadParagraphById(Optional.empty(), owner);
         for (ParagraphOld paragraphOld: paragraphsOld) {
             rootParagraph.addChildParagraph(convertOldParagraph(paragraphOld));
         }
         setOwnerRecursively(owner, rootParagraph);
-
-        session.persist(rootParagraph);
     }
 
     @Transactional(transactionManager = "transactionManagerNewDb", readOnly = true)
@@ -107,11 +103,11 @@ public class Migrator {
         for (ParagraphOld paragraph: paragraphsOld) {
             oldTopics.addAll(getAllTopics(paragraph));
         }
-        Map<Long, Long> map = buildOldNewIdMap(oldTopics, newTopics);
+        Map<Long, UUID> map = buildOldNewIdMap(oldTopics, newTopics);
         map.forEach((oldId, newId) -> copyImages(oldId, newId, oldImagesDir, newImagesDir));
     }
 
-    private void copyImages(Long oldId, Long newId, String oldImagesDir, String newImagesDir) {
+    private void copyImages(Long oldId, UUID newId, String oldImagesDir, String newImagesDir) {
         File oldDir = new File(oldImagesDir + "/" + oldId);
         File newDir = new File(newImagesDir + "/" + newId);
         if (oldDir.listFiles() != null) {
@@ -161,8 +157,8 @@ public class Migrator {
         return paragraph;
     }
 
-    private Map<Long, Long> buildOldNewIdMap(List<TopicOld> oldTopics, List<Topic> newTopics) {
-        Map<Long, Long> map = new HashMap<>();
+    private Map<Long, UUID> buildOldNewIdMap(List<TopicOld> oldTopics, List<Topic> newTopics) {
+        Map<Long, UUID> map = new HashMap<>();
         for (TopicOld topicOld: oldTopics) {
             if (topicOld != null) {
                 map.put(

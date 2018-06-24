@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,7 +22,7 @@ public class Dao {
     private SessionFactory sessionFactory;
 
     @Transactional
-    public Paragraph loadParagraphById(Optional<Long> idOpt, User owner) {
+    public Paragraph loadParagraphById(Optional<UUID> idOpt, User owner) {
         Paragraph paragraph = idOpt
                 .map(id -> loadParagraphByNotNullId(id, owner))
                 .orElseGet(() -> loadRootParagraph(owner));
@@ -36,7 +33,7 @@ public class Dao {
     }
 
     @Transactional
-    public Topic loadTopicById(Long id, User owner) {
+    public Topic loadTopicById(UUID id, User owner) {
         return sessionFactory.getCurrentSession().createQuery(
                 "from Topic t where t.id = :id and owner = :owner", Topic.class
         )
@@ -46,17 +43,17 @@ public class Dao {
     }
 
     @Transactional
-    public Optional<Topic> nextTopic(Long currentTopicId, User owner) {
+    public Optional<Topic> nextTopic(UUID currentTopicId, User owner) {
         return nextTopic(currentTopicId, owner, true);
     }
 
     @Transactional
-    public Optional<Topic> prevTopic(Long currentTopicId, User owner) {
+    public Optional<Topic> prevTopic(UUID currentTopicId, User owner) {
         return nextTopic(currentTopicId, owner, false);
     }
 
     @Transactional(propagation = MANDATORY)
-    public Optional<Topic> nextTopic(Long currentTopicId, User owner, boolean direction) {
+    public Optional<Topic> nextTopic(UUID currentTopicId, User owner, boolean direction) {
         Topic curTopic = loadTopicById(currentTopicId, owner);
         Paragraph paragraph = curTopic.getParagraph();
         List<Topic> topics = paragraph.getTopics();
@@ -96,7 +93,7 @@ public class Dao {
     }
 
     @Transactional(propagation = MANDATORY)
-    protected Paragraph loadParagraphByNotNullId(Long id, User owner) {
+    protected Paragraph loadParagraphByNotNullId(UUID id, User owner) {
         return sessionFactory.getCurrentSession().createQuery(
                 "from Paragraph p where p.id = :id and owner = :owner", Paragraph.class
         )

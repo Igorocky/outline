@@ -61,7 +61,7 @@
             </td>
             <td>
                 <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
-                <a href="#" th:onclick="'removeUser(' + ${user.id} + ',\'' + ${user.name} + '\')'">Remove</a>&nbsp;
+                <a href="#" th:onclick="'removeUser(\'' + ${user.id} + '\',\'' + ${user.name} + '\')'">Remove</a>&nbsp;
             </td>
         </tr>
         <tr><td>Login1</td><td>role1, role2</td><td>Edit</td></tr>

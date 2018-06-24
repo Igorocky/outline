@@ -5,6 +5,7 @@ import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -15,12 +16,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.TestUtils.notImplemented;
+import static org.igye.outline.data.UserDao.ADMIN_ROLE_NAME;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.assertEquals;
 
@@ -36,7 +36,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME)
+                        .user("admin").role(ADMIN_ROLE_NAME)
                         .user("user1").save()
                         .user("user2")
                         .getResults()
@@ -55,7 +55,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).save()
+                        .user("admin").role(ADMIN_ROLE_NAME).save()
                         .user("user1")
                         .user("user2")
                         .getResults()
@@ -75,7 +75,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).role("role1").save()
+                        .user("admin").role(ADMIN_ROLE_NAME).role("role1").save()
                         .user("user1").role("role2")
                         .getResults()
         );
@@ -88,7 +88,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         Set<String> roles = users.stream()
                 .flatMap(u -> u.getRoles().stream().map(r -> r.getName()))
                 .collect(Collectors.toSet());
-        Assert.assertEquals(ImmutableSet.of(UserDao.ADMIN_ROLE_NAME,"role1","role2"), roles);
+        Assert.assertEquals(ImmutableSet.of(ADMIN_ROLE_NAME,"role1","role2"), roles);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).role("role1").save()
+                        .user("admin").role(ADMIN_ROLE_NAME).role("role1").save()
                         .user("user1").role("role2").role("role3")
                         .getResults()
         );
@@ -117,8 +117,8 @@ public class UserDaoTest extends AbstractHibernateTest {
         User admin = prepareDataForCreatingNewUser();
 
         //when
-        Set<Long> roles = admin.getRoles().stream()
-                .filter(r -> !r.getName().equals(UserDao.ADMIN_ROLE_NAME))
+        Set<UUID> roles = admin.getRoles().stream()
+                .filter(r -> !r.getName().equals(ADMIN_ROLE_NAME))
                 .map(r -> r.getId())
                 .collect(Collectors.toSet());
         dao.createUser(admin, "userToBeSaved", "dddd", roles);
@@ -194,7 +194,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         //given
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).save()
+                        .user("admin").role(ADMIN_ROLE_NAME).save()
                         .user("toBeRemoved").save()
                         .getResults()
         );
@@ -213,15 +213,43 @@ public class UserDaoTest extends AbstractHibernateTest {
     }
 
     @Test
-    @Ignore
     public void removeUser_should_remove_all_paragraphs_owned_by_user() {
-        notImplemented();
+        //given
+        User userToBeRemoved = transactionTemplate.execute(status ->
+                (User) new TestDataBuilder(getCurrentSession())
+                        .user("user1").save().children(b -> b
+                                .paragraph("par1").tag("par1-tag").children(b2 -> b2
+                                        .paragraph("par2").tag("par2-tag")
+                                )
+                        ).user("admin").role(ADMIN_ROLE_NAME).children(b -> b
+                                .paragraph("par3").tag("par3-tag").children(b2 -> b2
+                                        .paragraph("par4").tag("par4-tag")
+                                )
+                        ).getResults().get(0)
+        );
+        Set<String> paragraphs = new HashSet<>(
+                transactionTemplate.execute(status ->
+                        getCurrentSession().createQuery("select p.name from Paragraph p", String.class).getResultList()
+                )
+        );
+        Assert.assertEquals(paragraphs, ImmutableSet.of("par1", "par2", "par3", "par4"));
+
+        //when
+        dao.removeUser(fakeAdmin(), userToBeRemoved.getId());
+
+        //then
+        Set<String> paragraphsAfterRemoval = new HashSet<>(
+                transactionTemplate.execute(status ->
+                        getCurrentSession().createQuery("select p.name from Paragraph p", String.class).getResultList()
+                )
+        );
+        Assert.assertEquals(paragraphsAfterRemoval, ImmutableSet.of("par3", "par4"));
     }
 
     private User prepareDataForCreatingNewUser() {
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).role("R1").role("R2").save()
+                        .user("admin").role(ADMIN_ROLE_NAME).role("R1").role("R2").save()
                         .getResults()
         );
         return (User) saved.get(0);
@@ -230,7 +258,7 @@ public class UserDaoTest extends AbstractHibernateTest {
     private List<User> prepareDataForUpdatingExistingUser() {
         List<Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(UserDao.ADMIN_ROLE_NAME).save()
+                        .user("admin").role(ADMIN_ROLE_NAME).save()
                         .user("toBeChanged").save()
                         .getResults()
         );
@@ -238,5 +266,13 @@ public class UserDaoTest extends AbstractHibernateTest {
         User userToBeChanged = (User) saved.get(1);
         userToBeChanged.setName("newName");
         return Arrays.asList(admin, userToBeChanged);
+    }
+
+    private User fakeAdmin() {
+        Role admRole = new Role();
+        admRole.setName(ADMIN_ROLE_NAME);
+        User adm = new User();
+        adm.getRoles().add(admRole);
+        return adm;
     }
 }

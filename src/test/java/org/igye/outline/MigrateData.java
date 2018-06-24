@@ -24,7 +24,7 @@ import java.util.List;
 public class MigrateData {
     private static final Logger LOG = LogManager.getLogger(MigrateData.class);
     private String oldImagesDir = "D:\\Books\\math\\zorich-img";
-    private String newImagesDir = "D:\\Books\\math\\zorich2-img";
+    private String newImagesDir = "D:\\temp\\outline-dev\\images";
 
     @Autowired
     private Migrator migrator;
@@ -46,7 +46,6 @@ public class MigrateData {
             }
         }
         List<ParagraphOld> paragraphsOld = migrator.loadOldData();
-        User owner = new User();
         migrator.saveNewData("qweqweqwe", paragraphsOld);
         migrator.migrateImages(oldImagesDir, newImagesDir, paragraphsOld);
     }

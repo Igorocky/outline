@@ -23,10 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.hashPwd;
@@ -106,7 +103,7 @@ public class ControllerUI {
     }
 
     @GetMapping(EDIT_USER)
-    public String editUser(Model model, Optional<Long> userId) {
+    public String editUser(Model model, @RequestParam Optional<UUID> userId) {
         initModel(model);
         model.addAttribute("allRoles", userDao.loadRoles());
         EditUserForm editUserForm = new EditUserForm();
@@ -163,7 +160,7 @@ public class ControllerUI {
     }
 
     @PostMapping(REMOVE_USER)
-    public String removeUser(Model model, Long id) {
+    public String removeUser(Model model, @RequestParam UUID id) {
         userDao.removeUser(sessionData.getUser(), id);
         return redirect(USERS);
     }
@@ -175,7 +172,7 @@ public class ControllerUI {
     }
 
     @GetMapping(PARAGRAPH)
-    public String paragraph(Model model, Optional<Long> id) {
+    public String paragraph(Model model, @RequestParam Optional<UUID> id) {
         initModel(model);
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         model.addAttribute("paragraph", paragraph);
@@ -184,7 +181,7 @@ public class ControllerUI {
     }
 
     @GetMapping(TOPIC)
-    public String topic(Model model, Long id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
+    public String topic(Model model, @RequestParam UUID id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
                         Optional<Boolean> showImages) {
         initModel(model);
         Topic topic = dao.loadTopicById(id, sessionData.getUser());
@@ -208,7 +205,7 @@ public class ControllerUI {
     }
 
     @GetMapping(NEXT_TOPIC)
-    public String nextTopic(Model model, Long id) {
+    public String nextTopic(Model model, @RequestParam UUID id) {
         initModel(model);
         Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
         String redirectUri = null;
@@ -234,7 +231,7 @@ public class ControllerUI {
     }
 
     @GetMapping(PREV_TOPIC)
-    public String prevTopic(Model model, Long id) {
+    public String prevTopic(Model model, @RequestParam UUID id) {
         initModel(model);
         Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
         String redirectUri = null;
@@ -261,7 +258,7 @@ public class ControllerUI {
 
     @GetMapping("topicImg/{topicId}/{imgName}")
     @ResponseBody
-    public byte[] topicImg(@PathVariable Long topicId, @PathVariable String imgName) {
+    public byte[] topicImg(@PathVariable UUID topicId, @PathVariable String imgName) {
         Topic topic = dao.loadTopicById(topicId, sessionData.getUser());
         if (!topic.getImages().contains(imgName)) {
             throw new OutlineException("!topic.getImages().contains(imgName)");

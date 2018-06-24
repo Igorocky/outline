@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -34,16 +35,16 @@ public class UserDao {
     }
 
     @Transactional
-    public User loadUser(User user, Long id) {
+    public User loadUser(User user, UUID id) {
         if (!isAdmin(user)) {
             return OutlineUtils.accessDenied();
         } else {
-            return sessionFactory.getCurrentSession().load(User.class, id);
+            return sessionFactory.getCurrentSession().get(User.class, id);
         }
     }
 
     @Transactional
-    public void createUser(User admin, String name, String password, Set<Long> roles) {
+    public void createUser(User admin, String name, String password, Set<UUID> roles) {
         if (!isAdmin(admin)) {
             OutlineUtils.accessDenied();
         } else {
@@ -66,7 +67,7 @@ public class UserDao {
     }
 
     @Transactional
-    public void updateUser(User admin, Long id, Consumer<User> updates) {
+    public void updateUser(User admin, UUID id, Consumer<User> updates) {
         if (!isAdmin(admin)) {
             OutlineUtils.accessDenied();
         } else {
@@ -76,14 +77,20 @@ public class UserDao {
     }
 
     @Transactional
-    public void removeUser(User requestor, Long userIdToRemove) {
+    public void removeUser(User requestor, UUID userIdToRemove) {
         if (!isAdmin(requestor)) {
             OutlineUtils.accessDenied();
         } else {
-            sessionFactory.getCurrentSession()
-                    .createQuery("delete User where id = :id")
-                    .setParameter("id", userIdToRemove)
-                    .executeUpdate();
+            Session session = sessionFactory.getCurrentSession();
+            User userToBeRemoved = session.load(User.class, userIdToRemove);
+            List<Paragraph> topParagraphs = session.createQuery(
+                    "from Paragraph where owner = :owner and parentParagraph is null",
+                    Paragraph.class
+            )
+                    .setParameter("owner", userToBeRemoved)
+                    .getResultList();
+            topParagraphs.forEach(par -> session.delete(par));
+            session.delete(userToBeRemoved);
         }
     }
 
@@ -102,9 +109,11 @@ public class UserDao {
     }
 
     public boolean isAdmin(User user) {
-        return user.getRoles().stream()
-                .map(r -> r.getName())
-                .collect(Collectors.toSet())
-                .contains(UserDao.ADMIN_ROLE_NAME);
+        for (Role role : user.getRoles()) {
+            if (UserDao.ADMIN_ROLE_NAME.equals(role.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -5,6 +5,7 @@ import org.hibernate.dialect.Database;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
@@ -32,6 +33,7 @@ public class DbConfig {
     }
 
     @Bean
+    @Primary
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean res = new LocalSessionFactoryBean();
         res.setDataSource(dataSource());
@@ -40,13 +42,14 @@ public class DbConfig {
         props.put("hibernate.dialect", Database.H2);
         props.put("hibernate.format_sql", "true");
         props.put("hibernate.use_sql_comments", "true");
-//            props.put("hibernate.show_sql", "true");
+//        props.put("hibernate.show_sql", "true");
 //        props.put("hibernate.hbm2ddl.auto", "create");
         res.setHibernateProperties(props);
         return res;
     }
 
     @Bean
+    @Primary
     public HibernateTransactionManager transactionManager() {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
         transactionManager.setSessionFactory(sessionFactory().getObject());
