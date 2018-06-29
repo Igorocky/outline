@@ -1,16 +1,15 @@
 package org.igye.outline.controllers;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.htmlforms.ChangePasswordForm;
-import org.igye.outline.htmlforms.EditUserForm;
-import org.igye.outline.htmlforms.LoginForm;
-import org.igye.outline.htmlforms.SessionData;
+import org.igye.outline.htmlforms.*;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
@@ -21,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -39,9 +39,11 @@ public class ControllerUI {
     public static final String PREV_TOPIC = "prevTopic";
     public static final String CHANGE_PASSWORD = "changePassword";
     public static final String EDIT_USER = "editUser";
+    public static final String EDIT_PARAGRAPH = "editParagraph";
     public static final String REMOVE_USER = "removeUser";
     public static final String LOGIN = "login";
     public static final String USERS = "users";
+    public static final String NOTHING = "nothing";
 
     @Value("${topic.images.location}")
     private String topicImagesLocation;
@@ -159,6 +161,40 @@ public class ControllerUI {
                 );
                 return redirect(USERS);
             }
+        }
+    }
+
+    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
+        OutlineUtils.assertNotNull(form.getParentId());
+        initModel(model);
+        addPath(model, dao.loadParagraphById(Optional.of(form.getParentId()), sessionData.getUser()));
+        model.addAttribute("form", form);
+    }
+
+    @GetMapping(EDIT_PARAGRAPH)
+    public String editParagraph(Model model,
+                                @RequestParam UUID parentId, @RequestParam Optional<UUID> id) {
+        EditParagraphForm form = new EditParagraphForm();
+        form.setParentId(parentId);
+        if (id.isPresent()) {
+            Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
+            form.setId(paragraph.getId());
+            form.setName(paragraph.getName());
+        }
+        prepareModelForEditParagraph(model, form);
+        return EDIT_PARAGRAPH;
+    }
+
+    @PostMapping(EDIT_PARAGRAPH)
+    public String editParagraphPost(Model model, EditParagraphForm form,
+                                  HttpServletResponse response) throws IOException {
+        if (StringUtils.isBlank(form.getName())) {
+            prepareModelForEditParagraph(model, form);
+            return redirect(EDIT_PARAGRAPH);
+        } else {
+            dao.createParagraph(form.getParentId(), form.getName());
+            OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getParentId()));
+            return NOTHING;
         }
     }
 

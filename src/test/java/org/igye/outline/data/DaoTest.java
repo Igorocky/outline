@@ -693,4 +693,30 @@ public class DaoTest extends AbstractHibernateTest {
         //then
         assertEquals("T2", nextTopic.getName());
     }
+
+    @Test
+    public void createParagraph_should_create_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME)
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph rootParagraph = dao.loadRootParagraph(owner);
+
+        //when
+        dao.createParagraph(rootParagraph.getId(), "new-par");
+
+        //then
+        transactionTemplate.execute(status -> {
+            Paragraph root = dao.loadRootParagraph(owner);
+            assertEquals(1, root.getChildParagraphs().size());
+            Paragraph newPar = root.getChildParagraphs().get(0);
+            assertEquals("new-par", newPar.getName());
+            assertEquals(owner.getId(), newPar.getOwner().getId());
+            return null;
+        });
+    }
 }

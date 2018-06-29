@@ -3,6 +3,11 @@ package org.igye.outline.common;
 import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.exceptions.OutlineException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
 
 public class OutlineUtils {
     public static <T> T accessDenied() {
@@ -15,6 +20,18 @@ public class OutlineUtils {
 
     public static boolean checkPwd(String pwd, String hashedPwd) {
         return BCrypt.checkpw(pwd, hashedPwd);
+    }
+
+    public static void redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath(path);
+        params.forEach((k,v) -> builder.queryParam(k, v));
+        response.sendRedirect(path + "?" + builder.build().getQuery());
+    }
+
+    public static void assertNotNull(Object obj) {
+        if (obj == null) {
+            throw new OutlineException("obj == null");
+        }
     }
 
 }

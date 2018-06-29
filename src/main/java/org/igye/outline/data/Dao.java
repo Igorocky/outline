@@ -1,6 +1,7 @@
 package org.igye.outline.data;
 
 import org.hibernate.Hibernate;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
@@ -22,10 +23,19 @@ public class Dao {
     private SessionFactory sessionFactory;
 
     @Transactional
-    public Paragraph loadParagraphById(Optional<UUID> idOpt, User owner) {
+    public void createParagraph(UUID parentId, String name) {
+        Session session = sessionFactory.getCurrentSession();
+        Paragraph parent = session.load(Paragraph.class, parentId);
+        Paragraph paragraph = new Paragraph();
+        paragraph.setName(name);
+        parent.addChildParagraph(paragraph);
+    }
+
+    @Transactional
+    public Paragraph loadParagraphById(Optional<UUID> idOpt, User requestor) {
         Paragraph paragraph = idOpt
-                .map(id -> loadParagraphByNotNullId(id, owner))
-                .orElseGet(() -> loadRootParagraph(owner));
+                .map(id -> loadParagraphByNotNullId(id, requestor))
+                .orElseGet(() -> loadRootParagraph(requestor));
         Hibernate.initialize(paragraph.getChildParagraphs());
         Hibernate.initialize(paragraph.getTopics());
         Hibernate.initialize(paragraph.getTags());
@@ -80,8 +90,8 @@ public class Dao {
         }
     }
 
-    @Transactional(propagation = MANDATORY)
-    protected Paragraph loadRootParagraph(User owner) {
+    @Transactional
+    public Paragraph loadRootParagraph(User owner) {
         return sessionFactory.getCurrentSession().createQuery(
                 "from Paragraph p where p.name = :name and p.owner = :owner and p.parentParagraph is null",
                 Paragraph.class

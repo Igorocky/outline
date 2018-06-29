@@ -7,6 +7,9 @@
 </head>
 <body>
 <div th:replace="common-header :: header"></div>
+<div>
+    <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
+</div>
 
 <div th:replace="path :: path"/>
 

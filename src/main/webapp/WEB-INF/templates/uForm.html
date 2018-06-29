@@ -1,0 +1,22 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../css/multi-select.css">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
+</head>
+<body>
+
+<form th:action="${form.action}" method="post">
+    <input type="hidden" th:each="inField : ${form.allHiddenFields}" th:if="${inField.value}"
+           th:name="${inField.name}" th:value="${inField.value}">
+
+    <input type="submit" th:value="${form.submitButtonText}"/>
+</form>
+
+
+</body>
+</html>
