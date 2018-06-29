@@ -165,17 +165,18 @@ public class ControllerUI {
     }
 
     private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
-        OutlineUtils.assertNotNull(form.getParentId());
+        OutlineUtils.assertNotNull(form.getIdToRedirectTo());
         initModel(model);
-        addPath(model, dao.loadParagraphById(Optional.of(form.getParentId()), sessionData.getUser()));
+        addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), sessionData.getUser()));
         model.addAttribute("form", form);
     }
 
     @GetMapping(EDIT_PARAGRAPH)
     public String editParagraph(Model model,
-                                @RequestParam UUID parentId, @RequestParam Optional<UUID> id) {
+                                @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) {
         EditParagraphForm form = new EditParagraphForm();
-        form.setParentId(parentId);
+        parentId.ifPresent(parId -> form.setParentId(parId));
+        id.ifPresent(idd -> form.setId(idd));
         if (id.isPresent()) {
             Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
             form.setId(paragraph.getId());
@@ -192,8 +193,12 @@ public class ControllerUI {
             prepareModelForEditParagraph(model, form);
             return redirect(EDIT_PARAGRAPH);
         } else {
-            dao.createParagraph(form.getParentId(), form.getName());
-            OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getParentId()));
+            if (form.getId() != null) {
+                dao.updateParagraph(sessionData.getUser(), form.getId(), par -> par.setName(form.getName()));
+            } else {
+                dao.createParagraph(form.getParentId(), form.getName());
+            }
+            OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getIdToRedirectTo()));
             return NOTHING;
         }
     }

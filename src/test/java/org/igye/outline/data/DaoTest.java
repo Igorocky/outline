@@ -4,6 +4,7 @@ import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -716,6 +717,33 @@ public class DaoTest extends AbstractHibernateTest {
             Paragraph newPar = root.getChildParagraphs().get(0);
             assertEquals("new-par", newPar.getName());
             assertEquals(owner.getId(), newPar.getOwner().getId());
+            return null;
+        });
+    }
+
+    @Test
+    public void updateParagraph_should_update_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b1 -> b1
+                                        .paragraph("P2").save()
+                                )
+                        ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph paragraph = (Paragraph) saved.get(1);
+
+        //when
+        dao.updateParagraph(owner, paragraph.getId(), p -> p.setName("WSX"));
+
+        //then
+        transactionTemplate.execute(status -> {
+            Assert.assertEquals(
+                    "WSX",
+                    getCurrentSession().load(Paragraph.class, paragraph.getId()).getName()
+            );
             return null;
         });
     }

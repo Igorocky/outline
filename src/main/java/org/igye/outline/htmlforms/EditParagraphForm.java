@@ -9,6 +9,14 @@ import java.util.UUID;
 @NoArgsConstructor
 public class EditParagraphForm {
     private UUID parentId;
-    private UUID Id;
+    private UUID id;
     private String name;
+
+    public UUID getIdToRedirectTo() {
+        if (parentId != null) {
+            return parentId;
+        } else {
+            return id;
+        }
+    }
 }

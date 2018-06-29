@@ -9,6 +9,7 @@
 <div th:replace="common-header :: header"></div>
 <div>
     <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
+    <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
 </div>
 
 <div th:replace="path :: path"/>

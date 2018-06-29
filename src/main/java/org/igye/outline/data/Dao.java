@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,13 @@ public class Dao {
         paragraph.setName(name);
         parent.addChildParagraph(paragraph);
     }
+
+    @Transactional
+    public void updateParagraph(User owner, UUID id, Consumer<Paragraph> updates) {
+        Paragraph paragraph = loadParagraphByNotNullId(id, owner);
+        updates.accept(paragraph);
+    }
+
 
     @Transactional
     public Paragraph loadParagraphById(Optional<UUID> idOpt, User requestor) {
@@ -103,7 +111,7 @@ public class Dao {
     }
 
     @Transactional(propagation = MANDATORY)
-    protected Paragraph loadParagraphByNotNullId(UUID id, User owner) {
+    public Paragraph loadParagraphByNotNullId(UUID id, User owner) {
         return sessionFactory.getCurrentSession().createQuery(
                 "from Paragraph p where p.id = :id and owner = :owner", Paragraph.class
         )

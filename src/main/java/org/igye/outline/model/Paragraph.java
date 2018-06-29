@@ -27,12 +27,12 @@ public class Paragraph {
     @ManyToOne
     private Paragraph parentParagraph;
 
-    @OneToMany(mappedBy = "parentParagraph")
+    @OneToMany(mappedBy = "parentParagraph", orphanRemoval = true)
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
     private List<Paragraph> childParagraphs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "paragraph")
+    @OneToMany(mappedBy = "paragraph", orphanRemoval = true)
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
     private List<Topic> topics = new ArrayList<>();
