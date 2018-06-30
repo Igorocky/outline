@@ -11,7 +11,7 @@
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" th:replace="common-scripts :: css">
     <script type="text/javascript">
-        function reorder() {
+        function reorderMode() {
             $( "#paragraphs-list" ).addClass("sortable");
             $( "#paragraphs-list" ).sortable();
             $( "#paragraphs-list" ).disableSelection();
@@ -39,6 +39,40 @@
                 }
             });
         }
+        function selectionMode() {
+            $( ".selection-checkbox-par" ).show();
+            $( ".selection-checkbox-topic" ).show();
+            $( "#selection-mode-btn" ).hide();
+            $( "#cancel-selection-btn" ).show();
+            $( "#copy-btn" ).show();
+            $( "#cut-btn" ).show();
+        }
+        function cancelSelection() {
+            $( ".selection-checkbox-par" ).hide();
+            $( ".selection-checkbox-topic" ).hide();
+            $( "#selection-mode-btn" ).show();
+            $( "#cancel-selection-btn" ).hide();
+            $( "#copy-btn" ).hide();
+            $( "#cut-btn" ).hide();
+        }
+        function submitSelection(action) {
+            let selectedParagraphs = _.filter($(".selection-checkbox-par").toArray(), function (elem) {return elem.checked});
+            let selectedTopics = _.filter($(".selection-checkbox-topic").toArray(), function (elem) {return elem.checked});
+            let selection = {
+                selectionAct: action,
+                selections: _.map(selectedParagraphs, function (elem) {
+                    return {selectionType: 'PARAGRAPH', selectedId: elem.id}
+                }).concat(
+                    _.map(selectedTopics, function (elem) {
+                        return {selectionType: 'TOPIC', selectedId: elem.id}
+                    })
+                )
+            };
+            alert(JSON.stringify(selection));
+            _.each(selectedParagraphs, function (elem) {elem.checked = false})
+            _.each(selectedTopics, function (elem) {elem.checked = false})
+            cancelSelection();
+        }
     </script>
 </head>
 <body>
@@ -46,21 +80,32 @@
 <div>
     <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
     <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
-    <span id="reorder-btn"><a href="#" onclick="reorder()">Reorder</a>&nbsp;</span>
-    <span id="cancel-reorder-btn" onclick="cancelReorder()" hidden="hidden"><a href="#">Cancel reordering</a>&nbsp;</span>
-    <span id="save-order-btn" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'" hidden="hidden"><a href="#">Save order</a>&nbsp;</span>
+    <span id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
+    <span id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
+    <span id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>
+
+    <span id="selection-mode-btn"><a href="#" onclick="selectionMode()">Select items</a>&nbsp;</span>
+    <span id="cancel-selection-btn" hidden="hidden"><a href="#"  onclick="cancelSelection()">Cancel selection</a>&nbsp;</span>
+    <span id="cut-btn" hidden="hidden"><a href="#" onclick="submitSelection('CUT')">CUT</a>&nbsp;</span>
+    <span id="copy-btn" hidden="hidden"><a href="#" onclick="submitSelection('COPY')">COPY</a>&nbsp;</span>
 </div>
 
 <div th:replace="path :: path"/>
 
     <ul id="paragraphs-list" >
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
-            <span><a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a></span>
+            <span>
+                <input class="selection-checkbox-par" type="checkbox" hidden="hidden" th:id="${childPar.id}">
+                <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
+            </span>
         </li>
     </ul>
     <ul id="topics-list" >
         <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
-            <span>- <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a></span>
+            <span>-
+                <input class="selection-checkbox-topic" type="checkbox" hidden="hidden" th:id="${childPar.id}">
+                <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a>
+            </span>
         </li>
     </ul>
 
