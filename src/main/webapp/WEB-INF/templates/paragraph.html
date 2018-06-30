@@ -3,29 +3,66 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions"></script>
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" >
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css">
+    <script type="text/javascript">
+        function reorder() {
+            $( "#paragraphs-list" ).addClass("sortable");
+            $( "#paragraphs-list" ).sortable();
+            $( "#paragraphs-list" ).disableSelection();
+            $( "#topics-list" ).addClass("sortable");
+            $( "#topics-list" ).sortable();
+            $( "#topics-list" ).disableSelection();
+            $( "#reorder-btn" ).hide();
+            $( "#cancel-reorder-btn" ).show();
+            $( "#save-order-btn" ).show();
+        }
+        function cancelReorder() {
+            window.location.reload();
+        }
+        function saveOrder(parentId) {
+            let newOrdering = {
+                parentId: parentId,
+                paragraphs: _.map($("#paragraphs-list").children().toArray(), function(elem) {return elem.id}),
+                topics: _.map($("#topics-list").children().toArray(), function(elem) {return elem.id})
+            };
+            doPost({
+                url: "/reorderParagraphChildren",
+                data: newOrdering,
+                success: function () {
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 <div th:replace="common-header :: header"></div>
 <div>
     <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
     <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
+    <span id="reorder-btn"><a href="#" onclick="reorder()">Reorder</a>&nbsp;</span>
+    <span id="cancel-reorder-btn" onclick="cancelReorder()" hidden="hidden"><a href="#">Cancel reordering</a>&nbsp;</span>
+    <span id="save-order-btn" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'" hidden="hidden"><a href="#">Save order</a>&nbsp;</span>
 </div>
 
 <div th:replace="path :: path"/>
 
-<table>
-    <tr th:each="childPar : ${paragraph.childParagraphs}">
-        <td>
-            <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
-        </td>
-    </tr>
-    <tr th:each="topic : ${paragraph.topics}">
-        <td>
-            - <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a>
-        </td>
-    </tr>
-</table>
+    <ul id="paragraphs-list" >
+        <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
+            <span><a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a></span>
+        </li>
+    </ul>
+    <ul id="topics-list" >
+        <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
+            <span>- <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a></span>
+        </li>
+    </ul>
 
 </body>
 </html>

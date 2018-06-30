@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.Map;
 
 public class OutlineUtils {
+    public static final String NOTHING = "nothing";
+
     public static <T> T accessDenied() {
         throw new OutlineException("Access denied.");
     }
@@ -22,10 +24,11 @@ public class OutlineUtils {
         return BCrypt.checkpw(pwd, hashedPwd);
     }
 
-    public static void redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
+    public static String redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath(path);
         params.forEach((k,v) -> builder.queryParam(k, v));
         response.sendRedirect(path + "?" + builder.build().getQuery());
+        return NOTHING;
     }
 
     public static void assertNotNull(Object obj) {

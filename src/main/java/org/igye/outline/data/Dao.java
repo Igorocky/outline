@@ -1,8 +1,11 @@
 package org.igye.outline.data;
 
+import com.google.common.collect.ImmutableSet;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
@@ -38,6 +41,35 @@ public class Dao {
         updates.accept(paragraph);
     }
 
+    @Transactional
+    public void reorderParagraphChildren(User owner, ReorderParagraphChildren request) {
+        Session session = sessionFactory.getCurrentSession();
+        Paragraph parent = loadParagraphByNotNullId(request.getParentId(), owner);
+        if (request.getParagraphs() != null) {
+            List<Paragraph> paragraphs = parent.getChildParagraphs();
+            Set<UUID> oldIdSet = paragraphs.stream().map(p -> p.getId()).collect(Collectors.toSet());
+            Set<UUID> newIdSet = ImmutableSet.copyOf(request.getParagraphs());
+            if (!oldIdSet.equals(newIdSet)) {
+                throw new OutlineException("!oldIdSet.equals(newIdSet) for paragraphs");
+            }
+            parent.setChildParagraphs(new LinkedList<>());
+            for (UUID id : request.getParagraphs()) {
+                parent.addChildParagraph(session.load(Paragraph.class, id));
+            }
+        }
+        if (request.getTopics() != null) {
+            List<Topic> topics = parent.getTopics();
+            Set<UUID> oldIdSet = topics.stream().map(p -> p.getId()).collect(Collectors.toSet());
+            Set<UUID> newIdSet = ImmutableSet.copyOf(request.getTopics());
+            if (!oldIdSet.equals(newIdSet)) {
+                throw new OutlineException("!oldIdSet.equals(newIdSet) for topics");
+            }
+            parent.setTopics(new LinkedList<>());
+            for (UUID id : request.getTopics()) {
+                parent.addTopic(session.load(Topic.class, id));
+            }
+        }
+    }
 
     @Transactional
     public Paragraph loadParagraphById(Optional<UUID> idOpt, User requestor) {

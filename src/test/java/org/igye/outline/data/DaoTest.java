@@ -1,6 +1,8 @@
 package org.igye.outline.data;
 
 import org.igye.outline.AbstractHibernateTest;
+import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
@@ -14,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -746,5 +749,97 @@ public class DaoTest extends AbstractHibernateTest {
             );
             return null;
         });
+    }
+
+    @Test
+    public void reorderParagraphChildren_should_reorder_paragraphs_and_topics() {
+        //given
+        List<Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(0);
+        Paragraph p1c = (Paragraph) saved.get(1);
+        Paragraph p2a = (Paragraph) saved.get(2);
+        Paragraph p3d = (Paragraph) saved.get(3);
+        Paragraph p4b = (Paragraph) saved.get(4);
+        Topic t1c = (Topic) saved.get(5);
+        Topic t2a = (Topic) saved.get(6);
+        Topic t3d = (Topic) saved.get(7);
+        Topic t4b = (Topic) saved.get(8);
+        ReorderParagraphChildren request = new ReorderParagraphChildren();
+        request.setParentId(dao.loadRootParagraph(owner).getId());
+        request.setParagraphs(Arrays.asList(p2a.getId(), p4b.getId(), p1c.getId(), p3d.getId()));
+        request.setTopics(Arrays.asList(t2a.getId(), t4b.getId(), t1c.getId(), t3d.getId()));
+
+        //when
+        dao.reorderParagraphChildren(owner, request);
+
+        //then
+        transactionTemplate.execute(status -> {
+            Paragraph root = dao.loadRootParagraph(owner);
+            assertEquals(p2a.getId(), root.getChildParagraphs().get(0).getId());
+            assertEquals(p4b.getId(), root.getChildParagraphs().get(1).getId());
+            assertEquals(p1c.getId(), root.getChildParagraphs().get(2).getId());
+            assertEquals(p3d.getId(), root.getChildParagraphs().get(3).getId());
+            assertEquals(t2a.getId(), root.getTopics().get(0).getId());
+            assertEquals(t4b.getId(), root.getTopics().get(1).getId());
+            assertEquals(t1c.getId(), root.getTopics().get(2).getId());
+            assertEquals(t3d.getId(), root.getTopics().get(3).getId());
+            return null;
+        });
+    }
+
+    @Test(expected = OutlineException.class)
+    public void reorderParagraphChildren_should_fail_on_mismatching_paragraph_ids() {
+        //given
+        List<Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(0);
+        Paragraph p1c = (Paragraph) saved.get(1);
+        Paragraph p3d = (Paragraph) saved.get(3);
+        Paragraph p4b = (Paragraph) saved.get(4);
+        ReorderParagraphChildren request = new ReorderParagraphChildren();
+        request.setParentId(dao.loadRootParagraph(owner).getId());
+        request.setParagraphs(Arrays.asList(p4b.getId(), p1c.getId(), p3d.getId()));
+
+        //when
+        dao.reorderParagraphChildren(owner, request);
+
+        //then
+        //an exception should be thrown
+    }
+
+    @Test(expected = OutlineException.class)
+    public void reorderParagraphChildren_should_fail_on_mismatching_topic_ids() {
+        //given
+        List<Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(0);
+        Topic t1c = (Topic) saved.get(5);
+        Topic t2a = (Topic) saved.get(6);
+        Topic t4b = (Topic) saved.get(8);
+        ReorderParagraphChildren request = new ReorderParagraphChildren();
+        request.setParentId(dao.loadRootParagraph(owner).getId());
+        request.setTopics(Arrays.asList(t2a.getId(), t4b.getId(), t1c.getId()));
+
+        //when
+        dao.reorderParagraphChildren(owner, request);
+
+        //then
+        //an exception should be thrown
+    }
+
+    private List<Object> prepareDataForReordering() {
+        return transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("1C").save()
+                                .paragraph("2A").save()
+                                .paragraph("3D").save()
+                                .paragraph("4B").save()
+                                .topic("1C").save()
+                                .topic("2A").save()
+                                .topic("3D").save()
+                                .topic("4B").save()
+                        )
+                ).getResults()
+        );
     }
 }

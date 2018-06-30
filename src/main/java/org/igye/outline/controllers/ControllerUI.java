@@ -43,7 +43,6 @@ public class ControllerUI {
     public static final String REMOVE_USER = "removeUser";
     public static final String LOGIN = "login";
     public static final String USERS = "users";
-    public static final String NOTHING = "nothing";
 
     @Value("${topic.images.location}")
     private String topicImagesLocation;
@@ -198,9 +197,15 @@ public class ControllerUI {
             } else {
                 dao.createParagraph(form.getParentId(), form.getName());
             }
-            OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getIdToRedirectTo()));
-            return NOTHING;
+            return OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getIdToRedirectTo()));
         }
+    }
+
+    @PostMapping("reorderParagraphChildren")
+    public String reorderParagraphChildren(@RequestBody ReorderParagraphChildren request,
+                                  HttpServletResponse response) throws IOException {
+        dao.reorderParagraphChildren(sessionData.getUser(), request);
+        return OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", request.getParentId()));
     }
 
     @PostMapping(REMOVE_USER)
