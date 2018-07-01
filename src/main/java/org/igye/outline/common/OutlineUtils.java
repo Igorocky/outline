@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class OutlineUtils {
+    public static final String SQL_DEBUG_LOGGER_NAME = "sql-debug";
     public static final String NOTHING = "nothing";
 
     public static <T> T accessDenied() {

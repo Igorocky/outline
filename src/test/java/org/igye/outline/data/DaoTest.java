@@ -1,5 +1,7 @@
 package org.igye.outline.data;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
@@ -20,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -28,6 +31,8 @@ import static org.junit.Assert.assertFalse;
 @ContextConfiguration(classes = Dao.class)
 @PropertySource("test.properties")
 public class DaoTest extends AbstractHibernateTest {
+    private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
+
     @Autowired
     private Dao dao;
 
@@ -823,6 +828,312 @@ public class DaoTest extends AbstractHibernateTest {
 
         //then
         //an exception should be thrown
+    }
+
+    @Test
+    public void moveParagraph_should_move_paragraph_when_destination_paragraph_contains_more_children_than_source_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b1 -> b1
+                                    .paragraph("P1").save().children(b2 -> b2
+                                        .paragraph("P2")
+                                        .paragraph("P3").save()
+                                        .paragraph("P4")
+                                    )
+                                    .paragraph("P5").save().children(b2 -> b2
+                                        .paragraph("P6")
+                                        .paragraph("P7")
+                                        .paragraph("P8")
+                                        .paragraph("P9")
+                                        .paragraph("P10")
+                                    )
+                            )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Paragraph p3 = (Paragraph) saved.get(2);
+        Paragraph p5 = (Paragraph) saved.get(3);
+        transactionTemplate.execute(status -> {
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(3, p1Children.size());
+            assertEquals("P2", p1Children.get(0).getName());
+            assertEquals("P3", p1Children.get(1).getName());
+            assertEquals("P4", p1Children.get(2).getName());
+            List<Paragraph> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getChildParagraphs();
+            assertEquals(5, p5Children.size());
+            assertEquals("P6", p5Children.get(0).getName());
+            assertEquals("P7", p5Children.get(1).getName());
+            assertEquals("P8", p5Children.get(2).getName());
+            assertEquals("P9", p5Children.get(3).getName());
+            assertEquals("P10", p5Children.get(4).getName());
+            return null;
+        });
+
+        //when
+        dao.moveParagraph(owner, p3.getId(), p5.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(2, p1Children.size());
+            assertEquals("P2", p1Children.get(0).getName());
+            assertEquals("P4", p1Children.get(1).getName());
+            List<Paragraph> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getChildParagraphs();
+            assertEquals(6, p5Children.size());
+            assertEquals("P6", p5Children.get(0).getName());
+            assertEquals("P7", p5Children.get(1).getName());
+            assertEquals("P8", p5Children.get(2).getName());
+            assertEquals("P9", p5Children.get(3).getName());
+            assertEquals("P10", p5Children.get(4).getName());
+            assertEquals("P3", p5Children.get(5).getName());
+            return null;
+        });
+
+    }
+
+    @Test
+    public void moveParagraph_should_move_paragraph_when_destination_paragraph_contains_less_children_than_source_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b1 -> b1
+                                    .paragraph("P1").save().children(b2 -> b2
+                                        .paragraph("P2")
+                                        .paragraph("P3").save()
+                                        .paragraph("P4")
+                                    )
+                                    .paragraph("P5").save().children(b2 -> b2
+                                        .paragraph("P6")
+                                    )
+                            )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Paragraph p3 = (Paragraph) saved.get(2);
+        Paragraph p5 = (Paragraph) saved.get(3);
+        transactionTemplate.execute(status -> {
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(3, p1Children.size());
+            assertEquals("P2", p1Children.get(0).getName());
+            assertEquals("P3", p1Children.get(1).getName());
+            assertEquals("P4", p1Children.get(2).getName());
+            List<Paragraph> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getChildParagraphs();
+            assertEquals(1, p5Children.size());
+            assertEquals("P6", p5Children.get(0).getName());
+            return null;
+        });
+
+        //when
+        dao.moveParagraph(owner, p3.getId(), p5.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(2, p1Children.size());
+            assertEquals("P2", p1Children.get(0).getName());
+            assertEquals("P4", p1Children.get(1).getName());
+            List<Paragraph> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getChildParagraphs();
+            assertEquals(2, p5Children.size());
+            assertEquals("P6", p5Children.get(0).getName());
+            assertEquals("P3", p5Children.get(1).getName());
+            return null;
+        });
+
+    }
+
+    @Test
+    public void moveParagraph_should_move_sibling_paragraphs_one_into_another() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                            .paragraph(ROOT_NAME).children(b1 -> b1
+                                    .paragraph("P1").save()
+                                    .paragraph("P2").save()
+                            )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Paragraph p2 = (Paragraph) saved.get(2);
+        transactionTemplate.execute(status -> {
+            List<Paragraph> rootChildren = dao.loadRootParagraph(owner).getChildParagraphs();
+            assertEquals(2, rootChildren.size());
+            assertEquals("P1", rootChildren.get(0).getName());
+            assertEquals("P2", rootChildren.get(1).getName());
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(0, p1Children.size());
+            List<Paragraph> p2Children = dao.loadParagraphByNotNullId(p2.getId(), owner).getChildParagraphs();
+            assertEquals(0, p2Children.size());
+            return null;
+        });
+
+        //when
+        dao.moveParagraph(owner, p2.getId(), p1.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Paragraph> rootChildren = dao.loadRootParagraph(owner).getChildParagraphs();
+            assertEquals(1, rootChildren.size());
+            assertEquals("P1", rootChildren.get(0).getName());
+            List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
+            assertEquals(1, p1Children.size());
+            assertEquals("P2", p1Children.get(0).getName());
+            List<Paragraph> p2Children = dao.loadParagraphByNotNullId(p2.getId(), owner).getChildParagraphs();
+            assertEquals(0, p2Children.size());
+            return null;
+        });
+
+    }
+
+    @Test(expected = OutlineException.class)
+    public void moveParagraph_should_deny_moving_paragraph_under_itself() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").save().children(b2 -> b2
+                                        .paragraph("P2")
+                                        .paragraph("P3").save()
+                                        .paragraph("P4")
+                                )
+                                .paragraph("P5").save().children(b2 -> b2
+                                        .paragraph("P6")
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Paragraph p3 = (Paragraph) saved.get(2);
+
+        //when
+        dao.moveParagraph(owner, p1.getId(), p3.getId());
+
+        //then
+        //an exception should be thrown
+    }
+
+    @Test
+    public void moveTopic_should_move_topic_when_destination_paragraph_contains_more_children_than_source_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").save().children(b2 -> b2
+                                        .topic("T2")
+                                        .topic("T3").save()
+                                        .topic("T4")
+                                )
+                                .paragraph("P5").save().children(b2 -> b2
+                                        .topic("T6")
+                                        .topic("T7")
+                                        .topic("T8")
+                                        .topic("T9")
+                                        .topic("T10")
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Topic t3 = (Topic) saved.get(2);
+        Paragraph p5 = (Paragraph) saved.get(3);
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(3, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            assertEquals("T3", p1Children.get(1).getName());
+            assertEquals("T4", p1Children.get(2).getName());
+            List<Topic> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getTopics();
+            assertEquals(5, p5Children.size());
+            assertEquals("T6", p5Children.get(0).getName());
+            assertEquals("T7", p5Children.get(1).getName());
+            assertEquals("T8", p5Children.get(2).getName());
+            assertEquals("T9", p5Children.get(3).getName());
+            assertEquals("T10", p5Children.get(4).getName());
+            return null;
+        });
+
+        //when
+        dao.moveTopic(owner, t3.getId(), p5.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(2, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            assertEquals("T4", p1Children.get(1).getName());
+            List<Topic> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getTopics();
+            assertEquals(6, p5Children.size());
+            assertEquals("T6", p5Children.get(0).getName());
+            assertEquals("T7", p5Children.get(1).getName());
+            assertEquals("T8", p5Children.get(2).getName());
+            assertEquals("T9", p5Children.get(3).getName());
+            assertEquals("T10", p5Children.get(4).getName());
+            assertEquals("T3", p5Children.get(5).getName());
+            return null;
+        });
+
+    }
+
+    @Test
+    public void moveTopic_should_move_topic_when_destination_paragraph_contains_less_children_than_source_paragraph() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").save().children(b2 -> b2
+                                        .topic("T2")
+                                        .topic("T3").save()
+                                        .topic("T4")
+                                )
+                                .paragraph("P5").save().children(b2 -> b2
+                                        .topic("T6")
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        Topic t3 = (Topic) saved.get(2);
+        Paragraph p5 = (Paragraph) saved.get(3);
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(3, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            assertEquals("T3", p1Children.get(1).getName());
+            assertEquals("T4", p1Children.get(2).getName());
+            List<Topic> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getTopics();
+            assertEquals(1, p5Children.size());
+            assertEquals("T6", p5Children.get(0).getName());
+            return null;
+        });
+
+        //when
+        dao.moveTopic(owner, t3.getId(), p5.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(2, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            assertEquals("T4", p1Children.get(1).getName());
+            List<Topic> p5Children = dao.loadParagraphByNotNullId(p5.getId(), owner).getTopics();
+            assertEquals(2, p5Children.size());
+            assertEquals("T6", p5Children.get(0).getName());
+            assertEquals("T3", p5Children.get(1).getName());
+            return null;
+        });
+
     }
 
     private List<Object> prepareDataForReordering() {

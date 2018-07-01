@@ -1,6 +1,8 @@
 package org.igye.outline.data;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -18,11 +20,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.springframework.transaction.annotation.Propagation.MANDATORY;
 
 @Component
 public class Dao {
+    private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
+
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -69,6 +74,35 @@ public class Dao {
                 parent.addTopic(session.load(Topic.class, id));
             }
         }
+    }
+
+    @Transactional
+    public void moveParagraph(User owner, UUID parToMoveId, UUID parToMoveToId) {
+        Paragraph parToMove = loadParagraphByNotNullId(parToMoveId, owner);
+        Paragraph parToMoveTo = loadParagraphByNotNullId(parToMoveToId, owner);
+        Set<UUID> pathToRoot = new HashSet<>();
+        Paragraph currPar = parToMoveTo;
+        while(currPar != null) {
+            pathToRoot.add(currPar.getId());
+            currPar = currPar.getParentParagraph();
+        }
+        if (pathToRoot.contains(parToMove.getId())) {
+            throw new OutlineException("pathToRoot.contains(parToMove.getId())");
+        }
+        Hibernate.initialize(parToMove.getParentParagraph().getChildParagraphs());
+        Hibernate.initialize(parToMoveTo.getChildParagraphs());
+        parToMove.getParentParagraph().getChildParagraphs().remove(parToMove);
+        parToMoveTo.addChildParagraph(parToMove);
+    }
+
+    @Transactional
+    public void moveTopic(User owner, UUID topicToMoveId, UUID parToMoveToId) {
+        Topic topicToMove = loadTopicById(topicToMoveId, owner);
+        Paragraph parToMoveTo = loadParagraphByNotNullId(parToMoveToId, owner);
+        Hibernate.initialize(topicToMove.getParagraph().getTopics());
+        Hibernate.initialize(parToMoveTo.getTopics());
+        topicToMove.getParagraph().getTopics().remove(topicToMove);
+        parToMoveTo.addTopic(topicToMove);
     }
 
     @Transactional
