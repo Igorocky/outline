@@ -6,25 +6,22 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @Entity
-public class User {
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Content {
     @Id
     @GeneratedValue
     @Type(type = "uuid-char")
     private UUID id;
 
-    @NotNull
-    @Column(unique = true)
-    private String name;
-    @NotNull
-    private String password;
+    @ManyToOne
+    private User owner;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Role> roles = new HashSet<>();
+    @NotNull
+    @ManyToOne
+    private SynopsisTopic topic;
 }

@@ -138,7 +138,7 @@ public class Migrator {
     private Topic convertOldTopic(TopicOld topicOld) {
         Topic topic = new Topic();
         topic.setName(topicOld.getTitle());
-        topic.setImages(topicOld.getImages());
+//        topic.setImages(topicOld.getImages());
         topic.getTags().addAll(topicOld.getTags().stream().map(str -> tagCollection.getTag(str)).collect(Collectors.toList()));
         return topic;
     }

@@ -1,16 +1,22 @@
 package org.igye.outline.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
-import org.igye.outline.typeconverters.ListConverter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.hibernate.annotations.CascadeType.*;
 
+@Data
+@NoArgsConstructor
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Topic {
     @Id
     @GeneratedValue
@@ -27,54 +33,7 @@ public class Topic {
     @ManyToOne
     private Paragraph paragraph;
 
-    @Convert(converter = ListConverter.class)
-    private List<String> images = new ArrayList<>();
-
     @ManyToMany
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
     private Set<Tag> tags = new HashSet<>();
-
-    public UUID getId() {
-        return id;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Paragraph getParagraph() {
-        return paragraph;
-    }
-
-    public void setParagraph(Paragraph paragraph) {
-        this.paragraph = paragraph;
-    }
-
-    public List<String> getImages() {
-        return images;
-    }
-
-    public void setImages(List<String> images) {
-        this.images = images;
-    }
-
-    public Set<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<Tag> tags) {
-        this.tags = tags;
-    }
 }

@@ -86,6 +86,7 @@
 <div>
     <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
     <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
+    <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editTopic(parentId=${paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
     <span id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
     <span id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
     <span id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>

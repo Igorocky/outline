@@ -33,3 +33,17 @@ function idToSelectionPart(objectType) {
         return {objectType: objectType, selectedId: id}
     }
 }
+
+function indexOf(list, predicate) {
+    return _.reduce(
+        list,
+        function (memo, elem) {
+            if (predicate(elem)) {
+                return {i:memo.i+1, r: memo.i};
+            } else {
+                return {i:memo.i+1, r: memo.r};
+            }
+        },
+        {i:0, r: null}
+    ).r;
+}

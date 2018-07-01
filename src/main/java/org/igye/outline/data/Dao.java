@@ -8,9 +8,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
+import org.igye.outline.model.*;
 import org.igye.outline.selection.ActionType;
 import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
@@ -140,7 +138,24 @@ public class Dao {
     @Transactional
     public Topic loadTopicById(UUID id, User owner) {
         return sessionFactory.getCurrentSession().createQuery(
-                "from Topic t where t.id = :id and owner = :owner", Topic.class
+                "from Topic where id = :id and owner = :owner", Topic.class
+        )
+                .setParameter("id", id)
+                .setParameter("owner", owner)
+                .getSingleResult();
+    }
+
+    @Transactional
+    public Topic loadSynopsisTopicByIdWithContent(UUID id, User owner) {
+        SynopsisTopic topic = (SynopsisTopic) loadTopicById(id, owner);
+        Hibernate.initialize(topic.getContents());
+        return topic;
+    }
+
+    @Transactional
+    public Image loadImageById(UUID id, User owner) {
+        return sessionFactory.getCurrentSession().createQuery(
+                "from Image where id = :id and owner = :owner", Image.class
         )
                 .setParameter("id", id)
                 .setParameter("owner", owner)

@@ -1,5 +1,7 @@
 package org.igye.outline.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Type;
 
@@ -9,6 +11,8 @@ import java.util.*;
 
 import static org.hibernate.annotations.CascadeType.*;
 
+@Data
+@NoArgsConstructor
 @Entity
 public class Paragraph {
     public static final String ROOT_NAME = "root";
@@ -41,67 +45,15 @@ public class Paragraph {
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
     private Set<Tag> tags = new HashSet<>();
 
-    public UUID getId() {
-        return id;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Paragraph getParentParagraph() {
-        return parentParagraph;
-    }
-
-    public void setParentParagraph(Paragraph parentParagraph) {
-        this.parentParagraph = parentParagraph;
-    }
-
-    public List<Paragraph> getChildParagraphs() {
-        return childParagraphs;
-    }
-
-    public void setChildParagraphs(List<Paragraph> childParagraphs) {
-        this.childParagraphs = childParagraphs;
-    }
-
     public void addChildParagraph(Paragraph paragraph) {
         getChildParagraphs().add(paragraph);
         paragraph.setParentParagraph(this);
         paragraph.setOwner(getOwner());
     }
 
-    public List<Topic> getTopics() {
-        return topics;
-    }
-
-    public void setTopics(List<Topic> topics) {
-        this.topics = topics;
-    }
-
     public void addTopic(Topic topic) {
         getTopics().add(topic);
         topic.setParagraph(this);
         topic.setOwner(getOwner());
-    }
-
-    public Set<Tag> getTags() {
-        return tags;
-    }
-
-    public void setTags(Set<Tag> tags) {
-        this.tags = tags;
     }
 }

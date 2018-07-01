@@ -3,6 +3,7 @@ package org.igye.outline.data;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.common.OutlineUtils;
+import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
@@ -80,6 +81,8 @@ public class UserDao {
     public void removeUser(User requestor, UUID userIdToRemove) {
         if (!isAdmin(requestor)) {
             OutlineUtils.accessDenied();
+        } else if (userIdToRemove.equals(requestor.getId())) {
+            throw new OutlineException("userIdToRemove.equals(requestor.getId())");
         } else {
             Session session = sessionFactory.getCurrentSession();
             User userToBeRemoved = session.load(User.class, userIdToRemove);

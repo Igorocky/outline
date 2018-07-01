@@ -1,0 +1,111 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../css/multi-select.css">
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/functions.js"></script>
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+        } );
+        focusOnLoad('#name');
+        var order = 1000;
+        function nextOrder() {
+            return order++;
+        }
+        function addTextArea() {
+            let order = nextOrder();
+            $("form table tr:nth-last-child(2)").after('<tr contentOrder="' + order + '">\n' +
+                '            <td><a href="#" onclick="up(this, \'' + order + '\')">Up</a>' +
+                '&nbsp;<a href="#" onclick="down(this, \'' + order + '\')">Down</a>' +
+                '&nbsp;<a href="#" onclick="remove(this, \'' + order + '\')">Delete</a></td>\n' +
+                '            <td><textarea></textarea></td>\n' +
+                '        </tr>');
+        }
+        function initialDataForMoving(order) {
+            let contents_ = $("form table tr[contentOrder]").toArray();
+            return {
+                contents: contents_,
+                idx: indexOf(contents_, function(elem){return elem.getAttribute('contentOrder') == order;})
+            };
+        }
+        function up(elem, order) {
+            let init = initialDataForMoving(order);
+            if (init.idx > 0) {
+                let row = elem.parentNode.parentNode;
+                let sibling = row.previousElementSibling;
+                let parent = row.parentNode;
+                parent.insertBefore(row, sibling);
+            }
+        }
+        function down(elem, order) {
+            let init = initialDataForMoving(order);
+            if (init.idx < _.size(init.contents) - 1) {
+                let row = elem.parentNode.parentNode;
+                let sibling = row.nextElementSibling;
+                let parent = row.parentNode;
+                parent.insertBefore(sibling, row);
+            }
+        }
+        function remove(elem, order) {
+            const question = "Delete?";
+            $( "#dialog-text" ).text(question);
+            $( "#dialog-confirm" ).dialog({
+                title:question,
+                buttons: {
+                    "Delete": function() {
+                        $("form table tr[contentOrder='" + order + "']").remove();
+                        $( this ).dialog( "close" );
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-confirm" ).dialog('open');
+        }
+    </script>
+</head>
+<body>
+<a href="#" onclick="addTextArea()">Add text</a>&nbsp;
+<form th:action="${(#mvc.url('CUI#editSynopsisTopicPost')).build()}" th:object="${form}" method="post">
+    <input type="hidden" th:field="*{parentId}"/>
+    <input type="hidden" th:field="*{id}"/>
+    <table>
+        <tr>
+            <td>Name</td>
+            <td><input id="name" type="text" th:field="*{name}"/></td>
+        </tr>
+        <!--<tr>-->
+            <!--<td><a href="#" onclick="up()">Up</a>&nbsp;<a href="#" onclick="down()">Down</a></td>-->
+            <!--<td><textarea>Some Text</textarea></td>-->
+        <!--</tr>-->
+        <tr>
+            <td><a th:href="*{id} != null ? @{/topic(id=${form.id})} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
+            <td><input type="submit" th:value="*{id} == null ? 'Create' : 'Save'" value="Save"/></td>
+        </tr>
+    </table>
+</form>
+
+<div id="dialog-confirm" hidden="hidden">
+    <p>
+        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="dialog-text"></span>
+    </p>
+</div>
+
+</body>
+</html>

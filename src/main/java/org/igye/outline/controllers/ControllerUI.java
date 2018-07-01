@@ -10,9 +10,7 @@ import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.*;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
+import org.igye.outline.model.*;
 import org.igye.outline.selection.Selection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,9 +43,11 @@ public class ControllerUI {
     public static final String REMOVE_USER = "removeUser";
     public static final String LOGIN = "login";
     public static final String USERS = "users";
+    public static final String SYNOPSIS = "synopsis";
+    private static final String CAN_T_DETERMINE_TYPE_OF_TOPIC = "Can't determine type of topic.";
 
     @Value("${topic.images.location}")
-    private String topicImagesLocation;
+    private String imagesLocation;
 
     @Value("${app.version}")
     private String version;
@@ -165,11 +165,70 @@ public class ControllerUI {
         }
     }
 
-    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
+    private void prepareModelForEditParagraphOrTopic(Model model, HasIdToRedirectTo form) {
         OutlineUtils.assertNotNull(form.getIdToRedirectTo());
         initModel(model);
         addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), sessionData.getUser()));
         model.addAttribute("form", form);
+    }
+
+    @GetMapping("editTopic")
+    public String editTopic(Model model,
+                                @RequestParam Optional<String> topicType,
+                                @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) {
+        if (parentId.isPresent() && !id.isPresent()) {
+            if (SYNOPSIS.equals(topicType.get())) {
+                return editSynopsisTopic(model, parentId, Optional.empty());
+            } else {
+                throw new OutlineException(CAN_T_DETERMINE_TYPE_OF_TOPIC);
+            }
+        } else if (!parentId.isPresent() && id.isPresent()) {
+            Topic topic = dao.loadTopicById(id.get(), sessionData.getUser());
+            if (topic instanceof SynopsisTopic) {
+                return editSynopsisTopic(
+                        model,
+                        parentId,
+                        Optional.of((SynopsisTopic) dao.loadSynopsisTopicByIdWithContent(
+                                topic.getId(),
+                                sessionData.getUser()
+                        ))
+                );
+            } else {
+                throw new OutlineException(CAN_T_DETERMINE_TYPE_OF_TOPIC);
+            }
+        } else {
+            throw new OutlineException(CAN_T_DETERMINE_TYPE_OF_TOPIC);
+        }
+    }
+
+    protected String editSynopsisTopic(Model model,
+                                       Optional<UUID> parentId, Optional<SynopsisTopic> topicOpt) {
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        parentId.ifPresent(parId -> form.setParentId(parId));
+        topicOpt.ifPresent(topic -> {
+            form.setId(topic.getId());
+            form.setName(topic.getName());
+            form.setContent(
+                    topic.getContents().stream().map(content -> {
+                        if (content instanceof Image) {
+                            return ContentForForm.builder().type(ContentForForm.IMAGE).id(content.getId()).build();
+                        } else if (content instanceof Text) {
+                            return ContentForForm.builder().type(ContentForForm.TEXT).id(content.getId())
+                                    .text(((Text)content).getText()).build();
+                        } else {
+                            throw new OutlineException("Can't determine type of content.");
+                        }
+                    }).collect(Collectors.toList())
+            );
+        });
+        prepareModelForEditParagraphOrTopic(model, form);
+        return "editSynopsisTopic";
+    }
+
+    @PostMapping("editSynopsisTopicPost")
+    public String editSynopsisTopicPost(Model model, EditSynopsisTopicForm form,
+                                    HttpServletResponse response) throws IOException {
+        return NOTHING;
     }
 
     @GetMapping(EDIT_PARAGRAPH)
@@ -183,7 +242,7 @@ public class ControllerUI {
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
         }
-        prepareModelForEditParagraph(model, form);
+        prepareModelForEditParagraphOrTopic(model, form);
         return EDIT_PARAGRAPH;
     }
 
@@ -191,7 +250,7 @@ public class ControllerUI {
     public String editParagraphPost(Model model, EditParagraphForm form,
                                   HttpServletResponse response) throws IOException {
         if (StringUtils.isBlank(form.getName())) {
-            prepareModelForEditParagraph(model, form);
+            prepareModelForEditParagraphOrTopic(model, form);
             return redirect(EDIT_PARAGRAPH);
         } else {
             if (form.getId() != null) {
@@ -249,7 +308,7 @@ public class ControllerUI {
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
                         Optional<Boolean> showImages) {
         initModel(model);
-        Topic topic = dao.loadTopicById(id, sessionData.getUser());
+        Topic topic = dao.loadSynopsisTopicByIdWithContent(id, sessionData.getUser());
         model.addAttribute("topic", topic);
         if (checkNext.orElse(false)) {
             Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
@@ -321,15 +380,15 @@ public class ControllerUI {
         return redirect(redirectUri);
     }
 
-    @GetMapping("topicImg/{topicId}/{imgName}")
+    @GetMapping("topicImage/{imgId}")
     @ResponseBody
-    public byte[] topicImg(@PathVariable UUID topicId, @PathVariable String imgName) {
-        Topic topic = dao.loadTopicById(topicId, sessionData.getUser());
-        if (!topic.getImages().contains(imgName)) {
-            throw new OutlineException("!topic.getImages().contains(imgName)");
-        }
+    public byte[] topicImage(@PathVariable UUID imgId) {
+        Image image = dao.loadImageById(imgId, sessionData.getUser());
+        String idStr = image.getId().toString();
         try {
-            return FileUtils.readFileToByteArray(new File(topicImagesLocation + "/" + topicId + "/" + imgName));
+            return FileUtils.readFileToByteArray(
+                    new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr)
+            );
         } catch (IOException e) {
             throw new OutlineException(e);
         }

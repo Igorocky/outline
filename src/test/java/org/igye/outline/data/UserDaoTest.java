@@ -8,25 +8,23 @@ import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.igye.outline.TestUtils.notImplemented;
 import static org.igye.outline.data.UserDao.ADMIN_ROLE_NAME;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = UserDao.class)
-@PropertySource("test.properties")
+@TestPropertySource("/test.properties")
 public class UserDaoTest extends AbstractHibernateTest {
     @Autowired
     private UserDao dao;
@@ -244,6 +242,23 @@ public class UserDaoTest extends AbstractHibernateTest {
                 )
         );
         Assert.assertEquals(paragraphsAfterRemoval, ImmutableSet.of("par3", "par4"));
+    }
+
+    @Test(expected = OutlineException.class)
+    public void it_should_be_impossible_for_a_user_to_delete_himself() {
+        //given
+        User userToBeRemoved = transactionTemplate.execute(status ->
+                (User) new TestDataBuilder(getCurrentSession())
+                        .user("admin").role(ADMIN_ROLE_NAME).save().children(b -> b
+                                .paragraph("par3").tag("par3-tag")
+                        ).getResults().get(0)
+        );
+
+        //when
+        dao.removeUser(userToBeRemoved, userToBeRemoved.getId());
+
+        //then
+        //an exception should be thrown
     }
 
     private User prepareDataForCreatingNewUser() {
