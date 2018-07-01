@@ -13,3 +13,23 @@ function doPost(params) {
         success: params.success
     });
 }
+
+function submitSelection(actionType, selectedParagraphIds, selectedTopicIds, onSuccess) {
+    let selection = {
+        actionType: actionType,
+        selections: _.map(selectedParagraphIds, idToSelectionPart('PARAGRAPH')).concat(
+            _.map(selectedTopicIds, idToSelectionPart('TOPIC'))
+        )
+    };
+    doPost({
+        url: "/select",
+        data: selection,
+        success: onSuccess
+    });
+}
+
+function idToSelectionPart(objectType) {
+    return function (id) {
+        return {objectType: objectType, selectedId: id}
+    }
+}

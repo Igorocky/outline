@@ -44,7 +44,6 @@
             $( ".selection-checkbox-topic" ).show();
             $( "#selection-mode-btn" ).hide();
             $( "#cancel-selection-btn" ).show();
-            $( "#copy-btn" ).show();
             $( "#cut-btn" ).show();
         }
         function cancelSelection() {
@@ -52,26 +51,33 @@
             $( ".selection-checkbox-topic" ).hide();
             $( "#selection-mode-btn" ).show();
             $( "#cancel-selection-btn" ).hide();
-            $( "#copy-btn" ).hide();
             $( "#cut-btn" ).hide();
         }
-        function submitSelection(action) {
+        function idGetter(elem) {
+            return elem.id;
+        }
+        function doSelection(actionType) {
             let selectedParagraphs = _.filter($(".selection-checkbox-par").toArray(), function (elem) {return elem.checked});
             let selectedTopics = _.filter($(".selection-checkbox-topic").toArray(), function (elem) {return elem.checked});
-            let selection = {
-                selectionAct: action,
-                selections: _.map(selectedParagraphs, function (elem) {
-                    return {selectionType: 'PARAGRAPH', selectedId: elem.id}
-                }).concat(
-                    _.map(selectedTopics, function (elem) {
-                        return {selectionType: 'TOPIC', selectedId: elem.id}
-                    })
-                )
-            };
-            alert(JSON.stringify(selection));
-            _.each(selectedParagraphs, function (elem) {elem.checked = false})
-            _.each(selectedTopics, function (elem) {elem.checked = false})
-            cancelSelection();
+            submitSelection(
+                actionType,
+                _.map(selectedParagraphs, idGetter),
+                _.map(selectedTopics, idGetter),
+                function () {
+                    _.each(selectedParagraphs, function (elem) {elem.checked = false});
+                    _.each(selectedTopics, function (elem) {elem.checked = false});
+                    cancelSelection();
+                }
+            )
+        }
+        function doPaste(destParId) {
+            doPost({
+                url: "/performActionOnSelectedObjects",
+                data: destParId,
+                success: function () {
+                    window.location.reload();
+                }
+            });
         }
     </script>
 </head>
@@ -86,8 +92,8 @@
 
     <span id="selection-mode-btn"><a href="#" onclick="selectionMode()">Select items</a>&nbsp;</span>
     <span id="cancel-selection-btn" hidden="hidden"><a href="#"  onclick="cancelSelection()">Cancel selection</a>&nbsp;</span>
-    <span id="cut-btn" hidden="hidden"><a href="#" onclick="submitSelection('CUT')">CUT</a>&nbsp;</span>
-    <span id="copy-btn" hidden="hidden"><a href="#" onclick="submitSelection('COPY')">COPY</a>&nbsp;</span>
+    <span id="cut-btn" hidden="hidden"><a href="#" onclick="doSelection('MOVE')">Cut</a>&nbsp;</span>
+    <span th:if="${hasWhatToPaste}" ><a href="#" th:onclick="'doPaste(\'' + ${paragraph.id} + '\')'">Paste</a>&nbsp;</span>
 </div>
 
 <div th:replace="path :: path"/>

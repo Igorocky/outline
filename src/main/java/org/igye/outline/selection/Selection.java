@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Selection {
-    private SelectionAct selectionAct;
+    private ActionType actionType;
     private List<SelectionPart> selections;
 }

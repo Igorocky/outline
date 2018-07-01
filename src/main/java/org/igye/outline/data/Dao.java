@@ -11,6 +11,10 @@ import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
+import org.igye.outline.selection.ActionType;
+import org.igye.outline.selection.ObjectType;
+import org.igye.outline.selection.Selection;
+import org.igye.outline.selection.SelectionPart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,6 +107,23 @@ public class Dao {
         Hibernate.initialize(parToMoveTo.getTopics());
         topicToMove.getParagraph().getTopics().remove(topicToMove);
         parToMoveTo.addTopic(topicToMove);
+    }
+
+    @Transactional
+    public void performActionOnSelectedObjects(User owner, Selection selection, UUID destParId) {
+        if (ActionType.MOVE.equals(selection.getActionType())) {
+            for (SelectionPart selectionPart : selection.getSelections()) {
+                if (ObjectType.PARAGRAPH.equals(selectionPart.getObjectType())) {
+                    moveParagraph(owner, selectionPart.getSelectedId(), destParId);
+                } else if (ObjectType.TOPIC.equals(selectionPart.getObjectType())) {
+                    moveTopic(owner, selectionPart.getSelectedId(), destParId);
+                } else {
+                    throw new OutlineException("Object type '" + selectionPart.getObjectType() + "' is not supported.");
+                }
+            }
+        } else {
+            throw new OutlineException("Action '" + selection.getActionType() + "' is not supported.");
+        }
     }
 
     @Transactional

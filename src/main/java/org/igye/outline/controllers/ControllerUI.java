@@ -13,6 +13,7 @@ import org.igye.outline.htmlforms.*;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
+import org.igye.outline.selection.Selection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.igye.outline.common.OutlineUtils.NOTHING;
 import static org.igye.outline.common.OutlineUtils.hashPwd;
 
 @Controller
@@ -220,11 +222,25 @@ public class ControllerUI {
         return redirect(PARAGRAPH);
     }
 
+    @PostMapping("select")
+    public String select(@RequestBody Selection request) {
+        sessionData.setSelection(request);
+        return NOTHING;
+    }
+
+    @PostMapping("performActionOnSelectedObjects")
+    public String performActionOnSelectedObjects(@RequestBody UUID destParId) {
+        dao.performActionOnSelectedObjects(sessionData.getUser(), sessionData.getSelection(), destParId);
+        sessionData.setSelection(null);
+        return NOTHING;
+    }
+
     @GetMapping(PARAGRAPH)
     public String paragraph(Model model, @RequestParam Optional<UUID> id) {
         initModel(model);
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         model.addAttribute("paragraph", paragraph);
+        model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
         addPath(model, paragraph);
         return PARAGRAPH;
     }

@@ -1,5 +1,5 @@
 package org.igye.outline.selection;
 
-public enum SelectionType {
+public enum ObjectType {
     PARAGRAPH, TOPIC
 }

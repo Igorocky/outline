@@ -8,6 +8,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class SelectionPart {
-    private SelectionType selectionType;
+    private ObjectType objectType;
     private UUID selectedId;
 }
