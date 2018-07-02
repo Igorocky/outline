@@ -1,5 +1,7 @@
 package org.igye.outline.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +64,8 @@ public class ControllerUI {
     private Dao dao;
     @Autowired
     private UserDao userDao;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @GetMapping(LOGIN)
     public String login(Model model) {
@@ -167,7 +171,7 @@ public class ControllerUI {
         }
     }
 
-    private void prepareModelForEditParagraphOrTopic(Model model, HasIdToRedirectTo form) {
+    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
         OutlineUtils.assertNotNull(form.getIdToRedirectTo());
         initModel(model);
         addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), sessionData.getUser()));
@@ -177,7 +181,7 @@ public class ControllerUI {
     @GetMapping("editTopic")
     public String editTopic(Model model,
                                 @RequestParam Optional<String> topicType,
-                                @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) {
+                                @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) throws JsonProcessingException {
         if (parentId.isPresent() && !id.isPresent()) {
             if (SYNOPSIS.equals(topicType.get())) {
                 return editSynopsisTopic(model, parentId, Optional.empty());
@@ -204,9 +208,12 @@ public class ControllerUI {
     }
 
     protected String editSynopsisTopic(Model model,
-                                       Optional<UUID> parentId, Optional<SynopsisTopic> topicOpt) {
+                                       Optional<UUID> parentId, Optional<SynopsisTopic> topicOpt) throws JsonProcessingException {
         EditSynopsisTopicForm form = new EditSynopsisTopicForm();
-        parentId.ifPresent(parId -> form.setParentId(parId));
+        parentId.ifPresent(parId -> {
+            form.setParentId(parId);
+            addPath(model, dao.loadParagraphById(Optional.of(parId), sessionData.getUser()));
+        });
         topicOpt.ifPresent(topic -> {
             form.setId(topic.getId());
             form.setName(topic.getName());
@@ -222,8 +229,11 @@ public class ControllerUI {
                         }
                     }).collect(Collectors.toList())
             );
+            addPath(model, dao.loadParagraphById(Optional.of(topic.getParagraph().getId()), sessionData.getUser()));
         });
-        prepareModelForEditParagraphOrTopic(model, form);
+        initModel(model);
+        model.addAttribute("form", form);
+        model.addAttribute("formDataJson", mapper.writeValueAsString(form));
         return "editSynopsisTopic";
     }
 
@@ -234,7 +244,7 @@ public class ControllerUI {
         if (form.getParentId() != null && form.getId() == null) {
             return dao.createSynopsisTopic(sessionData.getUser(), form);
         } else {
-            throw new OperationNotSupportedException("ddd");
+            throw new OperationNotSupportedException("editSynopsisTopicPost");
         }
     }
 
@@ -262,7 +272,7 @@ public class ControllerUI {
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
         }
-        prepareModelForEditParagraphOrTopic(model, form);
+        prepareModelForEditParagraph(model, form);
         return EDIT_PARAGRAPH;
     }
 
@@ -270,7 +280,7 @@ public class ControllerUI {
     public String editParagraphPost(Model model, EditParagraphForm form,
                                   HttpServletResponse response) throws IOException {
         if (StringUtils.isBlank(form.getName())) {
-            prepareModelForEditParagraphOrTopic(model, form);
+            prepareModelForEditParagraph(model, form);
             return redirect(EDIT_PARAGRAPH);
         } else {
             if (form.getId() != null) {

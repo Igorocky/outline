@@ -6,6 +6,7 @@
 
 <div th:text="${topic.name}"/>
 <div>
+    <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit</a>&nbsp;
     <a th:unless="${isFirstTopic}" th:href="@{/prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>
     <span th:if="${isFirstTopic}">This is the first topic.</span>
     <a th:unless="${isLastTopic}" th:href="@{/nextTopic(id=${topic.id})}">Next&gt;&gt;</a>

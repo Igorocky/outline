@@ -11,6 +11,22 @@
     <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/functions.js"></script>
+    <script th:inline="javascript">
+        $( function() {
+            /*<![CDATA[*/
+            var formDataJson = JSON.parse(/*[[${formDataJson}]]*/);
+            /*]]>*/
+            _.each(formDataJson.content, function (content) {
+                if (content.type == "IMAGE") {
+                    addImage(content.id);
+                } else if (content.type == "TEXT") {
+                    addText(content.id, content.text);
+                } else {
+                    alert("Can't determine content type - '" + content.type + "'")
+                }
+            });
+        } );
+    </script>
     <script type="text/javascript">
         $( function() {
             $( "#dialog-confirm" ).dialog({
@@ -41,8 +57,11 @@
                 '            <td>' + rowHtml + '</td>\n' +
                 '        </tr>');
         }
-        function addTextArea() {
-            appendRow('<textarea></textarea>');
+        function addText(id, text) {
+            appendRow('<textarea id="' + id + '"></textarea>');
+            if (id != '') {
+                $("#" + id).text(text);
+            }
         }
         function addImage(imgId) {
             appendRow('<img id="' + imgId + '" src="/topicImage/' + imgId + '" />');
@@ -121,15 +140,16 @@
             doPost({
                 url: "/editSynopsisTopicPost",
                 data: request,
-                success: function (data) {
-                    window.location = "/topic?id=" + data;
+                success: function (topicId) {
+                    window.location = "/topic?id=" + topicId + "&showImages=true";
                 }
             });
         }
     </script>
 </head>
 <body>
-<a href="#" onclick="addTextArea()">Add text</a>&nbsp;
+<div th:replace="path :: path"/>
+<a href="#" onclick="addText('', null)">Add text</a>&nbsp;
 <form th:object="${form}">
     <input type="hidden" th:field="*{parentId}"/>
     <input type="hidden" th:field="*{id}"/>

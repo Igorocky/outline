@@ -8,18 +8,9 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class EditSynopsisTopicForm implements HasIdToRedirectTo {
+public class EditSynopsisTopicForm {
     private UUID parentId;
     private UUID id;
     private String name;
     private List<ContentForForm> content;
-
-    @Override
-    public UUID getIdToRedirectTo() {
-        if (parentId != null) {
-            return parentId;
-        } else {
-            return id;
-        }
-    }
 }

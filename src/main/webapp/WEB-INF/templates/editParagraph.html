@@ -13,7 +13,7 @@
     </script>
 </head>
 <body>
-
+<div th:replace="path :: path"/>
 <form th:action="${(#mvc.url('CUI#editParagraphPost')).build()}" th:object="${form}" method="post">
     <input type="hidden" th:field="*{parentId}"/>
     <input type="hidden" th:field="*{id}"/>

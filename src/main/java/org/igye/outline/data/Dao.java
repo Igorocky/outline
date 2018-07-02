@@ -87,6 +87,14 @@ public class Dao {
         updates.accept(paragraph);
     }
 
+//    @Transactional
+//    public void updateTopic(User owner, UUID id, EditSynopsisTopicForm form) {
+//        SynopsisTopic topic = loadSynopsisTopicByIdWithContent(id, owner);
+//        topic.setName(form.getName());
+//        List<Content> oldContents = new LinkedList<>(topic.getContents());
+//        updates.accept(paragraph);
+//    }
+
     @Transactional
     public void reorderParagraphChildren(User owner, ReorderParagraphChildren request) {
         Session session = sessionFactory.getCurrentSession();
@@ -185,7 +193,7 @@ public class Dao {
     }
 
     @Transactional
-    public Topic loadSynopsisTopicByIdWithContent(UUID id, User owner) {
+    public SynopsisTopic loadSynopsisTopicByIdWithContent(UUID id, User owner) {
         SynopsisTopic topic = (SynopsisTopic) loadTopicById(id, owner);
         Hibernate.initialize(topic.getContents());
         return topic;

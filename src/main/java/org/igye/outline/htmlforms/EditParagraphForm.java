@@ -7,12 +7,11 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class EditParagraphForm implements HasIdToRedirectTo {
+public class EditParagraphForm {
     private UUID parentId;
     private UUID id;
     private String name;
 
-    @Override
     public UUID getIdToRedirectTo() {
         if (parentId != null) {
             return parentId;
