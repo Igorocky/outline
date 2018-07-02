@@ -1180,13 +1180,18 @@ public class DaoTest extends AbstractHibernateTest {
             List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
             assertEquals(2, p1Children.size());
             assertEquals("T2", p1Children.get(0).getName());
+
             SynopsisTopic st = (SynopsisTopic) p1Children.get(1);
             assertEquals(newTopicId, st.getId());
             assertEquals("ST", st.getName());
             assertEquals(2, st.getContents().size());
+
             assertEquals("ttt1", ((Text)st.getContents().get(0)).getText());
+            assertEquals(owner.getId(), st.getContents().get(0).getOwner().getId());
+
             assertTrue(st.getContents().get(1) instanceof Image);
             assertEquals(imgId[0], st.getContents().get(1).getId());
+            assertEquals(owner.getId(), st.getContents().get(1).getOwner().getId());
 
             return null;
         });

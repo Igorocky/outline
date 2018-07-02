@@ -46,9 +46,11 @@ public class Dao {
     @Transactional
     public UUID createSynopsisTopic(User requestor, EditSynopsisTopicForm request) {
         Session session = sessionFactory.getCurrentSession();
+        User owner = session.load(User.class, requestor.getId());
         Paragraph par = loadParagraphByNotNullId(request.getParentId(), requestor);
         SynopsisTopic topic = new SynopsisTopic();
         topic.setName(request.getName());
+        topic.setOwner(owner);
         request.getContent().stream().forEach(contentForForm -> {
             if (ContentForForm.TEXT.equals(contentForForm.getType())) {
                 Text text = new Text();

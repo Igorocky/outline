@@ -17,8 +17,10 @@
     <a th:if="${showImages}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
 </div>
 
-<div th:if="${showImages}" th:each="imgName : ${topic.images}">
-    <img th:src="@{/topicImg/{topicId}/{imgName}(topicId=${topic.id},imgName=${imgName})}">
+<div th:if="${showImages}" th:each="content : ${topic.contents}">
+    <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
+         th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
+    <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>
 </div>
 
 </body>
