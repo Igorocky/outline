@@ -20,20 +20,32 @@
                 modal: true,
                 autoOpen: false
             });
+            document.onpaste = function(event){
+                uploadImage(extractFileFromEvent(event), function (imgId) {
+                    console.log("imgId = " + JSON.stringify(imgId));
+                    addImage(imgId);
+                })
+            };
         } );
         focusOnLoad('#name');
         var order = 1000;
         function nextOrder() {
             return order++;
         }
-        function addTextArea() {
+        function appendRow(rowHtml) {
             let order = nextOrder();
             $("form table tr:nth-last-child(2)").after('<tr contentOrder="' + order + '">\n' +
                 '            <td><a href="#" onclick="up(this, \'' + order + '\')">Up</a>' +
                 '&nbsp;<a href="#" onclick="down(this, \'' + order + '\')">Down</a>' +
                 '&nbsp;<a href="#" onclick="remove(this, \'' + order + '\')">Delete</a></td>\n' +
-                '            <td><textarea></textarea></td>\n' +
+                '            <td>' + rowHtml + '</td>\n' +
                 '        </tr>');
+        }
+        function addTextArea() {
+            appendRow('<textarea></textarea>');
+        }
+        function addImage(imgId) {
+            appendRow('<img id="' + imgId + '" src="/topicImage/' + imgId + '" />');
         }
         function allContents() {
             return $("form table tr[contentOrder]").toArray();

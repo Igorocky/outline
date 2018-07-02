@@ -9,7 +9,7 @@ alter table SynopsisTopic add constraint FKl1pwxce082ghp0jdm9yhdlxam foreign key
 create table Content (
        id varchar(255) not null,
         owner_id varchar(255),
-        topic_id varchar(255) not null,
+        topic_id varchar(255),
         contents_ORDER integer,
         primary key (id)
     );

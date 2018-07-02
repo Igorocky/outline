@@ -47,3 +47,35 @@ function indexOf(list, predicate) {
         {i:0, r: null}
     ).r;
 }
+
+function extractFileFromEvent(event) {
+    // use event.originalEvent.clipboard for newer chrome versions
+    var items = (event.clipboardData  || event.originalEvent.clipboardData).items;
+    // console.log(JSON.stringify(items)); // will give you the mime types
+    // find pasted image among pasted items
+    var blob = null;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") === 0) {
+            blob = items[i].getAsFile();
+        }
+    }
+    return blob;
+}
+
+function uploadImage(file, onSuccess) {
+    let fd = new FormData();
+    fd.append("file", file);
+    $.ajax({
+        type: "POST",
+        url: "/uploadImage",
+        data: fd,
+        // contentType: "multipart/form-data",
+        contentType: false,
+        cache: false,
+        dataType: 'json',
+        processData: false,
+        success: function (data) {
+            onSuccess(data);
+        }
+    });
+}

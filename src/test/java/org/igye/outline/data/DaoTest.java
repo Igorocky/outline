@@ -1193,6 +1193,29 @@ public class DaoTest extends AbstractHibernateTest {
 
     }
 
+    @Test
+    public void createImage_should_create_new_image() {
+        //given
+        User user = transactionTemplate.execute(status -> {
+            User usr = new User();
+            usr.setName("uuu");
+            usr.setPassword("ddddd");
+            getCurrentSession().save(usr);
+            return usr;
+        });
+
+        //when
+        UUID imgId = dao.createImage(user);
+
+        //then
+        Image img = transactionTemplate.execute(status -> {
+            Image im = getCurrentSession().load(Image.class, imgId);
+            im.getOwner();
+            return im;
+        });
+        Assert.assertEquals(user.getId(), img.getOwner().getId());
+    }
+
     private List<Object> prepareDataForReordering() {
         return transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())

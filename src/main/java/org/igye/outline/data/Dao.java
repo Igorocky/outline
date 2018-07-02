@@ -36,6 +36,14 @@ public class Dao {
     private SessionFactory sessionFactory;
 
     @Transactional
+    public UUID createImage(User requestor) {
+        Session session = sessionFactory.getCurrentSession();
+        Image img = new Image();
+        img.setOwner(session.load(User.class, requestor.getId()));
+        return (UUID) session.save(img);
+    }
+
+    @Transactional
     public UUID createSynopsisTopic(User requestor, EditSynopsisTopicForm request) {
         Session session = sessionFactory.getCurrentSession();
         Paragraph par = loadParagraphByNotNullId(request.getParentId(), requestor);

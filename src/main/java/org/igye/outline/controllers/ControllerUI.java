@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.naming.OperationNotSupportedException;
@@ -237,6 +238,19 @@ public class ControllerUI {
         }
     }
 
+    @PostMapping("uploadImage")
+    @ResponseBody
+    public UUID uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        UUID imgId = dao.createImage(sessionData.getUser());
+        File imgFile = getImgFile(imgId);
+        File parentDir = imgFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+        file.transferTo(imgFile);
+        return imgId;
+    }
+
     @GetMapping(EDIT_PARAGRAPH)
     public String editParagraph(Model model,
                                 @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) {
@@ -390,11 +404,8 @@ public class ControllerUI {
     @ResponseBody
     public byte[] topicImage(@PathVariable UUID imgId) {
         Image image = dao.loadImageById(imgId, sessionData.getUser());
-        String idStr = image.getId().toString();
         try {
-            return FileUtils.readFileToByteArray(
-                    new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr)
-            );
+            return FileUtils.readFileToByteArray(getImgFile(image.getId()));
         } catch (IOException e) {
             throw new OutlineException(e);
         }
@@ -411,6 +422,11 @@ public class ControllerUI {
     @ResponseBody
     public String version() {
         return version;
+    }
+
+    private File getImgFile(UUID imgId) {
+        String idStr = imgId.toString();
+        return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
     }
 
     private void initModel(Model model) {
