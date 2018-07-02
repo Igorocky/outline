@@ -110,7 +110,7 @@
     <ul id="topics-list" >
         <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
             <span>-
-                <input class="selection-checkbox-topic" type="checkbox" hidden="hidden" th:id="${childPar.id}">
+                <input class="selection-checkbox-topic" type="checkbox" hidden="hidden" th:id="${topic.id}">
                 <a th:href="@{topic(id=${topic.id})}" th:text="${topic.name}"></a>
             </span>
         </li>
