@@ -2,12 +2,13 @@ package org.igye.outline.data;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
 import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.ContentForForm;
+import org.igye.outline.htmlforms.EditSynopsisTopicForm;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
+import org.igye.outline.model.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,15 +18,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.NoResultException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
+import static org.igye.outline.htmlforms.ContentForForm.IMAGE;
+import static org.igye.outline.htmlforms.ContentForForm.TEXT;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = Dao.class)
@@ -1131,6 +1130,64 @@ public class DaoTest extends AbstractHibernateTest {
             assertEquals(2, p5Children.size());
             assertEquals("T6", p5Children.get(0).getName());
             assertEquals("T3", p5Children.get(1).getName());
+            return null;
+        });
+
+    }
+
+    @Test
+    public void createSynopsisTopic_should_create_new_topic() {
+        //given
+        List<Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save().children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").save().children(b2 -> b2
+                                        .topic("T2")
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(0);
+        Paragraph p1 = (Paragraph) saved.get(1);
+        final UUID[] imgId = new UUID[1];
+        transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            Image img = new Image();
+            img.setOwner(session.load(User.class, owner.getId()));
+            imgId[0] = (UUID) session.save(img);
+            return null;
+        });
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(1, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            return null;
+        });
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setParentId(p1.getId());
+        form.setName("ST");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(TEXT).text("ttt1").build(),
+                ContentForForm.builder().type(IMAGE).id(imgId[0]).build()
+        ));
+
+        //when
+        UUID newTopicId = dao.createSynopsisTopic(owner, form);
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
+            assertEquals(2, p1Children.size());
+            assertEquals("T2", p1Children.get(0).getName());
+            SynopsisTopic st = (SynopsisTopic) p1Children.get(1);
+            assertEquals(newTopicId, st.getId());
+            assertEquals("ST", st.getName());
+            assertEquals(2, st.getContents().size());
+            assertEquals("ttt1", ((Text)st.getContents().get(0)).getText());
+            assertTrue(st.getContents().get(1) instanceof Image);
+            assertEquals(imgId[0], st.getContents().get(1).getId());
+
             return null;
         });
 

@@ -35,8 +35,11 @@
                 '            <td><textarea></textarea></td>\n' +
                 '        </tr>');
         }
+        function allContents() {
+            return $("form table tr[contentOrder]").toArray();
+        }
         function initialDataForMoving(order) {
-            let contents_ = $("form table tr[contentOrder]").toArray();
+            let contents_ = allContents();
             return {
                 contents: contents_,
                 idx: indexOf(contents_, function(elem){return elem.getAttribute('contentOrder') == order;})
@@ -77,11 +80,45 @@
             });
             $( "#dialog-confirm" ).dialog('open');
         }
+        function contentForForm(type, id, text) {
+            return {
+                type:type,
+                id:id,
+                text:text
+            };
+        }
+        function submitForm(parentId, id) {
+            let request = {
+                parentId: parentId == "null" ? null : parentId,
+                id: id == "null" ? null : id,
+                name: $("#name").val(),
+                content: _.map(allContents(), function (elem) {
+                    let textArr = elem.getElementsByTagName("textarea");
+                    if (_.size(textArr) > 0) {
+                        return contentForForm("TEXT", textArr[0].getAttribute('id'), textArr[0].value);
+                    } else {
+                        let img = elem.getElementsByTagName("img");
+                        if (_.size(img) > 0) {
+                            return contentForForm("IMAGE", img[0].getAttribute('id'), null);
+                        } else {
+                            throw "Can't determine type of elem.";
+                        }
+                    }
+                })
+            };
+            doPost({
+                url: "/editSynopsisTopicPost",
+                data: request,
+                success: function (data) {
+                    window.location = "/topic?id=" + data;
+                }
+            });
+        }
     </script>
 </head>
 <body>
 <a href="#" onclick="addTextArea()">Add text</a>&nbsp;
-<form th:action="${(#mvc.url('CUI#editSynopsisTopicPost')).build()}" th:object="${form}" method="post">
+<form th:object="${form}">
     <input type="hidden" th:field="*{parentId}"/>
     <input type="hidden" th:field="*{id}"/>
     <table>
@@ -95,7 +132,8 @@
         <!--</tr>-->
         <tr>
             <td><a th:href="*{id} != null ? @{/topic(id=${form.id})} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
-            <td><input type="submit" th:value="*{id} == null ? 'Create' : 'Save'" value="Save"/></td>
+            <td><a href="#" th:value="*{id} == null ? 'Create' : 'Save'"
+                   th:onclick="'submitForm(\'' + *{parentId} + '\', \'' + *{id} + '\')'">Save</a></td>
         </tr>
     </table>
 </form>

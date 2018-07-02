@@ -16,6 +16,7 @@ public class TestDataBuilder {
 
     public TestDataBuilder(Session session) {
         this.session = session;
+        session.createQuery("delete from Content").executeUpdate();
         session.createQuery("delete from Topic").executeUpdate();
         session.createQuery("delete from Paragraph").executeUpdate();
         session.createQuery("delete from User").executeUpdate();

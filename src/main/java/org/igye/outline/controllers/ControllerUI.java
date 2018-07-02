@@ -19,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -226,9 +227,14 @@ public class ControllerUI {
     }
 
     @PostMapping("editSynopsisTopicPost")
-    public String editSynopsisTopicPost(Model model, EditSynopsisTopicForm form,
-                                    HttpServletResponse response) throws IOException {
-        return NOTHING;
+    @ResponseBody
+    public UUID editSynopsisTopicPost(Model model, @RequestBody EditSynopsisTopicForm form,
+                                    HttpServletResponse response) throws IOException, OperationNotSupportedException {
+        if (form.getParentId() != null && form.getId() == null) {
+            return dao.createSynopsisTopic(sessionData.getUser(), form);
+        } else {
+            throw new OperationNotSupportedException("ddd");
+        }
     }
 
     @GetMapping(EDIT_PARAGRAPH)

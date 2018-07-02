@@ -7,6 +7,8 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.ContentForForm;
+import org.igye.outline.htmlforms.EditSynopsisTopicForm;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.model.*;
 import org.igye.outline.selection.ActionType;
@@ -32,6 +34,33 @@ public class Dao {
 
     @Autowired
     private SessionFactory sessionFactory;
+
+    @Transactional
+    public UUID createSynopsisTopic(User requestor, EditSynopsisTopicForm request) {
+        Session session = sessionFactory.getCurrentSession();
+        Paragraph par = loadParagraphByNotNullId(request.getParentId(), requestor);
+        SynopsisTopic topic = new SynopsisTopic();
+        topic.setName(request.getName());
+        request.getContent().stream().forEach(contentForForm -> {
+            if (ContentForForm.TEXT.equals(contentForForm.getType())) {
+                Text text = new Text();
+                text.setText(contentForForm.getText());
+                topic.addContent(text);
+            } else if (ContentForForm.IMAGE.equals(contentForForm.getType())) {
+                Image image = session.load(Image.class, contentForForm.getId());
+                if (!image.getOwner().getId().equals(requestor.getId())) {
+                    throw new OutlineException("!image.getOwner().getId().equals(request.getId())");
+                }
+                topic.addContent(image);
+            } else {
+                throw new OutlineException("Unexpected type of content - '" + contentForForm.getType() + "'");
+            }
+        });
+        topic.setParagraph(par);
+        UUID id = (UUID) session.save(topic);
+        par.addTopic(topic);
+        return id;
+    }
 
     @Transactional
     public void createParagraph(UUID parentId, String name) {
