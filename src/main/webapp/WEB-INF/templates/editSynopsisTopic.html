@@ -164,7 +164,7 @@
         <!--</tr>-->
         <tr>
             <td><a th:href="*{id} != null ? @{/topic(id=${form.id})} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
-            <td><a href="#" th:value="*{id} == null ? 'Create' : 'Save'"
+            <td><a href="#" th:text="*{id} == null ? 'Create' : 'Save'"
                    th:onclick="'submitForm(\'' + *{parentId} + '\', \'' + *{id} + '\')'">Save</a></td>
         </tr>
     </table>

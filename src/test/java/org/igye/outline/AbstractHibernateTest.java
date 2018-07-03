@@ -22,6 +22,15 @@ public class AbstractHibernateTest {
     public void beforeClass() {
         transactionTemplate = new TransactionTemplate(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            session.createQuery("delete from Content").executeUpdate();
+            session.createQuery("delete from Topic").executeUpdate();
+            session.createQuery("delete from Paragraph").executeUpdate();
+            session.createQuery("delete from User").executeUpdate();
+            session.createQuery("delete from Tag").executeUpdate();
+            return null;
+        });
     }
 
     protected Session getCurrentSession() {

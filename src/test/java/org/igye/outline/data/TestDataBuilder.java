@@ -16,11 +16,6 @@ public class TestDataBuilder {
 
     public TestDataBuilder(Session session) {
         this.session = session;
-        session.createQuery("delete from Content").executeUpdate();
-        session.createQuery("delete from Topic").executeUpdate();
-        session.createQuery("delete from Paragraph").executeUpdate();
-        session.createQuery("delete from User").executeUpdate();
-        session.createQuery("delete from Tag").executeUpdate();
     }
 
     public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph) {

@@ -28,4 +28,9 @@ public class SynopsisTopic extends Topic {
         content.setOwner(getOwner());
     }
 
+    public void detachContent(Content content) {
+        getContents().remove(content);
+        content.setTopic(null);
+    }
+
 }

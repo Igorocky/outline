@@ -1221,6 +1221,327 @@ public class DaoTest extends AbstractHibernateTest {
         Assert.assertEquals(user.getId(), img.getOwner().getId());
     }
 
+    @Test
+    public void updateSynopsisTopic_should_change_topic_name() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            return Arrays.asList(usr, topic);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+
+        Assert.assertEquals("top", topic.getName());
+        Assert.assertEquals(0, topic.getContents().size());
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Collections.emptyList());
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        Assert.assertEquals("T-o-P", updatedTopic.getName());
+        Assert.assertEquals(0, updatedTopic.getContents().size());
+    }
+
+    @Test
+    public void updateSynopsisTopic_should_not_change_unchanged_items() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            topic.addContent(new Image());
+            topic.addContent(Text.builder().text("t1").build());
+
+            return Arrays.asList(usr, topic);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+        Image i1 = (Image) topic.getContents().get(0);
+        Text t1 = (Text) topic.getContents().get(1);
+
+        Assert.assertEquals(2, topic.getContents().size());
+        Assert.assertEquals("t1", t1.getText());
+
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(ContentForForm.IMAGE).id(i1.getId()).build(),
+                ContentForForm.builder().type(ContentForForm.TEXT).id(t1.getId()).text(t1.getText()).build()
+        ));
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        List<Content> contents = updatedTopic.getContents();
+        Assert.assertEquals(2, contents.size());
+        Assert.assertEquals(i1.getId(), contents.get(0).getId());
+        Assert.assertEquals(t1.getId(), contents.get(1).getId());
+        Assert.assertEquals("t1", ((Text)contents.get(1)).getText());
+    }
+
+    @Test
+    public void updateSynopsisTopic_should_change_order_of_content() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            topic.addContent(new Image());
+            topic.addContent(Text.builder().text("t1").build());
+            topic.addContent(Text.builder().text("t2").build());
+            topic.addContent(new Image());
+
+            return Arrays.asList(usr, topic);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+        Image i1 = (Image) topic.getContents().get(0);
+        Text t1 = (Text) topic.getContents().get(1);
+        Text t2 = (Text) topic.getContents().get(2);
+        Image i2 = (Image) topic.getContents().get(3);
+
+        Assert.assertEquals(4, topic.getContents().size());
+        Assert.assertEquals("t1", t1.getText());
+        Assert.assertEquals("t2", t2.getText());
+
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(ContentForForm.TEXT).id(t2.getId()).text(t2.getText()).build(),
+                ContentForForm.builder().type(ContentForForm.IMAGE).id(i2.getId()).build(),
+                ContentForForm.builder().type(ContentForForm.IMAGE).id(i1.getId()).build(),
+                ContentForForm.builder().type(ContentForForm.TEXT).id(t1.getId()).text(t1.getText()).build()
+        ));
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        List<Content> contents = updatedTopic.getContents();
+        Assert.assertEquals(4, contents.size());
+        Assert.assertEquals(t2.getId(), contents.get(0).getId());
+        Assert.assertEquals("t2", ((Text)contents.get(0)).getText());
+        Assert.assertEquals(i2.getId(), contents.get(1).getId());
+        Assert.assertEquals(i1.getId(), contents.get(2).getId());
+        Assert.assertEquals(t1.getId(), contents.get(3).getId());
+        Assert.assertEquals("t1", ((Text)contents.get(3)).getText());
+    }
+
+    @Test
+    public void updateSynopsisTopic_should_update_text_of_text_content() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            topic.addContent(Text.builder().text("txt1").build());
+
+            UUID newImgId = dao.createImage(usr);
+
+            return Arrays.asList(usr, topic, newImgId);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+        Text text1 = (Text) topic.getContents().get(0);
+
+        Assert.assertEquals("txt1", text1.getText());
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text("new-text").build()
+        ));
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        List<Content> contents = updatedTopic.getContents();
+        Assert.assertEquals(1, contents.size());
+        Assert.assertEquals(text1.getId(), contents.get(0).getId());
+        Assert.assertEquals("new-text", ((Text)contents.get(0)).getText());
+    }
+
+    @Test
+    public void updateSynopsisTopic_should_remove_released_content_items_from_database() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            topic.addContent(new Image());
+            topic.addContent(Text.builder().text("txt1").build());
+            topic.addContent(Text.builder().text("txt2").build());
+
+            UUID newImgId = dao.createImage(usr);
+
+            return Arrays.asList(usr, topic, newImgId);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+        Image img1 = (Image) topic.getContents().get(0);
+        Text text1 = (Text) topic.getContents().get(1);
+        Text text2 = (Text) topic.getContents().get(2);
+
+        Assert.assertEquals(3, topic.getContents().size());
+        Assert.assertEquals("txt1", text1.getText());
+        Assert.assertEquals("txt2", text2.getText());
+
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text(text1.getText()).build()
+        ));
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        List<Content> contents = updatedTopic.getContents();
+        Assert.assertEquals(1, contents.size());
+        Assert.assertEquals(text1.getId(), contents.get(0).getId());
+        Assert.assertEquals("txt1", ((Text)contents.get(0)).getText());
+
+        transactionTemplate.execute(status -> {
+           Assert.assertNull(getCurrentSession().get(Image.class, img1.getId()));
+           Assert.assertNull(getCurrentSession().get(Text.class, text2.getId()));
+           return null;
+        });
+    }
+
+    @Test
+    public void updateSynopsisTopic_should_create_new_items_in_content() {
+        //given
+        List<Object> objs = transactionTemplate.execute(status -> {
+            Session session = getCurrentSession();
+            User usr = createUser(session);
+
+            Paragraph par = new Paragraph();
+            par.setName("par");
+            par.setOwner(usr);
+            session.persist(par);
+
+            SynopsisTopic topic = new SynopsisTopic();
+            topic.setName("top");
+            par.addTopic(topic);
+
+            topic.addContent(new Image());
+            topic.addContent(Text.builder().text("txt-no-change").build());
+
+            UUID newImgId = dao.createImage(usr);
+
+            return Arrays.asList(usr, topic, newImgId);
+        });
+        User user = (User) objs.get(0);
+        SynopsisTopic topic = (SynopsisTopic) objs.get(1);
+        UUID newImageId = (UUID) objs.get(2);
+        Image img1 = (Image) topic.getContents().get(0);
+        Text text1 = (Text) topic.getContents().get(1);
+
+        Assert.assertEquals("top", topic.getName());
+        Assert.assertEquals(2, topic.getContents().size());
+        Assert.assertEquals("txt-no-change", text1.getText());
+
+
+        EditSynopsisTopicForm form = new EditSynopsisTopicForm();
+        form.setId(topic.getId());
+        form.setName("T-o-P");
+        form.setContent(Arrays.asList(
+                ContentForForm.builder().type(ContentForForm.IMAGE).id(img1.getId()).build(),
+                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text(text1.getText()).build(),
+                ContentForForm.builder().type(ContentForForm.TEXT).text("text2").build(),
+                ContentForForm.builder().type(ContentForForm.IMAGE).id(newImageId).build()
+        ));
+
+        //when
+        dao.updateSynopsisTopic(user, form);
+
+        //then
+        SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);
+        Assert.assertEquals("T-o-P", updatedTopic.getName());
+        List<Content> contents = updatedTopic.getContents();
+        Assert.assertEquals(4, contents.size());
+        Assert.assertEquals(img1.getId(), contents.get(0).getId());
+        Assert.assertEquals(text1.getId(), contents.get(1).getId());
+        Assert.assertEquals("txt-no-change", ((Text)contents.get(1)).getText());
+        Assert.assertEquals("text2", ((Text)contents.get(2)).getText());
+        Assert.assertTrue(contents.get(3) instanceof Image);
+        Assert.assertEquals(newImageId, contents.get(3).getId());
+    }
+
+    private User createUser(Session session) {
+        User usr = new User();
+        usr.setName("uuu");
+        usr.setPassword("ddddd");
+        session.persist(usr);
+        return usr;
+    }
+
     private List<Object> prepareDataForReordering() {
         return transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())

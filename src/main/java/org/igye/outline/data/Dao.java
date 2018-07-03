@@ -87,13 +87,38 @@ public class Dao {
         updates.accept(paragraph);
     }
 
-//    @Transactional
-//    public void updateTopic(User owner, UUID id, EditSynopsisTopicForm form) {
-//        SynopsisTopic topic = loadSynopsisTopicByIdWithContent(id, owner);
-//        topic.setName(form.getName());
-//        List<Content> oldContents = new LinkedList<>(topic.getContents());
-//        updates.accept(paragraph);
-//    }
+    @Transactional
+    public void updateSynopsisTopic(User owner, EditSynopsisTopicForm form) {
+        Session session = sessionFactory.getCurrentSession();
+        SynopsisTopic topic = loadSynopsisTopicByIdWithContent(form.getId(), owner);
+        topic.setName(form.getName());
+        Map<UUID, Content> oldContents = topic.getContents().stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
+        oldContents.values().forEach(topic::detachContent);
+        for (ContentForForm content : form.getContent()) {
+            if (ContentForForm.TEXT.equals(content.getType())) {
+                if (content.getId() != null) {
+                    Text text = (Text) oldContents.remove(content.getId());
+                    text.setText(content.getText());
+                    topic.addContent(text);
+                } else {
+                    Text text = new Text();
+                    text.setText(content.getText());
+                    topic.addContent(text);
+                }
+            } else if (ContentForForm.IMAGE.equals(content.getType())) {
+                if (content.getId() != null) {
+                    UUID imgId = content.getId();
+                    Content oldImg = oldContents.remove(imgId);
+                    topic.addContent(oldImg != null ? oldImg : loadImageById(imgId, owner));
+                } else {
+                    throw new OutlineException("Unexpected condition:  image.getId() == null");
+                }
+            } else {
+                throw new OutlineException("Unexpected type of content - '" + content.getType() + "'");
+            }
+        }
+        oldContents.values().forEach(session::delete);
+    }
 
     @Transactional
     public void reorderParagraphChildren(User owner, ReorderParagraphChildren request) {

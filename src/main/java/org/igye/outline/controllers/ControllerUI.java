@@ -239,10 +239,12 @@ public class ControllerUI {
 
     @PostMapping("editSynopsisTopicPost")
     @ResponseBody
-    public UUID editSynopsisTopicPost(Model model, @RequestBody EditSynopsisTopicForm form,
-                                    HttpServletResponse response) throws IOException, OperationNotSupportedException {
+    public UUID editSynopsisTopicPost(Model model, @RequestBody EditSynopsisTopicForm form) throws OperationNotSupportedException {
         if (form.getParentId() != null && form.getId() == null) {
             return dao.createSynopsisTopic(sessionData.getUser(), form);
+        } else if (form.getParentId() == null && form.getId() != null) {
+            dao.updateSynopsisTopic(sessionData.getUser(), form);
+            return form.getId();
         } else {
             throw new OperationNotSupportedException("editSynopsisTopicPost");
         }
