@@ -25,6 +25,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.springframework.transaction.annotation.Propagation.MANDATORY;
 
@@ -52,11 +54,11 @@ public class Dao {
         topic.setName(request.getName());
         topic.setOwner(owner);
         request.getContent().stream().forEach(contentForForm -> {
-            if (ContentForForm.TEXT.equals(contentForForm.getType())) {
+            if (TEXT.equals(contentForForm.getType())) {
                 Text text = new Text();
                 text.setText(contentForForm.getText());
                 topic.addContent(text);
-            } else if (ContentForForm.IMAGE.equals(contentForForm.getType())) {
+            } else if (IMAGE.equals(contentForForm.getType())) {
                 Image image = session.load(Image.class, contentForForm.getId());
                 if (!image.getOwner().getId().equals(requestor.getId())) {
                     throw new OutlineException("!image.getOwner().getId().equals(request.getId())");
@@ -95,7 +97,7 @@ public class Dao {
         Map<UUID, Content> oldContents = topic.getContents().stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
         oldContents.values().forEach(topic::detachContent);
         for (ContentForForm content : form.getContent()) {
-            if (ContentForForm.TEXT.equals(content.getType())) {
+            if (TEXT.equals(content.getType())) {
                 if (content.getId() != null) {
                     Text text = (Text) oldContents.remove(content.getId());
                     text.setText(content.getText());
@@ -105,7 +107,7 @@ public class Dao {
                     text.setText(content.getText());
                     topic.addContent(text);
                 }
-            } else if (ContentForForm.IMAGE.equals(content.getType())) {
+            } else if (IMAGE.equals(content.getType())) {
                 if (content.getId() != null) {
                     UUID imgId = content.getId();
                     Content oldImg = oldContents.remove(imgId);

@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
 import static org.igye.outline.common.OutlineUtils.hashPwd;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
 @Controller
 public class ControllerUI {
@@ -220,9 +222,9 @@ public class ControllerUI {
             form.setContent(
                     topic.getContents().stream().map(content -> {
                         if (content instanceof Image) {
-                            return ContentForForm.builder().type(ContentForForm.IMAGE).id(content.getId()).build();
+                            return ContentForForm.builder().type(IMAGE).id(content.getId()).build();
                         } else if (content instanceof Text) {
-                            return ContentForForm.builder().type(ContentForForm.TEXT).id(content.getId())
+                            return ContentForForm.builder().type(TEXT).id(content.getId())
                                     .text(((Text)content).getText()).build();
                         } else {
                             throw new OutlineException("Can't determine type of content.");
@@ -239,7 +241,7 @@ public class ControllerUI {
 
     @PostMapping("editSynopsisTopicPost")
     @ResponseBody
-    public UUID editSynopsisTopicPost(Model model, @RequestBody EditSynopsisTopicForm form) throws OperationNotSupportedException {
+    public UUID editSynopsisTopicPost(@RequestBody EditSynopsisTopicForm form) throws OperationNotSupportedException {
         if (form.getParentId() != null && form.getId() == null) {
             return dao.createSynopsisTopic(sessionData.getUser(), form);
         } else if (form.getParentId() == null && form.getId() != null) {
@@ -302,7 +304,7 @@ public class ControllerUI {
     }
 
     @PostMapping(REMOVE_USER)
-    public String removeUser(Model model, @RequestParam UUID id) {
+    public String removeUser(@RequestParam UUID id) {
         userDao.removeUser(sessionData.getUser(), id);
         return redirect(USERS);
     }
@@ -364,7 +366,7 @@ public class ControllerUI {
     public String nextTopic(Model model, @RequestParam UUID id) {
         initModel(model);
         Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
-        String redirectUri = null;
+        String redirectUri;
         if (nextTopicOpt.isPresent()) {
             model.addAttribute("topic", nextTopicOpt.get());
             redirectUri = UriComponentsBuilder.newInstance()
@@ -390,7 +392,7 @@ public class ControllerUI {
     public String prevTopic(Model model, @RequestParam UUID id) {
         initModel(model);
         Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
-        String redirectUri = null;
+        String redirectUri;
         if (prevTopicOpt.isPresent()) {
             model.addAttribute("topic", prevTopicOpt.get());
             redirectUri = UriComponentsBuilder.newInstance()

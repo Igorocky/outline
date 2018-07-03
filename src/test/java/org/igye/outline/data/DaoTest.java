@@ -21,8 +21,8 @@ import javax.persistence.NoResultException;
 import java.util.*;
 
 import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
-import static org.igye.outline.htmlforms.ContentForForm.IMAGE;
-import static org.igye.outline.htmlforms.ContentForForm.TEXT;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.*;
 
@@ -1293,8 +1293,8 @@ public class DaoTest extends AbstractHibernateTest {
         form.setId(topic.getId());
         form.setName("T-o-P");
         form.setContent(Arrays.asList(
-                ContentForForm.builder().type(ContentForForm.IMAGE).id(i1.getId()).build(),
-                ContentForForm.builder().type(ContentForForm.TEXT).id(t1.getId()).text(t1.getText()).build()
+                ContentForForm.builder().type(IMAGE).id(i1.getId()).build(),
+                ContentForForm.builder().type(TEXT).id(t1.getId()).text(t1.getText()).build()
         ));
 
         //when
@@ -1348,10 +1348,10 @@ public class DaoTest extends AbstractHibernateTest {
         form.setId(topic.getId());
         form.setName("T-o-P");
         form.setContent(Arrays.asList(
-                ContentForForm.builder().type(ContentForForm.TEXT).id(t2.getId()).text(t2.getText()).build(),
-                ContentForForm.builder().type(ContentForForm.IMAGE).id(i2.getId()).build(),
-                ContentForForm.builder().type(ContentForForm.IMAGE).id(i1.getId()).build(),
-                ContentForForm.builder().type(ContentForForm.TEXT).id(t1.getId()).text(t1.getText()).build()
+                ContentForForm.builder().type(TEXT).id(t2.getId()).text(t2.getText()).build(),
+                ContentForForm.builder().type(IMAGE).id(i2.getId()).build(),
+                ContentForForm.builder().type(IMAGE).id(i1.getId()).build(),
+                ContentForForm.builder().type(TEXT).id(t1.getId()).text(t1.getText()).build()
         ));
 
         //when
@@ -1401,7 +1401,7 @@ public class DaoTest extends AbstractHibernateTest {
         form.setId(topic.getId());
         form.setName("T-o-P");
         form.setContent(Arrays.asList(
-                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text("new-text").build()
+                ContentForForm.builder().type(TEXT).id(text1.getId()).text("new-text").build()
         ));
 
         //when
@@ -1454,7 +1454,7 @@ public class DaoTest extends AbstractHibernateTest {
         form.setId(topic.getId());
         form.setName("T-o-P");
         form.setContent(Arrays.asList(
-                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text(text1.getText()).build()
+                ContentForForm.builder().type(TEXT).id(text1.getId()).text(text1.getText()).build()
         ));
 
         //when
@@ -1512,10 +1512,10 @@ public class DaoTest extends AbstractHibernateTest {
         form.setId(topic.getId());
         form.setName("T-o-P");
         form.setContent(Arrays.asList(
-                ContentForForm.builder().type(ContentForForm.IMAGE).id(img1.getId()).build(),
-                ContentForForm.builder().type(ContentForForm.TEXT).id(text1.getId()).text(text1.getText()).build(),
-                ContentForForm.builder().type(ContentForForm.TEXT).text("text2").build(),
-                ContentForForm.builder().type(ContentForForm.IMAGE).id(newImageId).build()
+                ContentForForm.builder().type(IMAGE).id(img1.getId()).build(),
+                ContentForForm.builder().type(TEXT).id(text1.getId()).text(text1.getText()).build(),
+                ContentForForm.builder().type(TEXT).text("text2").build(),
+                ContentForForm.builder().type(IMAGE).id(newImageId).build()
         ));
 
         //when

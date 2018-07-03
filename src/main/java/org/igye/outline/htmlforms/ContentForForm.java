@@ -12,10 +12,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ContentForForm {
-    public static final String IMAGE = "IMAGE";
-    public static final String TEXT = "TEXT";
+    public enum ContentTypeForForm {
+        IMAGE, TEXT
+    }
 
-    private String type;
+    private ContentTypeForForm type;
     private UUID id;
     private String text;
 }
