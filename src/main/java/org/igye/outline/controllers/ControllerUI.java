@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
+import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.hashPwd;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
@@ -256,7 +257,7 @@ public class ControllerUI {
     @ResponseBody
     public UUID uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
         UUID imgId = dao.createImage(sessionData.getUser());
-        File imgFile = getImgFile(imgId);
+        File imgFile = getImgFile(imagesLocation, imgId);
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
@@ -419,7 +420,7 @@ public class ControllerUI {
     public byte[] topicImage(@PathVariable UUID imgId) {
         Image image = dao.loadImageById(imgId, sessionData.getUser());
         try {
-            return FileUtils.readFileToByteArray(getImgFile(image.getId()));
+            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, image.getId()));
         } catch (IOException e) {
             throw new OutlineException(e);
         }
@@ -436,11 +437,6 @@ public class ControllerUI {
     @ResponseBody
     public String version() {
         return version;
-    }
-
-    private File getImgFile(UUID imgId) {
-        String idStr = imgId.toString();
-        return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
     }
 
     private void initModel(Model model) {

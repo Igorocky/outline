@@ -40,16 +40,14 @@ public class MigrateData {
     @Commit
     @Ignore
     public void migrateData() {
-        for (String file: new File(newImagesDir).list()) {
-            if (!".".equals(file) && !"..".equals(file)) {
-                throw new RuntimeException("newImagesDir is not empty.");
-            }
-        }
+//        for (String file: new File(newImagesDir).list()) {
+//            if (!".".equals(file) && !"..".equals(file)) {
+//                throw new RuntimeException("newImagesDir is not empty.");
+//            }
+//        }
         List<ParagraphOld> paragraphsOld = migrator.loadOldData();
-        migrator.saveNewData("qweqweqwe", paragraphsOld);
+        migrator.saveNewData("admin", paragraphsOld);
         migrator.migrateImages(oldImagesDir, newImagesDir, paragraphsOld);
     }
-
-
 
 }

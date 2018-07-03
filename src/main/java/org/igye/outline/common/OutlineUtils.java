@@ -6,8 +6,10 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 public class OutlineUtils {
     public static final String SQL_DEBUG_LOGGER_NAME = "sql-debug";
@@ -36,6 +38,11 @@ public class OutlineUtils {
         if (obj == null) {
             throw new OutlineException("obj == null");
         }
+    }
+
+    public static File getImgFile(String imagesLocation, UUID imgId) {
+        String idStr = imgId.toString();
+        return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
     }
 
 }

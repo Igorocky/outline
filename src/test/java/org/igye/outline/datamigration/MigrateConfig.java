@@ -22,7 +22,7 @@ public class MigrateConfig {
     @Bean
     public DataSource dataSourceOldDb() {
         JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL("jdbc:h2:tcp://localhost:9092/zorich");
+        ds.setURL("jdbc:h2:tcp://localhost:7072/zorich");
         ds.setUser("zorich");
         ds.setPassword("zorich");
         return ds;

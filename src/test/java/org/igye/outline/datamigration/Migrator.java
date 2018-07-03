@@ -6,12 +6,10 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Role;
-import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
+import org.igye.outline.model.*;
 import org.igye.outline.oldmodel.ParagraphOld;
 import org.igye.outline.oldmodel.TopicOld;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import org.springframework.util.FileCopyUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -81,53 +80,62 @@ public class Migrator {
                 .getSingleResult();
 
 
-        Paragraph rootParagraph = dao.loadParagraphById(Optional.empty(), owner);
+        Paragraph rootParagraph = dao.loadRootParagraph(owner);
         for (ParagraphOld paragraphOld: paragraphsOld) {
             rootParagraph.addChildParagraph(convertOldParagraph(paragraphOld));
         }
         setOwnerRecursively(owner, rootParagraph);
     }
 
-    @Transactional(transactionManager = "transactionManagerNewDb", readOnly = true)
+    @Transactional(readOnly = true)
     public void migrateImages(String oldImagesDir, String newImagesDir, List<ParagraphOld> paragraphsOld) {
         Session session = sessionFactoryNewDb.getCurrentSession();
         List<Topic> newTopics = new ArrayList<>();
         List<TopicOld> oldTopics = new ArrayList<>();
         List<Paragraph> paragraphs = session.createQuery(
-                "from Paragraph p where p.parentParagraph is null",
+                "from Paragraph p where p.name in (:names)",
                 Paragraph.class
-        ).getResultList();
+        ).setParameter("names", paragraphsOld.stream().map(ParagraphOld::getName).collect(Collectors.toList()))
+                .getResultList();
         for (Paragraph paragraph: paragraphs) {
             newTopics.addAll(getAllTopics(paragraph));
         }
         for (ParagraphOld paragraph: paragraphsOld) {
             oldTopics.addAll(getAllTopics(paragraph));
         }
+        oldTopics = oldTopics.stream().filter(t -> t != null).collect(Collectors.toList());
+        Map<Long, TopicOld> oldTopicsMap = oldTopics.stream().collect(Collectors.toMap(TopicOld::getId, Function.identity()));
+        Map<UUID, Topic> newTopicsMap = newTopics.stream().collect(Collectors.toMap(Topic::getId, Function.identity()));
         Map<Long, UUID> map = buildOldNewIdMap(oldTopics, newTopics);
-        map.forEach((oldId, newId) -> copyImages(oldId, newId, oldImagesDir, newImagesDir));
+        map.forEach(
+                (oldId, newId) -> copyImages(
+                        oldTopicsMap.get(oldId),
+                        (SynopsisTopic) newTopicsMap.get(newId),
+                        oldImagesDir,
+                        newImagesDir
+                )
+        );
     }
 
-    private void copyImages(Long oldId, UUID newId, String oldImagesDir, String newImagesDir) {
-        File oldDir = new File(oldImagesDir + "/" + oldId);
-        File newDir = new File(newImagesDir + "/" + newId);
+    private void copyImages(TopicOld oldTopic, SynopsisTopic newTopic, String oldImagesDir, String newImagesDir) {
+        File oldDir = new File(oldImagesDir + "/" + oldTopic.getId());
         if (oldDir.listFiles() != null) {
             LOG.info("oldDir = '" + oldDir.getAbsolutePath() + "'");
-            LOG.info("Start creating directory '" + newDir.getAbsolutePath() + "'");
-            if (!newDir.mkdir()) {
-                throw new RuntimeException("Could not create directory: " + newDir.getAbsolutePath());
-            }
-            LOG.info("Successfully created '" + newDir.getAbsolutePath() + "'");
-
-            for (File file: oldDir.listFiles()) {
-                File newFile = new File(newDir, file.getName());
-                LOG.info("Copying '" + file.getAbsolutePath() +
+            for (int i = 0; i < oldTopic.getImages().size(); i++) {
+                String oldImgStr = oldTopic.getImages().get(i);
+                File oldFile = new File(oldDir, oldImgStr);
+                File newFile = OutlineUtils.getImgFile(newImagesDir, newTopic.getContents().get(i).getId());
+                if (!newFile.getParentFile().exists()) {
+                    newFile.getParentFile().mkdirs();
+                }
+                LOG.info("Copying '" + oldFile.getAbsolutePath() +
                         "' to '" + newFile.getAbsolutePath() + "'");
                 try {
-                    FileCopyUtils.copy(file, newFile);
+                    FileCopyUtils.copy(oldFile, newFile);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                LOG.info("Copied '" + file.getAbsolutePath() +
+                LOG.info("Copied '" + oldFile.getAbsolutePath() +
                         "' to '" + newFile.getAbsolutePath() + "'");
             }
         } else {
@@ -136,10 +144,12 @@ public class Migrator {
     }
 
     private Topic convertOldTopic(TopicOld topicOld) {
-        Topic topic = new Topic();
+        SynopsisTopic topic = new SynopsisTopic();
         topic.setName(topicOld.getTitle());
-//        topic.setImages(topicOld.getImages());
-        topic.getTags().addAll(topicOld.getTags().stream().map(str -> tagCollection.getTag(str)).collect(Collectors.toList()));
+        for (String img : topicOld.getImages()) {
+            topic.addContent(new Image());
+        }
+//        topic.getTags().addAll(topicOld.getTags().stream().map(str -> tagCollection.getTag(str)).collect(Collectors.toList()));
         return topic;
     }
 
@@ -158,16 +168,10 @@ public class Migrator {
     }
 
     private Map<Long, UUID> buildOldNewIdMap(List<TopicOld> oldTopics, List<Topic> newTopics) {
-        Map<Long, UUID> map = new HashMap<>();
-        for (TopicOld topicOld: oldTopics) {
-            if (topicOld != null) {
-                map.put(
-                        topicOld.getId(),
-                        findTopicByTitle(newTopics, topicOld.getTitle(), topicOld.getParagraph().getName()).getId()
-                );
-            }
-        }
-        return map;
+        return oldTopics.stream().collect(Collectors.toMap(
+                TopicOld::getId,
+                topicOld -> findTopicByTitle(newTopics, topicOld.getTitle(), topicOld.getParagraph().getName()).getId()
+        ));
     }
 
     private Topic findTopicByTitle(List<Topic> topics, String topicTitle, String paragraphTitle) {
@@ -210,6 +214,7 @@ public class Migrator {
             setOwnerRecursively(owner, childPar);
             for (Topic topic : childPar.getTopics()) {
                 topic.setOwner(owner);
+                ((SynopsisTopic)topic).getContents().forEach(c -> c.setOwner(owner));
             }
         }
     }
