@@ -7,6 +7,8 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.util.UUID;
 
+import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -14,7 +16,7 @@ import java.util.UUID;
 public class Content {
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @Type(type = UUID_CHAR)
     private UUID id;
 
     @ManyToOne

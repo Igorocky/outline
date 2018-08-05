@@ -10,13 +10,15 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
+import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
+
 @Data
 @NoArgsConstructor
 @Entity
 public class Role {
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @Type(type = UUID_CHAR)
     private UUID id;
 
     @NotNull

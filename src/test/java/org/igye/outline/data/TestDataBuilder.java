@@ -3,8 +3,9 @@ package org.igye.outline.data;
 import org.hibernate.Session;
 import org.igye.outline.model.*;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class TestDataBuilder {
@@ -12,7 +13,7 @@ public class TestDataBuilder {
     private User currentUser;
     private Paragraph parentParagraph;
     private Object currentObject;
-    private List<Object> results = new ArrayList<>();
+    private Map<String, Object> results = new HashMap<>();
 
     public TestDataBuilder(Session session) {
         this.session = session;
@@ -122,16 +123,16 @@ public class TestDataBuilder {
                 paragraph -> new TestDataBuilder(session, currentObject, currentUser, (Paragraph) currentObject),
                 topic -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph)
         );
-        results.addAll(childrenBuilder.apply(newBuilder).getResults());
+        results.putAll(childrenBuilder.apply(newBuilder).getResults());
         return this;
     }
 
-    public TestDataBuilder save() {
-        results.add(currentObject);
+    public TestDataBuilder save(String name) {
+        results.put(name, currentObject);
         return this;
     }
 
-    public List<Object> getResults() {
+    public Map<String, Object> getResults() {
         return results;
     }
 }

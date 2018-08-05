@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 
 import static org.hibernate.annotations.CascadeType.*;
+import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +20,7 @@ public class Paragraph {
 
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @Type(type = UUID_CHAR)
     private UUID id;
 
     @ManyToOne

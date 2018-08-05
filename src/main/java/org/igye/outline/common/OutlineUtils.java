@@ -14,6 +14,7 @@ import java.util.UUID;
 public class OutlineUtils {
     public static final String SQL_DEBUG_LOGGER_NAME = "sql-debug";
     public static final String NOTHING = "nothing";
+    public static final String UUID_CHAR = "uuid-char";
 
     public static <T> T accessDenied() {
         throw new OutlineException("Access denied.");

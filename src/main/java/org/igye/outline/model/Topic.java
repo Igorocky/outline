@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.hibernate.annotations.CascadeType.*;
+import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +21,7 @@ import static org.hibernate.annotations.CascadeType.*;
 public class Topic {
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @Type(type = UUID_CHAR)
     private UUID id;
 
     @ManyToOne

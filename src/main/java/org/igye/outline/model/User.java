@@ -10,13 +10,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
+
 @Data
 @NoArgsConstructor
 @Entity
 public class User {
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @Type(type = UUID_CHAR)
     private UUID id;
 
     @NotNull

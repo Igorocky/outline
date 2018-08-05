@@ -10,6 +10,7 @@ import org.igye.outline.htmlforms.EditSynopsisTopicForm;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.model.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,12 @@ import static org.junit.Assert.*;
 @TestPropertySource("/test.properties")
 public class DaoTest extends AbstractHibernateTest {
     private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
+    public static final String OWNER = "owner";
+    public static final String SAVED_PARAGRAPH = "savedParagraph";
+    public static final String SAVED_PARAGRAPH_1 = "savedParagraph-1";
+    public static final String SAVED_PARAGRAPH_2 = "savedParagraph-2";
+    public static final String SAVED_PARAGRAPH_3 = "savedParagraph-3";
+    public static final String SAVED_TOPIC = "savedTopic";
 
     @Autowired
     private Dao dao;
@@ -40,7 +47,7 @@ public class DaoTest extends AbstractHibernateTest {
         //given
         User owner = transactionTemplate.execute(status ->
                 (User) new TestDataBuilder(getCurrentSession())
-                    .user("owner1").save().children(b -> b
+                    .user("owner1").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).tag("rootTag1").children(b2 -> b2
                             .paragraph(ROOT_NAME).tag("notRootTag1")
                         )
@@ -48,7 +55,7 @@ public class DaoTest extends AbstractHibernateTest {
                         .paragraph(ROOT_NAME).tag("rootTag2").children(b2 -> b2
                             .paragraph(ROOT_NAME).tag("notRootTag2")
                         )
-                    ).getResults().get(0)
+                    ).getResults().get(OWNER)
         );
 //        TestUtils.exploreDB(getCurrentSession());
 
@@ -68,11 +75,11 @@ public class DaoTest extends AbstractHibernateTest {
                                 .paragraph(ROOT_NAME).tag("rootTag1").children(b2 -> b2
                                         .paragraph("P1")
                                 )
-                        ).user("owner2").save().children(b -> b
+                        ).user("owner2").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).tag("rootTag2").children(b2 -> b2
                                         .paragraph("P2")
                                 )
-                        ).getResults().get(0)
+                        ).getResults().get(OWNER)
         );
 
         //when
@@ -85,16 +92,16 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void loadParagraphById_should_select_paragraph_by_id() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
                         .user("owner1").children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P1")
                                 )
-                        ).user("owner2").save().children(b -> b
+                        ).user("owner2").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P2")
-                                        .paragraph("P3").save().children(b3->b3
+                                        .paragraph("P3").save(SAVED_PARAGRAPH).children(b3->b3
                                             .paragraph("C1")
                                             .paragraph("C2")
                                             .paragraph("C3")
@@ -103,8 +110,8 @@ public class DaoTest extends AbstractHibernateTest {
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph savedParagraph = (Paragraph) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Paragraph savedParagraph = (Paragraph) saved.get(SAVED_PARAGRAPH);
 
         //when
         Paragraph paragraph = dao.loadParagraphById(Optional.of(savedParagraph.getId()), owner);
@@ -118,14 +125,14 @@ public class DaoTest extends AbstractHibernateTest {
         //given
         User owner = transactionTemplate.execute(status ->
                 (User) new TestDataBuilder(getCurrentSession())
-                        .user("owner1").save().children(b -> b
+                        .user("owner1").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("P2")
                                 .paragraph("P1")
                                 .paragraph("P4")
                                 .paragraph("P3")
                         )
-                ).getResults().get(0)
+                ).getResults().get(OWNER)
         );
 
         //when
@@ -142,12 +149,12 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void loadParagraphById_should_initialize_topics() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner1").save().children(b -> b
+                        .user("owner1").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P1")
-                                        .paragraph("P2").save().children(b3->b3
+                                        .paragraph("P2").save(SAVED_PARAGRAPH).children(b3->b3
                                                 .topic("T1")
                                                 .topic("T3")
                                                 .topic("T2")
@@ -156,8 +163,8 @@ public class DaoTest extends AbstractHibernateTest {
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph savedParagraph = (Paragraph) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Paragraph savedParagraph = (Paragraph) saved.get(SAVED_PARAGRAPH);
 
         //when
         Paragraph paragraph = dao.loadParagraphById(Optional.of(savedParagraph.getId()), owner);
@@ -172,20 +179,20 @@ public class DaoTest extends AbstractHibernateTest {
     @Test(expected = NoResultException.class)
     public void loadParagraphById_should_fail_when_requested_paragraph_has_different_owner() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                .user("owner1").save().children(b -> b
+                .user("owner1").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("P1")
                         )
                 ).user("owner2").children(b -> b
                         .paragraph(ROOT_NAME).children(b2 -> b2
-                                .paragraph("P2").save()
+                                .paragraph("P2").save(SAVED_PARAGRAPH)
                         )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph savedParagraph = (Paragraph) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Paragraph savedParagraph = (Paragraph) saved.get(SAVED_PARAGRAPH);
 
         //when
         Paragraph paragraph = dao.loadParagraphById(Optional.of(savedParagraph.getId()), owner);
@@ -196,7 +203,7 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void loadTopicById_should_load_topic_belonging_to_the_specified_user() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
                         .user("owner1").children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
@@ -208,20 +215,20 @@ public class DaoTest extends AbstractHibernateTest {
                                         )
                                         .paragraph("P3")
                                 )
-                        ).user("owner2").save().children(b -> b
+                        ).user("owner2").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P1")
                                         .paragraph("P2").children(b3->b3
                                                 .topic("T10")
-                                                .topic("T30").save()
+                                                .topic("T30").save(SAVED_TOPIC)
                                                 .topic("T20")
                                         )
                                         .paragraph("P3")
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
@@ -233,22 +240,22 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void loadTopicById_should_load_all_parent_paragraphs() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner1").save().children(b -> b
+                        .user("owner1").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P1").children(b3->b3
                                             .paragraph("P2").children(b4->b4
                                                 .paragraph("P3").children(b5->b5
-                                                        .topic("T1").save()
+                                                        .topic("T1").save(SAVED_TOPIC)
                                                 )
                                             )
                                         )
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
@@ -262,9 +269,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test(expected = NoResultException.class)
     public void loadTopicById_should_fail_when_requested_topic_has_different_owner() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner1").save().children(b -> b
+                        .user("owner1").save(OWNER).children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P2").children(b3->b3
                                                 .topic("T2")
@@ -273,13 +280,13 @@ public class DaoTest extends AbstractHibernateTest {
                         ).user("owner2").children(b -> b
                                 .paragraph(ROOT_NAME).children(b2 -> b2
                                         .paragraph("P3").children(b3->b3
-                                                .topic("T30").save()
+                                                .topic("T30").save(SAVED_TOPIC)
                                         )
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
@@ -290,20 +297,20 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_should_load_correct_topic_in_the_same_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .topic("T1")
-                                        .topic("T2").save()
+                                        .topic("T2").save(SAVED_TOPIC)
                                         .topic("T3")
                                 )
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.nextTopic(savedTopic.getId(), owner).get();
@@ -315,15 +322,15 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_should_load_correct_topic_in_next_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("Book1").children(b4->b4
                                                 .topic("T1")
                                                 .topic("T2")
-                                                .topic("T3").save()
+                                                .topic("T3").save(SAVED_TOPIC)
                                         )
                                         .paragraph("Book1").children(b4->b4
                                                 .topic("T4")
@@ -339,8 +346,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.nextTopic(savedTopic.getId(), owner).get();
@@ -352,14 +359,14 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_should_return_none_for_the_last_topic_in_the_book_of_one_level() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .topic("T1")
                                         .topic("T2")
-                                        .topic("T3").save()
+                                        .topic("T3").save(SAVED_TOPIC)
                                 )
                                 .paragraph("Book2").children(b3->b3
                                         .topic("T4")
@@ -369,8 +376,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Optional<Topic> topicOpt = dao.nextTopic(savedTopic.getId(), owner);
@@ -382,9 +389,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_should_return_none_for_the_last_topic_in_the_book_of_few_levels() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("P1").children(b4->b4
@@ -395,7 +402,7 @@ public class DaoTest extends AbstractHibernateTest {
                                         .paragraph("P2").children(b4->b4
                                                 .topic("T4")
                                                 .topic("T5")
-                                                .topic("T6").save()
+                                                .topic("T6").save(SAVED_TOPIC)
                                         )
                                 )
                                 .paragraph("Book2").children(b3->b3
@@ -406,8 +413,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Optional<Topic> topicOpt = dao.nextTopic(savedTopic.getId(), owner);
@@ -419,13 +426,13 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_it_should_be_possible_to_traverse_all_topics_in_correct_order() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("P1").children(b4->b4
-                                                .topic("T1").save()
+                                                .topic("T1").save(SAVED_TOPIC)
                                                 .topic("T2")
                                         )
                                         .paragraph("P2").children(b4->b4
@@ -441,8 +448,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         List<Topic> allTopics = new ArrayList<>();
@@ -463,14 +470,14 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void nextTopic_should_skip_empty_terminal_paragraphs() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("P1").children(b4->b4
                                                 .topic("T1")
-                                                .topic("T2").save()
+                                                .topic("T2").save(SAVED_TOPIC)
                                         )
                                         .paragraph("P2").children(b4->b4
                                                 .paragraph("P3").children(b5->b5
@@ -484,8 +491,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic nextTopic = dao.nextTopic(savedTopic.getId(), owner).get();
@@ -495,22 +502,74 @@ public class DaoTest extends AbstractHibernateTest {
     }
 
     @Test
+    @Ignore
+    public void nextTopic_should_behave_correctly_when_there_are_paragraphs_with_topics_and_other_paragraphs() {
+        //given
+        Map<String, Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save(OWNER).children(b -> b
+                        .paragraph(ROOT_NAME).children(b2 -> b2
+                                .paragraph("Book1").children(b3->b3
+                                        .paragraph("P1").children(b4->b4
+                                                .topic("T1").save(SAVED_TOPIC)
+                                                .topic("T2")
+                                        )
+                                        .paragraph("P2").children(b4->b4
+                                                .paragraph("P3").children(b5->b5
+                                                        .topic("T5")
+                                                        .topic("T6")
+                                                )
+                                                .topic("T3")
+                                                .topic("T4")
+                                        )
+                                        .paragraph("P4").children(b4->b4
+                                                .topic("T7")
+                                                .topic("T8")
+                                        )
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
+
+        //when
+        List<Topic> allTopics = new ArrayList<>();
+        Optional<Topic> nextTopicOpt = Optional.of(savedTopic);
+        while (nextTopicOpt.isPresent()) {
+            allTopics.add(nextTopicOpt.get());
+            nextTopicOpt = dao.nextTopic(nextTopicOpt.get().getId(), owner);
+        }
+
+        //then
+        assertEquals(8, allTopics.size());
+        assertEquals("T1", allTopics.get(0).getName());
+        assertEquals("T2", allTopics.get(1).getName());
+        assertEquals("T3", allTopics.get(2).getName());
+        assertEquals("T4", allTopics.get(3).getName());
+        assertEquals("T5", allTopics.get(4).getName());
+        assertEquals("T6", allTopics.get(5).getName());
+        assertEquals("T7", allTopics.get(6).getName());
+        assertEquals("T8", allTopics.get(7).getName());
+    }
+
+    @Test
     public void prevTopic_should_load_correct_topic_in_the_same_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .topic("T1")
-                                        .topic("T2").save()
+                                        .topic("T2").save(SAVED_TOPIC)
                                         .topic("T3")
                                 )
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.prevTopic(savedTopic.getId(), owner).get();
@@ -522,9 +581,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void prevTopic_should_load_correct_topic_in_prev_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("P1").children(b4->b4
@@ -533,7 +592,7 @@ public class DaoTest extends AbstractHibernateTest {
                                                 .topic("T3")
                                         )
                                         .paragraph("P2").children(b4->b4
-                                                .topic("T4").save()
+                                                .topic("T4").save(SAVED_TOPIC)
                                                 .topic("T5")
                                                 .topic("T6")
                                         )
@@ -546,8 +605,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic topic = dao.prevTopic(savedTopic.getId(), owner).get();
@@ -559,9 +618,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void prevTopic_should_return_none_for_the_first_topic_in_the_book_of_one_level() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .topic("T1")
@@ -569,15 +628,15 @@ public class DaoTest extends AbstractHibernateTest {
                                         .topic("T3")
                                 )
                                 .paragraph("Book2").children(b3->b3
-                                        .topic("T4").save()
+                                        .topic("T4").save(SAVED_TOPIC)
                                         .topic("T5")
                                         .topic("T6")
                                 )
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Optional<Topic> topicOpt = dao.prevTopic(savedTopic.getId(), owner);
@@ -589,9 +648,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void prevTopic_should_return_none_for_the_first_topic_in_the_book_of_few_levels() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .topic("T4")
@@ -600,7 +659,7 @@ public class DaoTest extends AbstractHibernateTest {
                                 )
                                 .paragraph("Book2").children(b3->b3
                                         .paragraph("P1").children(b4->b4
-                                                .topic("T1").save()
+                                                .topic("T1").save(SAVED_TOPIC)
                                                 .topic("T2")
                                                 .topic("T3")
                                         )
@@ -614,8 +673,8 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Optional<Topic> topicOpt = dao.prevTopic(savedTopic.getId(), owner);
@@ -627,9 +686,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void prevTopic_it_should_be_possible_to_traverse_all_topics_in_reverse_order() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book2").children(b3->b3
                                         .topic("T5")
@@ -643,14 +702,14 @@ public class DaoTest extends AbstractHibernateTest {
                                         )
                                         .paragraph("P2").children(b4->b4
                                                 .topic("T3")
-                                                .topic("T4").save()
+                                                .topic("T4").save(SAVED_TOPIC)
                                         )
                                 )
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         List<Topic> allTopics = new ArrayList<>();
@@ -671,9 +730,9 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void prevTopic_should_skip_empty_terminal_paragraphs() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b2 -> b2
                                 .paragraph("Book1").children(b3->b3
                                         .paragraph("P1").children(b4->b4
@@ -685,15 +744,15 @@ public class DaoTest extends AbstractHibernateTest {
                                                 )
                                         )
                                         .paragraph("P4").children(b4->b4
-                                                .topic("T3").save()
+                                                .topic("T3").save(SAVED_TOPIC)
                                                 .topic("T4")
                                         )
                                 )
                             )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Topic savedTopic = (Topic) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
 
         //when
         Topic nextTopic = dao.prevTopic(savedTopic.getId(), owner).get();
@@ -705,13 +764,13 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void createParagraph_should_create_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME)
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
+        User owner = (User) saved.get(OWNER);
         Paragraph rootParagraph = dao.loadRootParagraph(owner);
 
         //when
@@ -731,16 +790,16 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void updateParagraph_should_update_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b1 -> b1
-                                        .paragraph("P2").save()
+                                        .paragraph("P2").save(SAVED_PARAGRAPH)
                                 )
                         ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph paragraph = (Paragraph) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Paragraph paragraph = (Paragraph) saved.get(SAVED_PARAGRAPH);
 
         //when
         dao.updateParagraph(owner, paragraph.getId(), p -> p.setName("WSX"));
@@ -758,16 +817,16 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void reorderParagraphChildren_should_reorder_paragraphs_and_topics() {
         //given
-        List<Object> saved = prepareDataForReordering();
-        User owner = (User) saved.get(0);
-        Paragraph p1c = (Paragraph) saved.get(1);
-        Paragraph p2a = (Paragraph) saved.get(2);
-        Paragraph p3d = (Paragraph) saved.get(3);
-        Paragraph p4b = (Paragraph) saved.get(4);
-        Topic t1c = (Topic) saved.get(5);
-        Topic t2a = (Topic) saved.get(6);
-        Topic t3d = (Topic) saved.get(7);
-        Topic t4b = (Topic) saved.get(8);
+        Map<String, Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1c = (Paragraph) saved.get("p1C");
+        Paragraph p2a = (Paragraph) saved.get("p2A");
+        Paragraph p3d = (Paragraph) saved.get("p3D");
+        Paragraph p4b = (Paragraph) saved.get("p4B");
+        Topic t1c = (Topic) saved.get("t1C");
+        Topic t2a = (Topic) saved.get("t2A");
+        Topic t3d = (Topic) saved.get("t3D");
+        Topic t4b = (Topic) saved.get("t4B");
         ReorderParagraphChildren request = new ReorderParagraphChildren();
         request.setParentId(dao.loadRootParagraph(owner).getId());
         request.setParagraphs(Arrays.asList(p2a.getId(), p4b.getId(), p1c.getId(), p3d.getId()));
@@ -794,11 +853,11 @@ public class DaoTest extends AbstractHibernateTest {
     @Test(expected = OutlineException.class)
     public void reorderParagraphChildren_should_fail_on_mismatching_paragraph_ids() {
         //given
-        List<Object> saved = prepareDataForReordering();
-        User owner = (User) saved.get(0);
-        Paragraph p1c = (Paragraph) saved.get(1);
-        Paragraph p3d = (Paragraph) saved.get(3);
-        Paragraph p4b = (Paragraph) saved.get(4);
+        Map<String, Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1c = (Paragraph) saved.get("p1C");
+        Paragraph p3d = (Paragraph) saved.get("p3D");
+        Paragraph p4b = (Paragraph) saved.get("p4B");
         ReorderParagraphChildren request = new ReorderParagraphChildren();
         request.setParentId(dao.loadRootParagraph(owner).getId());
         request.setParagraphs(Arrays.asList(p4b.getId(), p1c.getId(), p3d.getId()));
@@ -813,11 +872,11 @@ public class DaoTest extends AbstractHibernateTest {
     @Test(expected = OutlineException.class)
     public void reorderParagraphChildren_should_fail_on_mismatching_topic_ids() {
         //given
-        List<Object> saved = prepareDataForReordering();
-        User owner = (User) saved.get(0);
-        Topic t1c = (Topic) saved.get(5);
-        Topic t2a = (Topic) saved.get(6);
-        Topic t4b = (Topic) saved.get(8);
+        Map<String, Object> saved = prepareDataForReordering();
+        User owner = (User) saved.get(OWNER);
+        Topic t1c = (Topic) saved.get("t1C");
+        Topic t2a = (Topic) saved.get("t2A");
+        Topic t4b = (Topic) saved.get("t4B");
         ReorderParagraphChildren request = new ReorderParagraphChildren();
         request.setParentId(dao.loadRootParagraph(owner).getId());
         request.setTopics(Arrays.asList(t2a.getId(), t4b.getId(), t1c.getId()));
@@ -832,16 +891,16 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void moveParagraph_should_move_paragraph_when_destination_paragraph_contains_more_children_than_source_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b1 -> b1
-                                    .paragraph("P1").save().children(b2 -> b2
+                                    .paragraph("P1").save(SAVED_PARAGRAPH_1).children(b2 -> b2
                                         .paragraph("P2")
-                                        .paragraph("P3").save()
+                                        .paragraph("P3").save(SAVED_PARAGRAPH_2)
                                         .paragraph("P4")
                                     )
-                                    .paragraph("P5").save().children(b2 -> b2
+                                    .paragraph("P5").save(SAVED_PARAGRAPH_3).children(b2 -> b2
                                         .paragraph("P6")
                                         .paragraph("P7")
                                         .paragraph("P8")
@@ -851,10 +910,10 @@ public class DaoTest extends AbstractHibernateTest {
                             )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Paragraph p3 = (Paragraph) saved.get(2);
-        Paragraph p5 = (Paragraph) saved.get(3);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Paragraph p3 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
+        Paragraph p5 = (Paragraph) saved.get(SAVED_PARAGRAPH_3);
         transactionTemplate.execute(status -> {
             List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
             assertEquals(3, p1Children.size());
@@ -896,25 +955,25 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void moveParagraph_should_move_paragraph_when_destination_paragraph_contains_less_children_than_source_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b1 -> b1
-                                    .paragraph("P1").save().children(b2 -> b2
+                                    .paragraph("P1").save(SAVED_PARAGRAPH_1).children(b2 -> b2
                                         .paragraph("P2")
-                                        .paragraph("P3").save()
+                                        .paragraph("P3").save(SAVED_PARAGRAPH_2)
                                         .paragraph("P4")
                                     )
-                                    .paragraph("P5").save().children(b2 -> b2
+                                    .paragraph("P5").save(SAVED_PARAGRAPH_3).children(b2 -> b2
                                         .paragraph("P6")
                                     )
                             )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Paragraph p3 = (Paragraph) saved.get(2);
-        Paragraph p5 = (Paragraph) saved.get(3);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Paragraph p3 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
+        Paragraph p5 = (Paragraph) saved.get(SAVED_PARAGRAPH_3);
         transactionTemplate.execute(status -> {
             List<Paragraph> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getChildParagraphs();
             assertEquals(3, p1Children.size());
@@ -948,18 +1007,18 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void moveParagraph_should_move_sibling_paragraphs_one_into_another() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                             .paragraph(ROOT_NAME).children(b1 -> b1
-                                    .paragraph("P1").save()
-                                    .paragraph("P2").save()
+                                    .paragraph("P1").save(SAVED_PARAGRAPH_1)
+                                    .paragraph("P2").save(SAVED_PARAGRAPH_2)
                             )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Paragraph p2 = (Paragraph) saved.get(2);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Paragraph p2 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
         transactionTemplate.execute(status -> {
             List<Paragraph> rootChildren = dao.loadRootParagraph(owner).getChildParagraphs();
             assertEquals(2, rootChildren.size());
@@ -993,24 +1052,24 @@ public class DaoTest extends AbstractHibernateTest {
     @Test(expected = OutlineException.class)
     public void moveParagraph_should_deny_moving_paragraph_under_itself() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b1 -> b1
-                                .paragraph("P1").save().children(b2 -> b2
+                                .paragraph("P1").save(SAVED_PARAGRAPH_1).children(b2 -> b2
                                         .paragraph("P2")
-                                        .paragraph("P3").save()
+                                        .paragraph("P3").save(SAVED_PARAGRAPH_2)
                                         .paragraph("P4")
                                 )
-                                .paragraph("P5").save().children(b2 -> b2
+                                .paragraph("P5").children(b2 -> b2
                                         .paragraph("P6")
                                 )
                         )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Paragraph p3 = (Paragraph) saved.get(2);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Paragraph p3 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
 
         //when
         dao.moveParagraph(owner, p1.getId(), p3.getId());
@@ -1022,16 +1081,16 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void moveTopic_should_move_topic_when_destination_paragraph_contains_more_children_than_source_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b1 -> b1
-                                .paragraph("P1").save().children(b2 -> b2
+                                .paragraph("P1").save(SAVED_PARAGRAPH_1).children(b2 -> b2
                                         .topic("T2")
-                                        .topic("T3").save()
+                                        .topic("T3").save(SAVED_TOPIC)
                                         .topic("T4")
                                 )
-                                .paragraph("P5").save().children(b2 -> b2
+                                .paragraph("P5").save(SAVED_PARAGRAPH_2).children(b2 -> b2
                                         .topic("T6")
                                         .topic("T7")
                                         .topic("T8")
@@ -1041,10 +1100,10 @@ public class DaoTest extends AbstractHibernateTest {
                         )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Topic t3 = (Topic) saved.get(2);
-        Paragraph p5 = (Paragraph) saved.get(3);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Topic t3 = (Topic) saved.get(SAVED_TOPIC);
+        Paragraph p5 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
         transactionTemplate.execute(status -> {
             List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
             assertEquals(3, p1Children.size());
@@ -1086,25 +1145,25 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void moveTopic_should_move_topic_when_destination_paragraph_contains_less_children_than_source_paragraph() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b1 -> b1
-                                .paragraph("P1").save().children(b2 -> b2
+                                .paragraph("P1").save(SAVED_PARAGRAPH_1).children(b2 -> b2
                                         .topic("T2")
-                                        .topic("T3").save()
+                                        .topic("T3").save(SAVED_TOPIC)
                                         .topic("T4")
                                 )
-                                .paragraph("P5").save().children(b2 -> b2
+                                .paragraph("P5").save(SAVED_PARAGRAPH_2).children(b2 -> b2
                                         .topic("T6")
                                 )
                         )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
-        Topic t3 = (Topic) saved.get(2);
-        Paragraph p5 = (Paragraph) saved.get(3);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH_1);
+        Topic t3 = (Topic) saved.get(SAVED_TOPIC);
+        Paragraph p5 = (Paragraph) saved.get(SAVED_PARAGRAPH_2);
         transactionTemplate.execute(status -> {
             List<Topic> p1Children = dao.loadParagraphByNotNullId(p1.getId(), owner).getTopics();
             assertEquals(3, p1Children.size());
@@ -1138,18 +1197,18 @@ public class DaoTest extends AbstractHibernateTest {
     @Test
     public void createSynopsisTopic_should_create_new_topic() {
         //given
-        List<Object> saved = transactionTemplate.execute(status ->
+        Map<String, Object> saved = transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b1 -> b1
-                                .paragraph("P1").save().children(b2 -> b2
+                                .paragraph("P1").save(SAVED_PARAGRAPH).children(b2 -> b2
                                         .topic("T2")
                                 )
                         )
                 ).getResults()
         );
-        User owner = (User) saved.get(0);
-        Paragraph p1 = (Paragraph) saved.get(1);
+        User owner = (User) saved.get(OWNER);
+        Paragraph p1 = (Paragraph) saved.get(SAVED_PARAGRAPH);
         final UUID[] imgId = new UUID[1];
         transactionTemplate.execute(status -> {
             Session session = getCurrentSession();
@@ -1542,19 +1601,19 @@ public class DaoTest extends AbstractHibernateTest {
         return usr;
     }
 
-    private List<Object> prepareDataForReordering() {
+    private Map<String, Object> prepareDataForReordering() {
         return transactionTemplate.execute(status ->
                 new TestDataBuilder(getCurrentSession())
-                        .user("owner").save().children(b -> b
+                        .user("owner").save(OWNER).children(b -> b
                         .paragraph(ROOT_NAME).children(b1 -> b1
-                                .paragraph("1C").save()
-                                .paragraph("2A").save()
-                                .paragraph("3D").save()
-                                .paragraph("4B").save()
-                                .topic("1C").save()
-                                .topic("2A").save()
-                                .topic("3D").save()
-                                .topic("4B").save()
+                                .paragraph("1C").save("p1C")
+                                .paragraph("2A").save("p2A")
+                                .paragraph("3D").save("p3D")
+                                .paragraph("4B").save("p4B")
+                                .topic("1C").save("t1C")
+                                .topic("2A").save("t2A")
+                                .topic("3D").save("t3D")
+                                .topic("4B").save("t4B")
                         )
                 ).getResults()
         );
