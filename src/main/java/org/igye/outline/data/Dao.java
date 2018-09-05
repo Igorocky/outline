@@ -260,8 +260,8 @@ public class Dao {
         }
         if (nextTopic.isPresent()) {
             return nextTopic;
-        } else if (!isBook(curTopic.getParagraph())) {
-            return findNextParagraphWithTopics(curTopic.getParagraph() ,direction)
+        } else if (!isBook(paragraph)) {
+            return findNextParagraphWithTopics(paragraph, direction)
                     .map(p -> {
                         if (direction) {
                             return p.getTopics().get(0);
