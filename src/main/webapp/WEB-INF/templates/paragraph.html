@@ -103,6 +103,8 @@
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
             <span>
                 <input class="selection-checkbox-par" type="checkbox" hidden="hidden" th:id="${childPar.id}">
+                <a th:if="${not #lists.isEmpty(childPar.childParagraphs) or not #lists.isEmpty(childPar.topics)}" th:href="@{firstChild(id=${childPar.id})}" >&gt;&gt;&gt;</a>
+                <span th:unless="${not #lists.isEmpty(childPar.childParagraphs) or not #lists.isEmpty(childPar.topics)}">&gt;&gt;&gt;</span>
                 <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
             </span>
         </li>

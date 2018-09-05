@@ -29,9 +29,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.igye.outline.common.OutlineUtils.NOTHING;
-import static org.igye.outline.common.OutlineUtils.getImgFile;
-import static org.igye.outline.common.OutlineUtils.hashPwd;
+import static org.igye.outline.common.OutlineUtils.*;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
@@ -337,6 +335,25 @@ public class ControllerUI {
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
         addPath(model, paragraph);
         return PARAGRAPH;
+    }
+
+    @GetMapping("firstChild")
+    public String firstChild(Model model, @RequestParam Optional<UUID> id) {
+        Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
+        String redirectUri = null;
+        if (!paragraph.getChildParagraphs().isEmpty()) {
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(PARAGRAPH)
+                    .queryParam("id", paragraph.getChildParagraphs().get(0).getId())
+                    .toUriString();
+        } else {
+            redirectUri = UriComponentsBuilder.newInstance()
+                    .path(TOPIC)
+                    .queryParam("id", paragraph.getTopics().get(0).getId())
+                    .queryParam("checkPrev", true)
+                    .toUriString();
+        }
+        return redirect(redirectUri);
     }
 
     @GetMapping(TOPIC)

@@ -203,7 +203,10 @@ public class Dao {
         Paragraph paragraph = idOpt
                 .map(id -> loadParagraphByNotNullId(id, requestor))
                 .orElseGet(() -> loadRootParagraph(requestor));
-        Hibernate.initialize(paragraph.getChildParagraphs());
+        paragraph.getChildParagraphs().forEach(childPar -> {
+            Hibernate.initialize(childPar.getChildParagraphs());
+            Hibernate.initialize(childPar.getTopics());
+        });
         Hibernate.initialize(paragraph.getTopics());
         Hibernate.initialize(paragraph.getTags());
         return paragraph;
