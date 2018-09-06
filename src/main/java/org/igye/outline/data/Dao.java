@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditSynopsisTopicForm;
@@ -43,6 +45,40 @@ public class Dao {
         Image img = new Image();
         img.setOwner(session.load(User.class, requestor.getId()));
         return (UUID) session.save(img);
+    }
+
+    @Transactional
+    public Optional<?> nextSibling(User requestor, UUID id, boolean toTheRight) {
+        Object entity = loadEntityById(requestor, id).get();
+        if (entity instanceof Paragraph) {
+            Paragraph par = (Paragraph) entity;
+            if (par.getParentParagraph() == null) {
+                return Optional.empty();
+            } else {
+                return OutlineUtils.getSibling(
+                        par.getParentParagraph().getChildParagraphs(),
+                        sib -> sib.getId().equals(par.getId()),
+                        toTheRight
+                );
+            }
+        } else {
+            Topic top = (Topic) entity;
+            return OutlineUtils.getSibling(
+                    top.getParagraph().getTopics(),
+                    sib -> sib.getId().equals(top.getId()),
+                    toTheRight
+            );
+        }
+    }
+
+    @Transactional
+    public Optional<Object> loadEntityById(User requestor, UUID id) {
+        List<Paragraph> paragraphs = queryParagraphByIdAndOwner(id, requestor).list();
+        if (!paragraphs.isEmpty()) {
+            return Optional.of(paragraphs.get(0));
+        } else {
+            return Optional.of(loadTopicById(id, requestor));
+        }
     }
 
     @Transactional
@@ -254,13 +290,9 @@ public class Dao {
         Topic curTopic = loadTopicById(currentTopicId, owner);
         Paragraph paragraph = curTopic.getParagraph();
         List<Topic> topics = paragraph.getTopics();
-        Optional<Topic> nextTopic = Optional.empty();
-        for (int i = 0; i < topics.size(); i++) {
-            if (currentTopicId.equals(topics.get(i).getId()) && (direction ? i < topics.size() - 1 : i > 0)) {
-                nextTopic = Optional.of(topics.get(i + (direction ? 1 : -1)));
-                break;
-            }
-        }
+        Optional<Topic> nextTopic = OutlineUtils.getSibling(
+                topics, topic -> currentTopicId.equals(topic.getId()), direction
+        );
         if (nextTopic.isPresent()) {
             return nextTopic;
         } else if (!isBook(paragraph)) {
@@ -291,12 +323,7 @@ public class Dao {
 
     @Transactional(propagation = MANDATORY)
     public Paragraph loadParagraphByNotNullId(UUID id, User owner) {
-        return sessionFactory.getCurrentSession().createQuery(
-                "from Paragraph p where p.id = :id and owner = :owner", Paragraph.class
-        )
-                .setParameter("id", id)
-                .setParameter("owner", owner)
-                .getSingleResult();
+        return queryParagraphByIdAndOwner(id, owner).getSingleResult();
     }
 
     @Transactional(propagation = MANDATORY)
@@ -310,6 +337,14 @@ public class Dao {
         );
         return parOpt.map(t -> t.getOrig());
 
+    }
+
+    private Query<Paragraph> queryParagraphByIdAndOwner(UUID id, User owner) {
+        return sessionFactory.getCurrentSession().createQuery(
+                "from Paragraph p where p.id = :id and owner = :owner", Paragraph.class
+        )
+                .setParameter("id", id)
+                .setParameter("owner", owner);
     }
 
     private Tree<Paragraph> paragraph2Tree(Paragraph paragraph) {

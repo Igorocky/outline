@@ -98,6 +98,14 @@
 </div>
 
 <div th:replace="path :: path"/>
+<div>
+    <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
+    <span th:if="${isLeftmostSibling}">This is the first paragraph.</span>
+    &nbsp;&nbsp;
+    <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
+</div>
+<h3>&sect;<span th:text="${paragraph.name}" /></h3>
 
     <ul id="paragraphs-list" >
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">

@@ -4,14 +4,19 @@
 
 <div th:replace="path :: path"/>
 
-<div th:text="${topic.name}"/>
+<div>
+    <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=false)}">&lt;&lt;Prev</a>
+    <span th:if="${isLeftmostSibling}">This is the first topic.</span>
+    &nbsp;&nbsp;
+    <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    <span th:if="${isRightmostSibling}">This is the last topic.</span>
+</div>
+<h2>
+    <span th:text="${topic.name}" />
+</h2>
 <div>
     <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit</a>&nbsp;
     <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
-    <a th:unless="${isFirstTopic}" th:href="@{/prevTopic(id=${topic.id})}">&lt;&lt;Prev</a>
-    <span th:if="${isFirstTopic}">This is the first topic.</span>
-    <a th:unless="${isLastTopic}" th:href="@{/nextTopic(id=${topic.id})}">Next&gt;&gt;</a>
-    <span th:if="${isLastTopic}">This is the last topic.</span>
 </div>
 
 <div>
