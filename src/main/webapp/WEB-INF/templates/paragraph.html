@@ -105,7 +105,7 @@
     <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
     <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
 </div>
-<h3>&sect;<span th:text="${paragraph.name}" /></h3>
+<h2>&sect;<span th:text="${paragraph.name}" /></h2>
 
     <ul id="paragraphs-list" >
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">

@@ -11,9 +11,9 @@
     <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
     <span th:if="${isRightmostSibling}">This is the last topic.</span>
 </div>
-<h2>
+<h4>
     <span th:text="${topic.name}" />
-</h2>
+</h4>
 <div>
     <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit</a>&nbsp;
     <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
