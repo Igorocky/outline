@@ -1,6 +1,7 @@
 package org.igye.outline.data;
 
 import com.google.common.collect.ImmutableSet;
+import fj.F2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
@@ -49,24 +50,32 @@ public class Dao {
 
     @Transactional
     public Optional<?> nextSibling(User requestor, UUID id, boolean toTheRight) {
+        return getSibling(requestor, id, (list, comp) -> OutlineUtils.getNextSibling(list, comp, toTheRight));
+    }
+
+    @Transactional
+    public Optional<?> furthestSibling(User requestor, UUID id, boolean toTheRight) {
+        return getSibling(requestor, id, (list, comp) -> OutlineUtils.getFurthestSibling(list, comp, toTheRight));
+    }
+
+    private <T> Optional<T> getSibling(User requestor, UUID id,
+                                      F2<List<T>, Function<T,Boolean>, Optional<T>> getter) {
         Object entity = loadEntityById(requestor, id).get();
         if (entity instanceof Paragraph) {
             Paragraph par = (Paragraph) entity;
             if (par.getParentParagraph() == null) {
                 return Optional.empty();
             } else {
-                return OutlineUtils.getSibling(
-                        par.getParentParagraph().getChildParagraphs(),
-                        sib -> sib.getId().equals(par.getId()),
-                        toTheRight
+                return getter.f(
+                        (List<T>) par.getParentParagraph().getChildParagraphs(),
+                        sib -> ((Paragraph)sib).getId().equals(par.getId())
                 );
             }
         } else {
             Topic top = (Topic) entity;
-            return OutlineUtils.getSibling(
-                    top.getParagraph().getTopics(),
-                    sib -> sib.getId().equals(top.getId()),
-                    toTheRight
+            return getter.f(
+                    (List<T>) top.getParagraph().getTopics(),
+                    sib -> ((Topic)sib).getId().equals(top.getId())
             );
         }
     }
@@ -290,7 +299,7 @@ public class Dao {
         Topic curTopic = loadTopicById(currentTopicId, owner);
         Paragraph paragraph = curTopic.getParagraph();
         List<Topic> topics = paragraph.getTopics();
-        Optional<Topic> nextTopic = OutlineUtils.getSibling(
+        Optional<Topic> nextTopic = OutlineUtils.getNextSibling(
                 topics, topic -> currentTopicId.equals(topic.getId()), direction
         );
         if (nextTopic.isPresent()) {

@@ -3,6 +3,7 @@ package org.igye.outline.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import fj.F3;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -328,14 +329,21 @@ public class ControllerUI {
     }
 
     @GetMapping(PARAGRAPH)
-    public String paragraph(Model model, @RequestParam Optional<UUID> id,
-                            Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
+    public String paragraph(Model model, @RequestParam Optional<UUID> id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext) {
         initModel(model);
-        if (isLeftmostSibling.orElse(false)) {
-            model.addAttribute("isLeftmostSibling", true);
-        }
-        if (isRightmostSibling.orElse(false)) {
-            model.addAttribute("isRightmostSibling", true);
+        if (id.isPresent()) {
+            if (checkNext.orElse(false)) {
+                Optional<?> nextTopicOpt = dao.nextSibling(sessionData.getUser(), id.get(), true);
+                if (!nextTopicOpt.isPresent()) {
+                    model.addAttribute("isRightmostSibling", true);
+                }
+            }
+            if (checkPrev.orElse(false)) {
+                Optional<?> prevTopicOpt = dao.nextSibling(sessionData.getUser(), id.get(), false);
+                if (!prevTopicOpt.isPresent()) {
+                    model.addAttribute("isLeftmostSibling", true);
+                }
+            }
         }
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         model.addAttribute("paragraph", paragraph);
@@ -365,24 +373,18 @@ public class ControllerUI {
 
     @GetMapping(TOPIC)
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
-                        Optional<Boolean> showImages, Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
+                        Optional<Boolean> showImages) {
         initModel(model);
         Topic topic = dao.loadSynopsisTopicByIdWithContent(id, sessionData.getUser());
         model.addAttribute("topic", topic);
-        if (isLeftmostSibling.orElse(false)) {
-            model.addAttribute("isLeftmostSibling", true);
-        }
-        if (isRightmostSibling.orElse(false)) {
-            model.addAttribute("isRightmostSibling", true);
-        }
         if (checkNext.orElse(false)) {
-            Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
+            Optional<?> nextTopicOpt = dao.nextSibling(sessionData.getUser(), id, true);
             if (!nextTopicOpt.isPresent()) {
                 model.addAttribute("isRightmostSibling", true);
             }
         }
         if (checkPrev.orElse(false)) {
-            Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
+            Optional<?> prevTopicOpt = dao.nextSibling(sessionData.getUser(), id, false);
             if (!prevTopicOpt.isPresent()) {
                 model.addAttribute("isLeftmostSibling", true);
             }
@@ -446,24 +448,39 @@ public class ControllerUI {
     }
 
     @GetMapping("nextSibling")
-    public String nextSibling(Model model, @RequestParam UUID id, @RequestParam boolean toTheRight) {
-        Optional<?> nextSibling = dao.nextSibling(sessionData.getUser(), id, toTheRight);
-        String redirectUri;
-        if (nextSibling.isPresent()) {
-            if (nextSibling.get() instanceof Topic) {
-                redirectUri = UriComponentsBuilder.newInstance()
+    public String nextSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
+        return getSibling(id, toTheRight, dao::nextSibling, false, false);
+    }
+
+    @GetMapping("furthestSibling")
+    public String furthestSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
+        return getSibling(id, toTheRight, dao::furthestSibling, !toTheRight, toTheRight);
+    }
+
+    private String getSibling(UUID id, boolean toTheRight, F3<User, UUID, Boolean, Optional<?>> getter,
+                              Boolean checkPrev, Boolean checkNext) {
+        Optional<?> sibling = getter.f(sessionData.getUser(), id, toTheRight);
+        UriComponentsBuilder redirectUriBuilder;
+        if (sibling.isPresent()) {
+            if (sibling.get() instanceof Topic) {
+                redirectUriBuilder = UriComponentsBuilder.newInstance()
                         .path(TOPIC)
-                        .queryParam("id", ((Topic)nextSibling.get()).getId())
-                        .toUriString();
+                        .queryParam("id", ((Topic)sibling.get()).getId())
+                        ;
             } else {
-                redirectUri = UriComponentsBuilder.newInstance()
+                redirectUriBuilder = UriComponentsBuilder.newInstance()
                         .path(PARAGRAPH)
-                        .queryParam("id", ((Paragraph)nextSibling.get()).getId())
-                        .toUriString();
+                        .queryParam("id", ((Paragraph)sibling.get()).getId())
+                        ;
+            }
+            if (checkNext) {
+                redirectUriBuilder.queryParam("checkNext", true);
+            }
+            if (checkPrev) {
+                redirectUriBuilder.queryParam("checkPrev", true);
             }
         } else {
             Optional<Object> curEntity = dao.loadEntityById(sessionData.getUser(), id);
-            UriComponentsBuilder redirectUriBuilder;
             if (curEntity.get() instanceof Topic) {
                 redirectUriBuilder = UriComponentsBuilder.newInstance()
                         .path(TOPIC)
@@ -474,13 +491,12 @@ public class ControllerUI {
                         .queryParam("id", ((Paragraph) curEntity.get()).getId());
             }
             if (toTheRight) {
-                redirectUriBuilder.queryParam("isRightmostSibling", true);
+                redirectUriBuilder.queryParam("checkNext", true);
             } else {
-                redirectUriBuilder.queryParam("isLeftmostSibling", true);
+                redirectUriBuilder.queryParam("checkPrev", true);
             }
-            redirectUri = redirectUriBuilder.toUriString();
         }
-        return redirect(redirectUri);
+        return redirect(redirectUriBuilder.toUriString());
     }
 
     @GetMapping("topicImage/{imgId}")

@@ -50,7 +50,7 @@ public class OutlineUtils {
         return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
     }
 
-    public static <T> Optional<T> getSibling(List<T> list, Function<T,Boolean> comparator, boolean toTheRight) {
+    public static <T> Optional<T> getNextSibling(List<T> list, Function<T,Boolean> comparator, boolean toTheRight) {
         if (CollectionUtils.isEmpty(list) ||
                 !toTheRight && comparator.apply(list.get(0)) ||
                 toTheRight && comparator.apply(list.get(list.size() - 1))) {
@@ -61,7 +61,17 @@ public class OutlineUtils {
                     return Optional.of(list.get(i + (toTheRight ? 1 : -1)));
                 }
             }
-            throw new OutlineException("getSibling");
+            throw new OutlineException("getNextSibling");
+        }
+    }
+
+    public static <T> Optional<T> getFurthestSibling(List<T> list, Function<T,Boolean> comparator, Boolean toTheRight) {
+        if (CollectionUtils.isEmpty(list) ||
+                !toTheRight && comparator.apply(list.get(0)) ||
+                toTheRight && comparator.apply(list.get(list.size() - 1))) {
+            return Optional.empty();
+        } else {
+            return Optional.of(list.get(toTheRight ? list.size() - 1 : 0));
         }
     }
 

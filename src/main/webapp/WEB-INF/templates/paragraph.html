@@ -99,10 +99,12 @@
 
 <div th:replace="path :: path"/>
 <div>
+    <a th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=false)}">[[[&nbsp;&nbsp;</a>
     <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     <span th:if="${isLeftmostSibling}">This is the first paragraph.</span>
     &nbsp;&nbsp;
     <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    <a th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">&nbsp;&nbsp;]]]</a>
     <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
 </div>
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>

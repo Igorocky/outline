@@ -5,10 +5,12 @@
 <div th:replace="path :: path"/>
 
 <div>
+    <a th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=false)}">[[[&nbsp;&nbsp;</a>
     <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     <span th:if="${isLeftmostSibling}">This is the first topic.</span>
     &nbsp;&nbsp;
     <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    <a th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=true)}">&nbsp;&nbsp;]]]</a>
     <span th:if="${isRightmostSibling}">This is the last topic.</span>
 </div>
 <h4>
