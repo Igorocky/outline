@@ -59,6 +59,10 @@ public class Paragraph {
     }
 
     public boolean getHasChildren() {
-        return !childParagraphs.isEmpty() || !topics.isEmpty();
+        return !getChildParagraphs().isEmpty() || !getTopics().isEmpty();
+    }
+
+    public boolean getHasParent() {
+        return getParentParagraph() != null;
     }
 }

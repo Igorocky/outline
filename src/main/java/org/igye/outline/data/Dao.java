@@ -58,9 +58,31 @@ public class Dao {
         return getSibling(requestor, id, (list, comp) -> OutlineUtils.getFurthestSibling(list, comp, toTheRight));
     }
 
+    @Transactional
+    public Optional<?> firstChild(User requestor, UUID id) {
+        Paragraph paragraph = loadParagraphByNotNullId(id, requestor);
+        if (!paragraph.getChildParagraphs().isEmpty()) {
+            return Optional.of(paragraph.getChildParagraphs().get(0));
+        } else if (!paragraph.getTopics().isEmpty()) {
+            return Optional.of(paragraph.getTopics().get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Transactional
+    public Optional<Paragraph> loadParent(User requestor, UUID id) {
+        Object entity = loadEntityById(requestor, id);
+        if (entity instanceof Paragraph) {
+            return Optional.ofNullable(((Paragraph) entity).getParentParagraph());
+        } else {
+            return Optional.of(((Topic) entity).getParagraph());
+        }
+    }
+
     private <T> Optional<T> getSibling(User requestor, UUID id,
                                       F2<List<T>, Function<T,Boolean>, Optional<T>> getter) {
-        Object entity = loadEntityById(requestor, id).get();
+        Object entity = loadEntityById(requestor, id);
         if (entity instanceof Paragraph) {
             Paragraph par = (Paragraph) entity;
             if (par.getParentParagraph() == null) {
@@ -81,12 +103,12 @@ public class Dao {
     }
 
     @Transactional
-    public Optional<Object> loadEntityById(User requestor, UUID id) {
+    public Object loadEntityById(User requestor, UUID id) {
         List<Paragraph> paragraphs = queryParagraphByIdAndOwner(id, requestor).list();
         if (!paragraphs.isEmpty()) {
-            return Optional.of(paragraphs.get(0));
+            return paragraphs.get(0);
         } else {
-            return Optional.of(loadTopicById(id, requestor));
+            return loadTopicById(id, requestor);
         }
     }
 

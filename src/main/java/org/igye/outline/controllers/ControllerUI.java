@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.*;
@@ -329,23 +331,14 @@ public class ControllerUI {
     }
 
     @GetMapping(PARAGRAPH)
-    public String paragraph(Model model, @RequestParam Optional<UUID> id,
-                            Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
-                            Optional<Boolean> showContent) {
+    public String paragraph(Model model, @RequestParam Optional<UUID> id, Optional<Boolean> showContent,
+                            Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
         initModel(model);
-        if (id.isPresent()) {
-            if (checkNext.orElse(false)) {
-                Optional<?> nextTopicOpt = dao.nextSibling(sessionData.getUser(), id.get(), true);
-                if (!nextTopicOpt.isPresent()) {
-                    model.addAttribute("isRightmostSibling", true);
-                }
-            }
-            if (checkPrev.orElse(false)) {
-                Optional<?> prevTopicOpt = dao.nextSibling(sessionData.getUser(), id.get(), false);
-                if (!prevTopicOpt.isPresent()) {
-                    model.addAttribute("isLeftmostSibling", true);
-                }
-            }
+        if (isLeftmostSibling.orElse(false)) {
+            model.addAttribute("isLeftmostSibling", true);
+        }
+        if (isRightmostSibling.orElse(false)) {
+            model.addAttribute("isRightmostSibling", true);
         }
         if (showContent.orElse(true)) {
             model.addAttribute("showContent", true);
@@ -357,44 +350,17 @@ public class ControllerUI {
         return PARAGRAPH;
     }
 
-    @GetMapping("firstChild")
-    public String firstChild(@RequestParam Optional<UUID> id) {
-        Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
-        String redirectUri = null;
-        if (!paragraph.getChildParagraphs().isEmpty()) {
-            redirectUri = UriComponentsBuilder.newInstance()
-                    .path(PARAGRAPH)
-                    .queryParam("id", paragraph.getChildParagraphs().get(0).getId())
-                    .queryParam("checkPrev", true)
-                    .queryParam("showContent", false)
-                    .toUriString();
-        } else {
-            redirectUri = UriComponentsBuilder.newInstance()
-                    .path(TOPIC)
-                    .queryParam("id", paragraph.getTopics().get(0).getId())
-                    .queryParam("checkPrev", true)
-                    .toUriString();
-        }
-        return redirect(redirectUri);
-    }
-
     @GetMapping(TOPIC)
-    public String topic(Model model, @RequestParam UUID id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
-                        Optional<Boolean> showContent) {
+    public String topic(Model model, @RequestParam UUID id, Optional<Boolean> showContent,
+                        Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
         initModel(model);
         Topic topic = dao.loadSynopsisTopicByIdWithContent(id, sessionData.getUser());
         model.addAttribute("topic", topic);
-        if (checkNext.orElse(false)) {
-            Optional<?> nextTopicOpt = dao.nextSibling(sessionData.getUser(), id, true);
-            if (!nextTopicOpt.isPresent()) {
-                model.addAttribute("isRightmostSibling", true);
-            }
+        if (isLeftmostSibling.orElse(false)) {
+            model.addAttribute("isLeftmostSibling", true);
         }
-        if (checkPrev.orElse(false)) {
-            Optional<?> prevTopicOpt = dao.nextSibling(sessionData.getUser(), id, false);
-            if (!prevTopicOpt.isPresent()) {
-                model.addAttribute("isLeftmostSibling", true);
-            }
+        if (isRightmostSibling.orElse(false)) {
+            model.addAttribute("isRightmostSibling", true);
         }
         addPath(model, topic.getParagraph());
         showContent.ifPresent(b -> model.addAttribute("showContent", b));
@@ -454,58 +420,83 @@ public class ControllerUI {
         return redirect(redirectUri);
     }
 
+    @GetMapping("firstChild")
+    public String firstChild(@RequestParam UUID id) {
+        return getNode(
+                id,
+                () -> dao.firstChild(sessionData.getUser(), id),
+                uri -> {},
+                uri -> {}
+        );
+    }
+
+    @GetMapping("parent")
+    public String parent(@RequestParam UUID id) {
+        return getNode(
+                id,
+                () -> dao.loadParent(sessionData.getUser(), id),
+                uri -> {},
+                uri -> {}
+        );
+    }
+
     @GetMapping("nextSibling")
     public String nextSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
-        return getSibling(id, toTheRight, dao::nextSibling, false, false);
+        return getNode(
+                id,
+                () -> dao.nextSibling(sessionData.getUser(), id, toTheRight),
+                uri -> {},
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
+        );
     }
 
     @GetMapping("furthestSibling")
     public String furthestSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
-        return getSibling(id, toTheRight, dao::furthestSibling, !toTheRight, toTheRight);
+        return getNode(
+                id,
+                () -> dao.furthestSibling(sessionData.getUser(), id, toTheRight),
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true),
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
+        );
     }
 
-    private String getSibling(UUID id, boolean toTheRight, F3<User, UUID, Boolean, Optional<?>> getter,
-                              Boolean checkPrev, Boolean checkNext) {
-        Optional<?> sibling = getter.f(sessionData.getUser(), id, toTheRight);
+    private String getNode(UUID id, Supplier<Optional<?>> getter,
+                           Consumer<UriComponentsBuilder> onPresent,
+                           Consumer<UriComponentsBuilder> onAbsent) {
+        Optional<?> node = getter.get();
         UriComponentsBuilder redirectUriBuilder;
-        if (sibling.isPresent()) {
-            if (sibling.get() instanceof Topic) {
-                redirectUriBuilder = UriComponentsBuilder.newInstance()
-                        .path(TOPIC)
-                        .queryParam("id", ((Topic)sibling.get()).getId())
-                        ;
+        if (node.isPresent()) {
+            if (node.get() instanceof Topic) {
+                redirectUriBuilder = topicUriBuilder((Topic) node.get());
             } else {
-                redirectUriBuilder = UriComponentsBuilder.newInstance()
-                        .path(PARAGRAPH)
-                        .queryParam("id", ((Paragraph)sibling.get()).getId())
-                        .queryParam("showContent", false)
-                        ;
+                redirectUriBuilder = paragraphUriBuilder((Paragraph) node.get());
             }
-            if (checkNext) {
-                redirectUriBuilder.queryParam("checkNext", true);
-            }
-            if (checkPrev) {
-                redirectUriBuilder.queryParam("checkPrev", true);
-            }
+            onPresent.accept(redirectUriBuilder);
         } else {
-            Optional<Object> curEntity = dao.loadEntityById(sessionData.getUser(), id);
-            if (curEntity.get() instanceof Topic) {
-                redirectUriBuilder = UriComponentsBuilder.newInstance()
-                        .path(TOPIC)
-                        .queryParam("id", ((Topic) curEntity.get()).getId());
+            Object curEntity = dao.loadEntityById(sessionData.getUser(), id);
+            if (curEntity instanceof Topic) {
+                redirectUriBuilder = topicUriBuilder((Topic) curEntity);
             } else {
-                redirectUriBuilder = UriComponentsBuilder.newInstance()
-                        .path(PARAGRAPH)
-                        .queryParam("id", ((Paragraph) curEntity.get()).getId())
-                        .queryParam("showContent", false);
+                redirectUriBuilder = paragraphUriBuilder((Paragraph) curEntity);
             }
-            if (toTheRight) {
-                redirectUriBuilder.queryParam("checkNext", true);
-            } else {
-                redirectUriBuilder.queryParam("checkPrev", true);
-            }
+            onAbsent.accept(redirectUriBuilder);
         }
         return redirect(redirectUriBuilder.toUriString());
+    }
+
+    private UriComponentsBuilder paragraphUriBuilder(Paragraph paragraph) {
+        return UriComponentsBuilder.newInstance()
+                .path(PARAGRAPH)
+                .queryParam("id", paragraph.getId())
+                .queryParam("showContent", false)
+                ;
+    }
+
+    private UriComponentsBuilder topicUriBuilder(Topic topic) {
+        return UriComponentsBuilder.newInstance()
+                .path(TOPIC)
+                .queryParam("id", topic.getId())
+                ;
     }
 
     @GetMapping("topicImage/{imgId}")

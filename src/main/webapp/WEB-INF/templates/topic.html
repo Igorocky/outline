@@ -20,20 +20,8 @@
 <div th:replace="common-header :: header"></div>
 
 <div th:replace="path :: path"/>
-<div style="margin-top: 20px">
-    <span th:if="${isLeftmostSibling}">This is the first topic.</span>
-    <a shortcut="P" th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=false)}">[[[</a>
-    &nbsp;&nbsp;
-    <a shortcut="p" th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=false)}">&lt;&lt;Prev</a>
-    &nbsp;&nbsp;
-    <span th:if="${isRightmostSibling}">This is the last topic.</span>
-    <a shortcut="n" th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
-    &nbsp;&nbsp;
-    <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=true)}">]]]</a>
-</div>
-<h4>
-    <span th:text="${topic.name}" />
-</h4>
+<div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
+<h3>&#10042;<span th:text="${topic.name}" /></h3>
 <div>
     <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit</a>&nbsp;
     <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;

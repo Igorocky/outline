@@ -101,17 +101,7 @@
 </div>
 
 <div th:replace="path :: path"/>
-<div style="margin-top: 20px">
-    <span th:if="${isLeftmostSibling}">This is the first paragraph.</span>
-    <a shortcut="P" th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=false)}">[[[</a>
-    &nbsp;&nbsp;
-    <a shortcut="p" th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
-    &nbsp;&nbsp;
-    <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
-    <a shortcut="n" th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
-    &nbsp;&nbsp;
-    <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">]]]</a>
-</div>
+<div th:replace="training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>
 <div>
     <a shortcut="i" th:unless="${showContent}" th:href="@{/paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
@@ -122,8 +112,8 @@
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
             <span>
                 <input class="selection-checkbox-par" type="checkbox" hidden="hidden" th:id="${childPar.id}">
-                <a th:if="${childPar.hasChildren}" th:href="@{firstChild(id=${childPar.id})}" >&gt;&gt;&gt;</a>
-                <span th:unless="${childPar.hasChildren}">&gt;&gt;&gt;</span>
+                <a th:if="${childPar.hasChildren}" th:href="@{firstChild(id=${childPar.id})}" >&#8681;&nbsp;</a>
+                <span th:unless="${childPar.hasChildren}">&#8681;&nbsp;</span>
                 <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
             </span>
         </li>

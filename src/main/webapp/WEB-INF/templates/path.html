@@ -1,7 +1,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="path" shortcut="u">
+<div th:fragment="path" shortcut="a">
     <span th:each="par,stat : ${path}">
         <a th:if="${stat.first}" th:href="@{/paragraph}">&nbsp;/&nbsp;</a>
         <span th:unless="${stat.first}">&nbsp;/&nbsp;</span>
