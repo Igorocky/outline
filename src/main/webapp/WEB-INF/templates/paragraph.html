@@ -108,7 +108,7 @@
     <a shortcut="p" th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     &nbsp;&nbsp;
     <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
-    <a shortcut="n" th:usnless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    <a shortcut="n" th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
     &nbsp;&nbsp;
     <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">]]]</a>
 </div>
