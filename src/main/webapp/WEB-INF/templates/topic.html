@@ -1,16 +1,35 @@
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions"></script>
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" >
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css">
+    <script type="text/javascript">
+        $( function() {
+            registerShortcuts();
+        } );
+    </script>
+</head>
 <body>
 <div th:replace="common-header :: header"></div>
 
 <div th:replace="path :: path"/>
 <div style="margin-top: 20px">
-    <a th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=false)}">[[[&nbsp;&nbsp;</a>
-    <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     <span th:if="${isLeftmostSibling}">This is the first topic.</span>
+    <a shortcut="P" th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=false)}">[[[</a>
     &nbsp;&nbsp;
-    <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
-    <a th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=true)}">&nbsp;&nbsp;]]]</a>
+    <a shortcut="p" th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=false)}">&lt;&lt;Prev</a>
+    &nbsp;&nbsp;
     <span th:if="${isRightmostSibling}">This is the last topic.</span>
+    <a shortcut="n" th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${topic.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    &nbsp;&nbsp;
+    <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${topic.id}, toTheRight=true)}">]]]</a>
 </div>
 <h4>
     <span th:text="${topic.name}" />
@@ -21,8 +40,8 @@
 </div>
 
 <div>
-    <a th:unless="${showImages}" th:href="@{/topic(id=${topic.id},showImages=true)}">Show images</a>&nbsp;
-    <a th:if="${showImages}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
+    <a shortcut="i" th:unless="${showImages}" th:href="@{/topic(id=${topic.id},showImages=true)}">Show images</a>&nbsp;
+    <a shortcut="i" th:if="${showImages}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
 </div>
 
 <div th:if="${showImages}" th:each="content : ${topic.contents}">

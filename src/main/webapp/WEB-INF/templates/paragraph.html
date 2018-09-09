@@ -79,6 +79,9 @@
                 }
             });
         }
+        $( function() {
+            registerShortcuts();
+        } );
     </script>
 </head>
 <body>
@@ -99,17 +102,19 @@
 
 <div th:replace="path :: path"/>
 <div style="margin-top: 20px">
-    <a th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=false)}">[[[&nbsp;&nbsp;</a>
-    <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     <span th:if="${isLeftmostSibling}">This is the first paragraph.</span>
+    <a shortcut="P" th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=false)}">[[[</a>
     &nbsp;&nbsp;
-    <a th:unless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
-    <a th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">&nbsp;&nbsp;]]]</a>
+    <a shortcut="p" th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
+    &nbsp;&nbsp;
     <span th:if="${isRightmostSibling}">This is the last paragraph.</span>
+    <a shortcut="n" th:usnless="${isRightmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=true)}">Next&gt;&gt;</a>
+    &nbsp;&nbsp;
+    <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">]]]</a>
 </div>
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>
 
-    <ul id="paragraphs-list" >
+    <ul shortcut="c" id="paragraphs-list" >
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
             <span>
                 <input class="selection-checkbox-par" type="checkbox" hidden="hidden" th:id="${childPar.id}">
@@ -119,7 +124,7 @@
             </span>
         </li>
     </ul>
-    <ul id="topics-list" >
+    <ul shortcut="c" id="topics-list" >
         <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
             <span>-
                 <input class="selection-checkbox-topic" type="checkbox" hidden="hidden" th:id="${topic.id}">

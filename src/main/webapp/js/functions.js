@@ -79,3 +79,51 @@ function uploadImage(file, onSuccess) {
         }
     });
 }
+
+function registerShortcuts() {
+  registerShortcutsOnElems("a", function (elem) {elem.click();});
+  registerShortcutsOnElems("div, ul", focusFirstChild("a"));
+}
+
+function registerShortcutsOnElems(elemsSelector, action) {
+    $(elemsSelector).each(function (idx, elem) {
+        if (elem.hasAttribute("shortcut")) {
+            let shortcut = elem.getAttribute("shortcut");
+            registerShortcut(createEventSelector(shortcut), function () {action(elem);});
+            $(elem).attr("title", shortcut);
+        }
+    })
+}
+
+function focusFirstChild(childSelector) {
+    return function (elem) {
+        $(elem).find(childSelector + ":first").focus();
+    }
+}
+
+function registerShortcut(eventSelector, action) {
+    document.addEventListener(
+        "keyup",
+        function onKeyUp(event) {
+            if (eventSelector(event)) {
+                action();
+            }
+        },
+        false
+    );
+}
+
+function createEventSelector(shortcutStr) {
+    let arr = shortcutStr.split(" ");
+    if (_.size(arr) == 1) {
+        return function(event) {
+            return event.key == shortcutStr;
+        }
+    } else if (_.size(arr) == 2) {
+        if (_.first(arr) == "ctrl") {
+            return function(event) {
+                return event.ctrlKey && event.key == _.last(arr);
+            }
+        }
+    }
+}

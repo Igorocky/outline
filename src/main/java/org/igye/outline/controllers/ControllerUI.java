@@ -348,7 +348,7 @@ public class ControllerUI {
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
-        addPath(model, paragraph);
+        addPath(model, paragraph.getParentParagraph());
         return PARAGRAPH;
     }
 
