@@ -98,7 +98,7 @@
 </div>
 
 <div th:replace="path :: path"/>
-<div>
+<div style="margin-top: 20px">
     <a th:unless="${isLeftmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=false)}">[[[&nbsp;&nbsp;</a>
     <a th:unless="${isLeftmostSibling}" th:href="@{/nextSibling(id=${paragraph.id}, toTheRight=false)}">&lt;&lt;Prev</a>
     <span th:if="${isLeftmostSibling}">This is the first paragraph.</span>
