@@ -329,7 +329,9 @@ public class ControllerUI {
     }
 
     @GetMapping(PARAGRAPH)
-    public String paragraph(Model model, @RequestParam Optional<UUID> id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext) {
+    public String paragraph(Model model, @RequestParam Optional<UUID> id,
+                            Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
+                            Optional<Boolean> showContent) {
         initModel(model);
         if (id.isPresent()) {
             if (checkNext.orElse(false)) {
@@ -345,6 +347,9 @@ public class ControllerUI {
                 }
             }
         }
+        if (showContent.orElse(true)) {
+            model.addAttribute("showContent", true);
+        }
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
@@ -353,13 +358,15 @@ public class ControllerUI {
     }
 
     @GetMapping("firstChild")
-    public String firstChild(Model model, @RequestParam Optional<UUID> id) {
+    public String firstChild(@RequestParam Optional<UUID> id) {
         Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
         String redirectUri = null;
         if (!paragraph.getChildParagraphs().isEmpty()) {
             redirectUri = UriComponentsBuilder.newInstance()
                     .path(PARAGRAPH)
                     .queryParam("id", paragraph.getChildParagraphs().get(0).getId())
+                    .queryParam("checkPrev", true)
+                    .queryParam("showContent", false)
                     .toUriString();
         } else {
             redirectUri = UriComponentsBuilder.newInstance()
@@ -373,7 +380,7 @@ public class ControllerUI {
 
     @GetMapping(TOPIC)
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> checkPrev, Optional<Boolean> checkNext,
-                        Optional<Boolean> showImages) {
+                        Optional<Boolean> showContent) {
         initModel(model);
         Topic topic = dao.loadSynopsisTopicByIdWithContent(id, sessionData.getUser());
         model.addAttribute("topic", topic);
@@ -390,7 +397,7 @@ public class ControllerUI {
             }
         }
         addPath(model, topic.getParagraph());
-        showImages.ifPresent(b -> model.addAttribute("showImages", b));
+        showContent.ifPresent(b -> model.addAttribute("showContent", b));
 
         return TOPIC;
     }
@@ -471,6 +478,7 @@ public class ControllerUI {
                 redirectUriBuilder = UriComponentsBuilder.newInstance()
                         .path(PARAGRAPH)
                         .queryParam("id", ((Paragraph)sibling.get()).getId())
+                        .queryParam("showContent", false)
                         ;
             }
             if (checkNext) {
@@ -488,7 +496,8 @@ public class ControllerUI {
             } else {
                 redirectUriBuilder = UriComponentsBuilder.newInstance()
                         .path(PARAGRAPH)
-                        .queryParam("id", ((Paragraph) curEntity.get()).getId());
+                        .queryParam("id", ((Paragraph) curEntity.get()).getId())
+                        .queryParam("showContent", false);
             }
             if (toTheRight) {
                 redirectUriBuilder.queryParam("checkNext", true);

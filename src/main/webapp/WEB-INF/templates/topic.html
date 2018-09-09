@@ -40,11 +40,11 @@
 </div>
 
 <div>
-    <a shortcut="i" th:unless="${showImages}" th:href="@{/topic(id=${topic.id},showImages=true)}">Show images</a>&nbsp;
-    <a shortcut="i" th:if="${showImages}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
+    <a shortcut="i" th:unless="${showContent}" th:href="@{/topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
+    <a shortcut="i" th:if="${showContent}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
 </div>
 
-<div th:if="${showImages}" th:each="content : ${topic.contents}">
+<div th:if="${showContent}" th:each="content : ${topic.contents}">
     <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
          th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
     <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>

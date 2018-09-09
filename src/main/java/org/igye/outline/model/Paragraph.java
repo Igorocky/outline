@@ -57,4 +57,8 @@ public class Paragraph {
         topic.setParagraph(this);
         topic.setOwner(getOwner());
     }
+
+    public boolean getHasChildren() {
+        return !childParagraphs.isEmpty() || !topics.isEmpty();
+    }
 }

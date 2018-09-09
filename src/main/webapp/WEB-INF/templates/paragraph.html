@@ -113,18 +113,22 @@
     <a shortcut="N" th:unless="${isRightmostSibling}" th:href="@{/furthestSibling(id=${paragraph.id}, toTheRight=true)}">]]]</a>
 </div>
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>
-
-    <ul shortcut="c" id="paragraphs-list" >
+<div>
+    <a shortcut="i" th:unless="${showContent}" th:href="@{/paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
+    <a shortcut="i" th:if="${showContent}" th:href="@{/paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
+</div>
+<div th:if="${showContent}" shortcut="c" >
+    <ul id="paragraphs-list" >
         <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
             <span>
                 <input class="selection-checkbox-par" type="checkbox" hidden="hidden" th:id="${childPar.id}">
-                <a th:if="${not #lists.isEmpty(childPar.childParagraphs) or not #lists.isEmpty(childPar.topics)}" th:href="@{firstChild(id=${childPar.id})}" >&gt;&gt;&gt;</a>
-                <span th:unless="${not #lists.isEmpty(childPar.childParagraphs) or not #lists.isEmpty(childPar.topics)}">&gt;&gt;&gt;</span>
+                <a th:if="${childPar.hasChildren}" th:href="@{firstChild(id=${childPar.id})}" >&gt;&gt;&gt;</a>
+                <span th:unless="${childPar.hasChildren}">&gt;&gt;&gt;</span>
                 <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
             </span>
         </li>
     </ul>
-    <ul shortcut="c" id="topics-list" >
+    <ul id="topics-list" >
         <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
             <span>-
                 <input class="selection-checkbox-topic" type="checkbox" hidden="hidden" th:id="${topic.id}">
@@ -132,6 +136,6 @@
             </span>
         </li>
     </ul>
-
+</div>
 </body>
 </html>
