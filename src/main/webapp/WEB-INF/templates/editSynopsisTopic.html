@@ -158,12 +158,8 @@
             <td>Name</td>
             <td><input id="name" type="text" size="120" th:field="*{name}"/></td>
         </tr>
-        <!--<tr>-->
-            <!--<td><a href="#" onclick="up()">Up</a>&nbsp;<a href="#" onclick="down()">Down</a></td>-->
-            <!--<td><textarea>Some Text</textarea></td>-->
-        <!--</tr>-->
         <tr>
-            <td><a th:href="*{id} != null ? @{/topic(id=${form.id})} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
+            <td><a th:href="*{id} != null ? @{/topic(id=${form.id},showContent=true)} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
             <td><a href="#" th:text="*{id} == null ? 'Create' : 'Save'"
                    th:onclick="'submitForm(\'' + *{parentId} + '\', \'' + *{id} + '\')'">Save</a></td>
         </tr>
