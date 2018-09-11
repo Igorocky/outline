@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hibernate.annotations.CascadeType.*;
-import static org.hibernate.annotations.CascadeType.REMOVE;
 
 @Data
 @NoArgsConstructor
@@ -28,8 +27,15 @@ public class SynopsisTopic extends Topic {
         content.setOwner(getOwner());
     }
 
-    public void detachContent(Content content) {
-        getContents().remove(content);
+    public void detachContentById(Content content) {
+        int idx = 0;
+        while (idx < getContents().size()) {
+            if (getContents().get(idx).getId().equals(content.getId())) {
+                getContents().remove(idx);
+            } else {
+                idx++;
+            }
+        }
         content.setTopic(null);
     }
 

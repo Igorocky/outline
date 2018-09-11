@@ -1,6 +1,7 @@
 package org.igye.outline.data;
 
 import org.hibernate.Session;
+import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.*;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ public class TestDataBuilder {
     private Session session;
     private User currentUser;
     private Paragraph parentParagraph;
+    private SynopsisTopic parentTopic;
     private Object currentObject;
     private Map<String, Object> results = new HashMap<>();
 
@@ -19,11 +21,12 @@ public class TestDataBuilder {
         this.session = session;
     }
 
-    public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph) {
+    public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph, SynopsisTopic parentTopic) {
         this.session = session;
         this.currentObject = currentObject;
         this.currentUser = currentUser;
         this.parentParagraph = parentParagraph;
+        this.parentTopic = parentTopic;
     }
 
     public TestDataBuilder user(String name) {
@@ -68,7 +71,7 @@ public class TestDataBuilder {
     }
 
     public TestDataBuilder topic(String name) {
-        Topic topic = new Topic();
+        SynopsisTopic topic = new SynopsisTopic();
         topic.setName(name);
         if (parentParagraph != null) {
             parentParagraph.addTopic(topic);
@@ -76,6 +79,13 @@ public class TestDataBuilder {
             throw new TestDataBuilderException("Topic '" + name + "' can't be outside of a paragraph");
         }
         currentObject = topic;
+        return this;
+    }
+
+    public TestDataBuilder image() {
+        Image image = new Image();
+        parentTopic.addContent(image);
+        currentObject = image;
         return this;
     }
 
@@ -98,20 +108,24 @@ public class TestDataBuilder {
         processForCurrentObject(
                 user -> null,
                 paragraph -> paragraph.getTags().add(finalTag),
-                topic -> topic.getTags().add(finalTag)
+                topic -> topic.getTags().add(finalTag),
+                image -> null
         );
         return this;
     }
 
     private <T> T  processForCurrentObject(Function<User, T> userConsumer,
                                            Function<Paragraph, T> paragraphConsumer,
-                                           Function<Topic, T> topicConsumer) {
+                                           Function<SynopsisTopic, T> topicConsumer,
+                                           Function<Image, T> imageConsumer) {
         if (currentObject instanceof User) {
             return userConsumer.apply((User) currentObject);
         } else if (currentObject instanceof Paragraph) {
             return paragraphConsumer.apply((Paragraph) currentObject);
-        } else if (currentObject instanceof Topic) {
-            return topicConsumer.apply((Topic) currentObject);
+        } else if (currentObject instanceof SynopsisTopic) {
+            return topicConsumer.apply((SynopsisTopic) currentObject);
+        } else if (currentObject instanceof Image) {
+            return imageConsumer.apply((Image) currentObject);
         } else {
             throw new TestDataBuilderException("Unexpected type of currentObject: " + currentObject);
         }
@@ -119,9 +133,12 @@ public class TestDataBuilder {
 
     public TestDataBuilder children(Function<TestDataBuilder, TestDataBuilder> childrenBuilder) {
         TestDataBuilder newBuilder = processForCurrentObject(
-                user -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph),
-                paragraph -> new TestDataBuilder(session, currentObject, currentUser, (Paragraph) currentObject),
-                topic -> new TestDataBuilder(session, currentObject, currentUser, parentParagraph)
+                user -> new TestDataBuilder(session, user, currentUser, null, null),
+                paragraph -> new TestDataBuilder(session, null, currentUser, paragraph, null),
+                topic -> new TestDataBuilder(session, null, currentUser, parentParagraph, topic),
+                image -> {
+                    throw new OutlineException("Image cannot have children.");
+                }
         );
         results.putAll(childrenBuilder.apply(newBuilder).getResults());
         return this;

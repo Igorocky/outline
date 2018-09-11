@@ -324,8 +324,8 @@ public class ControllerUI {
     }
 
     @PostMapping("performActionOnSelectedObjects")
-    public String performActionOnSelectedObjects(@RequestBody UUID destParId) {
-        dao.performActionOnSelectedObjects(sessionData.getUser(), sessionData.getSelection(), destParId);
+    public String performActionOnSelectedObjects(@RequestBody UUID destId) {
+        dao.performActionOnSelectedObjects(sessionData.getUser(), sessionData.getSelection(), destId);
         sessionData.setSelection(null);
         return NOTHING;
     }
@@ -364,6 +364,7 @@ public class ControllerUI {
         }
         addPath(model, topic.getParagraph());
         showContent.ifPresent(b -> model.addAttribute("showContent", b));
+        model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
 
         return TOPIC;
     }

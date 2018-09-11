@@ -14,12 +14,10 @@ function doPost(params) {
     });
 }
 
-function submitSelection(actionType, selectedParagraphIds, selectedTopicIds, onSuccess) {
+function submitSelection(actionType, selectedElems, onSuccess) {
     let selection = {
         actionType: actionType,
-        selections: _.map(selectedParagraphIds, idToSelectionPart('PARAGRAPH')).concat(
-            _.map(selectedTopicIds, idToSelectionPart('TOPIC'))
-        )
+        selections: _.map(selectedElems, selectedElemToSelectionPart())
     };
     doPost({
         url: "/select",
@@ -28,10 +26,48 @@ function submitSelection(actionType, selectedParagraphIds, selectedTopicIds, onS
     });
 }
 
-function idToSelectionPart(objectType) {
-    return function (id) {
-        return {objectType: objectType, selectedId: id}
+function selectedElemToSelectionPart() {
+    return function (selectedElem) {
+        return {
+            objectType: $(selectedElem).attr("objecttype"),
+            selectedId: $(selectedElem).attr("id")
+        }
     }
+}
+
+function selectionModeOn() {
+    $( ".selection-checkbox" ).show();
+    $( "#selection-mode-on-btn" ).hide();
+    $( "#selection-mode-off-btn" ).show();
+    $( "#cut-btn" ).show();
+}
+
+function selectionModeOff() {
+    $( ".selection-checkbox" ).hide();
+    $( "#selection-mode-on-btn" ).show();
+    $( "#selection-mode-off-btn" ).hide();
+    $( "#cut-btn" ).hide();
+}
+
+function doSelection(actionType) {
+    let selectedElems = _.filter($(".selection-checkbox").toArray(), function (elem) {return elem.checked});
+    submitSelection(
+        actionType,
+        selectedElems,
+        function () {
+            _.each(selectedElems, function (elem) {elem.checked = false});
+            selectionModeOff();
+        }
+    )
+}
+function doPaste(destId) {
+    doPost({
+        url: "/performActionOnSelectedObjects",
+        data: destId,
+        success: function () {
+            window.location.reload();
+        }
+    });
 }
 
 function indexOf(list, predicate) {

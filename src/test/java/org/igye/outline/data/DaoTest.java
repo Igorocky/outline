@@ -38,6 +38,13 @@ public class DaoTest extends AbstractHibernateTest {
     public static final String SAVED_PARAGRAPH_2 = "savedParagraph-2";
     public static final String SAVED_PARAGRAPH_3 = "savedParagraph-3";
     public static final String SAVED_TOPIC = "savedTopic";
+    public static final String SAVED_TOPIC2 = "savedTopic2";
+    public static final String SAVED_IMAGE1 = "savedImage1";
+    public static final String SAVED_IMAGE2 = "savedImage2";
+    public static final String SAVED_IMAGE3 = "savedImage3";
+    public static final String SAVED_IMAGE4 = "savedImage4";
+    public static final String SAVED_IMAGE5 = "savedImage5";
+    public static final String SAVED_IMAGE6 = "savedImage6";
 
     @Autowired
     private Dao dao;
@@ -1192,6 +1199,228 @@ public class DaoTest extends AbstractHibernateTest {
             return null;
         });
 
+    }
+
+    @Test
+    public void moveImage_should_move_image_from_source_topic_with_only_one_image_to_destination_topic_with_no_images() {
+        //given
+        Map<String, Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save(OWNER).children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").children(b2 -> b2
+                                        .topic("srcTopic").save(SAVED_TOPIC).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE2)
+                                        )
+                                        .topic("T2")
+                                        .topic("T3")
+                                )
+                                .paragraph("P5").children(b2 -> b2
+                                        .topic("dstTopic").save(SAVED_TOPIC2)
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(OWNER);
+        SynopsisTopic srcTopic = (SynopsisTopic) saved.get(SAVED_TOPIC);
+        SynopsisTopic dstTopic = (SynopsisTopic) saved.get(SAVED_TOPIC2);
+        Image img2 = (Image) saved.get(SAVED_IMAGE2);
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(1, srcImages.size());
+            assertEquals(img2.getId(), srcImages.get(0).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(0, dstImages.size());
+            return null;
+        });
+
+        //when
+        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(0, srcImages.size());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(1, dstImages.size());
+            assertEquals(img2.getId(), dstImages.get(0).getId());
+            return null;
+        });
+    }
+
+    @Test
+    public void moveImage_should_move_image_from_source_topic_with_only_one_image_to_destination_topic_with_few_images() {
+        //given
+        Map<String, Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save(OWNER).children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").children(b2 -> b2
+                                        .topic("srcTopic").save(SAVED_TOPIC).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE2)
+                                        )
+                                        .topic("T2")
+                                        .topic("T3")
+                                )
+                                .paragraph("P5").children(b2 -> b2
+                                        .topic("dstTopic").save(SAVED_TOPIC2).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE4)
+                                                .image().save(SAVED_IMAGE5)
+                                        )
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(OWNER);
+        SynopsisTopic srcTopic = (SynopsisTopic) saved.get(SAVED_TOPIC);
+        SynopsisTopic dstTopic = (SynopsisTopic) saved.get(SAVED_TOPIC2);
+        Image img2 = (Image) saved.get(SAVED_IMAGE2);
+        Image img4 = (Image) saved.get(SAVED_IMAGE4);
+        Image img5 = (Image) saved.get(SAVED_IMAGE5);
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(1, srcImages.size());
+            assertEquals(img2.getId(), srcImages.get(0).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(2, dstImages.size());
+            assertEquals(img4.getId(), dstImages.get(0).getId());
+            assertEquals(img5.getId(), dstImages.get(1).getId());
+            return null;
+        });
+
+        //when
+        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(0, srcImages.size());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(3, dstImages.size());
+            assertEquals(img4.getId(), dstImages.get(0).getId());
+            assertEquals(img5.getId(), dstImages.get(1).getId());
+            assertEquals(img2.getId(), dstImages.get(2).getId());
+            return null;
+        });
+    }
+
+    @Test
+    public void moveImage_should_move_image_from_source_topic_with_few_images_to_destination_topic_with_no_images() {
+        //given
+        Map<String, Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save(OWNER).children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").children(b2 -> b2
+                                        .topic("srcTopic").save(SAVED_TOPIC).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE1)
+                                                .image().save(SAVED_IMAGE2)
+                                                .image().save(SAVED_IMAGE3)
+                                        )
+                                        .topic("T2")
+                                        .topic("T3")
+                                )
+                                .paragraph("P5").children(b2 -> b2
+                                        .topic("dstTopic").save(SAVED_TOPIC2)
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(OWNER);
+        SynopsisTopic srcTopic = (SynopsisTopic) saved.get(SAVED_TOPIC);
+        SynopsisTopic dstTopic = (SynopsisTopic) saved.get(SAVED_TOPIC2);
+        Image img1 = (Image) saved.get(SAVED_IMAGE1);
+        Image img2 = (Image) saved.get(SAVED_IMAGE2);
+        Image img3 = (Image) saved.get(SAVED_IMAGE3);
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(3, srcImages.size());
+            assertEquals(img1.getId(), srcImages.get(0).getId());
+            assertEquals(img2.getId(), srcImages.get(1).getId());
+            assertEquals(img3.getId(), srcImages.get(2).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(0, dstImages.size());
+            return null;
+        });
+
+        //when
+        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(2, srcImages.size());
+            assertEquals(img1.getId(), srcImages.get(0).getId());
+            assertEquals(img3.getId(), srcImages.get(1).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(1, dstImages.size());
+            assertEquals(img2.getId(), dstImages.get(0).getId());
+            return null;
+        });
+    }
+
+    @Test
+    public void moveImage_should_move_image_from_source_topic_with_few_images_to_destination_topic_with_few_images() {
+        //given
+        Map<String, Object> saved = transactionTemplate.execute(status ->
+                new TestDataBuilder(getCurrentSession())
+                        .user("owner").save(OWNER).children(b -> b
+                        .paragraph(ROOT_NAME).children(b1 -> b1
+                                .paragraph("P1").children(b2 -> b2
+                                        .topic("srcTopic").save(SAVED_TOPIC).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE1)
+                                                .image().save(SAVED_IMAGE2)
+                                                .image().save(SAVED_IMAGE3)
+                                        )
+                                        .topic("T2")
+                                        .topic("T3")
+                                )
+                                .paragraph("P5").children(b2 -> b2
+                                        .topic("dstTopic").save(SAVED_TOPIC2).children(b3 -> b3
+                                                .image().save(SAVED_IMAGE4)
+                                                .image().save(SAVED_IMAGE5)
+                                        )
+                                )
+                        )
+                ).getResults()
+        );
+        User owner = (User) saved.get(OWNER);
+        SynopsisTopic srcTopic = (SynopsisTopic) saved.get(SAVED_TOPIC);
+        SynopsisTopic dstTopic = (SynopsisTopic) saved.get(SAVED_TOPIC2);
+        Image img1 = (Image) saved.get(SAVED_IMAGE1);
+        Image img2 = (Image) saved.get(SAVED_IMAGE2);
+        Image img3 = (Image) saved.get(SAVED_IMAGE3);
+        Image img4 = (Image) saved.get(SAVED_IMAGE4);
+        Image img5 = (Image) saved.get(SAVED_IMAGE5);
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(3, srcImages.size());
+            assertEquals(img1.getId(), srcImages.get(0).getId());
+            assertEquals(img2.getId(), srcImages.get(1).getId());
+            assertEquals(img3.getId(), srcImages.get(2).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(2, dstImages.size());
+            assertEquals(img4.getId(), dstImages.get(0).getId());
+            assertEquals(img5.getId(), dstImages.get(1).getId());
+            return null;
+        });
+
+        //when
+        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+
+        //then
+        transactionTemplate.execute(status -> {
+            List<Content> srcImages = dao.loadSynopsisTopicByIdWithContent(srcTopic.getId(), owner).getContents();
+            assertEquals(2, srcImages.size());
+            assertEquals(img1.getId(), srcImages.get(0).getId());
+            assertEquals(img3.getId(), srcImages.get(1).getId());
+            List<Content> dstImages = dao.loadSynopsisTopicByIdWithContent(dstTopic.getId(), owner).getContents();
+            assertEquals(3, dstImages.size());
+            assertEquals(img4.getId(), dstImages.get(0).getId());
+            assertEquals(img5.getId(), dstImages.get(1).getId());
+            assertEquals(img2.getId(), dstImages.get(2).getId());
+            return null;
+        });
     }
 
     @Test

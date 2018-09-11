@@ -19,21 +19,22 @@
 </head>
 <body>
 <div th:replace="common-header :: header"></div>
+<div>
+    <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
+    <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
 
+    <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
+</div>
 <div th:replace="path :: path"/>
 <div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
 <h3>&#10042;<span th:text="${topic.name}" /></h3>
-<div>
-    <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit</a>&nbsp;
-    <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
-</div>
-
 <div>
     <a shortcut="i" th:unless="${showContent}" th:href="@{/topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
     <a shortcut="i" th:if="${showContent}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
 </div>
 
 <div th:if="${showContent}" th:each="content : ${topic.contents}">
+    <span th:replace="selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
     <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
          th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
     <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>

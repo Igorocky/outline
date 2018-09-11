@@ -162,7 +162,7 @@ public class Dao {
         SynopsisTopic topic = loadSynopsisTopicByIdWithContent(form.getId(), owner);
         topic.setName(form.getName());
         Map<UUID, Content> oldContents = topic.getContents().stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
-        oldContents.values().forEach(topic::detachContent);
+        oldContents.values().forEach(topic::detachContentById);
         for (ContentForForm content : form.getContent()) {
             if (TEXT.equals(content.getType())) {
                 if (content.getId() != null) {
@@ -249,13 +249,24 @@ public class Dao {
     }
 
     @Transactional
-    public void performActionOnSelectedObjects(User owner, Selection selection, UUID destParId) {
+    public void moveImage(User owner, UUID imageToMoveId, UUID topicToMoveToId) {
+        Image imgToMove = loadImageById(imageToMoveId, owner);
+        SynopsisTopic srcTopic = imgToMove.getTopic();
+        SynopsisTopic dstTopic = loadSynopsisTopicByIdWithContent(topicToMoveToId, owner);
+        srcTopic.detachContentById(imgToMove);
+        dstTopic.addContent(imgToMove);
+    }
+
+    @Transactional
+    public void performActionOnSelectedObjects(User owner, Selection selection, UUID destId) {
         if (ActionType.MOVE.equals(selection.getActionType())) {
             for (SelectionPart selectionPart : selection.getSelections()) {
                 if (ObjectType.PARAGRAPH.equals(selectionPart.getObjectType())) {
-                    moveParagraph(owner, selectionPart.getSelectedId(), destParId);
+                    moveParagraph(owner, selectionPart.getSelectedId(), destId);
                 } else if (ObjectType.TOPIC.equals(selectionPart.getObjectType())) {
-                    moveTopic(owner, selectionPart.getSelectedId(), destParId);
+                    moveTopic(owner, selectionPart.getSelectedId(), destId);
+                } else if (ObjectType.IMAGE.equals(selectionPart.getObjectType())) {
+                    moveImage(owner, selectionPart.getSelectedId(), destId);
                 } else {
                     throw new OutlineException("Object type '" + selectionPart.getObjectType() + "' is not supported.");
                 }
