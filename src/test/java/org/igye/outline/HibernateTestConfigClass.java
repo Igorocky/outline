@@ -35,7 +35,7 @@ public class HibernateTestConfigClass {
     public LocalSessionFactoryBean sessionFactory(DataSource dataSource) {
         LocalSessionFactoryBean res = new LocalSessionFactoryBean();
         res.setDataSource(dataSource);
-        res.setPackagesToScan("org.igye.outline.model");
+        res.setPackagesToScan("org.igye.outline.model", "org.igye.outline.modelv2");
         Properties props = new Properties();
         props.put("hibernate.dialect", Database.H2);
         props.put("hibernate.format_sql", "true");
