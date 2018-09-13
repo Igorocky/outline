@@ -15,7 +15,7 @@ import static org.hibernate.annotations.CascadeType.*;
 @Data
 @NoArgsConstructor
 @Entity
-public class SynopsisTopic extends Topic {
+public class SynopsisTopic extends Node {
     @OneToMany(mappedBy = "topic")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn

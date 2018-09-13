@@ -146,11 +146,11 @@ public class DaoTest extends AbstractHibernateTest {
         Paragraph paragraph = dao.loadParagraphById(Optional.empty(), owner);
 
         //then
-        assertEquals(4, paragraph.getChildParagraphs().size());
-        assertEquals("P2", paragraph.getChildParagraphs().get(0).getName());
-        assertEquals("P1", paragraph.getChildParagraphs().get(1).getName());
-        assertEquals("P4", paragraph.getChildParagraphs().get(2).getName());
-        assertEquals("P3", paragraph.getChildParagraphs().get(3).getName());
+        assertEquals(4, paragraph.getChildNodes().size());
+        assertEquals("P2", paragraph.getChildNodes().get(0).getName());
+        assertEquals("P1", paragraph.getChildNodes().get(1).getName());
+        assertEquals("P4", paragraph.getChildNodes().get(2).getName());
+        assertEquals("P3", paragraph.getChildNodes().get(3).getName());
     }
 
     @Test
@@ -177,10 +177,10 @@ public class DaoTest extends AbstractHibernateTest {
         Paragraph paragraph = dao.loadParagraphById(Optional.of(savedParagraph.getId()), owner);
 
         //then
-        assertEquals(3, paragraph.getTopics().size());
-        assertEquals("T1", paragraph.getTopics().get(0).getName());
-        assertEquals("T3", paragraph.getTopics().get(1).getName());
-        assertEquals("T2", paragraph.getTopics().get(2).getName());
+        assertEquals(3, paragraph.getChildNodes().size());
+        assertEquals("T1", paragraph.getChildNodes().get(0).getName());
+        assertEquals("T3", paragraph.getChildNodes().get(1).getName());
+        assertEquals("T2", paragraph.getChildNodes().get(2).getName());
     }
 
     @Test(expected = NoResultException.class)
@@ -235,10 +235,10 @@ public class DaoTest extends AbstractHibernateTest {
                         ).getResults()
         );
         User owner = (User) saved.get(OWNER);
-        Topic savedTopic = (Topic) saved.get(SAVED_TOPIC);
+        SynopsisTopic savedTopic = (SynopsisTopic) saved.get(SAVED_TOPIC);
 
         //when
-        Topic topic = dao.loadTopicById(savedTopic.getId(), owner);
+        SynopsisTopic topic = dao.loadTopicById(savedTopic.getId(), owner);
 
         //then
         assertEquals("T30", topic.getName());

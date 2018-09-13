@@ -3,66 +3,41 @@ package org.igye.outline.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.util.*;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.hibernate.annotations.CascadeType.*;
-import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
+import static org.hibernate.annotations.CascadeType.MERGE;
+import static org.hibernate.annotations.CascadeType.PERSIST;
+import static org.hibernate.annotations.CascadeType.REFRESH;
+import static org.hibernate.annotations.CascadeType.REMOVE;
+import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 
 @Data
 @NoArgsConstructor
 @Entity
-public class Paragraph {
+public class Paragraph extends Node {
     public static final String ROOT_NAME = "root";
 
-    @Id
-    @GeneratedValue
-    @Type(type = UUID_CHAR)
-    private UUID id;
-
-    @ManyToOne
-    private User owner;
-
-    @NotNull
-    private String name;
-
-    @ManyToOne
-    private Paragraph parentParagraph;
-
-    @OneToMany(mappedBy = "parentParagraph")
+    @OneToMany(mappedBy = "parentNode")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
-    private List<Paragraph> childParagraphs = new ArrayList<>();
+    private List<Node> childNodes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "paragraph")
-    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
-    @OrderColumn
-    private List<Topic> topics = new ArrayList<>();
-
-    @ManyToMany
-    @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
-    private Set<Tag> tags = new HashSet<>();
-
-    public void addChildParagraph(Paragraph paragraph) {
-        getChildParagraphs().add(paragraph);
-        paragraph.setParentParagraph(this);
-        paragraph.setOwner(getOwner());
-    }
-
-    public void addTopic(Topic topic) {
-        getTopics().add(topic);
-        topic.setParagraph(this);
-        topic.setOwner(getOwner());
+    public void addChildNode(Node node) {
+        getChildNodes().add(node);
+        node.setParentNode(this);
+        node.setOwner(getOwner());
     }
 
     public boolean getHasChildren() {
-        return !getChildParagraphs().isEmpty() || !getTopics().isEmpty();
+        return !getChildNodes().isEmpty();
     }
 
     public boolean getHasParent() {
-        return getParentParagraph() != null;
+        return getParentNode() != null;
     }
 }

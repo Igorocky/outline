@@ -291,9 +291,9 @@ public class Dao {
     }
 
     @Transactional
-    public Topic loadTopicById(UUID id, User owner) {
+    public SynopsisTopic loadTopicById(UUID id, User owner) {
         return sessionFactory.getCurrentSession().createQuery(
-                "from Topic where id = :id and owner = :owner", Topic.class
+                "from SynopsisTopic where id = :id and owner = :owner", Topic.class
         )
                 .setParameter("id", id)
                 .setParameter("owner", owner)
