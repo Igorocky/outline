@@ -19,13 +19,13 @@
 </head>
 <body>
 <div th:replace="common-header :: header"></div>
+<div th:replace="path :: path"/>
 <div>
     <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
     <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
 
     <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
 </div>
-<div th:replace="path :: path"/>
 <div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
 <h3>&#10042;<span th:text="${topic.name}" /></h3>
 <div>
