@@ -1,6 +1,7 @@
 package org.igye.outline.modelv2;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 
@@ -14,6 +15,7 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"name"})
 @Entity
 public class RoleV2 {
     @Id
@@ -23,19 +25,4 @@ public class RoleV2 {
 
     @NotNull
     private String name;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        RoleV2 role = (RoleV2) o;
-
-        return name.equals(role.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
 }

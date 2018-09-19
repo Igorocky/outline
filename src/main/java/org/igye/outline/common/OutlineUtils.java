@@ -1,11 +1,13 @@
 package org.igye.outline.common;
 
+import org.hibernate.Session;
 import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.exceptions.OutlineException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +75,10 @@ public class OutlineUtils {
         } else {
             return Optional.of(list.get(toTheRight ? list.size() - 1 : 0));
         }
+    }
+
+    public static Session getCurrentSession(EntityManager entityManager) {
+        return entityManager.unwrap(Session.class);
     }
 
 }

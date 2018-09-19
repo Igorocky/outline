@@ -28,5 +28,6 @@ public class UserV2 {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "USER_ROLE_V2")
     private Set<RoleV2> roles = new HashSet<>();
 }

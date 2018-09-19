@@ -6,7 +6,7 @@
     <a shortcut="H" th:href="${(#mvc.url('CUI#home')).build()}" href="#">Home</a>&nbsp;
     <a th:href="${(#mvc.url('CUI#logout')).build()}" href="#">Logout</a>&nbsp;
     <a th:href="${(#mvc.url('CUI#changePassword')).build()}" href="#">Change password</a>&nbsp;
-    <span th:if="${isAdmin}"><a th:href="${(#mvc.url('CUI#users')).build()}" href="#">Users</a>&nbsp;</span>
+    <span th:if="${isAdmin}"><a th:href="${(#mvc.url('UC#users')).build()}" href="#">Users</a>&nbsp;</span>
 </div>
 
 </body>

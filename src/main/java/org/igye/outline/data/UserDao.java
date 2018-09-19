@@ -1,16 +1,18 @@
 package org.igye.outline.data;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
+import org.igye.outline.modelv2.UserV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -23,16 +25,25 @@ import static org.igye.outline.model.Paragraph.ROOT_NAME;
 @Component
 public class UserDao {
     public static final String ADMIN_ROLE_NAME = "ADMIN";
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
-    private SessionFactory sessionFactory;
+    private DaoUtils daoUtils;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public List<User> loadUsers(User user) {
         if (!isAdmin(user)) {
             return OutlineUtils.accessDenied();
         } else {
-            return sessionFactory.getCurrentSession().createQuery("from User", User.class).getResultList();
+            return OutlineUtils.getCurrentSession(entityManager).createQuery("from User", User.class).getResultList();
         }
+    }
+
+    @Transactional
+    public List<UserV2> loadUsersV2(User requestor) {
+        return daoUtils.doAsAdmin(requestor, () -> userRepository.findAll());
     }
 
     @Transactional
@@ -40,7 +51,7 @@ public class UserDao {
         if (!isAdmin(user)) {
             return OutlineUtils.accessDenied();
         } else {
-            return sessionFactory.getCurrentSession().get(User.class, id);
+            return OutlineUtils.getCurrentSession(entityManager).get(User.class, id);
         }
     }
 
@@ -49,7 +60,7 @@ public class UserDao {
         if (!isAdmin(admin)) {
             OutlineUtils.accessDenied();
         } else {
-            Session session = sessionFactory.getCurrentSession();
+            Session session = OutlineUtils.getCurrentSession(entityManager);
             User newUser = new User();
             newUser.setName(name);
             newUser.setPassword(hashPwd(password));
@@ -84,7 +95,7 @@ public class UserDao {
         } else if (userIdToRemove.equals(requestor.getId())) {
             throw new OutlineException("userIdToRemove.equals(requestor.getId())");
         } else {
-            Session session = sessionFactory.getCurrentSession();
+            Session session = OutlineUtils.getCurrentSession(entityManager);
             User userToBeRemoved = session.load(User.class, userIdToRemove);
             List<Paragraph> topParagraphs = session.createQuery(
                     "from Paragraph where owner = :owner and parentParagraph is null",
@@ -99,11 +110,11 @@ public class UserDao {
 
     @Transactional
     public List<Role> loadRoles() {
-        return sessionFactory.getCurrentSession().createQuery("from Role", Role.class).getResultList();
+        return OutlineUtils.getCurrentSession(entityManager).createQuery("from Role", Role.class).getResultList();
     }
 
     private Role loadRole(String name) {
-        return sessionFactory.getCurrentSession().createQuery(
+        return OutlineUtils.getCurrentSession(entityManager).createQuery(
                 "from Role r where r.name = :name",
                 Role.class
         )

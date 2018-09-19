@@ -6,23 +6,37 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditSynopsisTopicForm;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
-import org.igye.outline.model.*;
+import org.igye.outline.model.Content;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.SynopsisTopic;
+import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
+import org.igye.outline.model.User;
 import org.igye.outline.selection.ActionType;
 import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
 import org.igye.outline.selection.SelectionPart;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,12 +51,12 @@ import static org.springframework.transaction.annotation.Propagation.MANDATORY;
 public class Dao {
     private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
 
-    @Autowired
-    private SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional
     public UUID createImage(User requestor) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = OutlineUtils.getCurrentSession(entityManager);
         Image img = new Image();
         img.setOwner(session.load(User.class, requestor.getId()));
         return (UUID) session.save(img);
@@ -114,7 +128,7 @@ public class Dao {
 
     @Transactional
     public UUID createSynopsisTopic(User requestor, EditSynopsisTopicForm request) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = OutlineUtils.getCurrentSession(entityManager);
         User owner = session.load(User.class, requestor.getId());
         Paragraph par = loadParagraphByNotNullId(request.getParentId(), requestor);
         SynopsisTopic topic = new SynopsisTopic();
@@ -143,7 +157,7 @@ public class Dao {
 
     @Transactional
     public void createParagraph(UUID parentId, String name) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = OutlineUtils.getCurrentSession(entityManager);
         Paragraph parent = session.load(Paragraph.class, parentId);
         Paragraph paragraph = new Paragraph();
         paragraph.setName(name);
@@ -158,7 +172,7 @@ public class Dao {
 
     @Transactional
     public void updateSynopsisTopic(User owner, EditSynopsisTopicForm form) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = OutlineUtils.getCurrentSession(entityManager);
         SynopsisTopic topic = loadSynopsisTopicByIdWithContent(form.getId(), owner);
         topic.setName(form.getName());
         Map<UUID, Content> oldContents = topic.getContents().stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
@@ -191,7 +205,7 @@ public class Dao {
 
     @Transactional
     public void reorderParagraphChildren(User owner, ReorderParagraphChildren request) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = OutlineUtils.getCurrentSession(entityManager);
         Paragraph parent = loadParagraphByNotNullId(request.getParentId(), owner);
         if (request.getParagraphs() != null) {
             List<Paragraph> paragraphs = parent.getChildParagraphs();
@@ -292,7 +306,7 @@ public class Dao {
 
     @Transactional
     public Topic loadTopicById(UUID id, User owner) {
-        return sessionFactory.getCurrentSession().createQuery(
+        return OutlineUtils.getCurrentSession(entityManager).createQuery(
                 "from Topic where id = :id and owner = :owner", Topic.class
         )
                 .setParameter("id", id)
@@ -309,7 +323,7 @@ public class Dao {
 
     @Transactional
     public Image loadImageById(UUID id, User owner) {
-        return sessionFactory.getCurrentSession().createQuery(
+        return OutlineUtils.getCurrentSession(entityManager).createQuery(
                 "from Image where id = :id and owner = :owner", Image.class
         )
                 .setParameter("id", id)
@@ -353,7 +367,7 @@ public class Dao {
 
     @Transactional
     public Paragraph loadRootParagraph(User owner) {
-        return sessionFactory.getCurrentSession().createQuery(
+        return OutlineUtils.getCurrentSession(entityManager).createQuery(
                 "from Paragraph p where p.name = :name and p.owner = :owner and p.parentParagraph is null",
                 Paragraph.class
         )
@@ -382,7 +396,7 @@ public class Dao {
     }
 
     private Query<Paragraph> queryParagraphByIdAndOwner(UUID id, User owner) {
-        return sessionFactory.getCurrentSession().createQuery(
+        return OutlineUtils.getCurrentSession(entityManager).createQuery(
                 "from Paragraph p where p.id = :id and owner = :owner", Paragraph.class
         )
                 .setParameter("id", id)

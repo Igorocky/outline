@@ -1,5 +1,6 @@
 package org.igye.outline.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.controllers.SessionInterceptor;
 import org.igye.outline.htmlforms.SessionData;
@@ -67,5 +68,10 @@ public class AppConfig implements WebMvcConfigurer {
     @SessionScope
     public SessionData sessionData() {
         return new SessionData();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

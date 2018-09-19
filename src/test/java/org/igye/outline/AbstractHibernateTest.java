@@ -1,7 +1,7 @@
 package org.igye.outline;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.igye.outline.common.OutlineUtils;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,10 +9,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 @SpringBootTest(classes = HibernateTestConfigClass.class)
 public class AbstractHibernateTest {
-    @Autowired
-    private SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private PlatformTransactionManager transactionManager;
 
@@ -34,6 +37,6 @@ public class AbstractHibernateTest {
     }
 
     protected Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
+        return OutlineUtils.getCurrentSession(entityManager);
     }
 }
