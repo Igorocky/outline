@@ -30,11 +30,12 @@ public class Paragraph {
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "PARENTPARAGRAPH_ID")
     private Paragraph parentParagraph;
 
     @OneToMany(mappedBy = "parentParagraph")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
-    @OrderColumn
+    @OrderColumn(name = "CHILDPARAGRAPHS_ORDER")
     private List<Paragraph> childParagraphs = new ArrayList<>();
 
     @OneToMany(mappedBy = "paragraph")
@@ -44,6 +45,7 @@ public class Paragraph {
 
     @ManyToMany
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE})
+    @JoinTable(name = "PARAGRAPH_TAG")
     private Set<Tag> tags = new HashSet<>();
 
     public void addChildParagraph(Paragraph paragraph) {

@@ -7,6 +7,7 @@ import org.hibernate.annotations.Cascade;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import static org.hibernate.annotations.CascadeType.*;
 @Data
 @NoArgsConstructor
 @Entity
+@Table(name = "SYNOPSISTOPIC")
 public class SynopsisTopic extends Topic {
     @OneToMany(mappedBy = "topic")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
