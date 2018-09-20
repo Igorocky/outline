@@ -3,7 +3,6 @@ package org.igye.outline.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import fj.F3;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -12,14 +11,30 @@ import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.htmlforms.*;
-import org.igye.outline.model.*;
+import org.igye.outline.htmlforms.ChangePasswordForm;
+import org.igye.outline.htmlforms.ContentForForm;
+import org.igye.outline.htmlforms.EditParagraphForm;
+import org.igye.outline.htmlforms.EditSynopsisTopicForm;
+import org.igye.outline.htmlforms.EditUserForm;
+import org.igye.outline.htmlforms.ReorderParagraphChildren;
+import org.igye.outline.htmlforms.SessionData;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.SynopsisTopic;
+import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
+import org.igye.outline.model.User;
 import org.igye.outline.selection.Selection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -27,12 +42,19 @@ import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.igye.outline.common.OutlineUtils.*;
+import static org.igye.outline.common.OutlineUtils.NOTHING;
+import static org.igye.outline.common.OutlineUtils.getCurrentUser;
+import static org.igye.outline.common.OutlineUtils.getImgFile;
+import static org.igye.outline.common.OutlineUtils.hashPwd;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
@@ -68,33 +90,10 @@ public class ControllerUI {
     private Dao dao;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private CommonModelMethods commonModelMethods;
 
     private ObjectMapper mapper = new ObjectMapper();
-
-    @GetMapping(LOGIN)
-    public String login(Model model) {
-        model.addAttribute("loginForm", new LoginForm());
-        return LOGIN;
-    }
-
-    @PostMapping(LOGIN)
-    public String loginPost(Model model, LoginForm loginForm) {
-        Optional<User> userOptional = authenticator.authenticate(loginForm.getLogin(), loginForm.getPassword());
-        if (userOptional.isPresent()) {
-            sessionData.setUser(userOptional.get());
-            return redirect(HOME);
-        } else {
-            sessionData.setUser(null);
-            model.addAttribute(LOGIN + "Form", loginForm);
-            return LOGIN;
-        }
-    }
-
-    @RequestMapping("logout")
-    public String logout() {
-        sessionData.setUser(null);
-        return redirect(LOGIN);
-    }
 
     @GetMapping(CHANGE_PASSWORD)
     public String changePassword(Model model) {
@@ -110,7 +109,7 @@ public class ControllerUI {
                 StringUtils.isEmpty(StringUtils.trim(changePasswordForm.getNewPassword1()))) {
             return CHANGE_PASSWORD;
         } else if(authenticator.changePassword(
-                sessionData.getUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
+                getCurrentUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
         )) {
             return redirect(HOME);
         } else {
@@ -120,11 +119,11 @@ public class ControllerUI {
 
     @GetMapping(EDIT_USER)
     public String editUser(Model model, @RequestParam Optional<UUID> userId) {
-        initModel(model);
+        commonModelMethods.initModel(model);
         model.addAttribute("allRoles", userDao.loadRoles());
         EditUserForm editUserForm = new EditUserForm();
         userId.ifPresent(id -> {
-            User user = userDao.loadUser(sessionData.getUser(), id);
+            User user = userDao.loadUser(getCurrentUser(), id);
             editUserForm.setId(user.getId());
             editUserForm.setName(user.getName());
             editUserForm.getRoles().addAll(user.getRoles().stream().map(r -> r.getId()).collect(Collectors.toSet()));
@@ -143,7 +142,7 @@ public class ControllerUI {
                 return EDIT_USER;
             } else {
                 userDao.createUser(
-                        sessionData.getUser(),
+                        getCurrentUser(),
                         editUserForm.getName(),
                         editUserForm.getNewPassword1(),
                         editUserForm.getRoles()
@@ -156,7 +155,7 @@ public class ControllerUI {
                 return EDIT_USER;
             } else {
                 userDao.updateUser(
-                        sessionData.getUser(),
+                        getCurrentUser(),
                         editUserForm.getId(),
                         user -> {
                             user.setName(editUserForm.getName());
@@ -177,8 +176,8 @@ public class ControllerUI {
 
     private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
         OutlineUtils.assertNotNull(form.getIdToRedirectTo());
-        initModel(model);
-        addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), sessionData.getUser()));
+        commonModelMethods.initModel(model);
+        addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), getCurrentUser()));
         model.addAttribute("form", form);
     }
 
@@ -193,14 +192,14 @@ public class ControllerUI {
                 throw new OutlineException(CAN_T_DETERMINE_TYPE_OF_TOPIC);
             }
         } else if (!parentId.isPresent() && id.isPresent()) {
-            Topic topic = dao.loadTopicById(id.get(), sessionData.getUser());
+            Topic topic = dao.loadTopicById(id.get(), getCurrentUser());
             if (topic instanceof SynopsisTopic) {
                 return editSynopsisTopic(
                         model,
                         parentId,
                         Optional.of((SynopsisTopic) dao.loadSynopsisTopicByIdWithContent(
                                 topic.getId(),
-                                sessionData.getUser()
+                                getCurrentUser()
                         ))
                 );
             } else {
@@ -216,7 +215,7 @@ public class ControllerUI {
         EditSynopsisTopicForm form = new EditSynopsisTopicForm();
         parentId.ifPresent(parId -> {
             form.setParentId(parId);
-            addPath(model, dao.loadParagraphById(Optional.of(parId), sessionData.getUser()));
+            addPath(model, dao.loadParagraphById(Optional.of(parId), getCurrentUser()));
         });
         topicOpt.ifPresent(topic -> {
             form.setId(topic.getId());
@@ -233,9 +232,9 @@ public class ControllerUI {
                         }
                     }).collect(Collectors.toList())
             );
-            addPath(model, dao.loadParagraphById(Optional.of(topic.getParagraph().getId()), sessionData.getUser()));
+            addPath(model, dao.loadParagraphById(Optional.of(topic.getParagraph().getId()), getCurrentUser()));
         });
-        initModel(model);
+        commonModelMethods.initModel(model);
         model.addAttribute("form", form);
         model.addAttribute("formDataJson", mapper.writeValueAsString(form));
         return "editSynopsisTopic";
@@ -245,9 +244,9 @@ public class ControllerUI {
     @ResponseBody
     public UUID editSynopsisTopicPost(@RequestBody EditSynopsisTopicForm form) throws OperationNotSupportedException {
         if (form.getParentId() != null && form.getId() == null) {
-            return dao.createSynopsisTopic(sessionData.getUser(), form);
+            return dao.createSynopsisTopic(getCurrentUser(), form);
         } else if (form.getParentId() == null && form.getId() != null) {
-            dao.updateSynopsisTopic(sessionData.getUser(), form);
+            dao.updateSynopsisTopic(getCurrentUser(), form);
             return form.getId();
         } else {
             throw new OperationNotSupportedException("editSynopsisTopicPost");
@@ -257,7 +256,7 @@ public class ControllerUI {
     @PostMapping("uploadImage")
     @ResponseBody
     public UUID uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
-        UUID imgId = dao.createImage(sessionData.getUser());
+        UUID imgId = dao.createImage(getCurrentUser());
         File imgFile = getImgFile(imagesLocation, imgId);
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
@@ -274,7 +273,7 @@ public class ControllerUI {
         parentId.ifPresent(parId -> form.setParentId(parId));
         id.ifPresent(idd -> form.setId(idd));
         if (id.isPresent()) {
-            Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
+            Paragraph paragraph = dao.loadParagraphById(id, getCurrentUser());
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
         }
@@ -290,7 +289,7 @@ public class ControllerUI {
             return redirect(EDIT_PARAGRAPH);
         } else {
             if (form.getId() != null) {
-                dao.updateParagraph(sessionData.getUser(), form.getId(), par -> par.setName(form.getName()));
+                dao.updateParagraph(getCurrentUser(), form.getId(), par -> par.setName(form.getName()));
             } else {
                 dao.createParagraph(form.getParentId(), form.getName());
             }
@@ -301,19 +300,19 @@ public class ControllerUI {
     @PostMapping("reorderParagraphChildren")
     public String reorderParagraphChildren(@RequestBody ReorderParagraphChildren request,
                                   HttpServletResponse response) throws IOException {
-        dao.reorderParagraphChildren(sessionData.getUser(), request);
+        dao.reorderParagraphChildren(getCurrentUser(), request);
         return OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", request.getParentId()));
     }
 
     @PostMapping(REMOVE_USER)
     public String removeUser(@RequestParam UUID id) {
-        userDao.removeUser(sessionData.getUser(), id);
+        userDao.removeUser(getCurrentUser(), id);
         return redirect(USERS);
     }
 
     @GetMapping(HOME)
     public String home(Model model) {
-        initModel(model);
+        commonModelMethods.initModel(model);
         return redirect(PARAGRAPH);
     }
 
@@ -325,7 +324,7 @@ public class ControllerUI {
 
     @PostMapping("performActionOnSelectedObjects")
     public String performActionOnSelectedObjects(@RequestBody UUID destId) {
-        dao.performActionOnSelectedObjects(sessionData.getUser(), sessionData.getSelection(), destId);
+        dao.performActionOnSelectedObjects(getCurrentUser(), sessionData.getSelection(), destId);
         sessionData.setSelection(null);
         return NOTHING;
     }
@@ -333,7 +332,7 @@ public class ControllerUI {
     @GetMapping(PARAGRAPH)
     public String paragraph(Model model, @RequestParam Optional<UUID> id, Optional<Boolean> showContent,
                             Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
-        initModel(model);
+        commonModelMethods.initModel(model);
         if (isLeftmostSibling.orElse(false)) {
             model.addAttribute("isLeftmostSibling", true);
         }
@@ -343,7 +342,7 @@ public class ControllerUI {
         if (showContent.orElse(true)) {
             model.addAttribute("showContent", true);
         }
-        Paragraph paragraph = dao.loadParagraphById(id, sessionData.getUser());
+        Paragraph paragraph = dao.loadParagraphById(id, getCurrentUser());
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
         addPath(model, paragraph.getParentParagraph());
@@ -353,8 +352,8 @@ public class ControllerUI {
     @GetMapping(TOPIC)
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> showContent,
                         Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
-        initModel(model);
-        Topic topic = dao.loadSynopsisTopicByIdWithContent(id, sessionData.getUser());
+        commonModelMethods.initModel(model);
+        Topic topic = dao.loadSynopsisTopicByIdWithContent(id, getCurrentUser());
         model.addAttribute("topic", topic);
         if (isLeftmostSibling.orElse(false)) {
             model.addAttribute("isLeftmostSibling", true);
@@ -371,8 +370,8 @@ public class ControllerUI {
 
     @GetMapping(NEXT_TOPIC)
     public String nextTopic(Model model, @RequestParam UUID id) {
-        initModel(model);
-        Optional<Topic> nextTopicOpt = dao.nextTopic(id, sessionData.getUser());
+        commonModelMethods.initModel(model);
+        Optional<Topic> nextTopicOpt = dao.nextTopic(id, getCurrentUser());
         String redirectUri;
         if (nextTopicOpt.isPresent()) {
             model.addAttribute("topic", nextTopicOpt.get());
@@ -382,7 +381,7 @@ public class ControllerUI {
                     .toUriString();
         } else {
             model.addAttribute("isLastTopic", true);
-            Topic topic = dao.loadTopicById(id, sessionData.getUser());
+            Topic topic = dao.loadTopicById(id, getCurrentUser());
             model.addAttribute("topic", topic);
             redirectUri = UriComponentsBuilder.newInstance()
                     .path(TOPIC)
@@ -397,8 +396,8 @@ public class ControllerUI {
 
     @GetMapping(PREV_TOPIC)
     public String prevTopic(Model model, @RequestParam UUID id) {
-        initModel(model);
-        Optional<Topic> prevTopicOpt = dao.prevTopic(id, sessionData.getUser());
+        commonModelMethods.initModel(model);
+        Optional<Topic> prevTopicOpt = dao.prevTopic(id, getCurrentUser());
         String redirectUri;
         if (prevTopicOpt.isPresent()) {
             model.addAttribute("topic", prevTopicOpt.get());
@@ -408,7 +407,7 @@ public class ControllerUI {
                     .toUriString();
         } else {
             model.addAttribute("isFirstTopic", true);
-            Topic topic = dao.loadTopicById(id, sessionData.getUser());
+            Topic topic = dao.loadTopicById(id, getCurrentUser());
             model.addAttribute("topic", topic);
             redirectUri = UriComponentsBuilder.newInstance()
                     .path(TOPIC)
@@ -425,7 +424,7 @@ public class ControllerUI {
     public String firstChild(@RequestParam UUID id) {
         return getNode(
                 id,
-                () -> dao.firstChild(sessionData.getUser(), id),
+                () -> dao.firstChild(getCurrentUser(), id),
                 uri -> {},
                 uri -> {}
         );
@@ -435,7 +434,7 @@ public class ControllerUI {
     public String parent(@RequestParam UUID id) {
         return getNode(
                 id,
-                () -> dao.loadParent(sessionData.getUser(), id),
+                () -> dao.loadParent(getCurrentUser(), id),
                 uri -> {},
                 uri -> {}
         );
@@ -445,7 +444,7 @@ public class ControllerUI {
     public String nextSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
         return getNode(
                 id,
-                () -> dao.nextSibling(sessionData.getUser(), id, toTheRight),
+                () -> dao.nextSibling(getCurrentUser(), id, toTheRight),
                 uri -> {},
                 uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
         );
@@ -455,7 +454,7 @@ public class ControllerUI {
     public String furthestSibling(@RequestParam UUID id, @RequestParam boolean toTheRight) {
         return getNode(
                 id,
-                () -> dao.furthestSibling(sessionData.getUser(), id, toTheRight),
+                () -> dao.furthestSibling(getCurrentUser(), id, toTheRight),
                 uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true),
                 uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
         );
@@ -474,7 +473,7 @@ public class ControllerUI {
             }
             onPresent.accept(redirectUriBuilder);
         } else {
-            Object curEntity = dao.loadEntityById(sessionData.getUser(), id);
+            Object curEntity = dao.loadEntityById(getCurrentUser(), id);
             if (curEntity instanceof Topic) {
                 redirectUriBuilder = topicUriBuilder((Topic) curEntity);
             } else {
@@ -503,7 +502,7 @@ public class ControllerUI {
     @GetMapping("topicImage/{imgId}")
     @ResponseBody
     public byte[] topicImage(@PathVariable UUID imgId) {
-        Image image = dao.loadImageById(imgId, sessionData.getUser());
+        Image image = dao.loadImageById(imgId, getCurrentUser());
         try {
             return FileUtils.readFileToByteArray(getImgFile(imagesLocation, image.getId()));
         } catch (IOException e) {
@@ -513,8 +512,8 @@ public class ControllerUI {
 
     @GetMapping(USERS)
     public String users(Model model) {
-        initModel(model);
-        model.addAttribute("users", userDao.loadUsers(sessionData.getUser()));
+        commonModelMethods.initModel(model);
+        model.addAttribute("users", userDao.loadUsers(getCurrentUser()));
         return USERS;
     }
 
@@ -522,11 +521,6 @@ public class ControllerUI {
     @ResponseBody
     public String version() {
         return version;
-    }
-
-    private void initModel(Model model) {
-        model.addAttribute("sessionData", sessionData);
-        model.addAttribute("isAdmin", userDao.isAdmin(sessionData.getUser()));
     }
 
     private void addPath(Model model, Paragraph paragraph) {

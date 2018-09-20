@@ -60,7 +60,7 @@
                 <span th:each="role,iterStat : ${user.roles}" th:text="(${iterStat.first}?'':', ') + ${role.name}"></span>
             </td>
             <td>
-                <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
+                <a th:href="@{/editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
                 <a href="#" th:onclick="'removeUser(\'' + ${user.id} + '\',\'' + ${user.name} + '\')'">Remove</a>&nbsp;
             </td>
         </tr>

@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static org.igye.outline.common.OutlineUtils.getCurrentUser;
+
 @Controller
 @RequestMapping("v2")
 public class UsersController {
@@ -26,8 +28,8 @@ public class UsersController {
 
     @GetMapping(USERS)
     public String users(Model model) {
-        commonModelMethods.initModel(model, sessionData, userDao);
-        model.addAttribute("users", userDao.loadUsersV2(sessionData.getUser()));
+        commonModelMethods.initModel(model);
+        model.addAttribute("users", userDao.loadUsersV2(getCurrentUser()));
         return USERS;
     }
 

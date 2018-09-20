@@ -22,7 +22,7 @@ public class UserV2 {
     private UUID id;
 
     @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String name;
     @NotNull
     private String password;

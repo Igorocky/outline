@@ -1,5 +1,7 @@
 package org.igye.outline.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
@@ -14,6 +16,8 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 public class Role {
     @Id
