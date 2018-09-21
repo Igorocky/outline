@@ -39,9 +39,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
+import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.OutlineUtils.mapToSet;
+import static org.igye.outline.common.OutlineUtils.toMap;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
@@ -175,7 +177,7 @@ public class Dao {
         Session session = OutlineUtils.getCurrentSession(entityManager);
         SynopsisTopic topic = loadSynopsisTopicByIdWithContent(form.getId(), owner);
         topic.setName(form.getName());
-        Map<UUID, Content> oldContents = topic.getContents().stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
+        Map<UUID, Content> oldContents = toMap(topic.getContents(), Content::getId);
         oldContents.values().forEach(topic::detachContentById);
         for (ContentForForm content : form.getContent()) {
             if (TEXT.equals(content.getType())) {
@@ -209,7 +211,7 @@ public class Dao {
         Paragraph parent = loadParagraphByNotNullId(request.getParentId(), owner);
         if (request.getParagraphs() != null) {
             List<Paragraph> paragraphs = parent.getChildParagraphs();
-            Set<UUID> oldIdSet = paragraphs.stream().map(p -> p.getId()).collect(Collectors.toSet());
+            Set<UUID> oldIdSet = mapToSet(paragraphs, Paragraph::getId);
             Set<UUID> newIdSet = ImmutableSet.copyOf(request.getParagraphs());
             if (!oldIdSet.equals(newIdSet)) {
                 throw new OutlineException("!oldIdSet.equals(newIdSet) for paragraphs");
@@ -221,7 +223,7 @@ public class Dao {
         }
         if (request.getTopics() != null) {
             List<Topic> topics = parent.getTopics();
-            Set<UUID> oldIdSet = topics.stream().map(p -> p.getId()).collect(Collectors.toSet());
+            Set<UUID> oldIdSet = mapToSet(topics, Topic::getId);
             Set<UUID> newIdSet = ImmutableSet.copyOf(request.getTopics());
             if (!oldIdSet.equals(newIdSet)) {
                 throw new OutlineException("!oldIdSet.equals(newIdSet) for topics");
@@ -407,9 +409,7 @@ public class Dao {
         return new Tree<Paragraph>() {
             @Override
             public List<Tree<Paragraph>> children() {
-                return paragraph.getChildParagraphs().stream()
-                        .map(p -> paragraph2Tree(p))
-                        .collect(Collectors.toList());
+                return map(paragraph.getChildParagraphs(), Dao.this::paragraph2Tree);
             }
 
             @Override

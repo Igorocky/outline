@@ -33,8 +33,8 @@ public class UserDao {
     private UserRepository userRepository;
 
     @Transactional
-    public List<User> loadUsers(User user) {
-        if (!isAdmin(user)) {
+    public List<User> loadUsers(User requestor) {
+        if (!isAdmin(requestor)) {
             return OutlineUtils.accessDenied();
         } else {
             return OutlineUtils.getCurrentSession(entityManager).createQuery("from User", User.class).getResultList();

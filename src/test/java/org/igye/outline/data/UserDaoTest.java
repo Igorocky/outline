@@ -23,8 +23,7 @@ import static org.igye.outline.model.Paragraph.ROOT_NAME;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = UserDao.class)
-@TestPropertySource("/test.properties")
+@ContextConfiguration(classes = {UserDao.class, DaoUtils.class})
 public class UserDaoTest extends AbstractHibernateTest {
     public static final String USER = "user";
     public static final String TO_BE_REMOVED = "toBeRemoved";
@@ -122,7 +121,7 @@ public class UserDaoTest extends AbstractHibernateTest {
                 .filter(r -> !r.getName().equals(ADMIN_ROLE_NAME))
                 .map(r -> r.getId())
                 .collect(Collectors.toSet());
-        dao.createUser(admin, "userToBeSaved", "dddd", roles);
+        doInTransactionV(() -> dao.createUser(admin, "userToBeSaved", "dddd", roles));
 
         //then
         User newUser = transactionTemplate.execute(status ->
@@ -141,7 +140,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         User admin = prepareDataForCreatingNewUser();
 
         //when
-        dao.createUser(admin, "userToBeSaved", "dddd", ImmutableSet.of());
+        doInTransactionV(() -> dao.createUser(admin, "userToBeSaved", "dddd", ImmutableSet.of()));
 
         //then
         Paragraph paragraph = transactionTemplate.execute(status ->
@@ -160,7 +159,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         User userToBeChanged = users.get(1);
 
         //when
-        dao.updateUser(admin, userToBeChanged.getId(), user -> user.setName("NeWNaMe"));
+        doInTransactionV(() -> dao.updateUser(admin, userToBeChanged.getId(), user -> user.setName("NeWNaMe")));
 
         //then
         User user = transactionTemplate.execute(status -> {
@@ -203,7 +202,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         User userToBeRemoved = (User) saved.get(TO_BE_REMOVED);
 
         //when
-        dao.removeUser(admin, userToBeRemoved.getId());
+        doInTransactionV(() -> dao.removeUser(admin, userToBeRemoved.getId()));
 
         //then
         Integer size = transactionTemplate.execute(status ->
@@ -236,7 +235,7 @@ public class UserDaoTest extends AbstractHibernateTest {
         Assert.assertEquals(paragraphs, ImmutableSet.of("par1", "par2", "par3", "par4"));
 
         //when
-        dao.removeUser(fakeAdmin(), userToBeRemoved.getId());
+        doInTransactionV(() -> dao.removeUser(fakeAdmin(), userToBeRemoved.getId()));
 
         //then
         Set<String> paragraphsAfterRemoval = new HashSet<>(

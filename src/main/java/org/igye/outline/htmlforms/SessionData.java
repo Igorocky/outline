@@ -1,10 +1,12 @@
 package org.igye.outline.htmlforms;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.igye.outline.selection.Selection;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class SessionData {
     private Selection selection;

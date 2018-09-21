@@ -2,7 +2,6 @@ package org.igye.outline.datamigration;
 
 import org.h2.jdbcx.JdbcDataSource;
 import org.hibernate.dialect.Database;
-import org.igye.outline.config.DbConfig;
 import org.igye.outline.data.Dao;
 import org.igye.outline.data.UserDao;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +15,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-@ComponentScan(basePackageClasses = {Migrator.class, DbConfig.class, Dao.class, UserDao.class})
+@ComponentScan(basePackageClasses = {Migrator.class, Dao.class, UserDao.class})
 @EnableTransactionManagement
 public class MigrateConfig {
     @Bean

@@ -1,6 +1,7 @@
 package org.igye.outline.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
@@ -11,7 +12,8 @@ import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class Tag {
     @Id

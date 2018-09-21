@@ -18,11 +18,15 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class OutlineUtils {
     public static final String SQL_DEBUG_LOGGER_NAME = "sql-debug";
@@ -98,4 +102,35 @@ public class OutlineUtils {
                 ;
     }
 
+    public static <A,B> Set<B> map(Set<A> collection, Function<A,B> mapper) {
+        return collection.stream().map(mapper).collect(Collectors.toSet());
+    }
+
+    public static <A,B> List<B> map(List<A> collection, Function<A,B> mapper) {
+        return collection.stream().map(mapper).collect(Collectors.toList());
+    }
+
+    public static <A,B> Set<B> mapToSet(List<A> collection, Function<A,B> mapper) {
+        return collection.stream().map(mapper).collect(Collectors.toSet());
+    }
+
+    public static <T> Set<T> filter(Set<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).collect(Collectors.toSet());
+    }
+
+    public static <T> List<T> filter(List<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    public static <T> Set<T> filterToSet(List<T> collection, Predicate<T> predicate) {
+        return collection.stream().filter(predicate).collect(Collectors.toSet());
+    }
+
+    public static <E,K,V> Map<K,V> toMap(Collection<E> collection, Function<E,K> keyExtr, Function<E,V> valueExtr) {
+        return collection.stream().collect(Collectors.toMap(keyExtr, valueExtr));
+    }
+
+    public static <E,K> Map<K,E> toMap(Collection<E> collection, Function<E,K> keyExtr) {
+        return toMap(collection, keyExtr, Function.identity());
+    }
 }

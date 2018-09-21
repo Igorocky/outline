@@ -1,8 +1,9 @@
 package org.igye.outline.modelv2;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
@@ -13,7 +14,8 @@ import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"name"})
 @Entity

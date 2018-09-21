@@ -8,28 +8,40 @@ import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditSynopsisTopicForm;
 import org.igye.outline.htmlforms.ReorderParagraphChildren;
-import org.igye.outline.model.*;
+import org.igye.outline.model.Content;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.SynopsisTopic;
+import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
+import org.igye.outline.model.User;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.NoResultException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.SQL_DEBUG_LOGGER_NAME;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 import static org.igye.outline.model.Paragraph.ROOT_NAME;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = Dao.class)
-@TestPropertySource("/test.properties")
 public class DaoTest extends AbstractHibernateTest {
     private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
     public static final String OWNER = "owner";
@@ -781,7 +793,7 @@ public class DaoTest extends AbstractHibernateTest {
         Paragraph rootParagraph = dao.loadRootParagraph(owner);
 
         //when
-        dao.createParagraph(rootParagraph.getId(), "new-par");
+        doInTransactionV(() -> dao.createParagraph(rootParagraph.getId(), "new-par"));
 
         //then
         transactionTemplate.execute(status -> {
@@ -809,7 +821,7 @@ public class DaoTest extends AbstractHibernateTest {
         Paragraph paragraph = (Paragraph) saved.get(SAVED_PARAGRAPH);
 
         //when
-        dao.updateParagraph(owner, paragraph.getId(), p -> p.setName("WSX"));
+        doInTransactionV(() -> dao.updateParagraph(owner, paragraph.getId(), p -> p.setName("WSX")));
 
         //then
         transactionTemplate.execute(status -> {
@@ -840,7 +852,7 @@ public class DaoTest extends AbstractHibernateTest {
         request.setTopics(Arrays.asList(t2a.getId(), t4b.getId(), t1c.getId(), t3d.getId()));
 
         //when
-        dao.reorderParagraphChildren(owner, request);
+        doInTransactionV(() -> dao.reorderParagraphChildren(owner, request));
 
         //then
         transactionTemplate.execute(status -> {
@@ -938,7 +950,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveParagraph(owner, p3.getId(), p5.getId());
+        doInTransactionV(() -> dao.moveParagraph(owner, p3.getId(), p5.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -994,7 +1006,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveParagraph(owner, p3.getId(), p5.getId());
+        doInTransactionV(() -> dao.moveParagraph(owner, p3.getId(), p5.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1039,7 +1051,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveParagraph(owner, p2.getId(), p1.getId());
+        doInTransactionV(() -> dao.moveParagraph(owner, p2.getId(), p1.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1128,7 +1140,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveTopic(owner, t3.getId(), p5.getId());
+        doInTransactionV(() -> dao.moveTopic(owner, t3.getId(), p5.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1184,7 +1196,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveTopic(owner, t3.getId(), p5.getId());
+        doInTransactionV(() -> dao.moveTopic(owner, t3.getId(), p5.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1235,7 +1247,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+        doInTransactionV(() -> dao.moveImage(owner, img2.getId(), dstTopic.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1289,7 +1301,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+        doInTransactionV(() -> dao.moveImage(owner, img2.getId(), dstTopic.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1344,7 +1356,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+        doInTransactionV(() -> dao.moveImage(owner, img2.getId(), dstTopic.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1406,7 +1418,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        dao.moveImage(owner, img2.getId(), dstTopic.getId());
+        doInTransactionV(() -> dao.moveImage(owner, img2.getId(), dstTopic.getId()));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1461,7 +1473,7 @@ public class DaoTest extends AbstractHibernateTest {
         ));
 
         //when
-        UUID newTopicId = dao.createSynopsisTopic(owner, form);
+        UUID newTopicId = doInTransaction(() -> dao.createSynopsisTopic(owner, form));
 
         //then
         transactionTemplate.execute(status -> {
@@ -1498,7 +1510,7 @@ public class DaoTest extends AbstractHibernateTest {
         });
 
         //when
-        UUID imgId = dao.createImage(user);
+        UUID imgId = doInTransaction(() -> dao.createImage(user));
 
         //then
         Image img = transactionTemplate.execute(status -> {
@@ -1746,7 +1758,7 @@ public class DaoTest extends AbstractHibernateTest {
         ));
 
         //when
-        dao.updateSynopsisTopic(user, form);
+        doInTransactionV(() -> dao.updateSynopsisTopic(user, form));
 
         //then
         SynopsisTopic updatedTopic = dao.loadSynopsisTopicByIdWithContent(form.getId(), user);

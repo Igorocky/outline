@@ -2,8 +2,9 @@ package org.igye.outline.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
@@ -14,7 +15,8 @@ import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

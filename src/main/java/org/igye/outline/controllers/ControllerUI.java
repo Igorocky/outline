@@ -20,6 +20,7 @@ import org.igye.outline.htmlforms.ReorderParagraphChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Image;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Role;
 import org.igye.outline.model.SynopsisTopic;
 import org.igye.outline.model.Text;
 import org.igye.outline.model.Topic;
@@ -49,12 +50,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
+import static org.igye.outline.common.OutlineUtils.filterToSet;
 import static org.igye.outline.common.OutlineUtils.getCurrentUser;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.hashPwd;
+import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
@@ -108,7 +110,7 @@ public class ControllerUI {
         if (!changePasswordForm.getNewPassword1().equals(changePasswordForm.getNewPassword2()) ||
                 StringUtils.isEmpty(StringUtils.trim(changePasswordForm.getNewPassword1()))) {
             return CHANGE_PASSWORD;
-        } else if(authenticator.changePassword(
+        } else if (authenticator.changePassword(
                 getCurrentUser(), changePasswordForm.getOldPassword(), changePasswordForm.getNewPassword1()
         )) {
             return redirect(HOME);
@@ -126,7 +128,7 @@ public class ControllerUI {
             User user = userDao.loadUser(getCurrentUser(), id);
             editUserForm.setId(user.getId());
             editUserForm.setName(user.getName());
-            editUserForm.getRoles().addAll(user.getRoles().stream().map(r -> r.getId()).collect(Collectors.toSet()));
+            editUserForm.getRoles().addAll(map(user.getRoles(), Role::getId));
         });
         model.addAttribute("editUserForm", editUserForm);
         return EDIT_USER;
@@ -162,11 +164,10 @@ public class ControllerUI {
                             if (passwordWasChanged) {
                                 user.setPassword(hashPwd(editUserForm.getNewPassword1()));
                             }
-                            user.setRoles(
-                                    userDao.loadRoles().stream().filter(
-                                            role -> editUserForm.getRoles().contains(role.getId())
-                                    ).collect(Collectors.toSet())
-                            );
+                            user.setRoles(filterToSet(
+                                    userDao.loadRoles(),
+                                    role -> editUserForm.getRoles().contains(role.getId())
+                            ));
                         }
                 );
                 return redirect(USERS);
@@ -220,8 +221,9 @@ public class ControllerUI {
         topicOpt.ifPresent(topic -> {
             form.setId(topic.getId());
             form.setName(topic.getName());
-            form.setContent(
-                    topic.getContents().stream().map(content -> {
+            form.setContent(map(
+                    topic.getContents(),
+                    content -> {
                         if (content instanceof Image) {
                             return ContentForForm.builder().type(IMAGE).id(content.getId()).build();
                         } else if (content instanceof Text) {
@@ -230,8 +232,8 @@ public class ControllerUI {
                         } else {
                             throw new OutlineException("Can't determine type of content.");
                         }
-                    }).collect(Collectors.toList())
-            );
+                    }
+            ));
             addPath(model, dao.loadParagraphById(Optional.of(topic.getParagraph().getId()), getCurrentUser()));
         });
         commonModelMethods.initModel(model);

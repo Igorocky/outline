@@ -1,7 +1,8 @@
 package org.igye.outline.model;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.Entity;
@@ -11,9 +12,14 @@ import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hibernate.annotations.CascadeType.*;
+import static org.hibernate.annotations.CascadeType.MERGE;
+import static org.hibernate.annotations.CascadeType.PERSIST;
+import static org.hibernate.annotations.CascadeType.REFRESH;
+import static org.hibernate.annotations.CascadeType.REMOVE;
+import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "SYNOPSISTOPIC")

@@ -4,15 +4,20 @@ import org.hibernate.Session;
 import org.igye.outline.common.OutlineUtils;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-@SpringBootTest(classes = HibernateTestConfigClass.class)
+@DataJpaTest
+@EnableAutoConfiguration
 public class AbstractHibernateTest {
     @PersistenceContext
     private EntityManager entityManager;
@@ -34,6 +39,30 @@ public class AbstractHibernateTest {
             session.createQuery("delete from Tag").executeUpdate();
             return null;
         });
+    }
+
+    protected void exploreDb() {
+        TestUtils.exploreDB(getCurrentSession());
+    }
+
+    protected  <T> T doInTransaction(Function<Session, T> function) {
+        return transactionTemplate.execute(status -> function.apply(getCurrentSession()));
+    }
+
+    protected void doInTransactionV(Consumer<Session> consumer) {
+        doInTransaction(session -> {
+            consumer.accept(getCurrentSession());
+            return null;
+        });
+
+    }
+
+    protected void doInTransactionV(Runnable runnable) {
+        doInTransactionV(session -> runnable.run());
+    }
+
+    protected <T> T doInTransaction(Supplier<T> supplier) {
+        return doInTransaction(session -> supplier.get());
     }
 
     protected Session getCurrentSession() {
