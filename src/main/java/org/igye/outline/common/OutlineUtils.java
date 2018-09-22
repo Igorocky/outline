@@ -5,6 +5,7 @@ import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
 import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.data.UserDao;
+import org.igye.outline.exceptions.AccessDeniedException;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
@@ -34,7 +35,7 @@ public class OutlineUtils {
     public static final String UUID_CHAR = "uuid-char";
 
     public static <T> T accessDenied() {
-        throw new OutlineException("Access denied.");
+        throw new AccessDeniedException("Access denied.");
     }
 
     public static String hashPwd(String pwd) {

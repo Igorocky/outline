@@ -27,10 +27,6 @@ public class UserDao {
     public static final String ADMIN_ROLE_NAME = "ADMIN";
     @PersistenceContext
     private EntityManager entityManager;
-    @Autowired
-    private DaoUtils daoUtils;
-    @Autowired
-    private UserRepository userRepository;
 
     @Transactional
     public List<User> loadUsers(User requestor) {
@@ -39,11 +35,6 @@ public class UserDao {
         } else {
             return OutlineUtils.getCurrentSession(entityManager).createQuery("from User", User.class).getResultList();
         }
-    }
-
-    @Transactional
-    public List<UserV2> loadUsersV2(User requestor) {
-        return daoUtils.doAsAdmin(requestor, () -> userRepository.findAll());
     }
 
     @Transactional
