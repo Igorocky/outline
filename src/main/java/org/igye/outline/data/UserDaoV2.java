@@ -55,9 +55,9 @@ public class UserDaoV2 {
     public void updateUser(UUID id, Consumer<UserV2> updates) {
         doAsAdminV(() -> {
             UserV2 user = userRepository.getOne(id);
-            Boolean lockedBefore = user.getLocked();
+            Boolean lockedBefore = user.isLocked();
             updates.accept(user);
-            if (sessionData.getCurrentUser().getId().equals(id) && !lockedBefore && user.getLocked()) {
+            if (sessionData.getCurrentUser().getId().equals(id) && !lockedBefore && user.isLocked()) {
                 user.setLocked(false);
             }
         });

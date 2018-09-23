@@ -158,7 +158,7 @@ public class UserDaoV2Test extends AbstractHibernateTest {
 
         //then
         UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
-        Assert.assertFalse(user.getLocked());
+        Assert.assertFalse(user.isLocked());
     }
 
     @Test
@@ -175,7 +175,7 @@ public class UserDaoV2Test extends AbstractHibernateTest {
 
         //then
         UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
-        Assert.assertTrue(user.getLocked());
+        Assert.assertTrue(user.isLocked());
     }
 
     @Test

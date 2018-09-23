@@ -1,5 +1,7 @@
 package org.igye.outline.modelv2;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +24,8 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 public class UserV2 {
     @Id
@@ -34,8 +38,8 @@ public class UserV2 {
     private String name;
     @NotNull
     private String password;
-    @NotNull
-    private Boolean locked = false;
+
+    private boolean locked = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "USER_ROLE_V2")

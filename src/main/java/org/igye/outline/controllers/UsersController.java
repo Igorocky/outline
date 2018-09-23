@@ -28,9 +28,9 @@ import static org.igye.outline.common.OutlineUtils.redirect;
 public class UsersController {
     protected static final String PREFIX = "v2";
 
-    public static final String USERS = "users";
-    public static final String CHANGE_PASSWORD = "changePassword";
-    public static final String EDIT_USER = "editUser";
+    private static final String USERS = "users";
+    private static final String CHANGE_PASSWORD = "changePassword";
+    private static final String EDIT_USER = "editUser";
 
     @Value("${homeUrl}")
     private String homeUrl;

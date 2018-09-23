@@ -1,5 +1,7 @@
 package org.igye.outline.modelv2;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +21,8 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public class NodeV2 {
@@ -33,7 +37,6 @@ public class NodeV2 {
     @NotNull
     private String name;
 
-    @NotNull
     @ManyToOne
     private NodeV2 parentNode;
 }
