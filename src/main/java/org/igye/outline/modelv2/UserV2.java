@@ -34,6 +34,8 @@ public class UserV2 {
     private String name;
     @NotNull
     private String password;
+    @NotNull
+    private Boolean locked = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "USER_ROLE_V2")

@@ -2,24 +2,24 @@ package org.igye.outline.data;
 
 import com.google.common.collect.ImmutableSet;
 import org.igye.outline.AbstractHibernateTest;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.AccessDeniedException;
-import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.model.User;
+import org.igye.outline.modelv2.RoleV2;
 import org.igye.outline.modelv2.UserV2;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.mapToSet;
 import static org.igye.outline.data.UserDao.ADMIN_ROLE_NAME;
 import static org.junit.Assert.assertEquals;
@@ -28,10 +28,11 @@ import static org.junit.Assert.assertEquals;
 @ContextConfiguration(classes = {UserDaoV2.class, DaoUtils.class})
 public class UserDaoV2Test extends AbstractHibernateTest {
     public static final String USER = "user";
-    public static final String TO_BE_REMOVED = "toBeRemoved";
     public static final String TO_BE_CHANGED = "toBeChanged";
     @Autowired
     private UserDaoV2 dao;
+    @Autowired
+    private UserRepository userRepository;
 
     @Test(expected = AccessDeniedException.class)
     public void loadUsers_should_throw_an_AccessDeniedException_for_a_user_who_is_not_an_admin() {
@@ -103,183 +104,74 @@ public class UserDaoV2Test extends AbstractHibernateTest {
     }
 
     @Test
-    @Ignore
     public void createUser_should_create_new_user() {
-//        //given
-//        User admin = prepareDataForCreatingNewUser();
-//
-//        //when
-//        Set<UUID> roles = admin.getRoles().stream()
-//                .filter(r -> !r.getName().equals(ADMIN_ROLE_NAME))
-//                .map(r -> r.getId())
-//                .collect(Collectors.toSet());
-//        doInTransactionV(() -> dao.createUser(admin, "userToBeSaved", "dddd", roles));
-//
-//        //then
-//        User newUser = transactionTemplate.execute(status ->
-//                getCurrentSession().createQuery("from User where name = :name", User.class)
-//                        .setParameter("name", "userToBeSaved")
-//                        .getSingleResult()
-//        );
-//        Assert.assertEquals("userToBeSaved", newUser.getName());
-//        Assert.assertTrue(OutlineUtils.checkPwd("dddd", newUser.getPassword()));
-//        Assert.assertEquals(roles, newUser.getRoles().stream().map(r -> r.getId()).collect(Collectors.toSet()));
+        //given
+        Map<String, Object> savedData = prepareTestData(b -> b
+                .user("admin").admin().role("role1").role("role2").role("role3").currentUser().save(USER)
+        );
+        Set<UUID> roles = ((UserV2)savedData.get(USER)).getRoles()
+                .stream()
+                .map(RoleV2::getId)
+                .filter(r -> !r.equals("role2"))
+                .collect(Collectors.toSet());
+
+        //when
+        dao.createUser("userToBeSaved", "dddd", roles);
+
+        //then
+        UserV2 newUser = userRepository.findByName("userToBeSaved");
+        Assert.assertEquals("userToBeSaved", newUser.getName());
+        Assert.assertTrue(OutlineUtils.checkPwd("dddd", newUser.getPassword()));
+        Assert.assertEquals(roles, map(newUser.getRoles(), RoleV2::getId));
     }
 
     @Test
-    @Ignore
-    public void createUser_should_create_root_paragraph_for_a_new_user() {
-//        //given
-//        User admin = prepareDataForCreatingNewUser();
-//
-//        //when
-//        doInTransactionV(() -> dao.createUser(admin, "userToBeSaved", "dddd", ImmutableSet.of()));
-//
-//        //then
-//        Paragraph paragraph = transactionTemplate.execute(status ->
-//                getCurrentSession().createQuery("from Paragraph where name = :name", Paragraph.class)
-//                        .setParameter("name", ROOT_NAME)
-//                        .getSingleResult()
-//        );
-//        Assert.assertEquals("userToBeSaved", paragraph.getOwner().getName());
-    }
-
-    @Test
-    @Ignore
     public void updateUser_should_update_existing_user() {
-//        //given
-//        List<User> users = prepareDataForUpdatingExistingUser();
-//        User admin = users.get(0);
-//        User userToBeChanged = users.get(1);
-//
-//        //when
-//        doInTransactionV(() -> dao.updateUser(admin, userToBeChanged.getId(), user -> user.setName("NeWNaMe")));
-//
-//        //then
-//        User user = transactionTemplate.execute(status -> {
-//            User u = getCurrentSession().load(User.class, userToBeChanged.getId());
-//            u.getName();
-//            return u;
-//        });
-//        Assert.assertEquals("NeWNaMe", user.getName());
-    }
-
-    @Test
-    @Ignore
-    public void updateUser_should_not_create_root_paragraph_for_existing_user() {
-//        //given
-//        List<User> users = prepareDataForUpdatingExistingUser();
-//        User admin = users.get(0);
-//        User userToBeChanged = users.get(1);
-//
-//        //when
-//        dao.updateUser(admin, userToBeChanged.getId(), user -> {});
-//
-//        //then
-//        Integer size = transactionTemplate.execute(status ->
-//                getCurrentSession().createQuery("from Paragraph where name = :name", Paragraph.class)
-//                        .setParameter("name", ROOT_NAME)
-//                        .getResultList().size()
-//        );
-//        Assert.assertEquals((Integer) 0, size);
-    }
-
-    @Test
-    @Ignore
-    public void removeUser_should_remove_user() {
-//        //given
-//        Map<String, Object> saved = transactionTemplate.execute(status ->
-//                new TestDataBuilder(getCurrentSession())
-//                        .user("admin").role(ADMIN_ROLE_NAME).save(USER)
-//                        .user("toBeRemoved").save(TO_BE_REMOVED)
-//                        .getResults()
-//        );
-//        User admin = (User) saved.get(USER);
-//        User userToBeRemoved = (User) saved.get(TO_BE_REMOVED);
-//
-//        //when
-//        doInTransactionV(() -> dao.removeUser(admin, userToBeRemoved.getId()));
-//
-//        //then
-//        Integer size = transactionTemplate.execute(status ->
-//                getCurrentSession().createQuery("from User", User.class)
-//                        .getResultList().size()
-//        );
-//        Assert.assertEquals((Integer) 1, size);
-    }
-
-    @Test
-    @Ignore
-    public void removeUser_should_remove_all_paragraphs_owned_by_user() {
-//        //given
-//        User userToBeRemoved = transactionTemplate.execute(status ->
-//                (User) new TestDataBuilder(getCurrentSession())
-//                        .user("user1").save(TO_BE_REMOVED).children(b -> b
-//                                .paragraph("par1").tag("par1-tag").children(b2 -> b2
-//                                        .paragraph("par2").tag("par2-tag")
-//                                )
-//                        ).user("admin").role(ADMIN_ROLE_NAME).children(b -> b
-//                                .paragraph("par3").tag("par3-tag").children(b2 -> b2
-//                                        .paragraph("par4").tag("par4-tag")
-//                                )
-//                        ).getResults().get(TO_BE_REMOVED)
-//        );
-//        Set<String> paragraphs = new HashSet<>(
-//                transactionTemplate.execute(status ->
-//                        getCurrentSession().createQuery("select p.name from Paragraph p", String.class).getResultList()
-//                )
-//        );
-//        Assert.assertEquals(paragraphs, ImmutableSet.of("par1", "par2", "par3", "par4"));
-//
-//        //when
-//        doInTransactionV(() -> dao.removeUser(fakeAdmin(), userToBeRemoved.getId()));
-//
-//        //then
-//        Set<String> paragraphsAfterRemoval = new HashSet<>(
-//                transactionTemplate.execute(status ->
-//                        getCurrentSession().createQuery("select p.name from Paragraph p", String.class).getResultList()
-//                )
-//        );
-//        Assert.assertEquals(paragraphsAfterRemoval, ImmutableSet.of("par3", "par4"));
-    }
-
-    @Test(expected = OutlineException.class)
-    @Ignore
-    public void it_should_be_impossible_for_a_user_to_delete_himself() {
-//        //given
-//        User userToBeRemoved = transactionTemplate.execute(status ->
-//                (User) new TestDataBuilder(getCurrentSession())
-//                        .user("admin").role(ADMIN_ROLE_NAME).save(TO_BE_REMOVED).children(b -> b
-//                                .paragraph("par3").tag("par3-tag")
-//                        ).getResults().get(TO_BE_REMOVED)
-//        );
-//
-//        //when
-//        dao.removeUser(userToBeRemoved, userToBeRemoved.getId());
-//
-//        //then
-//        //an exception should be thrown
-    }
-
-    private User prepareDataForCreatingNewUser() {
-        Map<String, Object> saved = transactionTemplate.execute(status ->
-                new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(ADMIN_ROLE_NAME).role("R1").role("R2").save(USER)
-                        .getResults()
+        //given
+        Map<String, Object> savedData = prepareTestData(b -> b
+                .user("admin").admin().currentUser()
+                .user("toBeChanged").save(TO_BE_CHANGED)
         );
-        return (User) saved.get(USER);
+        UserV2 userToBeChanged = (UserV2)savedData.get(TO_BE_CHANGED);
+
+        //when
+        dao.updateUser(userToBeChanged.getId(), user -> user.setName("NeWNaMe"));
+
+        //then
+        UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
+        Assert.assertEquals("NeWNaMe", user.getName());
     }
 
-    private List<User> prepareDataForUpdatingExistingUser() {
-        Map<String, Object> saved = transactionTemplate.execute(status ->
-                new TestDataBuilder(getCurrentSession())
-                        .user("admin").role(ADMIN_ROLE_NAME).save(USER)
-                        .user("toBeChanged").save(TO_BE_CHANGED)
-                        .getResults()
+    @Test
+    public void it_should_be_impossible_for_a_user_to_lock_himself() {
+        //given
+        Map<String, Object> savedData = prepareTestData(b -> b
+                .user("admin").admin().currentUser().save(USER)
         );
-        User admin = (User) saved.get(USER);
-        User userToBeChanged = (User) saved.get(TO_BE_CHANGED);
-        userToBeChanged.setName("newName");
-        return Arrays.asList(admin, userToBeChanged);
+        UserV2 userToBeChanged = (UserV2)savedData.get(USER);
+
+        //when
+        dao.updateUser(userToBeChanged.getId(), user -> user.setLocked(true));
+
+        //then
+        UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
+        Assert.assertFalse(user.getLocked());
+    }
+
+    @Test
+    public void it_should_be_possible_for_an_admin_to_lock_another_user() {
+        //given
+        Map<String, Object> savedData = prepareTestData(b -> b
+                .user("admin").admin().currentUser()
+                .user("user1").save(USER)
+        );
+        UserV2 userToBeChanged = (UserV2)savedData.get(USER);
+
+        //when
+        dao.updateUser(userToBeChanged.getId(), user -> user.setLocked(true));
+
+        //then
+        UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
+        Assert.assertTrue(user.getLocked());
     }
 }

@@ -22,6 +22,14 @@ public class DaoUtils {
         }
     }
 
+    public <T> void doAsAdminV(Runnable runnable) {
+        doAsAdmin(() -> {
+            runnable.run();
+            return null;
+        });
+    }
+
+
     public boolean isAdmin(UserV2 user) {
         for (RoleV2 role : user.getRoles()) {
             if (UserDao.ADMIN_ROLE_NAME.equals(role.getName())) {
