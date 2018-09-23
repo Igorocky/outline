@@ -1,0 +1,82 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions"></script>
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+        } );
+        function lockUser(id, name) {
+            const question = "Lock user " + name + "?";
+            $( "#dialog-text" ).text(question);
+            $( "#dialog-confirm" ).dialog({
+                title:question,
+                buttons: {
+                    "Lock": function() {
+                        doPost({
+                            url: "/lockUser?id=" + id,
+                            success: function () {
+                                window.location = "users";
+                            }
+                        });
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-confirm" ).dialog('open');
+        }
+    </script>
+</head>
+<body>
+<div th:replace="v2/common-header :: header"></div>
+<a th:href="@{editUser}" href="#">Create User</a>&nbsp;
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>login</th>
+            <th>roles</th>
+            <th>locked</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody th:remove="all-but-first">
+        <tr th:each="user : ${users}">
+            <td th:text="${user.name}"></td>
+            <td>
+                <span th:each="role,iterStat : ${user.roles}" th:text="(${iterStat.first}?'':', ') + ${role.name}"></span>
+            </td>
+            <td th:text="${user.locked} ? 'LOCKED' : ''"></td>
+            <td>
+                <a th:href="@{editUser(userId=${user.id})}" href="#">Edit</a>&nbsp;
+                <a th:unless="${user.locked}" href="#" th:onclick="'lockUser(\'' + ${user.id} + '\',\'' + ${user.name} + '\')'">Lock</a>&nbsp;
+            </td>
+        </tr>
+        <tr><td>Login1</td><td>role1, role2</td><td>Edit</td></tr>
+        <tr><td>Login2</td><td>role1, role2</td><td>Edit</td></tr>
+    </tbody>
+</table>
+
+<div id="dialog-confirm" hidden="hidden">
+    <p>
+        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="dialog-text"></span>
+    </p>
+</div>
+
+</body>
+</html>

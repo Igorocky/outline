@@ -46,7 +46,11 @@ public class OutlineUtils {
         return BCrypt.checkpw(pwd, hashedPwd);
     }
 
-    public static String redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
+    public static String redirect(String url) {
+        return "redirect:/" + url;
+    }
+
+    public static String  redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath(path);
         params.forEach((k,v) -> builder.queryParam(k, v));
         response.sendRedirect(path + "?" + builder.build().getQuery());

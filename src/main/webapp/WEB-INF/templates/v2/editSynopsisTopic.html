@@ -1,0 +1,177 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../css/multi-select.css">
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/functions.js"></script>
+    <script th:inline="javascript">
+        $( function() {
+            /*<![CDATA[*/
+            var formDataJson = JSON.parse(/*[[${formDataJson}]]*/);
+            /*]]>*/
+            _.each(formDataJson.content, function (content) {
+                if (content.type == "IMAGE") {
+                    addImage(content.id);
+                } else if (content.type == "TEXT") {
+                    addText(content.id, content.text);
+                } else {
+                    alert("Can't determine content type - '" + content.type + "'")
+                }
+            });
+        } );
+    </script>
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+            document.onpaste = function(event){
+                uploadImage(extractFileFromEvent(event), function (imgId) {
+                    console.log("imgId = " + JSON.stringify(imgId));
+                    addImage(imgId);
+                })
+            };
+        } );
+        focusOnLoad('#name');
+        var order = 1000;
+        function nextOrder() {
+            return order++;
+        }
+        function appendRow(rowHtml) {
+            let order = nextOrder();
+            $("form table tr:nth-last-child(2)").after('<tr contentOrder="' + order + '">\n' +
+                '            <td><a href="#" onclick="up(this, \'' + order + '\')">Up</a>' +
+                '&nbsp;<a href="#" onclick="down(this, \'' + order + '\')">Down</a>' +
+                '&nbsp;<a href="#" onclick="remove(this, \'' + order + '\')">Delete</a></td>\n' +
+                '            <td>' + rowHtml + '</td>\n' +
+                '        </tr>');
+        }
+        function addText(id, text) {
+            appendRow('<textarea id="' + id + '"></textarea>');
+            if (id != '') {
+                $("#" + id).text(text);
+            }
+        }
+        function addImage(imgId) {
+            appendRow('<img id="' + imgId + '" src="/topicImage/' + imgId + '" />');
+        }
+        function allContents() {
+            return $("form table tr[contentOrder]").toArray();
+        }
+        function initialDataForMoving(order) {
+            let contents_ = allContents();
+            return {
+                contents: contents_,
+                idx: indexOf(contents_, function(elem){return elem.getAttribute('contentOrder') == order;})
+            };
+        }
+        function up(elem, order) {
+            let init = initialDataForMoving(order);
+            if (init.idx > 0) {
+                let row = elem.parentNode.parentNode;
+                let sibling = row.previousElementSibling;
+                let parent = row.parentNode;
+                parent.insertBefore(row, sibling);
+            }
+        }
+        function down(elem, order) {
+            let init = initialDataForMoving(order);
+            if (init.idx < _.size(init.contents) - 1) {
+                let row = elem.parentNode.parentNode;
+                let sibling = row.nextElementSibling;
+                let parent = row.parentNode;
+                parent.insertBefore(sibling, row);
+            }
+        }
+        function remove(elem, order) {
+            const question = "Delete?";
+            $( "#dialog-text" ).text(question);
+            $( "#dialog-confirm" ).dialog({
+                title:question,
+                buttons: {
+                    "Delete": function() {
+                        $("form table tr[contentOrder='" + order + "']").remove();
+                        $( this ).dialog( "close" );
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-confirm" ).dialog('open');
+        }
+        function contentForForm(type, id, text) {
+            return {
+                type:type,
+                id:id,
+                text:text
+            };
+        }
+        function submitForm(parentId, id) {
+            let request = {
+                parentId: parentId == "null" ? null : parentId,
+                id: id == "null" ? null : id,
+                name: $("#name").val(),
+                content: _.map(allContents(), function (elem) {
+                    let textArr = elem.getElementsByTagName("textarea");
+                    if (_.size(textArr) > 0) {
+                        return contentForForm("TEXT", textArr[0].getAttribute('id'), textArr[0].value);
+                    } else {
+                        let img = elem.getElementsByTagName("img");
+                        if (_.size(img) > 0) {
+                            return contentForForm("IMAGE", img[0].getAttribute('id'), null);
+                        } else {
+                            throw "Can't determine type of elem.";
+                        }
+                    }
+                })
+            };
+            doPost({
+                url: "/editSynopsisTopicPost",
+                data: request,
+                success: function (topicId) {
+                    window.location = "/topic?id=" + topicId + "&showContent=true";
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<div th:replace="path :: path"/>
+<a href="#" onclick="addText('', null)">Add text</a>&nbsp;
+<form th:object="${form}">
+    <input type="hidden" th:field="*{parentId}"/>
+    <input type="hidden" th:field="*{id}"/>
+    <table>
+        <tr>
+            <td>Name</td>
+            <td><input id="name" type="text" size="120" th:field="*{name}"/></td>
+        </tr>
+        <tr>
+            <td><a th:href="*{id} != null ? @{/topic(id=${form.id},showContent=true)} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
+            <td><a href="#" th:text="*{id} == null ? 'Create' : 'Save'"
+                   th:onclick="'submitForm(\'' + *{parentId} + '\', \'' + *{id} + '\')'">Save</a></td>
+        </tr>
+    </table>
+</form>
+
+<div id="dialog-confirm" hidden="hidden">
+    <p>
+        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+        <span id="dialog-text"></span>
+    </p>
+</div>
+
+</body>
+</html>

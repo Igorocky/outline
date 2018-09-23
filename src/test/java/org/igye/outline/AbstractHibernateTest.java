@@ -58,7 +58,9 @@ public class AbstractHibernateTest {
     protected Map<String, Object> prepareTestData(Function<TestDataBuilderV2, TestDataBuilderV2> builder) {
         return doInTransaction(session -> {
             Map<String, Object> savedObjects = builder.apply(new TestDataBuilderV2(session)).getResults();
-            Mockito.when(sessionData.getUser()).thenReturn((UserV2) savedObjects.get(TestDataBuilderV2.CURRENT_USER));
+            Mockito.when(sessionData.getCurrentUser()).thenReturn(
+                    (UserV2) savedObjects.get(TestDataBuilderV2.CURRENT_USER)
+            );
             return savedObjects;
         });
     }

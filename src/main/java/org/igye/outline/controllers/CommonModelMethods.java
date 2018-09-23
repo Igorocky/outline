@@ -17,7 +17,7 @@ public class CommonModelMethods {
 
     public void initModel(Model model) {
         model.addAttribute("sessionData", sessionData);
-        model.addAttribute("currentUser", getCurrentUser().getName());
+        model.addAttribute("currentUser", sessionData.getCurrentUser().getName());
         model.addAttribute("isAdmin", userDao.isAdmin(getCurrentUser()));
     }
 }

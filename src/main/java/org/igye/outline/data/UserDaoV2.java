@@ -1,8 +1,11 @@
 package org.igye.outline.data;
 
+import fj.data.Validation;
 import org.igye.outline.htmlforms.SessionData;
+import org.igye.outline.modelv2.RoleV2;
 import org.igye.outline.modelv2.UserV2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,7 @@ import java.util.function.Supplier;
 
 import static org.igye.outline.common.OutlineUtils.hashPwd;
 import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.controllers.Authenticator.BCRYPT_SALT_ROUNDS;
 
 @Component
 public class UserDaoV2 {
@@ -53,10 +57,36 @@ public class UserDaoV2 {
             UserV2 user = userRepository.getOne(id);
             Boolean lockedBefore = user.getLocked();
             updates.accept(user);
-            if (sessionData.getUser().getId().equals(id) && !lockedBefore && user.getLocked()) {
+            if (sessionData.getCurrentUser().getId().equals(id) && !lockedBefore && user.getLocked()) {
                 user.setLocked(false);
             }
         });
+    }
+
+    @Transactional
+    public Validation<String, Void> changePassword(String oldPassword, String newPassword) {
+        UserV2 user = userRepository.findById(sessionData.getCurrentUser().getId()).get();
+        if (BCrypt.checkpw(oldPassword, user.getPassword())) {
+            user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt(BCRYPT_SALT_ROUNDS)));
+            return Validation.success(null);
+        } else {
+            return Validation.fail("Old password doesn't match.");
+        }
+    }
+
+    @Transactional
+    public List<RoleV2> loadAllRoles() {
+        return roleRepository.findAll();
+    }
+
+    @Transactional
+    public List<RoleV2> loadRoles(Set<UUID> ids) {
+        return roleRepository.findAllById(ids);
+    }
+
+    @Transactional
+    public UserV2 loadUserById(UUID id) {
+        return doAsAdmin(() -> userRepository.findById(id).get());
     }
 
     private <T> T doAsAdmin(Supplier<T> supplier) {

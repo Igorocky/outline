@@ -111,8 +111,8 @@ public class UserDaoV2Test extends AbstractHibernateTest {
         );
         Set<UUID> roles = ((UserV2)savedData.get(USER)).getRoles()
                 .stream()
+                .filter(r -> !r.getName().equals("role2") && !r.getName().equals("ADMIN"))
                 .map(RoleV2::getId)
-                .filter(r -> !r.equals("role2"))
                 .collect(Collectors.toSet());
 
         //when
@@ -122,7 +122,10 @@ public class UserDaoV2Test extends AbstractHibernateTest {
         UserV2 newUser = userRepository.findByName("userToBeSaved");
         Assert.assertEquals("userToBeSaved", newUser.getName());
         Assert.assertTrue(OutlineUtils.checkPwd("dddd", newUser.getPassword()));
-        Assert.assertEquals(roles, map(newUser.getRoles(), RoleV2::getId));
+        Assert.assertEquals(
+                ImmutableSet.of("role1", "role3"),
+                map(newUser.getRoles(), RoleV2::getName)
+        );
     }
 
     @Test
@@ -173,5 +176,24 @@ public class UserDaoV2Test extends AbstractHibernateTest {
         //then
         UserV2 user = userRepository.findById(userToBeChanged.getId()).get();
         Assert.assertTrue(user.getLocked());
+    }
+
+    @Test
+    public void loadRoles_should_load_roles_by_id() {
+        //given
+        Map<String, Object> savedData = prepareTestData(b -> b
+                .user("admin").admin().role("role1").role("role2").role("role3").role("role4").currentUser().save(USER)
+        );
+        Set<UUID> roleIds = ((UserV2)savedData.get(USER)).getRoles()
+                .stream()
+                .filter(r -> r.getName().equals("role1") || r.getName().equals("role4"))
+                .map(RoleV2::getId)
+                .collect(Collectors.toSet());
+
+        //when
+        List<RoleV2> result = dao.loadRoles(roleIds);
+
+        //then
+        Assert.assertEquals(ImmutableSet.of("role1", "role4"), mapToSet(result, RoleV2::getName));
     }
 }

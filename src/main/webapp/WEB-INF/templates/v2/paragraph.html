@@ -45,7 +45,7 @@
     </script>
 </head>
 <body>
-<div th:replace="v2/common-header :: header"></div>
+<div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
 <div>
     <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;

@@ -15,7 +15,7 @@ public class DaoUtils {
     private SessionData sessionData;
 
     public <T> T doAsAdmin(Supplier<T> supplier) {
-        if (!isAdmin(sessionData.getUser())) {
+        if (!isAdmin(sessionData.getCurrentUser())) {
             return OutlineUtils.accessDenied();
         } else {
             return supplier.get();

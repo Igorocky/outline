@@ -8,10 +8,10 @@ import org.igye.outline.modelv2.UserV2;
 import org.igye.outline.selection.Selection;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-@Getter
-@Setter
 @NoArgsConstructor
 public class SessionData {
+    @Getter
+    @Setter
     private Selection selection;
     private UserV2 user;
 

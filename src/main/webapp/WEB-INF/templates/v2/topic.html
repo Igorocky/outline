@@ -1,0 +1,44 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions"></script>
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" >
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css">
+    <script type="text/javascript">
+        $( function() {
+            registerShortcuts();
+        } );
+    </script>
+    <title th:text="${topic.name}"/>
+</head>
+<body>
+<div th:replace="common-header :: header"></div>
+<div th:replace="path :: path"/>
+<div>
+    <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
+    <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
+
+    <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
+</div>
+<div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
+<h3>&#10042;<span th:text="${topic.name}" /></h3>
+<div>
+    <a shortcut="i" th:unless="${showContent}" th:href="@{/topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
+    <a shortcut="i" th:if="${showContent}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
+</div>
+
+<div th:if="${showContent}" th:each="content : ${topic.contents}">
+    <span th:replace="selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
+    <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
+         th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
+    <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>
+</div>
+
+</body>
+</html>
