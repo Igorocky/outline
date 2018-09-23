@@ -18,26 +18,26 @@
     <title th:text="${topic.name}"/>
 </head>
 <body>
-<div th:replace="common-header :: header"></div>
-<div th:replace="path :: path"/>
+<div th:replace="v2/common-header :: header"></div>
+<div th:replace="v2/path :: path"/>
 <div>
-    <a th:href="@{/editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
-    <a th:href="@{/editTopic(parentId=${topic.paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
+    <a th:href="@{editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
+    <a th:href="@{editTopic(parentId=${topic.parentNode != null ? topic.parentNode.id : null})}" href="#">Create new topic</a>&nbsp;
 
-    <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
+    <span th:replace="v2/selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
 </div>
-<div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
+<div th:replace="v2/training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
 <h3>&#10042;<span th:text="${topic.name}" /></h3>
 <div>
-    <a shortcut="i" th:unless="${showContent}" th:href="@{/topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
-    <a shortcut="i" th:if="${showContent}" th:href="@{/topic(id=${topic.id})}">Hide images</a>
+    <a shortcut="i" th:unless="${showContent}" th:href="@{topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
+    <a shortcut="i" th:if="${showContent}" th:href="@{topic(id=${topic.id})}">Hide images</a>
 </div>
 
 <div th:if="${showContent}" th:each="content : ${topic.contents}">
-    <span th:replace="selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
-    <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
+    <span th:replace="v2/selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
+    <img th:if="${content instanceof T(org.igye.outline.modelv2.ImageV2)}"
          th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
-    <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>
+    <span th:if="${content instanceof T(org.igye.outline.modelv2.TextV2)}" th:text="${content.text}"/>
 </div>
 
 </body>

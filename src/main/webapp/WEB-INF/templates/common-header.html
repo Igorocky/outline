@@ -2,6 +2,7 @@
 <body>
 
 <div th:fragment="header">
+    <span>Old header </span>
     <span th:text="${currentUser}">UserName</span>&nbsp;
     <a shortcut="H" th:href="${(#mvc.url('CUI#home')).build()}" href="#">Home</a>&nbsp;
     <a th:href="@{/logout}" href="#">Logout</a>&nbsp;

@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -21,9 +20,8 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @Entity
 public class RoleV2 {
     @Id
-    @GeneratedValue
     @Type(type = UUID_CHAR)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @NotNull
     private String name;

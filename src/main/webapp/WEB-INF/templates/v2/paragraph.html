@@ -45,42 +45,38 @@
     </script>
 </head>
 <body>
-<div th:replace="common-header :: header"></div>
-<div th:replace="path :: path"/>
+<div th:replace="v2/common-header :: header"></div>
+<div th:replace="v2/path :: path"/>
 <div>
-    <a th:href="@{/editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
-    <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
-    <a th:unless="${paragraph.parentParagraph == null}" th:href="@{/editTopic(parentId=${paragraph.id}, topicType='synopsis')}" href="#">Create new topic</a>&nbsp;
+    <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
+    <a th:unless="${paragraph.parentNode == null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
+    <a th:unless="${paragraph.parentNode == null}" th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
 
-    <span id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
-    <span id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
-    <span id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>
+    <span th:unless="${paragraph.parentNode == null}" id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
+    <span th:unless="${paragraph.parentNode == null}" id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
+    <span th:unless="${paragraph.parentNode == null}" id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>
 
-    <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${paragraph.id})"></span>
+    <span th:replace="v2/selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${paragraph.id})"></span>
 </div>
 
-<div th:replace="training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
+<div th:replace="v2/training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>
 <div>
-    <a shortcut="i" th:unless="${showContent}" th:href="@{/paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
-    <a shortcut="i" th:if="${showContent}" th:href="@{/paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
+    <a shortcut="i" th:unless="${showContent}" th:href="@{paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
+    <a shortcut="i" th:if="${showContent}" th:href="@{paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
 </div>
 <div th:if="${showContent}" shortcut="c" >
-    <ul id="paragraphs-list" >
-        <li th:id="${childPar.id}" type="square" th:each="childPar : ${paragraph.childParagraphs}">
-            <span>
-                <span th:replace="selection-controls :: selection-checkbox (id=${childPar.id}, objecttype='PARAGRAPH')"></span>
-                <a th:if="${childPar.hasChildren}" th:href="@{firstChild(id=${childPar.id})}" >&#8681;&nbsp;</a>
-                <span th:unless="${childPar.hasChildren}">&#8681;&nbsp;</span>
-                <a th:href="@{paragraph(id=${childPar.id})}" th:text="${childPar.name}"></a>
+    <ul id="children-list" >
+        <li th:id="${childNode.id}" type="square" th:each="childNode : ${paragraph.childNodes}">
+            <span th:if="${childNode instanceof T(org.igye.outline.modelv2.ParagraphV2)}">
+                <span th:replace="v2/selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='PARAGRAPH')"></span>
+                <a th:if="${childNode.hasChildren}" th:href="@{firstChild(id=${childNode.id})}" >&#8681;&nbsp;</a>
+                <span th:unless="${childNode.hasChildren}">&#8681;&nbsp;</span>
+                <a th:href="@{paragraph(id=${childNode.id})}" th:text="${childNode.name}"></a>
             </span>
-        </li>
-    </ul>
-    <ul id="topics-list" >
-        <li th:id="${topic.id}" th:each="topic : ${paragraph.topics}">
-            <span>-
-                <span th:replace="selection-controls :: selection-checkbox (id=${topic.id}, objecttype='TOPIC')"></span>
-                <a th:href="@{topic(id=${topic.id}, showContent=true)}" th:text="${topic.name}"></a>
+            <span th:if="${childNode instanceof T(org.igye.outline.modelv2.TopicV2)}">
+                <span th:replace="v2/selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='TOPIC')"></span>
+                <a th:href="@{topic(id=${childNode.id})}" th:text="${childNode.name}"></a>
             </span>
         </li>
     </ul>
