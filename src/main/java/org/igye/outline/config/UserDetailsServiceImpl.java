@@ -1,7 +1,7 @@
 package org.igye.outline.config;
 
 
-import org.igye.outline.data.UserRepository;
+import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.modelv2.UserV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

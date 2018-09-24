@@ -1,4 +1,4 @@
-package org.igye.outline.data;
+package org.igye.outline.data.repository;
 
 import org.igye.outline.modelv2.TopicV2;
 import org.igye.outline.modelv2.UserV2;

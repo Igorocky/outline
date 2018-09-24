@@ -3,6 +3,7 @@ package org.igye.outline.data;
 import com.google.common.collect.ImmutableSet;
 import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.common.OutlineUtils;
+import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.exceptions.AccessDeniedException;
 import org.igye.outline.modelv2.RoleV2;
 import org.igye.outline.modelv2.UserV2;

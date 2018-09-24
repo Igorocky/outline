@@ -64,7 +64,7 @@
             }
         }
         function addImage(imgId) {
-            appendRow('<img id="' + imgId + '" src="/topicImage/' + imgId + '" />');
+            appendRow('<img id="' + imgId + '" src="/v2/topicImage/' + imgId + '" />');
         }
         function allContents() {
             return $("form table tr[contentOrder]").toArray();
@@ -138,17 +138,17 @@
                 })
             };
             doPost({
-                url: "/editSynopsisTopicPost",
+                url: "editTopic",
                 data: request,
                 success: function (topicId) {
-                    window.location = "/topic?id=" + topicId + "&showContent=true";
+                    window.location = "topic?id=" + topicId + "&showContent=true";
                 }
             });
         }
     </script>
 </head>
 <body>
-<div th:replace="path :: path"/>
+<div th:replace="v2/path :: path"/>
 <a href="#" onclick="addText('', null)">Add text</a>&nbsp;
 <form th:object="${form}">
     <input type="hidden" th:field="*{parentId}"/>
@@ -159,7 +159,7 @@
             <td><input id="name" type="text" size="120" th:field="*{name}"/></td>
         </tr>
         <tr>
-            <td><a th:href="*{id} != null ? @{/topic(id=${form.id},showContent=true)} : @{/paragraph(id=${form.parentId})}">Cancel</a></td>
+            <td><a th:href="*{id} != null ? @{topic(id=${form.id},showContent=true)} : @{paragraph(id=${form.parentId})}">Cancel</a></td>
             <td><a href="#" th:text="*{id} == null ? 'Create' : 'Save'"
                    th:onclick="'submitForm(\'' + *{parentId} + '\', \'' + *{id} + '\')'">Save</a></td>
         </tr>

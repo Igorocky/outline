@@ -1,6 +1,8 @@
 package org.igye.outline.data;
 
 import fj.data.Validation;
+import org.igye.outline.data.repository.RoleRepository;
+import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.modelv2.RoleV2;
 import org.igye.outline.modelv2.UserV2;

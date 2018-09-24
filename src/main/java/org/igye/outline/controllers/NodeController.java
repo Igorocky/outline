@@ -1,15 +1,20 @@
 package org.igye.outline.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.NodeDao;
 import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
+import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.modelv2.ImageV2;
 import org.igye.outline.modelv2.ParagraphV2;
+import org.igye.outline.modelv2.TextV2;
 import org.igye.outline.modelv2.TopicV2;
 import org.igye.outline.selection.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +24,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +41,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.getImgFile;
+import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.redirect;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
+import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
 @Controller
 @RequestMapping(NodeController.PREFIX)
@@ -42,6 +54,7 @@ public class NodeController {
     private static final String MIGRATE_DATA = "migrate-data";
     private static final String PARAGRAPH = "paragraph";
     private static final String EDIT_PARAGRAPH = "editParagraph";
+    private static final String EDIT_TOPIC = "editTopic";
     private static final String TOPIC = "topic";
 
     @Value("${homeUrl}")
@@ -55,6 +68,7 @@ public class NodeController {
     @Autowired
     private NodeDao nodeDao;
 
+    private ObjectMapper mapper = new ObjectMapper();
 
 
     @GetMapping(MIGRATE_DATA)
@@ -89,6 +103,7 @@ public class NodeController {
 
         } else {
             paragraph = new ParagraphV2();
+            paragraph.setId(null);
             paragraph.setName("root");
             paragraph.setChildNodes(nodeDao.getRootNodes());
         }
@@ -179,6 +194,65 @@ public class NodeController {
         } catch (IOException e) {
             throw new OutlineException(e);
         }
+    }
+
+    @GetMapping(EDIT_TOPIC)
+    public String editTopic(Model model,
+                            @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) throws JsonProcessingException {
+        EditTopicForm form = new EditTopicForm();
+        parentId.ifPresent(parId -> {
+            form.setParentId(parId);
+            addPath(model, nodeDao.getParagraphById(parId));
+        });
+        if (id.isPresent()) {
+            TopicV2 topic = nodeDao.getTopicById(id.get());
+            form.setId(topic.getId());
+            form.setName(topic.getName());
+            form.setContent(map(
+                    topic.getContents(),
+                    content -> {
+                        if (content instanceof ImageV2) {
+                            return ContentForForm.builder().type(IMAGE).id(content.getId()).build();
+                        } else if (content instanceof TextV2) {
+                            return ContentForForm.builder().type(TEXT).id(content.getId())
+                                    .text(((TextV2)content).getText()).build();
+                        } else {
+                            throw new OutlineException("Can't determine type of content.");
+                        }
+                    }
+            ));
+            if (topic.getParentNode() != null) {
+                addPath(model, (ParagraphV2) topic.getParentNode());
+            }
+        }
+        commonModelMethods.initModel(model);
+        model.addAttribute("form", form);
+        model.addAttribute("formDataJson", mapper.writeValueAsString(form));
+        return prefix(EDIT_TOPIC);
+    }
+
+    @PostMapping(EDIT_TOPIC)
+    @ResponseBody
+    public UUID editTopicPost(@RequestBody EditTopicForm form) throws OperationNotSupportedException {
+        if (form.getId() == null) {
+            return nodeDao.createTopic(form);
+        } else {
+            nodeDao.updateTopic(form);
+            return form.getId();
+        }
+    }
+
+    @PostMapping("uploadImage")
+    @ResponseBody
+    public UUID uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        UUID imgId = nodeDao.createImage();
+        File imgFile = getImgFile(imagesLocation, imgId);
+        File parentDir = imgFile.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+        file.transferTo(imgFile);
+        return imgId;
     }
 
     private String prefix(String url) {

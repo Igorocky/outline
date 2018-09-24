@@ -1,4 +1,4 @@
-package org.igye.outline.data;
+package org.igye.outline.data.repository;
 
 import org.igye.outline.model.Paragraph;
 import org.springframework.data.jpa.repository.JpaRepository;

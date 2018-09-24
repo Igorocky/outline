@@ -103,7 +103,7 @@ function uploadImage(file, onSuccess) {
     fd.append("file", file);
     $.ajax({
         type: "POST",
-        url: "/uploadImage",
+        url: "/v2/uploadImage",
         data: fd,
         // contentType: "multipart/form-data",
         contentType: false,
