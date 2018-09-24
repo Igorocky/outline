@@ -12,12 +12,9 @@
     <link rel="stylesheet" th:replace="common-scripts :: css">
     <script type="text/javascript">
         function reorderMode() {
-            $( "#paragraphs-list" ).addClass("sortable");
-            $( "#paragraphs-list" ).sortable();
-            $( "#paragraphs-list" ).disableSelection();
-            $( "#topics-list" ).addClass("sortable");
-            $( "#topics-list" ).sortable();
-            $( "#topics-list" ).disableSelection();
+            $( "#children-list" ).addClass("sortable");
+            $( "#children-list" ).sortable();
+            $( "#children-list" ).disableSelection();
             $( "#reorder-btn" ).hide();
             $( "#cancel-reorder-btn" ).show();
             $( "#save-order-btn" ).show();
@@ -28,11 +25,10 @@
         function saveOrder(parentId) {
             let newOrdering = {
                 parentId: parentId,
-                paragraphs: _.map($("#paragraphs-list").children().toArray(), function(elem) {return elem.id}),
-                topics: _.map($("#topics-list").children().toArray(), function(elem) {return elem.id})
+                children: _.map($("#children-list").children().toArray(), function(elem) {return elem.id})
             };
             doPost({
-                url: "/reorderParagraphChildren",
+                url: "/v2/reorderNodeChildren",
                 data: newOrdering,
                 success: function () {
                     window.location.reload();
@@ -52,9 +48,9 @@
     <a th:unless="${paragraph.id == null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
     <a th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
 
-    <span th:unless="${paragraph.parentNode == null}" id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
-    <span th:unless="${paragraph.parentNode == null}" id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
-    <span th:unless="${paragraph.parentNode == null}" id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>
+    <span th:unless="${paragraph.id == null}" id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
+    <span th:unless="${paragraph.id == null}" id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>
+    <span th:unless="${paragraph.id == null}" id="save-order-btn" hidden="hidden"><a href="#" th:onclick="'saveOrder(\'' + ${paragraph.id} + '\')'">Save order</a>&nbsp;</span>
 
     <span th:replace="v2/selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${paragraph.id})"></span>
 </div>

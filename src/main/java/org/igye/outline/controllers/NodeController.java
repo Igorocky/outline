@@ -11,6 +11,7 @@ import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
+import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.modelv2.ImageV2;
 import org.igye.outline.modelv2.ParagraphV2;
@@ -254,6 +255,14 @@ public class NodeController {
         file.transferTo(imgFile);
         return imgId;
     }
+
+    @PostMapping("reorderNodeChildren")
+    public String reorderNodeChildren(@RequestBody ReorderNodeChildren request,
+                                           HttpServletResponse response) throws IOException {
+        nodeDao.reorderNodeChildren(request);
+        return OutlineUtils.redirect(response, prefix(PARAGRAPH), ImmutableMap.of("id", request.getParentId()));
+    }
+
 
     private String prefix(String url) {
         return "" + PREFIX + "/" + url;

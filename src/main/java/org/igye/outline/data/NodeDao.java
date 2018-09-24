@@ -1,5 +1,6 @@
 package org.igye.outline.data;
 
+import com.google.common.collect.ImmutableSet;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.igye.outline.common.OutlineUtils;
@@ -15,6 +16,7 @@ import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditTopicForm;
+import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Content;
 import org.igye.outline.model.Paragraph;
@@ -37,10 +39,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.OutlineUtils.mapToSet;
 import static org.igye.outline.common.OutlineUtils.toMap;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
@@ -211,6 +215,20 @@ public class NodeDao {
         List<Paragraph> rootParagraphs = oldParagraphRepository.findByParentParagraphIsNull();
         map(rootParagraphs, p -> toNode(p, null, usersMap))
                 .forEach(session::merge);
+    }
+
+    @Transactional
+    public void reorderNodeChildren(ReorderNodeChildren request) {
+        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), request.getParentId());
+        List<NodeV2> children = parent.getChildNodes();
+        Set<UUID> oldIdSet = mapToSet(children, NodeV2::getId);
+        Set<UUID> newIdSet = ImmutableSet.copyOf(request.getChildren());
+        if (!oldIdSet.equals(newIdSet)) {
+            throw new OutlineException("!oldIdSet.equals(newIdSet)");
+        }
+        Map<UUID, NodeV2> childrenMap = toMap(children, NodeV2::getId);
+        parent.getChildNodes().clear();
+        request.getChildren().forEach(id -> parent.addChildNode(childrenMap.get(id)));
     }
 
     private NodeV2 toNode(Paragraph oldParagraph, ParagraphV2 parentParagraph, Map<String, UserV2> usersMap) {
