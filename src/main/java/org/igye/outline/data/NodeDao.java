@@ -1,6 +1,7 @@
 package org.igye.outline.data;
 
 import com.google.common.collect.ImmutableSet;
+import fj.F2;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.igye.outline.common.OutlineUtils;
@@ -44,9 +45,11 @@ import javax.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.mapToSet;
@@ -253,6 +256,62 @@ public class NodeDao {
         } else {
             throw new OutlineException("Action '" + selection.getActionType() + "' is not supported.");
         }
+
+    }
+
+    @Transactional
+    public NodeV2 loadNodeById(UUID id) {
+        return nodeRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    }
+
+    @Transactional
+    public Optional<?> nextSibling(UUID id, boolean toTheRight) {
+        return getSibling(id, (list, comp) -> OutlineUtils.getNextSibling(list, comp, toTheRight));
+    }
+
+    @Transactional
+    public Optional<?> furthestSibling(UUID id, boolean toTheRight) {
+        return getSibling(id, (list, comp) -> OutlineUtils.getFurthestSibling(list, comp, toTheRight));
+    }
+
+    @Transactional
+    public Optional<?> firstChild(Optional<UUID> id) {
+        if (id.isPresent()) {
+            ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id.get());
+            if (!paragraph.getChildNodes().isEmpty()) {
+                return Optional.of(paragraph.getChildNodes().get(0));
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            List<NodeV2> rootNodes = getRootNodes();
+            if (rootNodes.isEmpty()) {
+                return Optional.empty();
+            } else {
+                return Optional.of(rootNodes.get(0));
+            }
+        }
+
+    }
+
+    @Transactional
+    public Optional<ParagraphV2> loadParent(UUID id) {
+        return Optional.ofNullable((ParagraphV2) loadNodeById(id).getParentNode());
+    }
+
+    private <T> Optional<T> getSibling(UUID id,
+                                       F2<List<T>, Function<T,Boolean>, Optional<T>> getter) {
+        NodeV2 node = loadNodeById(id);
+        List<NodeV2> siblings;
+        if (node.getParentNode() == null) {
+            siblings = getRootNodes();
+        } else {
+            siblings = ((ParagraphV2)node.getParentNode()).getChildNodes();
+        }
+        return getter.f(
+                (List<T>) siblings,
+                sib -> ((NodeV2)sib).getId().equals(node.getId())
+        );
 
     }
 

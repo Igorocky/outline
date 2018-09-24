@@ -45,4 +45,7 @@ public class TopicV2 extends NodeV2 {
         content.setTopic(null);
     }
 
+    public boolean getHasParent() {
+        return getParentNode() != null;
+    }
 }

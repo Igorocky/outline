@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
@@ -151,16 +154,6 @@ public class NodeController {
                     ImmutableMap.of("id", idToRedirectTo)
             );
         }
-    }
-
-    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
-        commonModelMethods.initModel(model);
-        if (form.getParentId() != null) {
-            addPath(model, nodeDao.getParagraphById(form.getParentId()));
-        } else {
-            addPath(model, null);
-        }
-        model.addAttribute("form", form);
     }
 
     @GetMapping(TOPIC)
@@ -276,6 +269,99 @@ public class NodeController {
         nodeDao.performActionOnSelectedObjects(sessionData.getSelection(), destId.orElse(null));
         sessionData.setSelection(null);
         return prefix(NOTHING);
+    }
+
+    @GetMapping("firstChild")
+    public String firstChild(@RequestParam Optional<UUID> id) {
+        return getNode(
+                id,
+                () -> nodeDao.firstChild(id),
+                uri -> {},
+                uri -> {}
+        );
+    }
+
+    @GetMapping("parent")
+    public String parent(@RequestParam Optional<UUID> id) {
+        return getNode(
+                id,
+                () -> id.flatMap(nodeDao::loadParent),
+                uri -> {},
+                uri -> {}
+        );
+    }
+
+    @GetMapping("nextSibling")
+    public String nextSibling(@RequestParam Optional<UUID> id, @RequestParam boolean toTheRight) {
+        return getNode(
+                id,
+                () -> id.flatMap(idd -> nodeDao.nextSibling(idd, toTheRight)),
+                uri -> {},
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
+        );
+    }
+
+    @GetMapping("furthestSibling")
+    public String furthestSibling(@RequestParam Optional<UUID> id, @RequestParam boolean toTheRight) {
+        return getNode(
+                id,
+                () -> id.flatMap(idd -> nodeDao.furthestSibling(idd, toTheRight)),
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true),
+                uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
+        );
+    }
+
+    private String getNode(Optional<UUID> id, Supplier<Optional<?>> getter,
+                           Consumer<UriComponentsBuilder> onPresent,
+                           Consumer<UriComponentsBuilder> onAbsent) {
+        Optional<?> node = getter.get();
+        UriComponentsBuilder redirectUriBuilder;
+        if (node.isPresent()) {
+            if (node.get() instanceof TopicV2) {
+                redirectUriBuilder = topicUriBuilder((TopicV2) node.get());
+            } else {
+                redirectUriBuilder = paragraphUriBuilder((ParagraphV2) node.get());
+            }
+            onPresent.accept(redirectUriBuilder);
+        } else if (id.isPresent()) {
+            Object curEntity = nodeDao.loadNodeById(id.get());
+            if (curEntity instanceof TopicV2) {
+                redirectUriBuilder = topicUriBuilder((TopicV2) curEntity);
+            } else {
+                redirectUriBuilder = paragraphUriBuilder((ParagraphV2) curEntity);
+            }
+            onAbsent.accept(redirectUriBuilder);
+        } else {
+            redirectUriBuilder = UriComponentsBuilder.newInstance()
+                    .path(prefix(PARAGRAPH))
+                    .queryParam("showContent", false);
+        }
+        return redirect(redirectUriBuilder.toUriString());
+    }
+
+    private UriComponentsBuilder paragraphUriBuilder(ParagraphV2 paragraph) {
+        return UriComponentsBuilder.newInstance()
+                .path(prefix(PARAGRAPH))
+                .queryParam("id", paragraph.getId())
+                .queryParam("showContent", false)
+                ;
+    }
+
+    private UriComponentsBuilder topicUriBuilder(TopicV2 topic) {
+        return UriComponentsBuilder.newInstance()
+                .path(prefix(TOPIC))
+                .queryParam("id", topic.getId())
+                ;
+    }
+
+    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
+        commonModelMethods.initModel(model);
+        if (form.getParentId() != null) {
+            addPath(model, nodeDao.getParagraphById(form.getParentId()));
+        } else {
+            addPath(model, null);
+        }
+        model.addAttribute("form", form);
     }
 
     private String prefix(String url) {

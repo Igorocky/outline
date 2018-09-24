@@ -26,7 +26,7 @@
 
     <span th:replace="v2/selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
 </div>
-<div th:replace="v2/training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=true, showFirstChildBtn=false)"/>
+<div th:replace="v2/training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=${topic.hasParent}, showFirstChildBtn=false)"/>
 <h3>&#10042;<span th:text="${topic.name}" /></h3>
 <div>
     <a shortcut="i" th:unless="${showContent}" th:href="@{topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;

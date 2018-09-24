@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface NodeRepository extends JpaRepository<NodeV2, UUID> {
     List<NodeV2> findByOwnerAndParentNodeIsNullOrderByName(UserV2 owner);
+    NodeV2 findByOwnerAndId(UserV2 owner, UUID id);
 }
