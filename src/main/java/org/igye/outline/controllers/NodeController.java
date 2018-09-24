@@ -18,6 +18,7 @@ import org.igye.outline.modelv2.ParagraphV2;
 import org.igye.outline.modelv2.TextV2;
 import org.igye.outline.modelv2.TopicV2;
 import org.igye.outline.selection.ObjectType;
+import org.igye.outline.selection.Selection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.igye.outline.common.OutlineUtils.NOTHING;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.redirect;
@@ -263,6 +265,18 @@ public class NodeController {
         return OutlineUtils.redirect(response, prefix(PARAGRAPH), ImmutableMap.of("id", request.getParentId()));
     }
 
+    @PostMapping("select")
+    public String select(@RequestBody Selection request) {
+        sessionData.setSelection(request);
+        return prefix(NOTHING);
+    }
+
+    @PostMapping("performActionOnSelectedObjects")
+    public String performActionOnSelectedObjects(@RequestBody Optional<UUID> destId) {
+        nodeDao.performActionOnSelectedObjects(sessionData.getSelection(), destId.orElse(null));
+        sessionData.setSelection(null);
+        return prefix(NOTHING);
+    }
 
     private String prefix(String url) {
         return "" + PREFIX + "/" + url;

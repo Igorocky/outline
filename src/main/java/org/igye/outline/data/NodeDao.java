@@ -31,12 +31,17 @@ import org.igye.outline.modelv2.RoleV2;
 import org.igye.outline.modelv2.TextV2;
 import org.igye.outline.modelv2.TopicV2;
 import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.selection.ActionType;
+import org.igye.outline.selection.ObjectType;
+import org.igye.outline.selection.Selection;
+import org.igye.outline.selection.SelectionPart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -229,6 +234,76 @@ public class NodeDao {
         Map<UUID, NodeV2> childrenMap = toMap(children, NodeV2::getId);
         parent.getChildNodes().clear();
         request.getChildren().forEach(id -> parent.addChildNode(childrenMap.get(id)));
+    }
+
+    @Transactional
+    public void performActionOnSelectedObjects(Selection selection, UUID destId) {
+        if (ActionType.MOVE.equals(selection.getActionType())) {
+            for (SelectionPart selectionPart : selection.getSelections()) {
+                if (ObjectType.PARAGRAPH.equals(selectionPart.getObjectType())) {
+                    moveParagraph(selectionPart.getSelectedId(), destId);
+                } else if (ObjectType.TOPIC.equals(selectionPart.getObjectType())) {
+                    moveTopic(selectionPart.getSelectedId(), destId);
+                } else if (ObjectType.IMAGE.equals(selectionPart.getObjectType())) {
+                    moveImage(selectionPart.getSelectedId(), destId);
+                } else {
+                    throw new OutlineException("Object type '" + selectionPart.getObjectType() + "' is not supported.");
+                }
+            }
+        } else {
+            throw new OutlineException("Action '" + selection.getActionType() + "' is not supported.");
+        }
+
+    }
+
+    private void moveParagraph(UUID parToMoveId, UUID parToMoveToId) {
+        ParagraphV2 parToMove = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveId);
+        if (parToMoveToId != null) {
+            ParagraphV2 parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
+            Set<UUID> pathToRoot = new HashSet<>();
+            NodeV2 currNode = parToMoveTo;
+            while(currNode != null) {
+                pathToRoot.add(currNode.getId());
+                currNode = currNode.getParentNode();
+            }
+            if (pathToRoot.contains(parToMove.getId())) {
+                throw new OutlineException("pathToRoot.contains(parToMove.getId())");
+            }
+            if (parToMove.getParentNode() != null) {
+                Hibernate.initialize(((ParagraphV2)parToMove.getParentNode()).getChildNodes());
+                ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
+            }
+            Hibernate.initialize(parToMoveTo.getChildNodes());
+            parToMoveTo.addChildNode(parToMove);
+        } else if (parToMove.getParentNode() != null) {
+            Hibernate.initialize(((ParagraphV2)parToMove.getParentNode()).getChildNodes());
+            ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
+        }
+
+    }
+
+    private void moveTopic(UUID topicToMoveId, UUID parToMoveToId) {
+        TopicV2 topicToMove = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveId);
+        if (parToMoveToId != null) {
+            ParagraphV2 parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
+            if (topicToMove.getParentNode() != null) {
+                Hibernate.initialize(((ParagraphV2)topicToMove.getParentNode()).getChildNodes());
+                ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+            }
+            Hibernate.initialize(parToMoveTo.getChildNodes());
+            parToMoveTo.addChildNode(topicToMove);
+        } else if (topicToMove.getParentNode() != null) {
+            Hibernate.initialize(((ParagraphV2)topicToMove.getParentNode()).getChildNodes());
+            ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+        }
+    }
+
+    private void moveImage(UUID imageToMoveId, UUID topicToMoveToId) {
+        ImageV2 imgToMove = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), imageToMoveId);
+        TopicV2 srcTopic = imgToMove.getTopic();
+        TopicV2 dstTopic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveToId);
+        srcTopic.detachContentById(imgToMove);
+        dstTopic.addContent(imgToMove);
     }
 
     private NodeV2 toNode(Paragraph oldParagraph, ParagraphV2 parentParagraph, Map<String, UserV2> usersMap) {

@@ -10,6 +10,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hibernate.annotations.CascadeType.MERGE;
 import static org.hibernate.annotations.CascadeType.PERSIST;
@@ -31,6 +32,19 @@ public class ParagraphV2 extends NodeV2 {
         getChildNodes().add(node);
         node.setParentNode(this);
         node.setOwner(getOwner());
+    }
+
+    public void removeChildNodeById(UUID id) {
+        int i = 0;
+        List<NodeV2> childNodes = getChildNodes();
+        while (i < childNodes.size()) {
+            if (childNodes.get(i).getId().equals(id)) {
+                childNodes.get(i).setParentNode(null);
+                childNodes.remove(i);
+            } else {
+                i++;
+            }
+        }
     }
 
     public boolean getHasChildren() {

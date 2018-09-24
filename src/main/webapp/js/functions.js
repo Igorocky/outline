@@ -20,7 +20,7 @@ function submitSelection(actionType, selectedElems, onSuccess) {
         selections: _.map(selectedElems, selectedElemToSelectionPart())
     };
     doPost({
-        url: "/select",
+        url: "/v2/select",
         data: selection,
         success: onSuccess
     });
@@ -62,8 +62,8 @@ function doSelection(actionType) {
 }
 function doPaste(destId) {
     doPost({
-        url: "/performActionOnSelectedObjects",
-        data: destId,
+        url: "/v2/performActionOnSelectedObjects",
+        data: destId == "null" ? null : destId,
         success: function () {
             window.location.reload();
         }
