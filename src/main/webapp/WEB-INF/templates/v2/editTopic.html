@@ -50,7 +50,7 @@
         }
         function appendRow(rowHtml) {
             let order = nextOrder();
-            $("form table tr:nth-last-child(2)").after('<tr contentOrder="' + order + '">\n' +
+            $("form table tr:nth-last-child(2)").after('<tr style="border: blue solid 1px" contentOrder="' + order + '">\n' +
                 '            <td><a href="#" onclick="up(this, \'' + order + '\')">Up</a>' +
                 '&nbsp;<a href="#" onclick="down(this, \'' + order + '\')">Down</a>' +
                 '&nbsp;<a href="#" onclick="remove(this, \'' + order + '\')">Delete</a></td>\n' +

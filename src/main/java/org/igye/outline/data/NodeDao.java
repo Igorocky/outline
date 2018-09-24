@@ -138,24 +138,26 @@ public class NodeDao {
             topic.setOwner(
                 userRepository.findById(sessionData.getCurrentUser().getId()).get()
             );
+            topic = topicRepository.save(topic);
         }
         topic.setName(request.getName());
+        final TopicV2 finalTopic = topic;
         request.getContent().stream().forEach(contentForForm -> {
             if (TEXT.equals(contentForForm.getType())) {
                 TextV2 text = new TextV2();
                 text.setText(contentForForm.getText());
-                topic.addContent(text);
+                finalTopic.addContent(text);
             } else if (IMAGE.equals(contentForForm.getType())) {
                 ImageV2 image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), contentForForm.getId());
                 if (image == null) {
                     throw new OutlineException("image == null for id = '" + contentForForm.getId() + "'");
                 }
-                topic.addContent(image);
+                finalTopic.addContent(image);
             } else {
                 throw new OutlineException("Unexpected type of content - '" + contentForForm.getType() + "'");
             }
         });
-        return topicRepository.save(topic).getId();
+        return finalTopic.getId();
     }
 
     @Transactional
@@ -329,13 +331,10 @@ public class NodeDao {
                 throw new OutlineException("pathToRoot.contains(parToMove.getId())");
             }
             if (parToMove.getParentNode() != null) {
-                Hibernate.initialize(((ParagraphV2)parToMove.getParentNode()).getChildNodes());
                 ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
             }
-            Hibernate.initialize(parToMoveTo.getChildNodes());
             parToMoveTo.addChildNode(parToMove);
         } else if (parToMove.getParentNode() != null) {
-            Hibernate.initialize(((ParagraphV2)parToMove.getParentNode()).getChildNodes());
             ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
         }
 
@@ -346,13 +345,10 @@ public class NodeDao {
         if (parToMoveToId != null) {
             ParagraphV2 parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
             if (topicToMove.getParentNode() != null) {
-                Hibernate.initialize(((ParagraphV2)topicToMove.getParentNode()).getChildNodes());
                 ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
             }
-            Hibernate.initialize(parToMoveTo.getChildNodes());
             parToMoveTo.addChildNode(topicToMove);
         } else if (topicToMove.getParentNode() != null) {
-            Hibernate.initialize(((ParagraphV2)topicToMove.getParentNode()).getChildNodes());
             ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
         }
     }

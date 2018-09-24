@@ -229,7 +229,7 @@ public class NodeController {
 
     @PostMapping(EDIT_TOPIC)
     @ResponseBody
-    public UUID editTopicPost(@RequestBody EditTopicForm form) throws OperationNotSupportedException {
+    public UUID editTopicPost(@RequestBody EditTopicForm form) {
         if (form.getId() == null) {
             return nodeDao.createTopic(form);
         } else {

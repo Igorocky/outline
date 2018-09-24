@@ -3,6 +3,7 @@ package org.igye.outline.modelv2;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.Entity;
@@ -28,15 +29,18 @@ public class TopicV2 extends NodeV2 {
     private List<ContentV2> contents = new ArrayList<>();
 
     public void addContent(ContentV2 content) {
+        Hibernate.initialize(getContents());
         getContents().add(content);
         content.setTopic(this);
         content.setOwner(getOwner());
     }
 
     public void detachContentById(ContentV2 content) {
+        Hibernate.initialize(getContents());
         int idx = 0;
         while (idx < getContents().size()) {
             if (getContents().get(idx).getId().equals(content.getId())) {
+                content.setTopic(null);
                 getContents().remove(idx);
             } else {
                 idx++;

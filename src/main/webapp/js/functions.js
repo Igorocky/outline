@@ -40,6 +40,11 @@ function selectionModeOn() {
     $( "#selection-mode-on-btn" ).hide();
     $( "#selection-mode-off-btn" ).show();
     $( "#cut-btn" ).show();
+    $( ".content-wrapper" ).css({
+        "border-color": "blue",
+        "border-width":"1px",
+        "border-style":"solid"
+    });
 }
 
 function selectionModeOff() {
@@ -47,6 +52,9 @@ function selectionModeOff() {
     $( "#selection-mode-on-btn" ).show();
     $( "#selection-mode-off-btn" ).hide();
     $( "#cut-btn" ).hide();
+    $( ".content-wrapper" ).css({
+        "border-style":"none"
+    });
 }
 
 function doSelection(actionType) {

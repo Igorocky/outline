@@ -3,6 +3,7 @@ package org.igye.outline.modelv2;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.Entity;
@@ -29,12 +30,14 @@ public class ParagraphV2 extends NodeV2 {
     private List<NodeV2> childNodes = new ArrayList<>();
 
     public void addChildNode(NodeV2 node) {
+        Hibernate.initialize(getChildNodes());
         getChildNodes().add(node);
         node.setParentNode(this);
         node.setOwner(getOwner());
     }
 
     public void removeChildNodeById(UUID id) {
+        Hibernate.initialize(getChildNodes());
         int i = 0;
         List<NodeV2> childNodes = getChildNodes();
         while (i < childNodes.size()) {
