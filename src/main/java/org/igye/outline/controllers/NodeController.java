@@ -365,7 +365,7 @@ public class NodeController {
     }
 
     private String prefix(String url) {
-        return "" + PREFIX + "/" + url;
+        return OutlineUtils.prefix(PREFIX, url);
     }
 
     private void addPath(Model model, ParagraphV2 paragraph) {

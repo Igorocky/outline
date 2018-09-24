@@ -19,7 +19,7 @@
 <body>
 
 <div th:if="${editUserForm.errorMsg} != null" th:text="${editUserForm.errorMsg}" style="color: red"/>
-<form th:action="'/'+${(#mvc.url('UC#editUser')).build()}" th:object="${editUserForm}" method="post">
+<form th:action="${(#mvc.url('UC#editUser')).build()}" th:object="${editUserForm}" method="post">
     <input type="hidden" th:field="*{id}"/>
     <table>
         <tr>
@@ -46,7 +46,7 @@
             </td>
         </tr>
         <tr>
-            <td><a th:href="'/'+${(#mvc.url('UC#users')).build()}">Cancel</a></td>
+            <td><a th:href="${(#mvc.url('UC#users')).build()}">Cancel</a></td>
             <td><input type="submit" th:value="*{id} == null ? 'Create' : 'Save'" value="Save"/></td>
         </tr>
     </table>

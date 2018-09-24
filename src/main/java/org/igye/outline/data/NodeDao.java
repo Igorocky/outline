@@ -206,6 +206,9 @@ public class NodeDao {
 
     @Transactional
     public void migrateData() {
+        if (!nodeRepository.findAll().isEmpty()) {
+            throw new OutlineException("!nodeRepository.findAll().isEmpty()");
+        }
         Session session = OutlineUtils.getCurrentSession(entityManager);
         Map<String, RoleV2> rolesMap = toMap(roleRepository.findAll(), RoleV2::getName);
 

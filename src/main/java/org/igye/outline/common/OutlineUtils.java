@@ -1,6 +1,7 @@
 package org.igye.outline.common;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
 import org.igye.outline.data.UserDao;
@@ -44,6 +45,14 @@ public class OutlineUtils {
 
     public static boolean checkPwd(String pwd, String hashedPwd) {
         return BCrypt.checkpw(pwd, hashedPwd);
+    }
+
+    public static String prefix(String prefix, String url) {
+        if (StringUtils.isEmpty(prefix)) {
+            return url;
+        } else {
+            return "" + prefix + "/" + url;
+        }
     }
 
     public static String redirect(String url) {

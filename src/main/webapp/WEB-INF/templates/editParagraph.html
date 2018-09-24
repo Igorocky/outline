@@ -13,8 +13,8 @@
     </script>
 </head>
 <body>
-<div th:replace="v2/path :: path"/>
-<form th:action="'/'+${(#mvc.url('NC#editParagraphPost')).build()}" th:object="${form}" method="post">
+<div th:replace="path :: path"/>
+<form th:action="${(#mvc.url('NC#editParagraphPost')).build()}" th:object="${form}" method="post">
     <input type="hidden" th:field="*{parentId}"/>
     <input type="hidden" th:field="*{id}"/>
     <table>

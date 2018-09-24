@@ -64,7 +64,7 @@
             }
         }
         function addImage(imgId) {
-            appendRow('<img id="' + imgId + '" src="/v2/topicImage/' + imgId + '" />');
+            appendRow('<img id="' + imgId + '" src="/topicImage/' + imgId + '" />');
         }
         function allContents() {
             return $("form table tr[contentOrder]").toArray();
@@ -148,7 +148,7 @@
     </script>
 </head>
 <body>
-<div th:replace="v2/path :: path"/>
+<div th:replace="path :: path"/>
 <a href="#" onclick="addText('', null)">Add text</a>&nbsp;
 <form th:object="${form}">
     <input type="hidden" th:field="*{parentId}"/>

@@ -20,7 +20,7 @@ function submitSelection(actionType, selectedElems, onSuccess) {
         selections: _.map(selectedElems, selectedElemToSelectionPart())
     };
     doPost({
-        url: "/v2/select",
+        url: "/select",
         data: selection,
         success: onSuccess
     });
@@ -70,7 +70,7 @@ function doSelection(actionType) {
 }
 function doPaste(destId) {
     doPost({
-        url: "/v2/performActionOnSelectedObjects",
+        url: "/performActionOnSelectedObjects",
         data: destId == "null" ? null : destId,
         success: function () {
             window.location.reload();
@@ -111,7 +111,7 @@ function uploadImage(file, onSuccess) {
     fd.append("file", file);
     $.ajax({
         type: "POST",
-        url: "/v2/uploadImage",
+        url: "/uploadImage",
         data: fd,
         // contentType: "multipart/form-data",
         contentType: false,

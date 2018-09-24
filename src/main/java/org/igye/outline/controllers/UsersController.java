@@ -2,6 +2,7 @@ package org.igye.outline.controllers;
 
 import fj.data.Validation;
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.UserDaoV2;
 import org.igye.outline.htmlforms.ChangePasswordForm;
 import org.igye.outline.htmlforms.EditUserForm;
@@ -143,7 +144,7 @@ public class UsersController {
         return StringUtils.isEmpty(StringUtils.trim(editUserForm.getNewPassword1()));
     }
 
-    public static String prefix(String url) {
-        return "" + PREFIX + "/" + url;
+    public String prefix(String url) {
+        return OutlineUtils.prefix(PREFIX, url);
     }
 }
