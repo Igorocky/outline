@@ -3,7 +3,7 @@
 
 <div th:fragment="header">
     <span th:text="${currentUser}">UserName</span>&nbsp;
-    <a shortcut="H" th:href="${(#mvc.url('CUI#home')).build()}" href="#">Home</a>&nbsp;
+    <a shortcut="H" th:href="'/'+${(#mvc.url('NC#home')).build()}" href="#">Home</a>&nbsp;
     <a th:href="@{/logout}" href="#">Logout</a>&nbsp;
     <a th:href="'/'+${(#mvc.url('UC#changePassword')).build()}" href="#">Change password</a>&nbsp;
     <span th:if="${isAdmin}"><a th:href="'/'+${(#mvc.url('UC#users')).build()}" href="#">Users</a>&nbsp;</span>

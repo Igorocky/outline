@@ -1,7 +1,14 @@
 package org.igye.outline.controllers;
 
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.NodeDao;
+import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.SessionData;
+import org.igye.outline.modelv2.ImageV2;
 import org.igye.outline.modelv2.ParagraphV2;
 import org.igye.outline.modelv2.TopicV2;
 import org.igye.outline.selection.ObjectType;
@@ -10,15 +17,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.redirect;
 
 @Controller
@@ -28,10 +41,13 @@ public class NodeController {
 
     private static final String MIGRATE_DATA = "migrate-data";
     private static final String PARAGRAPH = "paragraph";
+    private static final String EDIT_PARAGRAPH = "editParagraph";
     private static final String TOPIC = "topic";
 
     @Value("${homeUrl}")
     private String homeUrl;
+    @Value("${topic.images.location}")
+    private String imagesLocation;
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -83,6 +99,52 @@ public class NodeController {
         return prefix(PARAGRAPH);
     }
 
+    @GetMapping(EDIT_PARAGRAPH)
+    public String editParagraph(Model model,
+                                @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) {
+        EditParagraphForm form = new EditParagraphForm();
+        parentId.ifPresent(parId -> form.setParentId(parId));
+        if (id.isPresent()) {
+            ParagraphV2 paragraph = nodeDao.getParagraphById(id.get());
+            form.setId(paragraph.getId());
+            form.setName(paragraph.getName());
+        }
+        prepareModelForEditParagraph(model, form);
+        return prefix(EDIT_PARAGRAPH);
+    }
+
+    @PostMapping(EDIT_PARAGRAPH)
+    public String editParagraphPost(Model model, EditParagraphForm form,
+                                    HttpServletResponse response) throws IOException {
+        if (StringUtils.isBlank(form.getName())) {
+            prepareModelForEditParagraph(model, form);
+            return redirect(prefix(EDIT_PARAGRAPH));
+        } else {
+            UUID idToRedirectTo;
+            if (form.getId() != null) {
+                nodeDao.updateParagraph(form.getId(), par -> par.setName(form.getName()));
+                idToRedirectTo = form.getId();
+            } else {
+                idToRedirectTo = nodeDao.createParagraph(form.getParentId(), form.getName()).getId();
+            }
+            return OutlineUtils.redirect(
+                    response,
+                    prefix(PARAGRAPH),
+                    ImmutableMap.of("id", idToRedirectTo)
+            );
+        }
+    }
+
+    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
+        commonModelMethods.initModel(model);
+        if (form.getParentId() != null) {
+            addPath(model, nodeDao.getParagraphById(form.getParentId()));
+        } else {
+            addPath(model, null);
+        }
+        model.addAttribute("form", form);
+    }
+
     @GetMapping(TOPIC)
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> showContent,
                         Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
@@ -108,6 +170,16 @@ public class NodeController {
         return prefix(TOPIC);
     }
 
+    @GetMapping("topicImage/{imgId}")
+    @ResponseBody
+    public byte[] topicImage(@PathVariable UUID imgId) {
+        ImageV2 image = nodeDao.getImageById(imgId);
+        try {
+            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, image.getId()));
+        } catch (IOException e) {
+            throw new OutlineException(e);
+        }
+    }
 
     private String prefix(String url) {
         return "" + PREFIX + "/" + url;

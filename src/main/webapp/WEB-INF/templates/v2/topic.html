@@ -36,7 +36,7 @@
 <div th:if="${showContent}" th:each="content : ${topic.contents}">
     <span th:replace="v2/selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
     <img th:if="${content instanceof T(org.igye.outline.modelv2.ImageV2)}"
-         th:src="@{/topicImage/{imgId}(imgId=${content.id})}"/>
+         th:src="@{topicImage/{imgId}(imgId=${content.id})}"/>
     <span th:if="${content instanceof T(org.igye.outline.modelv2.TextV2)}" th:text="${content.text}"/>
 </div>
 

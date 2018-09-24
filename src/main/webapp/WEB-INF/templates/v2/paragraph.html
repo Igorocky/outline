@@ -49,8 +49,8 @@
 <div th:replace="v2/path :: path"/>
 <div>
     <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
-    <a th:unless="${paragraph.parentNode == null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
-    <a th:unless="${paragraph.parentNode == null}" th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
+    <a th:unless="${paragraph.id == null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
+    <a th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
 
     <span th:unless="${paragraph.parentNode == null}" id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
     <span th:unless="${paragraph.parentNode == null}" id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>

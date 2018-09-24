@@ -26,6 +26,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.toMap;
@@ -46,6 +47,12 @@ public class NodeDao {
     private RoleRepository roleRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private TopicRepository topicRepository;
+    @Autowired
+    private ParagraphRepository paragraphRepository;
+    @Autowired
+    private ImageRepository imageRepository;
 
     @Transactional
     public List<NodeV2> getRootNodes() {
@@ -54,7 +61,7 @@ public class NodeDao {
 
     @Transactional
     public ParagraphV2 getParagraphById(UUID id) {
-        ParagraphV2 paragraph = (ParagraphV2) nodeRepository.findById(id).get();
+        ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
         paragraph.getChildNodes().forEach(ch -> {
             if (ch instanceof ParagraphV2) {
                 Hibernate.initialize(((ParagraphV2)ch).getChildNodes());
@@ -64,10 +71,32 @@ public class NodeDao {
     }
 
     @Transactional
+    public ParagraphV2 createParagraph(UUID parentId, String name) {
+        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parentId);
+        ParagraphV2 paragraph = new ParagraphV2();
+        paragraph.setName(name);
+        parent.addChildNode(paragraph);
+        return paragraph;
+    }
+
+
+    @Transactional
+    public void updateParagraph(UUID id, Consumer<ParagraphV2> updates) {
+        ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+        updates.accept(paragraph);
+    }
+
+    @Transactional
     public TopicV2 getTopicById(UUID id) {
-        TopicV2 topic = (TopicV2) nodeRepository.findById(id).get();
+        TopicV2 topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
         Hibernate.initialize(topic.getContents());
         return topic;
+    }
+
+    @Transactional
+    public ImageV2 getImageById(UUID id) {
+        ImageV2 image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+        return image;
     }
 
     @Transactional

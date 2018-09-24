@@ -92,9 +92,9 @@ public class ControllerUI {
     private ObjectMapper mapper = new ObjectMapper();
 
     private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
-        OutlineUtils.assertNotNull(form.getIdToRedirectTo());
+        OutlineUtils.assertNotNull(form.getIdToRedirectToIfCancelled());
         commonModelMethods.initModel(model);
-        addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectTo()), getCurrentUser()));
+        addPath(model, dao.loadParagraphById(Optional.of(form.getIdToRedirectToIfCancelled()), getCurrentUser()));
         model.addAttribute("form", form);
     }
 
@@ -211,7 +211,7 @@ public class ControllerUI {
             } else {
                 dao.createParagraph(form.getParentId(), form.getName());
             }
-            return OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getIdToRedirectTo()));
+            return OutlineUtils.redirect(response, PARAGRAPH, ImmutableMap.of("id", form.getIdToRedirectToIfCancelled()));
         }
     }
 

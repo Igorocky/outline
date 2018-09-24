@@ -12,11 +12,11 @@ public class EditParagraphForm {
     private UUID id;
     private String name;
 
-    public UUID getIdToRedirectTo() {
-        if (parentId != null) {
-            return parentId;
-        } else {
+    public UUID getIdToRedirectToIfCancelled() {
+        if (id != null) {
             return id;
+        } else {
+            return parentId;
         }
     }
 }

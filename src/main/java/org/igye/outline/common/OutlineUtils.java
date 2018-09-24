@@ -53,7 +53,7 @@ public class OutlineUtils {
     public static String  redirect(HttpServletResponse response, String path, Map<String, Object> params) throws IOException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath(path);
         params.forEach((k,v) -> builder.queryParam(k, v));
-        response.sendRedirect(path + "?" + builder.build().getQuery());
+        response.sendRedirect("/" + path + "?" + builder.build().getQuery());
         return NOTHING;
     }
 
