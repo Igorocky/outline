@@ -55,7 +55,7 @@ import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 @Controller
 @RequestMapping(NodeController.PREFIX)
 public class NodeController {
-    protected static final String PREFIX = "v2";
+    protected static final String PREFIX = "";
 
     private static final String MIGRATE_DATA = "migrate-data";
     private static final String PARAGRAPH = "paragraph";

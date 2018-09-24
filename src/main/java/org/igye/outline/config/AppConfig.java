@@ -1,7 +1,6 @@
 package org.igye.outline.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.htmlforms.SessionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -43,11 +42,6 @@ public class AppConfig implements WebMvcConfigurer {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
         viewResolver.setTemplateEngine(templateEngine());
         return viewResolver;
-    }
-
-    @Bean
-    public Authenticator authenticator(){
-        return new Authenticator();
     }
 
     @Bean

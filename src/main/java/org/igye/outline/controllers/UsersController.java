@@ -26,7 +26,7 @@ import static org.igye.outline.common.OutlineUtils.redirect;
 @Controller
 @RequestMapping(UsersController.PREFIX)
 public class UsersController {
-    protected static final String PREFIX = "v2";
+    protected static final String PREFIX = "";
 
     private static final String USERS = "users";
     private static final String CHANGE_PASSWORD = "changePassword";

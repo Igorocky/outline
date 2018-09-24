@@ -3,7 +3,6 @@ package org.igye.outline.common;
 import com.google.common.collect.ImmutableSet;
 import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
-import org.igye.outline.controllers.Authenticator;
 import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.AccessDeniedException;
 import org.igye.outline.exceptions.OutlineException;
@@ -33,13 +32,14 @@ public class OutlineUtils {
     public static final String SQL_DEBUG_LOGGER_NAME = "sql-debug";
     public static final String NOTHING = "nothing";
     public static final String UUID_CHAR = "uuid-char";
+    public static int BCRYPT_SALT_ROUNDS = 10;
 
     public static <T> T accessDenied() {
         throw new AccessDeniedException("Access denied.");
     }
 
     public static String hashPwd(String pwd) {
-        return BCrypt.hashpw(pwd, BCrypt.gensalt(Authenticator.BCRYPT_SALT_ROUNDS));
+        return BCrypt.hashpw(pwd, BCrypt.gensalt(BCRYPT_SALT_ROUNDS));
     }
 
     public static boolean checkPwd(String pwd, String hashedPwd) {

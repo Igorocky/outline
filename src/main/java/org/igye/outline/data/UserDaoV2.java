@@ -17,9 +17,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.igye.outline.common.OutlineUtils.BCRYPT_SALT_ROUNDS;
 import static org.igye.outline.common.OutlineUtils.hashPwd;
 import static org.igye.outline.common.OutlineUtils.map;
-import static org.igye.outline.controllers.Authenticator.BCRYPT_SALT_ROUNDS;
 
 @Component
 public class UserDaoV2 {
