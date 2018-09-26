@@ -28,6 +28,7 @@
             }
         }
     </script>
+    <title th:text="${node.getName()}"/>
 </head>
 <body>
 <h2>
@@ -44,7 +45,7 @@
             <td><a th:classappend="${rightSibling == null}?link-disabled" th:attrappend="href=${rightSibling}?(${rightSibling.getId()}+'.html')" >&#8680;</a></td>
             <td><a th:classappend="${rightMostSibling == null}?link-disabled" th:attrappend="href=${rightMostSibling}?(${rightMostSibling.getId()}+'.html')" >&gt;&gt;&gt;</a></td>
         </tr>
-        <tr><td/><td/><td/><td><a th:classappend="${firstChild == null}?link-disabled" th:attrappend="href=${firstChild}?(${firstChild.getId()}+'.html')" >&#8681;</a></td></tr>
+        <tr th:if="${isParagraph}"><td/><td/><td/><td><a th:classappend="${firstChild == null}?link-disabled" th:attrappend="href=${firstChild}?(${firstChild.getId()}+'.html')" >&#8681;</a></td></tr>
         <tr th:unless="${isParagraph}"><td/><td/><td/><td><span onclick="showContent()">&#9883;</span></td></tr>
     </table>
 </div>
