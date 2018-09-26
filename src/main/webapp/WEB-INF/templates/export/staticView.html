@@ -1,0 +1,59 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .training-navigation {
+            float: right;
+        }
+        .training-navigation td {
+            font-size: x-large;
+            padding: 15px;
+        }
+        .link-disabled {
+            color: lightgrey;
+        }
+        table a {
+            text-decoration: none;
+        }
+    </style>
+    <script type="text/javascript">
+        function showContent() {
+            var x = document.getElementById("content-wrapper");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+<h2>
+    <span th:if="${isParagraph}">&sect;</span>
+    <span th:unless="${isParagraph}">&#10042;</span>
+    <span th:text="${node.getName()}" />
+</h2>
+<div>
+    <table class="training-navigation">
+        <tr><td/><td/><td/><td><a th:classappend="${parent == null}?link-disabled" th:attrappend="href=${parent}?(${parent.getId()}+'.html')" >&#8679;</a></td></tr>
+        <tr>
+            <td><a th:classappend="${leftMostSibling == null}?link-disabled" th:attrappend="href=${leftMostSibling}?(${leftMostSibling.getId()}+'.html')" >&lt;&lt;&lt;</a></td>
+            <td><a th:classappend="${leftSibling == null}?link-disabled" th:attrappend="href=${leftSibling}?(${leftSibling.getId()}+'.html')" >&#8678;</a></td>
+            <td><a th:classappend="${rightSibling == null}?link-disabled" th:attrappend="href=${rightSibling}?(${rightSibling.getId()}+'.html')" >&#8680;</a></td>
+            <td><a th:classappend="${rightMostSibling == null}?link-disabled" th:attrappend="href=${rightMostSibling}?(${rightMostSibling.getId()}+'.html')" >&gt;&gt;&gt;</a></td>
+        </tr>
+        <tr><td/><td/><td/><td><a th:classappend="${firstChild == null}?link-disabled" th:attrappend="href=${firstChild}?(${firstChild.getId()}+'.html')" >&#8681;</a></td></tr>
+        <tr th:unless="${isParagraph}"><td/><td/><td/><td><span onclick="showContent()">&#9883;</span></td></tr>
+    </table>
+</div>
+<div th:unless="${isParagraph}" id="content-wrapper" style="display: none">
+    <div th:each="content : ${node.contents}">
+        <img th:if="${content instanceof T(org.igye.outline.modelv2.ImageV2)}"
+             th:src="'img/'+${content.id}"/>
+        <span th:if="${content instanceof T(org.igye.outline.modelv2.TextV2)}" th:text="${content.text}"/>
+    </div>
+</div>
+</body>
+</html>

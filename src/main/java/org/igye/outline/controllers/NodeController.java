@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.NodeDao;
 import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.export.Exporter;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.naming.OperationNotSupportedException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +73,8 @@ public class NodeController {
     private CommonModelMethods commonModelMethods;
     @Autowired
     private NodeDao nodeDao;
+    @Autowired
+    private Exporter exporter;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -309,6 +311,12 @@ public class NodeController {
                 uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true),
                 uri -> uri.queryParam(toTheRight ? "isRightmostSibling" : "isLeftmostSibling", true)
         );
+    }
+
+    @GetMapping("export")
+    public String export(@RequestParam UUID id) throws IOException, InterruptedException {
+        exporter.export(id);
+        return prefix(NOTHING);
     }
 
     private String getNode(Optional<UUID> id, Supplier<Optional<?>> getter,
