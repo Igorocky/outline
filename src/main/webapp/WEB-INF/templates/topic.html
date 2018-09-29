@@ -29,8 +29,8 @@
 <div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=${topic.hasParent}, showFirstChildBtn=false)"/>
 <h3>&#10042;<span th:text="${topic.name}" /></h3>
 <div>
-    <a shortcut="i" th:unless="${showContent}" th:href="@{topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
-    <a shortcut="i" th:if="${showContent}" th:href="@{topic(id=${topic.id})}">Hide images</a>
+    <a shortcut="/" th:unless="${showContent}" th:href="@{topic(id=${topic.id},showContent=true)}">Show images</a>&nbsp;
+    <a shortcut="/" th:if="${showContent}" th:href="@{topic(id=${topic.id})}">Hide images</a>
 </div>
 
 <div th:if="${showContent}" th:each="content : ${topic.contents}" class="content-wrapper">
