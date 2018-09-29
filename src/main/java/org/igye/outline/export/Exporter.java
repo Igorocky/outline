@@ -40,8 +40,10 @@ public class Exporter {
 
     @Transactional
     public void export(UUID id) throws IOException, InterruptedException {
-        File dir = new File(tmpDir, sessionData.getCurrentUser().getName() + "-" + id.toString());
+        File dir = new File(tmpDir + "/" + sessionData.getCurrentUser().getName(), id.toString());
         File imgDir = new File(dir, "img");
+        File cssDir = new File(dir, "css");
+        File jsDir = new File(dir, "js");
 
         if (dir.exists()) {
             FileUtils.deleteDirectory(dir);
@@ -49,7 +51,20 @@ public class Exporter {
         }
         dir.mkdirs();
         imgDir.mkdirs();
+        cssDir.mkdirs();
+        jsDir.mkdirs();
+
+        copyResource(cssDir, "static-version-resources/static.css", "static.css");
+        copyResource(jsDir, "static-version-resources/static.js", "static.js");
+
         export(null, nodeRepository.findByOwnerAndId(sessionData.getCurrentUser(), id), dir, imgDir);
+    }
+
+    private void copyResource(File cssDir, String srcPath, String dstPath) throws IOException {
+        FileUtils.copyInputStreamToFile(
+                getClass().getClassLoader().getResourceAsStream(srcPath),
+                new File(cssDir, dstPath)
+        );
     }
 
     private void export(ParagraphV2 parent, NodeV2 node, File dir, File imgDir) throws IOException {

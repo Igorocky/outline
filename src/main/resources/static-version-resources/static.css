@@ -1,0 +1,13 @@
+.training-navigation {
+    float: right;
+}
+.training-navigation td {
+    font-size: x-large;
+    padding: 15px;
+}
+.link-disabled {
+    color: lightgrey;
+}
+table a {
+    text-decoration: none;
+}

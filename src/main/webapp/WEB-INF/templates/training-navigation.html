@@ -5,7 +5,7 @@
     <table class="nav-buttons">
         <tr th:if="${showParentBtn}">
             <td colspan="4">
-                <a shortcut="k" th:href="@{parent(id=${id})}" >&#8679; Parent</a>
+                <a shortcut="p" th:href="@{parent(id=${id})}" >&#8679; Parent</a>
             </td>
         </tr>
         <tr>
@@ -26,7 +26,7 @@
         </tr>
         <tr th:if="${showFirstChildBtn}">
             <td colspan="4">
-                <a shortcut="j" th:href="@{firstChild(id=${id})}" >&#8681; First child</a>
+                <a shortcut="l" th:href="@{firstChild(id=${id})}" >&#8681; First child</a>
             </td>
         </tr>
     </table>
