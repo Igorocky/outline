@@ -100,10 +100,16 @@ public class NodeDao {
 
     @Transactional
     public ParagraphV2 createParagraph(UUID parentId, String name) {
-        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parentId);
+        UserV2 currUser = sessionData.getCurrentUser();
         ParagraphV2 paragraph = new ParagraphV2();
         paragraph.setName(name);
-        parent.addChildNode(paragraph);
+        paragraph.setOwner(currUser);
+        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
+        if (parent != null) {
+            parent.addChildNode(paragraph);
+        } else {
+            paragraphRepository.save(paragraph);
+        }
         return paragraph;
     }
 
