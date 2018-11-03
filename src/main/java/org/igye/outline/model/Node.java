@@ -1,4 +1,4 @@
-package org.igye.outline.modelv2;
+package org.igye.outline.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,15 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
@@ -26,20 +23,18 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @AllArgsConstructor
 @Builder
 @Entity
-public class UserV2 {
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Node {
     @Id
     @Type(type = UUID_CHAR)
     private UUID id = UUID.randomUUID();
 
+    @ManyToOne
+    private User owner;
+
     @NotNull
-    @Column(unique = true, nullable = false)
     private String name;
-    @NotNull
-    private String password;
 
-    private boolean locked = false;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "USER_ROLE_V2")
-    private Set<RoleV2> roles = new HashSet<>();
+    @ManyToOne
+    private Node parentNode;
 }

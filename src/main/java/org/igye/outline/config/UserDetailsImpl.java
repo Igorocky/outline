@@ -3,7 +3,7 @@ package org.igye.outline.config;
 import com.google.common.collect.ImmutableSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,7 +12,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @Getter
 public class UserDetailsImpl implements UserDetails {
-    private UserV2 user;
+    private User user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

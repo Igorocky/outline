@@ -3,15 +3,11 @@ package org.igye.outline.data;
 import com.google.common.collect.ImmutableSet;
 import fj.F2;
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.repository.ContentRepository;
 import org.igye.outline.data.repository.ImageRepository;
 import org.igye.outline.data.repository.NodeRepository;
-import org.igye.outline.data.repository.OldParagraphRepository;
-import org.igye.outline.data.repository.OldUserRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
-import org.igye.outline.data.repository.RoleRepository;
 import org.igye.outline.data.repository.TopicRepository;
 import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.exceptions.OutlineException;
@@ -20,18 +16,12 @@ import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Content;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.SynopsisTopic;
 import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
 import org.igye.outline.model.User;
-import org.igye.outline.modelv2.ContentV2;
-import org.igye.outline.modelv2.ImageV2;
-import org.igye.outline.modelv2.NodeV2;
-import org.igye.outline.modelv2.ParagraphV2;
-import org.igye.outline.modelv2.RoleV2;
-import org.igye.outline.modelv2.TextV2;
-import org.igye.outline.modelv2.TopicV2;
-import org.igye.outline.modelv2.UserV2;
 import org.igye.outline.selection.ActionType;
 import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
@@ -40,8 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +39,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.mapToSet;
 import static org.igye.outline.common.OutlineUtils.toMap;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
@@ -59,18 +46,10 @@ import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
 @Component
 public class NodeDao {
-    @PersistenceContext
-    private EntityManager entityManager;
     @Autowired
     private SessionData sessionData;
     @Autowired
-    private OldUserRepository oldUserRepository;
-    @Autowired
-    private OldParagraphRepository oldParagraphRepository;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
@@ -83,28 +62,31 @@ public class NodeDao {
     private ContentRepository contentRepository;
 
     @Transactional
-    public List<NodeV2> getRootNodes() {
+    public List<Node> getRootNodes() {
         return nodeRepository.findByOwnerAndParentNodeIsNullOrderByName(sessionData.getCurrentUser());
     }
 
     @Transactional
-    public ParagraphV2 getParagraphById(UUID id) {
-        ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    public Paragraph getParagraphById(UUID id) {
+        Paragraph paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+        if (paragraph == null) {
+            throw new OutlineException("Paragraph with id " + id + " was not found.");
+        }
         paragraph.getChildNodes().forEach(ch -> {
-            if (ch instanceof ParagraphV2) {
-                Hibernate.initialize(((ParagraphV2)ch).getChildNodes());
+            if (ch instanceof Paragraph) {
+                Hibernate.initialize(((Paragraph)ch).getChildNodes());
             }
         });
         return paragraph;
     }
 
     @Transactional
-    public ParagraphV2 createParagraph(UUID parentId, String name) {
-        UserV2 currUser = sessionData.getCurrentUser();
-        ParagraphV2 paragraph = new ParagraphV2();
+    public Paragraph createParagraph(UUID parentId, String name) {
+        User currUser = sessionData.getCurrentUser();
+        Paragraph paragraph = new Paragraph();
         paragraph.setName(name);
         paragraph.setOwner(currUser);
-        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
+        Paragraph parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
         if (parent != null) {
             parent.addChildNode(paragraph);
         } else {
@@ -115,27 +97,30 @@ public class NodeDao {
 
 
     @Transactional
-    public void updateParagraph(UUID id, Consumer<ParagraphV2> updates) {
-        ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    public void updateParagraph(UUID id, Consumer<Paragraph> updates) {
+        Paragraph paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
         updates.accept(paragraph);
     }
 
     @Transactional
-    public TopicV2 getTopicById(UUID id) {
-        TopicV2 topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    public Topic getTopicById(UUID id) {
+        Topic topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+        if (topic == null) {
+            throw new OutlineException("Topic with id " + id + " was not found.");
+        }
         Hibernate.initialize(topic.getContents());
         return topic;
     }
 
     @Transactional
-    public ImageV2 getImageById(UUID id) {
-        ImageV2 image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    public Image getImageById(UUID id) {
+        Image image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
         return image;
     }
 
     @Transactional
     public UUID createTopic(EditTopicForm request) {
-        TopicV2 topic = new TopicV2();
+        Topic topic = new Topic();
         if (request.getParentId() != null) {
             paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), request.getParentId()).addChildNode(
                 topic
@@ -147,14 +132,14 @@ public class NodeDao {
             topic = topicRepository.save(topic);
         }
         topic.setName(request.getName());
-        final TopicV2 finalTopic = topic;
+        final Topic finalTopic = topic;
         request.getContent().stream().forEach(contentForForm -> {
             if (TEXT.equals(contentForForm.getType())) {
-                TextV2 text = new TextV2();
+                Text text = new Text();
                 text.setText(contentForForm.getText());
                 finalTopic.addContent(text);
             } else if (IMAGE.equals(contentForForm.getType())) {
-                ImageV2 image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), contentForForm.getId());
+                Image image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), contentForForm.getId());
                 if (image == null) {
                     throw new OutlineException("image == null for id = '" + contentForForm.getId() + "'");
                 }
@@ -168,25 +153,25 @@ public class NodeDao {
 
     @Transactional
     public void updateTopic(EditTopicForm form) {
-        TopicV2 topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), form.getId());
+        Topic topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), form.getId());
         topic.setName(form.getName());
-        Map<UUID, ContentV2> oldContents = toMap(topic.getContents(), ContentV2::getId);
+        Map<UUID, Content> oldContents = toMap(topic.getContents(), Content::getId);
         oldContents.values().forEach(topic::detachContentById);
         for (ContentForForm content : form.getContent()) {
             if (TEXT.equals(content.getType())) {
                 if (content.getId() != null) {
-                    TextV2 text = (TextV2) oldContents.remove(content.getId());
+                    Text text = (Text) oldContents.remove(content.getId());
                     text.setText(content.getText());
                     topic.addContent(text);
                 } else {
-                    TextV2 text = new TextV2();
+                    Text text = new Text();
                     text.setText(content.getText());
                     topic.addContent(text);
                 }
             } else if (IMAGE.equals(content.getType())) {
                 if (content.getId() != null) {
                     UUID imgId = content.getId();
-                    ContentV2 oldImg = oldContents.remove(imgId);
+                    Content oldImg = oldContents.remove(imgId);
                     topic.addContent(
                             oldImg != null
                                     ? oldImg
@@ -204,48 +189,22 @@ public class NodeDao {
 
     @Transactional
     public UUID createImage() {
-        ImageV2 img = new ImageV2();
+        Image img = new Image();
         img.setOwner(userRepository.findById(sessionData.getCurrentUser().getId()).get());
         return imageRepository.save(img).getId();
     }
 
 
     @Transactional
-    public void migrateData() {
-        if (!nodeRepository.findAll().isEmpty()) {
-            throw new OutlineException("!nodeRepository.findAll().isEmpty()");
-        }
-        Session session = OutlineUtils.getCurrentSession(entityManager);
-        Map<String, RoleV2> rolesMap = toMap(roleRepository.findAll(), RoleV2::getName);
-
-        List<UserV2> newUsers = userRepository.findAll();
-        List<User> oldUsersToBeMigrated = oldUserRepository.findAllByIdNotIn(map(newUsers, UserV2::getId));
-        oldUsersToBeMigrated.forEach(ou -> session.merge(
-                UserV2.builder()
-                .id(ou.getId())
-                .name(ou.getName())
-                .password(ou.getPassword())
-                .roles(map(ou.getRoles(), r -> rolesMap.get(r.getName())))
-                .build()
-        ));
-
-        Map<String, UserV2> usersMap = toMap(userRepository.findAll(), UserV2::getName);
-
-        List<Paragraph> rootParagraphs = oldParagraphRepository.findByParentParagraphIsNull();
-        map(rootParagraphs, p -> toNode(p, null, usersMap))
-                .forEach(session::merge);
-    }
-
-    @Transactional
     public void reorderNodeChildren(ReorderNodeChildren request) {
-        ParagraphV2 parent = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), request.getParentId());
-        List<NodeV2> children = parent.getChildNodes();
-        Set<UUID> oldIdSet = mapToSet(children, NodeV2::getId);
+        Paragraph parent = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), request.getParentId());
+        List<Node> children = parent.getChildNodes();
+        Set<UUID> oldIdSet = mapToSet(children, Node::getId);
         Set<UUID> newIdSet = ImmutableSet.copyOf(request.getChildren());
         if (!oldIdSet.equals(newIdSet)) {
             throw new OutlineException("!oldIdSet.equals(newIdSet)");
         }
-        Map<UUID, NodeV2> childrenMap = toMap(children, NodeV2::getId);
+        Map<UUID, Node> childrenMap = toMap(children, Node::getId);
         parent.getChildNodes().clear();
         request.getChildren().forEach(id -> parent.addChildNode(childrenMap.get(id)));
     }
@@ -271,7 +230,7 @@ public class NodeDao {
     }
 
     @Transactional
-    public NodeV2 loadNodeById(UUID id) {
+    public Node loadNodeById(UUID id) {
         return nodeRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
     }
 
@@ -288,14 +247,14 @@ public class NodeDao {
     @Transactional
     public Optional<?> firstChild(Optional<UUID> id) {
         if (id.isPresent()) {
-            ParagraphV2 paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id.get());
+            Paragraph paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id.get());
             if (!paragraph.getChildNodes().isEmpty()) {
                 return Optional.of(paragraph.getChildNodes().get(0));
             } else {
                 return Optional.empty();
             }
         } else {
-            List<NodeV2> rootNodes = getRootNodes();
+            List<Node> rootNodes = getRootNodes();
             if (rootNodes.isEmpty()) {
                 return Optional.empty();
             } else {
@@ -306,32 +265,32 @@ public class NodeDao {
     }
 
     @Transactional
-    public Optional<ParagraphV2> loadParent(UUID id) {
-        return Optional.ofNullable((ParagraphV2) loadNodeById(id).getParentNode());
+    public Optional<Paragraph> loadParent(UUID id) {
+        return Optional.ofNullable((Paragraph) loadNodeById(id).getParentNode());
     }
 
     private <T> Optional<T> getSibling(UUID id,
                                        F2<List<T>, Function<T,Boolean>, Optional<T>> getter) {
-        NodeV2 node = loadNodeById(id);
-        List<NodeV2> siblings;
+        Node node = loadNodeById(id);
+        List<Node> siblings;
         if (node.getParentNode() == null) {
             siblings = getRootNodes();
         } else {
-            siblings = ((ParagraphV2)node.getParentNode()).getChildNodes();
+            siblings = ((Paragraph)node.getParentNode()).getChildNodes();
         }
         return getter.f(
                 (List<T>) siblings,
-                sib -> ((NodeV2)sib).getId().equals(node.getId())
+                sib -> ((Node)sib).getId().equals(node.getId())
         );
 
     }
 
     private void moveParagraph(UUID parToMoveId, UUID parToMoveToId) {
-        ParagraphV2 parToMove = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveId);
+        Paragraph parToMove = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveId);
         if (parToMoveToId != null) {
-            ParagraphV2 parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
+            Paragraph parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
             Set<UUID> pathToRoot = new HashSet<>();
-            NodeV2 currNode = parToMoveTo;
+            Node currNode = parToMoveTo;
             while(currNode != null) {
                 pathToRoot.add(currNode.getId());
                 currNode = currNode.getParentNode();
@@ -340,71 +299,33 @@ public class NodeDao {
                 throw new OutlineException("pathToRoot.contains(parToMove.getId())");
             }
             if (parToMove.getParentNode() != null) {
-                ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
+                ((Paragraph)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
             }
             parToMoveTo.addChildNode(parToMove);
         } else if (parToMove.getParentNode() != null) {
-            ((ParagraphV2)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
+            ((Paragraph)parToMove.getParentNode()).removeChildNodeById(parToMove.getId());
         }
 
     }
 
     private void moveTopic(UUID topicToMoveId, UUID parToMoveToId) {
-        TopicV2 topicToMove = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveId);
+        Topic topicToMove = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveId);
         if (parToMoveToId != null) {
-            ParagraphV2 parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
+            Paragraph parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
             if (topicToMove.getParentNode() != null) {
-                ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+                ((Paragraph)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
             }
             parToMoveTo.addChildNode(topicToMove);
         } else if (topicToMove.getParentNode() != null) {
-            ((ParagraphV2)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+            ((Paragraph)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
         }
     }
 
     private void moveImage(UUID imageToMoveId, UUID topicToMoveToId) {
-        ImageV2 imgToMove = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), imageToMoveId);
-        TopicV2 srcTopic = imgToMove.getTopic();
-        TopicV2 dstTopic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveToId);
+        Image imgToMove = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), imageToMoveId);
+        Topic srcTopic = imgToMove.getTopic();
+        Topic dstTopic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveToId);
         srcTopic.detachContentById(imgToMove);
         dstTopic.addContent(imgToMove);
-    }
-
-    private NodeV2 toNode(Paragraph oldParagraph, ParagraphV2 parentParagraph, Map<String, UserV2> usersMap) {
-        ParagraphV2 newParagraph = new ParagraphV2();
-        newParagraph.setId(oldParagraph.getId());
-        if (parentParagraph != null) {
-            parentParagraph.addChildNode(newParagraph);
-        } else {
-            newParagraph.setOwner(usersMap.get(oldParagraph.getOwner().getName()));
-        }
-        newParagraph.setName(oldParagraph.getName());
-        map(oldParagraph.getChildParagraphs(), p -> toNode(p, newParagraph, usersMap));
-        map(oldParagraph.getTopics(), t -> toNode((SynopsisTopic) t, newParagraph));
-        return newParagraph;
-    }
-
-    private NodeV2 toNode(SynopsisTopic oldTopic, ParagraphV2 parentParagraph) {
-        TopicV2 newTopic = new TopicV2();
-        newTopic.setId(oldTopic.getId());
-        parentParagraph.addChildNode(newTopic);
-        newTopic.setName(oldTopic.getName());
-        newTopic.setContents(map(oldTopic.getContents(), c -> toContentV2(c, newTopic)));
-        return newTopic;
-    }
-
-    private ContentV2 toContentV2(Content content, TopicV2 parentTopic) {
-        if (content instanceof Text) {
-            TextV2 res = new TextV2();
-            res.setId(content.getId());
-            res.setText(((Text)content).getText());
-            parentTopic.addContent(res);
-            return res;
-        } else {
-            ImageV2 res = new ImageV2();
-            res.setId(content.getId());
-            parentTopic.addContent(res);
-            return res;
-        }
     }
 }

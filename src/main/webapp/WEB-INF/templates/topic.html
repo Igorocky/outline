@@ -34,10 +34,10 @@
 </div>
 
 <div th:if="${showContent}" th:each="content : ${topic.contents}" class="content-wrapper">
-    <span th:replace="selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.modelv2.ImageV2)?'IMAGE':'TEXT'})"></span>
-    <img th:if="${content instanceof T(org.igye.outline.modelv2.ImageV2)}"
+    <span th:replace="selection-controls :: selection-checkbox (id=${content.id}, objecttype=${content instanceof T(org.igye.outline.model.Image)?'IMAGE':'TEXT'})"></span>
+    <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
          th:src="@{topicImage/{imgId}(imgId=${content.id})}"/>
-    <span th:if="${content instanceof T(org.igye.outline.modelv2.TextV2)}" th:text="${content.text}"/>
+    <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>
 </div>
 
 </body>

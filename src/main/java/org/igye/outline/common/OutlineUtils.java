@@ -1,15 +1,11 @@
 package org.igye.outline.common;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
-import org.igye.outline.data.UserDao;
 import org.igye.outline.exceptions.AccessDeniedException;
 import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.model.Role;
 import org.igye.outline.model.User;
-import org.igye.outline.modelv2.UserV2;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.util.CollectionUtils;
@@ -107,11 +103,11 @@ public class OutlineUtils {
     }
 
     public static User getCurrentUser() {
-        UserV2 userV2 = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        User user = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         return User.builder()
-                .id(userV2.getId())
-                .name(userV2.getName())
-                .roles(ImmutableSet.of(Role.builder().name(UserDao.ADMIN_ROLE_NAME).build()))
+                .id(user.getId())
+                .name(user.getName())
+                .roles(user.getRoles())
                 .build()
                 ;
     }

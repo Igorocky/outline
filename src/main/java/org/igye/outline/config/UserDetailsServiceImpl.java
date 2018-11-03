@@ -2,7 +2,7 @@ package org.igye.outline.config;
 
 
 import org.igye.outline.data.repository.UserRepository;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,7 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
-        UserV2 user = userRepository.findByName(name);
+        User user = userRepository.findByName(name);
         if (user == null) {
             throw new UsernameNotFoundException(name);
         } else {

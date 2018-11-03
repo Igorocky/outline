@@ -3,11 +3,11 @@ package org.igye.outline.controllers;
 import fj.data.Validation;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
-import org.igye.outline.data.UserDaoV2;
+import org.igye.outline.data.UserDao;
 import org.igye.outline.htmlforms.ChangePasswordForm;
 import org.igye.outline.htmlforms.EditUserForm;
-import org.igye.outline.modelv2.RoleV2;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.Role;
+import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -36,7 +36,7 @@ public class UsersController {
     @Value("${homeUrl}")
     private String homeUrl;
     @Autowired
-    private UserDaoV2 userDao;
+    private UserDao userDao;
     @Autowired
     private CommonModelMethods commonModelMethods;
 
@@ -81,10 +81,10 @@ public class UsersController {
         model.addAttribute("allRoles", userDao.loadAllRoles());
         EditUserForm editUserForm = new EditUserForm();
         userId.ifPresent(id -> {
-            UserV2 user = userDao.loadUser(id);
+            User user = userDao.loadUser(id);
             editUserForm.setId(user.getId());
             editUserForm.setName(user.getName());
-            editUserForm.getRoles().addAll(map(user.getRoles(), RoleV2::getId));
+            editUserForm.getRoles().addAll(map(user.getRoles(), Role::getId));
         });
         model.addAttribute("editUserForm", editUserForm);
         return prefix(EDIT_USER);

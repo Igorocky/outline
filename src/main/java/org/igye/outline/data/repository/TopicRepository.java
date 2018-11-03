@@ -1,13 +1,13 @@
 package org.igye.outline.data.repository;
 
-import org.igye.outline.modelv2.TopicV2;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.Topic;
+import org.igye.outline.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-public interface TopicRepository extends JpaRepository<TopicV2, UUID> {
-    TopicV2 findByOwnerAndId(UserV2 owner, UUID id);
+public interface TopicRepository extends JpaRepository<Topic, UUID> {
+    Topic findByOwnerAndId(User owner, UUID id);
 }

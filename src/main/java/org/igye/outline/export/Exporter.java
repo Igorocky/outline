@@ -4,11 +4,11 @@ import org.apache.commons.io.FileUtils;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.repository.NodeRepository;
 import org.igye.outline.htmlforms.SessionData;
-import org.igye.outline.modelv2.ContentV2;
-import org.igye.outline.modelv2.ImageV2;
-import org.igye.outline.modelv2.NodeV2;
-import org.igye.outline.modelv2.ParagraphV2;
-import org.igye.outline.modelv2.TopicV2;
+import org.igye.outline.model.Content;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Node;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Topic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -67,15 +67,15 @@ public class Exporter {
         );
     }
 
-    private void export(ParagraphV2 parent, NodeV2 node, File dir, File imgDir) throws IOException {
+    private void export(Paragraph parent, Node node, File dir, File imgDir) throws IOException {
         Context ctx = new Context();
-        ctx.setVariable("isParagraph", node instanceof ParagraphV2);
+        ctx.setVariable("isParagraph", node instanceof Paragraph);
         ctx.setVariable("node", node);
-        NodeV2 leftSibling = null;
-        NodeV2 leftMostSibling = null;
-        NodeV2 rightSibling = null;
-        NodeV2 rightMostSibling = null;
-        NodeV2 firstChild = null;
+        Node leftSibling = null;
+        Node leftMostSibling = null;
+        Node rightSibling = null;
+        Node rightMostSibling = null;
+        Node firstChild = null;
         final UUID id = node.getId();
         if (parent != null) {
             leftSibling = getNextSibling(parent.getChildNodes(), n -> id.equals(n.getId()), false).orElse(null);
@@ -84,7 +84,7 @@ public class Exporter {
             rightMostSibling = getFurthestSibling(parent.getChildNodes(), n -> id.equals(n.getId()), true).orElse(null);
         }
         if (isParagraphWithChildren(node)) {
-            firstChild = ((ParagraphV2)node).getChildNodes().get(0);
+            firstChild = ((Paragraph)node).getChildNodes().get(0);
         }
         ctx.setVariable("hasLeftSibling", node);
         ctx.setVariable("leftSibling", leftSibling);
@@ -101,10 +101,10 @@ public class Exporter {
             );
 
         }
-        if (node instanceof TopicV2) {
-            TopicV2 topic = (TopicV2) node;
-            for (ContentV2 c : topic.getContents()) {
-                if (c instanceof ImageV2) {
+        if (node instanceof Topic) {
+            Topic topic = (Topic) node;
+            for (Content c : topic.getContents()) {
+                if (c instanceof Image) {
                     FileUtils.copyFile(
                             OutlineUtils.getImgFile(imagesLocation, c.getId()),
                             new File(imgDir, c.getId().toString())
@@ -113,14 +113,14 @@ public class Exporter {
             }
         }
         if (isParagraphWithChildren(node)) {
-            ParagraphV2 paragraph = (ParagraphV2) node;
-            for (NodeV2 cn : paragraph.getChildNodes()) {
+            Paragraph paragraph = (Paragraph) node;
+            for (Node cn : paragraph.getChildNodes()) {
                 export(paragraph, cn, dir, imgDir);
             }
         }
     }
 
-    private boolean isParagraphWithChildren(NodeV2 node) {
-        return (node instanceof ParagraphV2) && ((ParagraphV2)node).getHasChildren();
+    private boolean isParagraphWithChildren(Node node) {
+        return (node instanceof Paragraph) && ((Paragraph)node).getHasChildren();
     }
 }

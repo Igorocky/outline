@@ -14,10 +14,10 @@ import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
-import org.igye.outline.modelv2.ImageV2;
-import org.igye.outline.modelv2.ParagraphV2;
-import org.igye.outline.modelv2.TextV2;
-import org.igye.outline.modelv2.TopicV2;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
 import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,13 +79,6 @@ public class NodeController {
     private ObjectMapper mapper = new ObjectMapper();
 
 
-    @GetMapping(MIGRATE_DATA)
-    public String migrateData(Model model) {
-        commonModelMethods.initModel(model);
-        nodeDao.migrateData();
-        return prefix(homeUrl);
-    }
-
     @GetMapping("home")
     public String home(Model model) {
         commonModelMethods.initModel(model);
@@ -105,19 +98,19 @@ public class NodeController {
         if (showContent.orElse(true)) {
             model.addAttribute("showContent", true);
         }
-        ParagraphV2 paragraph;
+        Paragraph paragraph;
         if (id.isPresent()) {
             paragraph = nodeDao.getParagraphById(id.get());
 
         } else {
-            paragraph = new ParagraphV2();
+            paragraph = new Paragraph();
             paragraph.setId(null);
             paragraph.setName("root");
             paragraph.setChildNodes(nodeDao.getRootNodes());
         }
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
-        addPath(model, (ParagraphV2) paragraph.getParentNode());
+        addPath(model, (Paragraph) paragraph.getParentNode());
 
         return prefix(PARAGRAPH);
     }
@@ -128,7 +121,7 @@ public class NodeController {
         EditParagraphForm form = new EditParagraphForm();
         parentId.ifPresent(parId -> form.setParentId(parId));
         if (id.isPresent()) {
-            ParagraphV2 paragraph = nodeDao.getParagraphById(id.get());
+            Paragraph paragraph = nodeDao.getParagraphById(id.get());
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
         }
@@ -162,7 +155,7 @@ public class NodeController {
     public String topic(Model model, @RequestParam UUID id, Optional<Boolean> showContent,
                         Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) {
         commonModelMethods.initModel(model);
-        TopicV2 topic = nodeDao.getTopicById(id);
+        Topic topic = nodeDao.getTopicById(id);
         model.addAttribute("topic", topic);
         if (isLeftmostSibling.orElse(false)) {
             model.addAttribute("isLeftmostSibling", true);
@@ -170,7 +163,7 @@ public class NodeController {
         if (isRightmostSibling.orElse(false)) {
             model.addAttribute("isRightmostSibling", true);
         }
-        addPath(model, (ParagraphV2) topic.getParentNode());
+        addPath(model, (Paragraph) topic.getParentNode());
         showContent.ifPresent(b -> model.addAttribute("showContent", b));
         model.addAttribute(
                 "hasWhatToPaste",
@@ -186,7 +179,7 @@ public class NodeController {
     @GetMapping("topicImage/{imgId}")
     @ResponseBody
     public byte[] topicImage(@PathVariable UUID imgId) {
-        ImageV2 image = nodeDao.getImageById(imgId);
+        Image image = nodeDao.getImageById(imgId);
         try {
             return FileUtils.readFileToByteArray(getImgFile(imagesLocation, image.getId()));
         } catch (IOException e) {
@@ -203,24 +196,24 @@ public class NodeController {
             addPath(model, nodeDao.getParagraphById(parId));
         });
         if (id.isPresent()) {
-            TopicV2 topic = nodeDao.getTopicById(id.get());
+            Topic topic = nodeDao.getTopicById(id.get());
             form.setId(topic.getId());
             form.setName(topic.getName());
             form.setContent(map(
                     topic.getContents(),
                     content -> {
-                        if (content instanceof ImageV2) {
+                        if (content instanceof Image) {
                             return ContentForForm.builder().type(IMAGE).id(content.getId()).build();
-                        } else if (content instanceof TextV2) {
+                        } else if (content instanceof Text) {
                             return ContentForForm.builder().type(TEXT).id(content.getId())
-                                    .text(((TextV2)content).getText()).build();
+                                    .text(((Text)content).getText()).build();
                         } else {
                             throw new OutlineException("Can't determine type of content.");
                         }
                     }
             ));
             if (topic.getParentNode() != null) {
-                addPath(model, (ParagraphV2) topic.getParentNode());
+                addPath(model, (Paragraph) topic.getParentNode());
             }
         }
         commonModelMethods.initModel(model);
@@ -325,18 +318,18 @@ public class NodeController {
         Optional<?> node = getter.get();
         UriComponentsBuilder redirectUriBuilder;
         if (node.isPresent()) {
-            if (node.get() instanceof TopicV2) {
-                redirectUriBuilder = topicUriBuilder((TopicV2) node.get());
+            if (node.get() instanceof Topic) {
+                redirectUriBuilder = topicUriBuilder((Topic) node.get());
             } else {
-                redirectUriBuilder = paragraphUriBuilder((ParagraphV2) node.get());
+                redirectUriBuilder = paragraphUriBuilder((Paragraph) node.get());
             }
             onPresent.accept(redirectUriBuilder);
         } else if (id.isPresent()) {
             Object curEntity = nodeDao.loadNodeById(id.get());
-            if (curEntity instanceof TopicV2) {
-                redirectUriBuilder = topicUriBuilder((TopicV2) curEntity);
+            if (curEntity instanceof Topic) {
+                redirectUriBuilder = topicUriBuilder((Topic) curEntity);
             } else {
-                redirectUriBuilder = paragraphUriBuilder((ParagraphV2) curEntity);
+                redirectUriBuilder = paragraphUriBuilder((Paragraph) curEntity);
             }
             onAbsent.accept(redirectUriBuilder);
         } else {
@@ -347,7 +340,7 @@ public class NodeController {
         return redirect(redirectUriBuilder.toUriString());
     }
 
-    private UriComponentsBuilder paragraphUriBuilder(ParagraphV2 paragraph) {
+    private UriComponentsBuilder paragraphUriBuilder(Paragraph paragraph) {
         return UriComponentsBuilder.newInstance()
                 .path(prefix(PARAGRAPH))
                 .queryParam("id", paragraph.getId())
@@ -355,7 +348,7 @@ public class NodeController {
                 ;
     }
 
-    private UriComponentsBuilder topicUriBuilder(TopicV2 topic) {
+    private UriComponentsBuilder topicUriBuilder(Topic topic) {
         return UriComponentsBuilder.newInstance()
                 .path(prefix(TOPIC))
                 .queryParam("id", topic.getId())
@@ -376,19 +369,19 @@ public class NodeController {
         return OutlineUtils.prefix(PREFIX, url);
     }
 
-    private void addPath(Model model, ParagraphV2 paragraph) {
-        List<ParagraphV2> path = buildPath(paragraph);
+    private void addPath(Model model, Paragraph paragraph) {
+        List<Paragraph> path = buildPath(paragraph);
         Collections.reverse(path);
         model.addAttribute("path", path);
     }
 
-    private List<ParagraphV2> buildPath(ParagraphV2 paragraph) {
+    private List<Paragraph> buildPath(Paragraph paragraph) {
         if (paragraph == null) {
             return new ArrayList<>();
         } else {
-            List<ParagraphV2> res = new ArrayList<>();
+            List<Paragraph> res = new ArrayList<>();
             res.add(paragraph);
-            res.addAll(buildPath((ParagraphV2) paragraph.getParentNode()));
+            res.addAll(buildPath((Paragraph) paragraph.getParentNode()));
             return res;
         }
     }

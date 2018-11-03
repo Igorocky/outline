@@ -28,9 +28,9 @@
 </div>
 <div th:unless="${isParagraph}" id="content-wrapper" style="display: none">
     <div th:each="content : ${node.contents}">
-        <img th:if="${content instanceof T(org.igye.outline.modelv2.ImageV2)}"
+        <img th:if="${content instanceof T(org.igye.outline.model.Image)}"
              th:src="'img/'+${content.id}"/>
-        <span th:if="${content instanceof T(org.igye.outline.modelv2.TextV2)}" th:text="${content.text}"/>
+        <span th:if="${content instanceof T(org.igye.outline.model.Text)}" th:text="${content.text}"/>
     </div>
 </div>
 </body>

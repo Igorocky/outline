@@ -2,8 +2,8 @@ package org.igye.outline.data;
 
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.htmlforms.SessionData;
-import org.igye.outline.modelv2.RoleV2;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.Role;
+import org.igye.outline.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +30,8 @@ public class DaoUtils {
     }
 
 
-    public boolean isAdmin(UserV2 user) {
-        for (RoleV2 role : user.getRoles()) {
+    public boolean isAdmin(User user) {
+        for (Role role : user.getRoles()) {
             if (UserDao.ADMIN_ROLE_NAME.equals(role.getName())) {
                 return true;
             }

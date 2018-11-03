@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -22,13 +21,12 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Content {
     @Id
-    @GeneratedValue
     @Type(type = UUID_CHAR)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @ManyToOne
     private User owner;
 
     @ManyToOne
-    private SynopsisTopic topic;
+    private Topic topic;
 }

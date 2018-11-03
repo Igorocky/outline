@@ -10,7 +10,6 @@ import org.hibernate.annotations.Type;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -29,15 +28,16 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @Entity
 public class User {
     @Id
-    @GeneratedValue
     @Type(type = UUID_CHAR)
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @NotNull
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String name;
     @NotNull
     private String password;
+
+    private boolean locked = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "USER_ROLE")

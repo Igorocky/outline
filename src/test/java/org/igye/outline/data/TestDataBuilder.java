@@ -2,31 +2,43 @@ package org.igye.outline.data;
 
 import org.hibernate.Session;
 import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.model.*;
+import org.igye.outline.model.Image;
+import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Role;
+import org.igye.outline.model.Text;
+import org.igye.outline.model.Topic;
+import org.igye.outline.model.User;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
+import static org.igye.outline.data.UserDao.ADMIN_ROLE_NAME;
+
 public class TestDataBuilder {
-    private Session session;
-    private User currentUser;
+    public static final String CURRENT_USER = "CURRENT_USER";
+
+    private final Session session;
+
+    private User parentUser;
     private Paragraph parentParagraph;
-    private SynopsisTopic parentTopic;
+    private Topic parentTopic;
+
     private Object currentObject;
+
     private Map<String, Object> results = new HashMap<>();
 
     public TestDataBuilder(Session session) {
         this.session = session;
     }
 
-    public TestDataBuilder(Session session, Object currentObject, User currentUser, Paragraph parentParagraph, SynopsisTopic parentTopic) {
-        this.session = session;
-        this.currentObject = currentObject;
-        this.currentUser = currentUser;
-        this.parentParagraph = parentParagraph;
-        this.parentTopic = parentTopic;
+    public TestDataBuilder(TestDataBuilder parent) {
+        this.session = parent.session;
+        parentUser = parent.parentUser;
+        parentParagraph = parent.parentParagraph;
+        parentTopic = parent.parentTopic;
     }
 
     public TestDataBuilder user(String name) {
@@ -34,12 +46,19 @@ public class TestDataBuilder {
         user.setName(name);
         user.setPassword("p");
         session.persist(user);
-        currentUser = user;
+        parentUser = user;
         currentObject = user;
         return this;
     }
 
+    public TestDataBuilder admin() {
+        return role(ADMIN_ROLE_NAME);
+    }
+
     public TestDataBuilder role(String roleName) {
+        if (!(currentObject instanceof User)) {
+            throw new OutlineException("!(currentObject instanceof User)");
+        }
         List<Role> roles = session.createQuery("from Role where name = :name", Role.class)
                 .setParameter("name", roleName)
                 .getResultList();
@@ -53,7 +72,7 @@ public class TestDataBuilder {
         } else {
             role = roles.get(0);
         }
-        currentUser.getRoles().add(role);
+        ((User)currentObject).getRoles().add(role);
         return this;
     }
 
@@ -61,9 +80,9 @@ public class TestDataBuilder {
         Paragraph paragraph = new Paragraph();
         paragraph.setName(name);
         if (parentParagraph != null) {
-            parentParagraph.addChildParagraph(paragraph);
+            parentParagraph.addChildNode(paragraph);
         } else {
-            paragraph.setOwner(currentUser);
+            paragraph.setOwner(parentUser);
             session.persist(paragraph);
         }
         currentObject = paragraph;
@@ -71,12 +90,13 @@ public class TestDataBuilder {
     }
 
     public TestDataBuilder topic(String name) {
-        SynopsisTopic topic = new SynopsisTopic();
+        Topic topic = new Topic();
         topic.setName(name);
         if (parentParagraph != null) {
-            parentParagraph.addTopic(topic);
+            parentParagraph.addChildNode(topic);
         } else {
-            throw new TestDataBuilderException("Topic '" + name + "' can't be outside of a paragraph");
+            topic.setOwner(parentUser);
+            session.persist(topic);
         }
         currentObject = topic;
         return this;
@@ -89,55 +109,31 @@ public class TestDataBuilder {
         return this;
     }
 
-    public TestDataBuilder tag(String tagStr) {
-        List<Tag> tags = session.createQuery("from Tag where name = :name", Tag.class)
-                .setParameter("name", tagStr)
-                .getResultList();
-        Tag tag = null;
-        if (tags.isEmpty()) {
-            tag = new Tag();
-            tag.setName(tagStr);
-            session.persist(tag);
-        } else if (tags.size() > 1) {
-            throw new TestDataBuilderException("tags.size() > 1");
-        } else {
-            tag = tags.get(0);
-        }
-        Tag finalTag = tag;
-
-        processForCurrentObject(
-                user -> null,
-                paragraph -> paragraph.getTags().add(finalTag),
-                topic -> topic.getTags().add(finalTag),
-                image -> null
-        );
+    public TestDataBuilder text(String txt) {
+        Text text = new Text();
+        text.setText(txt);
+        parentTopic.addContent(text);
+        currentObject = text;
         return this;
     }
 
-    private <T> T  processForCurrentObject(Function<User, T> userConsumer,
-                                           Function<Paragraph, T> paragraphConsumer,
-                                           Function<SynopsisTopic, T> topicConsumer,
-                                           Function<Image, T> imageConsumer) {
-        if (currentObject instanceof User) {
-            return userConsumer.apply((User) currentObject);
-        } else if (currentObject instanceof Paragraph) {
-            return paragraphConsumer.apply((Paragraph) currentObject);
-        } else if (currentObject instanceof SynopsisTopic) {
-            return topicConsumer.apply((SynopsisTopic) currentObject);
-        } else if (currentObject instanceof Image) {
-            return imageConsumer.apply((Image) currentObject);
-        } else {
-            throw new TestDataBuilderException("Unexpected type of currentObject: " + currentObject);
+    public TestDataBuilder currentUser() {
+        if (!(currentObject instanceof User)) {
+            throw new OutlineException("!(currentObject instanceof User)");
         }
+        return save(CURRENT_USER, currentObject);
     }
 
     public TestDataBuilder children(Function<TestDataBuilder, TestDataBuilder> childrenBuilder) {
         TestDataBuilder newBuilder = processForCurrentObject(
-                user -> new TestDataBuilder(session, user, currentUser, null, null),
-                paragraph -> new TestDataBuilder(session, null, currentUser, paragraph, null),
-                topic -> new TestDataBuilder(session, null, currentUser, parentParagraph, topic),
+                user -> new TestDataBuilder(this).setParentUser(user),
+                paragraph -> new TestDataBuilder(this).setParentParagraph(paragraph),
+                topic -> new TestDataBuilder(this).setParentTopic(topic),
                 image -> {
                     throw new OutlineException("Image cannot have children.");
+                },
+                text -> {
+                    throw new OutlineException("Text cannot have children.");
                 }
         );
         results.putAll(childrenBuilder.apply(newBuilder).getResults());
@@ -145,11 +141,69 @@ public class TestDataBuilder {
     }
 
     public TestDataBuilder save(String name) {
-        results.put(name, currentObject);
+        return save(name, currentObject);
+    }
+
+    public TestDataBuilder saveId(String name) {
+        UUID id = processForCurrentObject(
+                User::getId,
+                Paragraph::getId,
+                Topic::getId,
+                Image::getId,
+                Text::getId
+        );
+        return save(name, id);
+    }
+
+    private TestDataBuilder save(String name, Object object) {
+        if (results.containsKey(name)) {
+            throw new OutlineException("Duplicated key.");
+        }
+        results.put(name, object);
         return this;
     }
 
     public Map<String, Object> getResults() {
         return results;
+    }
+
+    public TestDataBuilder setCurrentObject(Object currentObject) {
+        this.currentObject = currentObject;
+        return this;
+    }
+
+    public TestDataBuilder setParentUser(User parentUser) {
+        this.parentUser = parentUser;
+        return this;
+    }
+
+    public TestDataBuilder setParentParagraph(Paragraph parentParagraph) {
+        this.parentParagraph = parentParagraph;
+        return this;
+    }
+
+    public TestDataBuilder setParentTopic(Topic parentTopic) {
+        this.parentTopic = parentTopic;
+        return this;
+    }
+
+    private <T> T  processForCurrentObject(Function<User, T> userConsumer,
+                                           Function<Paragraph, T> paragraphConsumer,
+                                           Function<Topic, T> topicConsumer,
+                                           Function<Image, T> imageConsumer,
+                                           Function<Text, T> textConsumer) {
+        if (currentObject instanceof User) {
+            return userConsumer.apply((User) currentObject);
+        } else if (currentObject instanceof Paragraph) {
+            return paragraphConsumer.apply((Paragraph) currentObject);
+        } else if (currentObject instanceof Topic) {
+            return topicConsumer.apply((Topic) currentObject);
+        } else if (currentObject instanceof Image) {
+            return imageConsumer.apply((Image) currentObject);
+        } else if (currentObject instanceof Text) {
+            return textConsumer.apply((Text) currentObject);
+        } else {
+            throw new TestDataBuilderException("Unexpected type of currentObject: " + currentObject);
+        }
     }
 }

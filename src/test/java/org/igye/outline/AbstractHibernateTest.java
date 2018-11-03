@@ -2,9 +2,9 @@ package org.igye.outline;
 
 import org.hibernate.Session;
 import org.igye.outline.common.OutlineUtils;
-import org.igye.outline.data.TestDataBuilderV2;
+import org.igye.outline.data.TestDataBuilder;
 import org.igye.outline.htmlforms.SessionData;
-import org.igye.outline.modelv2.UserV2;
+import org.igye.outline.model.User;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,20 +46,14 @@ public class AbstractHibernateTest {
             session.createQuery("delete from Topic").executeUpdate();
             session.createQuery("delete from Paragraph").executeUpdate();
             session.createQuery("delete from User").executeUpdate();
-            session.createQuery("delete from Tag").executeUpdate();
-
-            session.createQuery("delete from ContentV2").executeUpdate();
-            session.createQuery("delete from TopicV2").executeUpdate();
-            session.createQuery("delete from ParagraphV2").executeUpdate();
-            session.createQuery("delete from UserV2").executeUpdate();
         });
     }
 
-    protected Map<String, Object> prepareTestData(Function<TestDataBuilderV2, TestDataBuilderV2> builder) {
+    protected Map<String, Object> prepareTestData(Function<TestDataBuilder, TestDataBuilder> builder) {
         return doInTransaction(session -> {
-            Map<String, Object> savedObjects = builder.apply(new TestDataBuilderV2(session)).getResults();
+            Map<String, Object> savedObjects = builder.apply(new TestDataBuilder(session)).getResults();
             Mockito.when(sessionData.getCurrentUser()).thenReturn(
-                    (UserV2) savedObjects.get(TestDataBuilderV2.CURRENT_USER)
+                    (User) savedObjects.get(TestDataBuilder.CURRENT_USER)
             );
             return savedObjects;
         });
