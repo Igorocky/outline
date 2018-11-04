@@ -3,13 +3,30 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: underscore"></script>
+
     <script type="text/javascript" th:replace="common-scripts :: functions"></script>
+    <script type="text/javascript" th:replace="common-scripts :: icons-table"></script>
+
     <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" >
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+
     <link rel="stylesheet" th:replace="common-scripts :: css">
+
+    <script type="text/javascript" th:inline="javascript">
+        $( function() {
+            /*<![CDATA[*/
+            var iconsDataJson = JSON.parse(/*[[${iconsDataJson}]]*/);
+            var showIcons = /*[[${showIcons}]]*/;
+            if (showIcons) {
+                iconsTable('icons-table', iconsDataJson);
+            }
+            /*]]>*/
+        } );
+    </script>
     <script type="text/javascript">
         function reorderMode() {
             $( "#children-list" ).addClass("sortable");
@@ -64,6 +81,7 @@
     <a shortcut="i" th:if="${showContent}" th:href="@{paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
 </div>
 <div th:if="${showContent}" shortcut="c" >
+    <div id="icons-table"></div>
     <ul id="children-list" >
         <li th:id="${childNode.id}" type="square" th:each="childNode : ${paragraph.childNodes}">
             <span th:if="${childNode instanceof T(org.igye.outline.model.Paragraph)}">
