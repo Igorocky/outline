@@ -114,8 +114,9 @@ public class NodeController {
         }
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
-        model.addAttribute("iconsDataJson", mapper.writeValueAsString(getIconsInfo(paragraph)));
-        model.addAttribute("showIcons", hasAtLeastOneIcon(paragraph));
+        boolean showIcons = hasAtLeastOneIcon(paragraph);
+        model.addAttribute("showIcons", showIcons);
+        model.addAttribute("iconsDataJson", showIcons ? mapper.writeValueAsString(getIconsInfo(paragraph)) : "[]");
         addPath(model, (Paragraph) paragraph.getParentNode());
 
         return prefix(PARAGRAPH);
