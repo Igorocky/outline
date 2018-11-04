@@ -19,9 +19,9 @@
     <script type="text/javascript" th:inline="javascript">
         $( function() {
             /*<![CDATA[*/
-            var showIcons = /*[[${showIcons}]]*/;
+            let showIcons = /*[[${showIcons}]]*/;
             if (showIcons) {
-                var iconsDataJson = JSON.parse(/*[[${iconsDataJson}]]*/);
+                let iconsDataJson = JSON.parse(/*[[${iconsDataJson}]]*/);
                 iconsTable('icons-table', iconsDataJson);
             }
             /*]]>*/

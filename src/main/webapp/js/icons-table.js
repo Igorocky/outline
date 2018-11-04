@@ -1,6 +1,6 @@
 function iconsTable(iconTableContainerId, iconsDataJson) {
     $('#' + iconTableContainerId).html(
-        $("<table/>", {"class":"table table-bordered"}).html(
+        $("<table/>", {"class":"icons-table"}).html(
             _.reduce(
                 iconsDataJson,
                 function(memo, iconInfoList){
@@ -13,24 +13,28 @@ function iconsTable(iconTableContainerId, iconsDataJson) {
 }
 
 function createLink(iconInfo) {
-    return (iconInfo.objectType == "TOPIC"
-            ? $("<a/>", {href:"topic?id=" + iconInfo.nodeId + "&showContent=true"})
-            : $("<a/>", {href:"paragraph?id=" + iconInfo.nodeId + "&showContent=true"})).append(
-        $("<img/>", {
-            src: "icon/" + iconInfo.iconId
-        })
+    return $("<a/>", {href: iconInfo.cellType.toLowerCase() + "?id=" + iconInfo.nodeId + "&showContent=true"}).html(
+        $("<img/>", {src: "icon/" + iconInfo.iconId})
     )
 }
 
 function createCell(iconInfo) {
-    return $("<td/>").html(
-        iconInfo.objectType == null
-            ? $("<span/>")
-            : (iconInfo.iconId == null
-                ? $("<span/>", {text: "?"})
-                : createLink(iconInfo)
-            )
-    )
+    var $content;
+    switch (iconInfo.cellType) {
+        case "EMPTY":
+            $content = $("<span/>");
+            break;
+        case "NUMBER":
+            $content = $("<span/>", {text: iconInfo.number});
+            break;
+        default:
+            if (iconInfo.iconId == null) {
+                $content = $("<span/>", {text: "?"});
+            } else {
+                $content = createLink(iconInfo);
+            }
+    }
+    return $("<td/>").html($content);
 }
 
 function createRow(iconInfoList) {

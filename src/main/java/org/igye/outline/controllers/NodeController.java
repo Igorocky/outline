@@ -12,12 +12,10 @@ import org.igye.outline.export.Exporter;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
-import org.igye.outline.htmlforms.IconInfo;
 import org.igye.outline.htmlforms.ImageType;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Image;
-import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Text;
 import org.igye.outline.model.Topic;
@@ -42,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
+import static org.igye.outline.common.OutlineUtils.getIconsInfo;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.OutlineUtils.redirect;
@@ -93,15 +91,7 @@ public class NodeController {
     public String paragraph(Model model, @RequestParam Optional<UUID> id, Optional<Boolean> showContent,
                             Optional<Boolean> isLeftmostSibling, Optional<Boolean> isRightmostSibling) throws JsonProcessingException {
         commonModelMethods.initModel(model);
-        if (isLeftmostSibling.orElse(false)) {
-            model.addAttribute("isLeftmostSibling", true);
-        }
-        if (isRightmostSibling.orElse(false)) {
-            model.addAttribute("isRightmostSibling", true);
-        }
-        if (showContent.orElse(true)) {
-            model.addAttribute("showContent", true);
-        }
+
         Paragraph paragraph;
         if (id.isPresent()) {
             paragraph = nodeDao.getParagraphById(id.get());
@@ -114,10 +104,28 @@ public class NodeController {
         }
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
-        boolean showIcons = hasAtLeastOneIcon(paragraph);
-        model.addAttribute("showIcons", showIcons);
-        model.addAttribute("iconsDataJson", showIcons ? mapper.writeValueAsString(getIconsInfo(paragraph)) : "[]");
         addPath(model, (Paragraph) paragraph.getParentNode());
+
+        if (isLeftmostSibling.orElse(false)) {
+            model.addAttribute("isLeftmostSibling", true);
+        }
+        if (isRightmostSibling.orElse(false)) {
+            model.addAttribute("isRightmostSibling", true);
+        }
+        if (showContent.orElse(true)) {
+            model.addAttribute("showContent", true);
+            boolean showIcons = hasAtLeastOneIcon(paragraph);
+            model.addAttribute("showIcons", showIcons);
+            model.addAttribute(
+                    "iconsDataJson",
+                    showIcons
+                            ? mapper.writeValueAsString(getIconsInfo(paragraph.getChildNodes()))
+                            : "[]"
+            );
+        } else {
+            model.addAttribute("showIcons", false);
+            model.addAttribute("iconsDataJson", "[]");
+        }
 
         return prefix(PARAGRAPH);
     }
@@ -128,45 +136,6 @@ public class NodeController {
                         (node instanceof Topic)
                                 ? ((Topic)node).getIcon() != null
                                 : ((Paragraph)node).getIcon() != null);
-    }
-
-    private List<List<IconInfo>> getIconsInfo(Paragraph paragraph) {
-        List<List<IconInfo>> res = new ArrayList<>();
-        res.add(new LinkedList<>());
-        boolean eol = false;
-        for (Node node : paragraph.getChildNodes()) {
-            if (node instanceof Topic) {
-                Topic topic = (Topic) node;
-                res.get(res.size() - 1).add(
-                        IconInfo.builder()
-                                .objectType(ObjectType.TOPIC)
-                                .iconId(topic.getIcon() != null ? topic.getIcon().getId() : null)
-                                .nodeId(node.getId())
-                                .build()
-                );
-                eol = topic.isEol();
-            } else {
-                Paragraph par = (Paragraph) node;
-                res.get(res.size() - 1).add(
-                        IconInfo.builder()
-                                .objectType(ObjectType.PARAGRAPH)
-                                .iconId(par.getIcon() != null ? par.getIcon().getId() : null)
-                                .nodeId(node.getId())
-                                .build()
-                );
-                eol = paragraph.isEol();
-            }
-            if (eol) {
-                res.add(new LinkedList<>());
-            }
-        }
-        int maxSize = res.stream().map(List::size).max(Integer::compareTo).get();
-        for (List row : res) {
-            while (row.size() < maxSize) {
-                row.add(IconInfo.builder().objectType(null).build());
-            }
-        }
-        return res;
     }
 
     @GetMapping(EDIT_PARAGRAPH)

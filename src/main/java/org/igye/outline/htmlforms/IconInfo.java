@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.igye.outline.selection.ObjectType;
 
 import java.util.UUID;
 
@@ -14,6 +13,7 @@ import java.util.UUID;
 @Builder
 public class IconInfo {
     private UUID iconId;
-    private ObjectType objectType;
+    private CellType cellType;
     private UUID nodeId;
+    private Integer number;
 }

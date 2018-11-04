@@ -3,3 +3,24 @@
 .sortable li span { position: absolute; margin-left: -1.3em; }
 
 .nav-buttons td {padding: 5px;}
+
+.icons-table {
+    margin: 10px 25px;
+}
+
+.icons-table table, .icons-table td {
+    border: 1px solid lightgrey;
+}
+
+.icons-table td {
+    text-align: center;
+}
+
+.icons-table td a {
+    display: block;
+    height: 100%;
+}
+
+.icons-table td a:hover {
+    outline: 1px solid blue;
+}
