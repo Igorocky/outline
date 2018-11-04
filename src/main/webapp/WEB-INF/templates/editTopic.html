@@ -3,19 +3,21 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../css/multi-select.css">
     <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
+
     <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
-    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/underscore-min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: icon-selector" src="../../js/icon-selector.js"></script>
+
     <script th:inline="javascript">
         $( function() {
             /*<![CDATA[*/
-            iconSelector('icon-container', function () {removeIcon();} , /*[[${form.iconId}]]*/);
+            iconSelector('icon-container', function () {removeIcon();}, "iconId", /*[[${form.iconId}]]*/);
             var formDataJson = JSON.parse(/*[[${formDataJson}]]*/);
             /*]]>*/
             _.each(formDataJson.content, function (content) {
@@ -63,7 +65,7 @@
             $("form table tr:nth-last-child(2)").after('<tr style="border: blue solid 1px" contentOrder="' + order + '">\n' +
                 '            <td><a href="#" onclick="up(this, \'' + order + '\')">Up</a>' +
                 '&nbsp;<a href="#" onclick="down(this, \'' + order + '\')">Down</a>' +
-                '&nbsp;<a href="#" onclick="remove(this, \'' + order + '\')">Delete</a></td>\n' +
+                '&nbsp;<a href="#" onclick="remove(\'' + order + '\')">Delete</a></td>\n' +
                 '            <td>' + rowHtml + '</td>\n' +
                 '        </tr>');
         }
@@ -104,39 +106,15 @@
                 parent.insertBefore(sibling, row);
             }
         }
-        function remove(elem, order) {
-            const question = "Delete?";
-            $( "#dialog-text" ).text(question);
-            $( "#dialog-confirm" ).dialog({
-                title:question,
-                buttons: {
-                    "Delete": function() {
-                        $( this ).dialog( "close" );
-                        $("form table tr[contentOrder='" + order + "']").remove();
-                    },
-                    "Cancel": function() {
-                        $( this ).dialog( "close" );
-                    }
-                }
+        function remove(order) {
+            confirmCancelDialog("dialog-confirm", "Delete?", "Delete", function () {
+                $("form table tr[contentOrder='" + order + "']").remove();
             });
-            $( "#dialog-confirm" ).dialog('open');
         }
         function removeIcon() {
-            const question = "Delete icon?";
-            $( "#dialog-text" ).text(question);
-            $( "#dialog-confirm" ).dialog({
-                title:question,
-                buttons: {
-                    "Delete": function() {
-                        $( this ).dialog( "close" );
-                        unsetIcon('icon-container');
-                    },
-                    "Cancel": function() {
-                        $( this ).dialog( "close" );
-                    }
-                }
+            confirmCancelDialog("dialog-confirm", "Delete icon?", "Delete", function () {
+                unsetIcon('icon-container');
             });
-            $( "#dialog-confirm" ).dialog('open');
         }
         function contentForForm(type, id, text) {
             return {
@@ -204,10 +182,6 @@
 </form>
 
 <div id="dialog-confirm" hidden="hidden">
-    <p>
-        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
-        <span id="dialog-text"></span>
-    </p>
 </div>
 
 </body>

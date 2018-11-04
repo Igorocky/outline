@@ -1,6 +1,6 @@
 let WAIT_FOR_ICON = "waitForIcon";
 
-function iconSelector(iconSelectorContainerId, onIconDelete, initIconId) {
+function iconSelector(iconSelectorContainerId, onIconDelete, attrName, initIconId) {
     $('#' + iconSelectorContainerId).html(
         $("<span/>", {
             id: "no-icon-span", text: "No icon.",
@@ -22,6 +22,10 @@ function iconSelector(iconSelectorContainerId, onIconDelete, initIconId) {
     ).append(
         $("<img/>", {
             id: "icon-img", hidden: "hidden"
+        })
+    ).append(
+        $("<input/>", {
+            id: "icon-hidden-input", type:"hidden", name: attrName
         })
     ).prop(WAIT_FOR_ICON, false);
 
@@ -56,10 +60,8 @@ function setIcon(iconSelectorContainerId, iconId) {
     $('#' + iconSelectorContainerId + " #click-ctrl-v-btn" ).hide();
     $('#' + iconSelectorContainerId + " #cancel-wait-for-icon-btn" ).hide();
     $('#' + iconSelectorContainerId + " #delete-icon-btn" ).show();
-    $('#' + iconSelectorContainerId + " #icon-img" )
-        .attr("src", "icon/" + iconId)
-        .prop("iconId", iconId)
-        .show();
+    $('#' + iconSelectorContainerId + " #icon-img" ).attr("src", "icon/" + iconId).show();
+    $('#' + iconSelectorContainerId + " #icon-hidden-input" ).attr("value", iconId);
 }
 
 function unsetIcon(iconSelectorContainerId) {
@@ -68,12 +70,10 @@ function unsetIcon(iconSelectorContainerId) {
     $('#' + iconSelectorContainerId + " #click-ctrl-v-btn" ).hide();
     $('#' + iconSelectorContainerId + " #cancelWaitForIcon" ).hide();
     $('#' + iconSelectorContainerId + " #delete-icon-btn" ).hide();
-    $('#' + iconSelectorContainerId + " #icon-img" )
-        .attr("src", "")
-        .prop("iconId", null)
-        .hide();
+    $('#' + iconSelectorContainerId + " #icon-img" ).attr("src", "").hide();
+    $('#' + iconSelectorContainerId + " #icon-hidden-input" ).attr("value", null);
 }
 
 function getIconId(iconSelectorContainerId) {
-    return $('#' + iconSelectorContainerId + " #icon-img" ).prop("iconId");
+    return $('#' + iconSelectorContainerId + " #icon-hidden-input" ).attr("value");
 }

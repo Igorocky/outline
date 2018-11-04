@@ -171,3 +171,29 @@ function createEventSelector(shortcutStr) {
         }
     }
 }
+
+function confirmCancelDialog(dialogContainerId, question, confirmButtonName, onConfirm) {
+    $('#' + dialogContainerId).html(
+        $("<p/>").html(
+            $("<span/>", {'class':"ui-icon ui-icon-alert", style:"float:left; margin:12px 12px 20px 0;"})
+        ).append(
+            $("<span/>", {id: "dialog-text"})
+        )
+    );
+
+    $("#" + dialogContainerId + " #dialog-text" ).text(question);
+    let buttons = {
+        "Cancel": function() {
+            $( this ).dialog( "close" );
+        }
+    };
+    buttons[confirmButtonName] = function() {
+        $( this ).dialog( "close" );
+        onConfirm();
+    }
+    $("#" + dialogContainerId).dialog({
+        title:question,
+        buttons: buttons
+    });
+    $( "#" + dialogContainerId ).dialog('open');
+}
