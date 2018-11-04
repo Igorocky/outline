@@ -23,6 +23,10 @@
             <td><input id="name" type="text" th:field="*{name}"/></td>
         </tr>
         <tr>
+            <td>EOL</td>
+            <td><input id="eol" th:type="checkbox" th:field="*{eol}" th:checked="*{eol}"/></td>
+        </tr>
+        <tr>
             <td><a th:href="@{paragraph(id=${form.idToRedirectToIfCancelled})}">Cancel</a></td>
             <td><input type="submit" th:value="*{id} == null ? 'Create' : 'Save'" value="Save"/></td>
         </tr>

@@ -7,7 +7,9 @@ import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,11 @@ public class Paragraph extends Node {
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     @OrderColumn
     private List<Node> childNodes = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private Icon icon;
+
+    private boolean eol;
 
     public void addChildNode(Node node) {
         Hibernate.initialize(getChildNodes());

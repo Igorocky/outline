@@ -5,6 +5,7 @@ import fj.F2;
 import org.hibernate.Hibernate;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.repository.ContentRepository;
+import org.igye.outline.data.repository.IconRepository;
 import org.igye.outline.data.repository.ImageRepository;
 import org.igye.outline.data.repository.NodeRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
@@ -12,10 +13,12 @@ import org.igye.outline.data.repository.TopicRepository;
 import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
+import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Content;
+import org.igye.outline.model.Icon;
 import org.igye.outline.model.Image;
 import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
@@ -59,6 +62,8 @@ public class NodeDao {
     @Autowired
     private ImageRepository imageRepository;
     @Autowired
+    private IconRepository iconRepository;
+    @Autowired
     private ContentRepository contentRepository;
 
     @Transactional
@@ -81,10 +86,12 @@ public class NodeDao {
     }
 
     @Transactional
-    public Paragraph createParagraph(UUID parentId, String name) {
+    public Paragraph createParagraph(UUID parentId, EditParagraphForm form) {
         User currUser = sessionData.getCurrentUser();
         Paragraph paragraph = new Paragraph();
-        paragraph.setName(name);
+        paragraph.setName(form.getName());
+        paragraph.setIcon(iconRepository.findByOwnerAndId(currUser, form.getIconId()));
+        paragraph.setEol(form.isEol());
         paragraph.setOwner(currUser);
         Paragraph parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
         if (parent != null) {
@@ -97,9 +104,12 @@ public class NodeDao {
 
 
     @Transactional
-    public void updateParagraph(UUID id, Consumer<Paragraph> updates) {
-        Paragraph paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
-        updates.accept(paragraph);
+    public void updateParagraph(EditParagraphForm form) {
+        User currentUser = sessionData.getCurrentUser();
+        Paragraph paragraph = paragraphRepository.findByOwnerAndId(currentUser, form.getId());
+        paragraph.setName(form.getName());
+        paragraph.setEol(form.isEol());
+        paragraph.setIcon(iconRepository.findByOwnerAndId(currentUser, form.getIconId()));
     }
 
     @Transactional
@@ -114,24 +124,31 @@ public class NodeDao {
 
     @Transactional
     public Image getImageById(UUID id) {
-        Image image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
-        return image;
+        return imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+    }
+
+    @Transactional
+    public Icon getIconById(UUID id) {
+        return iconRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
     }
 
     @Transactional
     public UUID createTopic(EditTopicForm request) {
         Topic topic = new Topic();
+        User currentUser = sessionData.getCurrentUser();
         if (request.getParentId() != null) {
-            paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), request.getParentId()).addChildNode(
+            paragraphRepository.findByOwnerAndId(currentUser, request.getParentId()).addChildNode(
                 topic
             );
         } else {
             topic.setOwner(
-                userRepository.findById(sessionData.getCurrentUser().getId()).get()
+                userRepository.findById(currentUser.getId()).get()
             );
             topic = topicRepository.save(topic);
         }
         topic.setName(request.getName());
+        topic.setIcon(iconRepository.findByOwnerAndId(currentUser, request.getIconId()));
+        topic.setEol(request.isEol());
         final Topic finalTopic = topic;
         request.getContent().stream().forEach(contentForForm -> {
             if (TEXT.equals(contentForForm.getType())) {
@@ -139,7 +156,7 @@ public class NodeDao {
                 text.setText(contentForForm.getText());
                 finalTopic.addContent(text);
             } else if (IMAGE.equals(contentForForm.getType())) {
-                Image image = imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), contentForForm.getId());
+                Image image = imageRepository.findByOwnerAndId(currentUser, contentForForm.getId());
                 if (image == null) {
                     throw new OutlineException("image == null for id = '" + contentForForm.getId() + "'");
                 }
@@ -153,8 +170,11 @@ public class NodeDao {
 
     @Transactional
     public void updateTopic(EditTopicForm form) {
-        Topic topic = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), form.getId());
+        User currentUser = sessionData.getCurrentUser();
+        Topic topic = topicRepository.findByOwnerAndId(currentUser, form.getId());
         topic.setName(form.getName());
+        topic.setIcon(iconRepository.findByOwnerAndId(currentUser, form.getIconId()));
+        topic.setEol(form.isEol());
         Map<UUID, Content> oldContents = toMap(topic.getContents(), Content::getId);
         oldContents.values().forEach(topic::detachContentById);
         for (ContentForForm content : form.getContent()) {
@@ -175,7 +195,7 @@ public class NodeDao {
                     topic.addContent(
                             oldImg != null
                                     ? oldImg
-                                    : imageRepository.findByOwnerAndId(sessionData.getCurrentUser(), imgId)
+                                    : imageRepository.findByOwnerAndId(currentUser, imgId)
                     );
                 } else {
                     throw new OutlineException("Unexpected condition:  image.getId() == null");
@@ -192,6 +212,13 @@ public class NodeDao {
         Image img = new Image();
         img.setOwner(userRepository.findById(sessionData.getCurrentUser().getId()).get());
         return imageRepository.save(img).getId();
+    }
+
+    @Transactional
+    public UUID createIcon() {
+        Icon icon = new Icon();
+        icon.setOwner(userRepository.findById(sessionData.getCurrentUser().getId()).get());
+        return iconRepository.save(icon).getId();
     }
 
 

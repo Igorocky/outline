@@ -106,14 +106,14 @@ function extractFileFromEvent(event) {
     return blob;
 }
 
-function uploadImage(file, onSuccess) {
+function uploadImage(imageType, file, onSuccess) {
     let fd = new FormData();
+    fd.append("imageType", imageType);
     fd.append("file", file);
     $.ajax({
         type: "POST",
         url: "/uploadImage",
         data: fd,
-        // contentType: "multipart/form-data",
         contentType: false,
         cache: false,
         dataType: 'json',

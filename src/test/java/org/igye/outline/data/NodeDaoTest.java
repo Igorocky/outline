@@ -3,11 +3,11 @@ package org.igye.outline.data;
 import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 import org.igye.outline.AbstractHibernateTest;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
+import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.model.Content;
@@ -16,7 +16,6 @@ import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Text;
 import org.igye.outline.model.Topic;
-import org.igye.outline.model.User;
 import org.igye.outline.selection.ActionType;
 import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
@@ -44,6 +43,7 @@ import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = NodeDao.class)
@@ -437,15 +437,20 @@ public class NodeDaoTest extends AbstractHibernateTest {
                 )
 
         );
+        EditParagraphForm form = new EditParagraphForm();
+        form.setName("P3");
 
         //when
-        dao.createParagraph(null, "P3");
+        dao.createParagraph(null, form);
 
         //then
         List<Node> children = dao.getRootNodes();
         Assert.assertEquals(3, children.size());
         Assert.assertEquals("P2", children.get(0).getName());
-        Assert.assertEquals("P3", children.get(1).getName());
+        Paragraph paragraph = (Paragraph) children.get(1);
+        Assert.assertEquals("P3", paragraph.getName());
+        Assert.assertNull(paragraph.getIcon());
+        Assert.assertFalse(paragraph.isEol());
         Assert.assertEquals("T1", children.get(2).getName());
     }
 
@@ -461,16 +466,24 @@ public class NodeDaoTest extends AbstractHibernateTest {
                 )
 
         );
+        EditParagraphForm form = new EditParagraphForm();
+        form.setName("new-par");
+        UUID iconId = dao.createIcon();
+        form.setIconId(iconId);
+        form.setEol(true);
 
         //when
-        dao.createParagraph((UUID) testData.get(SAVED_ID), "new-par");
+        dao.createParagraph((UUID) testData.get(SAVED_ID), form);
 
         //then
         List<Node> children = dao.getParagraphById((UUID) testData.get(SAVED_ID)).getChildNodes();
         Assert.assertEquals(3, children.size());
         Assert.assertEquals("T1", children.get(0).getName());
         Assert.assertEquals("P1", children.get(1).getName());
-        Assert.assertEquals("new-par", children.get(2).getName());
+        Paragraph paragraph = (Paragraph) children.get(2);
+        Assert.assertEquals("new-par", paragraph.getName());
+        Assert.assertEquals(iconId, paragraph.getIcon().getId());
+        Assert.assertTrue(paragraph.isEol());
     }
 
     @Test
@@ -483,13 +496,21 @@ public class NodeDaoTest extends AbstractHibernateTest {
                 )
 
         );
+        UUID iconId = dao.createIcon();
+        EditParagraphForm form = new EditParagraphForm();
+        form.setId((UUID) testData.get(SAVED_ID));
+        form.setName("NewName");
+        form.setEol(true);
+        form.setIconId(iconId);
 
         //when
-        dao.updateParagraph((UUID) testData.get(SAVED_ID), par -> par.setName("NewName"));
+        dao.updateParagraph(form);
 
         //then
         Paragraph paragraph = dao.getParagraphById((UUID) testData.get(SAVED_ID));
         Assert.assertEquals("NewName", paragraph.getName());
+        Assert.assertEquals(iconId, paragraph.getIcon().getId());
+        Assert.assertTrue(paragraph.isEol());
     }
 
     @Test
@@ -943,13 +964,16 @@ public class NodeDaoTest extends AbstractHibernateTest {
         EditTopicForm form = new EditTopicForm();
         form.setParentId((UUID) saved.get(SAVED_PARAGRAPH));
         form.setName("new topic");
+        UUID iconId = dao.createIcon();
+        form.setIconId(iconId);
+        form.setEol(true);
         form.setContent(Arrays.asList(
                 ContentForForm.builder().type(TEXT).text("ttt1").build(),
                 ContentForForm.builder().type(IMAGE).id(imgId).build()
         ));
 
         //when
-        UUID newTopicId = dao.createTopic(form);
+        dao.createTopic(form);
 
         //then
         Paragraph paragraph = dao.getParagraphById((UUID) saved.get(SAVED_PARAGRAPH));
@@ -957,6 +981,8 @@ public class NodeDaoTest extends AbstractHibernateTest {
         assertEquals("T1", paragraph.getChildNodes().get(0).getName());
         assertEquals("new topic", paragraph.getChildNodes().get(1).getName());
         Topic topic = dao.getTopicById(paragraph.getChildNodes().get(1).getId());
+        assertEquals(iconId, topic.getIcon().getId());
+        assertTrue(topic.isEol());
         assertEquals(2, topic.getContents().size());
         assertEquals("ttt1", ((Text)topic.getContents().get(0)).getText());
         assertEquals(imgId, topic.getContents().get(1).getId());
@@ -983,7 +1009,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
     }
 
     @Test
-    public void updateTopic_should_change_topic_name() {
+    public void updateTopic_should_change_topic_name_and_icon_and_eol() {
         //given
         Map<String, Object> saved = prepareTestData(b -> b
                 .user("user1").currentUser().children(b1 -> b1
@@ -993,10 +1019,12 @@ public class NodeDaoTest extends AbstractHibernateTest {
                 )
 
         );
-
+        UUID iconId = dao.createIcon();
         EditTopicForm form = new EditTopicForm();
         form.setId((UUID) saved.get(SAVED_ID));
         form.setName("T-o-P");
+        form.setIconId(iconId);
+        form.setEol(true);
         form.setContent(Collections.emptyList());
 
         //when
@@ -1005,6 +1033,8 @@ public class NodeDaoTest extends AbstractHibernateTest {
         //then
         Topic updatedTopic = dao.getTopicById(form.getId());
         Assert.assertEquals("T-o-P", updatedTopic.getName());
+        Assert.assertEquals(iconId, updatedTopic.getIcon().getId());
+        Assert.assertTrue(updatedTopic.isEol());
         Assert.assertEquals(0, updatedTopic.getContents().size());
     }
 

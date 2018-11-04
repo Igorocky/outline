@@ -9,11 +9,13 @@
     <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../js/jquery.multi-select.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/underscore-min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
-    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: icon-selector" src="../../js/icon-selector.js"></script>
     <script th:inline="javascript">
         $( function() {
             /*<![CDATA[*/
+            iconSelector('icon-container', function () {removeIcon();} , /*[[${form.iconId}]]*/);
             var formDataJson = JSON.parse(/*[[${formDataJson}]]*/);
             /*]]>*/
             _.each(formDataJson.content, function (content) {
@@ -37,10 +39,18 @@
                 autoOpen: false
             });
             document.onpaste = function(event){
-                uploadImage(extractFileFromEvent(event), function (imgId) {
-                    console.log("imgId = " + JSON.stringify(imgId));
-                    addImage(imgId);
-                })
+                uploadImage(
+                    isWaitingForIcon('icon-container') ? 'ICON' : 'TOPIC_IMAGE',
+                    extractFileFromEvent(event),
+                    function (imgId) {
+                        console.log("imgId = " + JSON.stringify(imgId));
+                        if (isWaitingForIcon('icon-container')) {
+                            setIcon('icon-container', imgId)
+                        } else {
+                            addImage(imgId);
+                        }
+                    }
+                )
             };
         } );
         focusOnLoad('#name');
@@ -101,8 +111,25 @@
                 title:question,
                 buttons: {
                     "Delete": function() {
-                        $("form table tr[contentOrder='" + order + "']").remove();
                         $( this ).dialog( "close" );
+                        $("form table tr[contentOrder='" + order + "']").remove();
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+            $( "#dialog-confirm" ).dialog('open');
+        }
+        function removeIcon() {
+            const question = "Delete icon?";
+            $( "#dialog-text" ).text(question);
+            $( "#dialog-confirm" ).dialog({
+                title:question,
+                buttons: {
+                    "Delete": function() {
+                        $( this ).dialog( "close" );
+                        unsetIcon('icon-container');
                     },
                     "Cancel": function() {
                         $( this ).dialog( "close" );
@@ -123,6 +150,8 @@
                 parentId: parentId == "null" ? null : parentId,
                 id: id == "null" ? null : id,
                 name: $("#name").val(),
+                eol: $("#eol").prop("checked"),
+                iconId: getIconId('icon-container'),
                 content: _.map(allContents(), function (elem) {
                     let textArr = elem.getElementsByTagName("textarea");
                     if (_.size(textArr) > 0) {
@@ -157,6 +186,14 @@
         <tr>
             <td>Name</td>
             <td><input id="name" type="text" size="120" th:field="*{name}"/></td>
+        </tr>
+        <tr>
+            <td>EOL</td>
+            <td><input id="eol" th:type="checkbox" th:checked="*{eol}"/></td>
+        </tr>
+        <tr>
+            <td>Icon</td>
+            <td id="icon-container" ></td>
         </tr>
         <tr>
             <td><a th:href="*{id} != null ? @{topic(id=${form.id},showContent=true)} : @{paragraph(id=${form.parentId})}">Cancel</a></td>

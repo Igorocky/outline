@@ -12,5 +12,7 @@ public class EditTopicForm {
     private UUID parentId;
     private UUID id;
     private String name;
+    private UUID iconId;
+    private boolean eol;
     private List<ContentForForm> content;
 }

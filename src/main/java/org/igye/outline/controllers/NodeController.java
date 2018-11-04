@@ -12,6 +12,7 @@ import org.igye.outline.export.Exporter;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
+import org.igye.outline.htmlforms.ImageType;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Image;
@@ -124,6 +125,8 @@ public class NodeController {
             Paragraph paragraph = nodeDao.getParagraphById(id.get());
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
+            form.setIconId(paragraph.getIcon() != null ? paragraph.getIcon().getId() : null);
+            form.setEol(paragraph.isEol());
         }
         prepareModelForEditParagraph(model, form);
         return prefix(EDIT_PARAGRAPH);
@@ -138,10 +141,10 @@ public class NodeController {
         } else {
             UUID idToRedirectTo;
             if (form.getId() != null) {
-                nodeDao.updateParagraph(form.getId(), par -> par.setName(form.getName()));
+                nodeDao.updateParagraph(form);
                 idToRedirectTo = form.getId();
             } else {
-                idToRedirectTo = nodeDao.createParagraph(form.getParentId(), form.getName()).getId();
+                idToRedirectTo = nodeDao.createParagraph(form.getParentId(), form).getId();
             }
             return OutlineUtils.redirect(
                     response,
@@ -179,12 +182,13 @@ public class NodeController {
     @GetMapping("topicImage/{imgId}")
     @ResponseBody
     public byte[] topicImage(@PathVariable UUID imgId) {
-        Image image = nodeDao.getImageById(imgId);
-        try {
-            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, image.getId()));
-        } catch (IOException e) {
-            throw new OutlineException(e);
-        }
+        return getImgFileById(nodeDao.getImageById(imgId).getId());
+    }
+
+    @GetMapping("icon/{iconId}")
+    @ResponseBody
+    public byte[] icon(@PathVariable UUID iconId) {
+        return getImgFileById(nodeDao.getIconById(iconId).getId());
     }
 
     @GetMapping(EDIT_TOPIC)
@@ -199,6 +203,8 @@ public class NodeController {
             Topic topic = nodeDao.getTopicById(id.get());
             form.setId(topic.getId());
             form.setName(topic.getName());
+            form.setIconId(topic.getIcon() != null ? topic.getIcon().getId() : null);
+            form.setEol(topic.isEol());
             form.setContent(map(
                     topic.getContents(),
                     content -> {
@@ -235,8 +241,9 @@ public class NodeController {
 
     @PostMapping("uploadImage")
     @ResponseBody
-    public UUID uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
-        UUID imgId = nodeDao.createImage();
+    public UUID uploadImage(@RequestParam("file") MultipartFile file,
+                            @RequestParam("imageType") ImageType imageType) throws IOException {
+        UUID imgId = imageType == ImageType.TOPIC_IMAGE ? nodeDao.createImage() : nodeDao.createIcon();
         File imgFile = getImgFile(imagesLocation, imgId);
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
@@ -383,6 +390,14 @@ public class NodeController {
             res.add(paragraph);
             res.addAll(buildPath((Paragraph) paragraph.getParentNode()));
             return res;
+        }
+    }
+
+    private byte[] getImgFileById(UUID id) {
+        try {
+            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, id));
+        } catch (IOException e) {
+            throw new OutlineException(e);
         }
     }
 }
