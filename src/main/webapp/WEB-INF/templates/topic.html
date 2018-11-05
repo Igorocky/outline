@@ -27,7 +27,7 @@
     <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
 </div>
 <div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=${topic.hasParent}, showFirstChildBtn=false)"/>
-<h3>&#10042;<span th:text="${topic.name}" /></h3>
+<h3>&#10042;<span id="main-title" th:text="${topic.name}" /></h3>
 <img th:if="${topic.icon != null}" th:src="@{icon/{iconId}(iconId=${topic.icon.id})}"/>
 
 <div>

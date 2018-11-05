@@ -13,7 +13,7 @@ function iconsTable(iconTableContainerId, iconsDataJson) {
 }
 
 function createLink(iconInfo) {
-    return $("<a/>", {href: iconInfo.cellType.toLowerCase() + "?id=" + iconInfo.nodeId + "&showContent=true"}).html(
+    return $("<a/>", {href: iconInfo.cellType.toLowerCase() + "?id=" + iconInfo.nodeId + "&showContent=true#main-title"}).html(
         $("<img/>", {src: "icon/" + iconInfo.iconId})
     )
 }
