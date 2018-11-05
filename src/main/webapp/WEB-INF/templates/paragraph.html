@@ -77,8 +77,8 @@
 <h2>&sect;<span th:text="${paragraph.name}" /></h2>
 <img th:if="${paragraph.icon != null}" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
 <div>
-    <a shortcut="i" th:unless="${showContent}" th:href="@{paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
-    <a shortcut="i" th:if="${showContent}" th:href="@{paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
+    <a shortcut="/" th:unless="${showContent}" th:href="@{paragraph(id=${paragraph.id})}">Show content</a>&nbsp;
+    <a shortcut="/" th:if="${showContent}" th:href="@{paragraph(id=${paragraph.id},showContent=false)}">Hide content</a>
 </div>
 <div th:if="${showContent}" shortcut="c" >
     <div id="icons-table"></div>
