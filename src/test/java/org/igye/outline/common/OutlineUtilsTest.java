@@ -23,18 +23,19 @@ public class OutlineUtilsTest {
         Topic t1 = new Topic();
         t1.setId(idT1);
         t1.setIcon(Icon.builder().id(idTI1).build());
+        t1.setSol(true);
 
         UUID idP1 = UUID.randomUUID();
         Paragraph p1 = new Paragraph();
         p1.setId(idP1);
         p1.setIcon(null);
-        p1.setEol(true);
 
         UUID idP2 = UUID.randomUUID();
         UUID idPI2 = UUID.randomUUID();
         Paragraph p2 = new Paragraph();
         p2.setId(idP2);
         p2.setIcon(Icon.builder().id(idPI2).build());
+        p2.setSol(true);
 
         UUID idT2 = UUID.randomUUID();
         Topic t2 = new Topic();

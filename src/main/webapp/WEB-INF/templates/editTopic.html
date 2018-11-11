@@ -128,7 +128,7 @@
                 parentId: parentId == "null" ? null : parentId,
                 id: id == "null" ? null : id,
                 name: $("#name").val(),
-                eol: $("#eol").prop("checked"),
+                sol: $("#sol").prop("checked"),
                 iconId: getIconId('icon-container'),
                 content: _.map(allContents(), function (elem) {
                     let textArr = elem.getElementsByTagName("textarea");
@@ -166,8 +166,8 @@
             <td><input id="name" type="text" size="120" th:field="*{name}"/></td>
         </tr>
         <tr>
-            <td>EOL</td>
-            <td><input id="eol" th:type="checkbox" th:checked="*{eol}"/></td>
+            <td>SOL</td>
+            <td><input id="sol" th:type="checkbox" th:checked="*{sol}"/></td>
         </tr>
         <tr>
             <td>Icon</td>

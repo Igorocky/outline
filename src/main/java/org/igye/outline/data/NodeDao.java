@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.igye.outline.common.OutlineUtils.mapToSet;
@@ -91,7 +90,7 @@ public class NodeDao {
         Paragraph paragraph = new Paragraph();
         paragraph.setName(form.getName());
         paragraph.setIcon(iconRepository.findByOwnerAndId(currUser, form.getIconId()));
-        paragraph.setEol(form.isEol());
+        paragraph.setSol(form.isSol());
         paragraph.setOwner(currUser);
         Paragraph parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
         if (parent != null) {
@@ -108,7 +107,7 @@ public class NodeDao {
         User currentUser = sessionData.getCurrentUser();
         Paragraph paragraph = paragraphRepository.findByOwnerAndId(currentUser, form.getId());
         paragraph.setName(form.getName());
-        paragraph.setEol(form.isEol());
+        paragraph.setSol(form.isSol());
         paragraph.setIcon(iconRepository.findByOwnerAndId(currentUser, form.getIconId()));
     }
 
@@ -148,7 +147,7 @@ public class NodeDao {
         }
         topic.setName(request.getName());
         topic.setIcon(iconRepository.findByOwnerAndId(currentUser, request.getIconId()));
-        topic.setEol(request.isEol());
+        topic.setSol(request.isSol());
         final Topic finalTopic = topic;
         request.getContent().stream().forEach(contentForForm -> {
             if (TEXT.equals(contentForForm.getType())) {
@@ -174,7 +173,7 @@ public class NodeDao {
         Topic topic = topicRepository.findByOwnerAndId(currentUser, form.getId());
         topic.setName(form.getName());
         topic.setIcon(iconRepository.findByOwnerAndId(currentUser, form.getIconId()));
-        topic.setEol(form.isEol());
+        topic.setSol(form.isSol());
         Map<UUID, Content> oldContents = toMap(topic.getContents(), Content::getId);
         oldContents.values().forEach(topic::detachContentById);
         for (ContentForForm content : form.getContent()) {

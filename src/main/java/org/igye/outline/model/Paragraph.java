@@ -34,7 +34,7 @@ public class Paragraph extends Node {
     @OneToOne(fetch = FetchType.EAGER)
     private Icon icon;
 
-    private boolean eol;
+    private boolean sol;
 
     public void addChildNode(Node node) {
         Hibernate.initialize(getChildNodes());

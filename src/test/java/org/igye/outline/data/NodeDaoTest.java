@@ -450,7 +450,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         Paragraph paragraph = (Paragraph) children.get(1);
         Assert.assertEquals("P3", paragraph.getName());
         Assert.assertNull(paragraph.getIcon());
-        Assert.assertFalse(paragraph.isEol());
+        Assert.assertFalse(paragraph.isSol());
         Assert.assertEquals("T1", children.get(2).getName());
     }
 
@@ -470,7 +470,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         form.setName("new-par");
         UUID iconId = dao.createIcon();
         form.setIconId(iconId);
-        form.setEol(true);
+        form.setSol(true);
 
         //when
         dao.createParagraph((UUID) testData.get(SAVED_ID), form);
@@ -483,7 +483,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         Paragraph paragraph = (Paragraph) children.get(2);
         Assert.assertEquals("new-par", paragraph.getName());
         Assert.assertEquals(iconId, paragraph.getIcon().getId());
-        Assert.assertTrue(paragraph.isEol());
+        Assert.assertTrue(paragraph.isSol());
     }
 
     @Test
@@ -500,7 +500,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         EditParagraphForm form = new EditParagraphForm();
         form.setId((UUID) testData.get(SAVED_ID));
         form.setName("NewName");
-        form.setEol(true);
+        form.setSol(true);
         form.setIconId(iconId);
 
         //when
@@ -510,7 +510,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         Paragraph paragraph = dao.getParagraphById((UUID) testData.get(SAVED_ID));
         Assert.assertEquals("NewName", paragraph.getName());
         Assert.assertEquals(iconId, paragraph.getIcon().getId());
-        Assert.assertTrue(paragraph.isEol());
+        Assert.assertTrue(paragraph.isSol());
     }
 
     @Test
@@ -966,7 +966,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         form.setName("new topic");
         UUID iconId = dao.createIcon();
         form.setIconId(iconId);
-        form.setEol(true);
+        form.setSol(true);
         form.setContent(Arrays.asList(
                 ContentForForm.builder().type(TEXT).text("ttt1").build(),
                 ContentForForm.builder().type(IMAGE).id(imgId).build()
@@ -982,7 +982,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         assertEquals("new topic", paragraph.getChildNodes().get(1).getName());
         Topic topic = dao.getTopicById(paragraph.getChildNodes().get(1).getId());
         assertEquals(iconId, topic.getIcon().getId());
-        assertTrue(topic.isEol());
+        assertTrue(topic.isSol());
         assertEquals(2, topic.getContents().size());
         assertEquals("ttt1", ((Text)topic.getContents().get(0)).getText());
         assertEquals(imgId, topic.getContents().get(1).getId());
@@ -1024,7 +1024,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         form.setId((UUID) saved.get(SAVED_ID));
         form.setName("T-o-P");
         form.setIconId(iconId);
-        form.setEol(true);
+        form.setSol(true);
         form.setContent(Collections.emptyList());
 
         //when
@@ -1034,7 +1034,7 @@ public class NodeDaoTest extends AbstractHibernateTest {
         Topic updatedTopic = dao.getTopicById(form.getId());
         Assert.assertEquals("T-o-P", updatedTopic.getName());
         Assert.assertEquals(iconId, updatedTopic.getIcon().getId());
-        Assert.assertTrue(updatedTopic.isEol());
+        Assert.assertTrue(updatedTopic.isSol());
         Assert.assertEquals(0, updatedTopic.getContents().size());
     }
 

@@ -148,7 +148,7 @@ public class NodeController {
             form.setId(paragraph.getId());
             form.setName(paragraph.getName());
             form.setIconId(paragraph.getIcon() != null ? paragraph.getIcon().getId() : null);
-            form.setEol(paragraph.isEol());
+            form.setSol(paragraph.isSol());
         }
         prepareModelForEditParagraph(model, form);
         return prefix(EDIT_PARAGRAPH);
@@ -226,7 +226,7 @@ public class NodeController {
             form.setId(topic.getId());
             form.setName(topic.getName());
             form.setIconId(topic.getIcon() != null ? topic.getIcon().getId() : null);
-            form.setEol(topic.isEol());
+            form.setSol(topic.isSol());
             form.setContent(map(
                     topic.getContents(),
                     content -> {

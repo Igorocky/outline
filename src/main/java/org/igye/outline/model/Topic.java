@@ -33,7 +33,7 @@ public class Topic extends Node {
     @OneToOne(fetch = FetchType.EAGER)
     private Icon icon;
 
-    private boolean eol;
+    private boolean sol;
 
     public void addContent(Content content) {
         Hibernate.initialize(getContents());

@@ -13,6 +13,6 @@ public class EditTopicForm {
     private UUID id;
     private String name;
     private UUID iconId;
-    private boolean eol;
+    private boolean sol;
     private List<ContentForForm> content;
 }

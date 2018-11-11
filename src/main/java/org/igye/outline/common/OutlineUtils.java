@@ -155,10 +155,12 @@ public class OutlineUtils {
     public static List<List<IconInfo>> getIconsInfo(List<Node> nodes) {
         List<List<IconInfo>> res1 = new ArrayList<>();
         res1.add(new LinkedList<>());
-        boolean eol;
         for (Node node : nodes) {
             if (node instanceof Topic) {
                 Topic topic = (Topic) node;
+                if (topic.isSol() && !res1.get(res1.size() - 1).isEmpty()) {
+                    res1.add(new LinkedList<>());
+                }
                 res1.get(res1.size() - 1).add(
                         IconInfo.builder()
                                 .cellType(CellType.TOPIC)
@@ -166,9 +168,11 @@ public class OutlineUtils {
                                 .nodeId(node.getId())
                                 .build()
                 );
-                eol = topic.isEol();
             } else {
                 Paragraph par = (Paragraph) node;
+                if (par.isSol() && !res1.get(res1.size() - 1).isEmpty()) {
+                    res1.add(new LinkedList<>());
+                }
                 res1.get(res1.size() - 1).add(
                         IconInfo.builder()
                                 .cellType(CellType.PARAGRAPH)
@@ -176,10 +180,6 @@ public class OutlineUtils {
                                 .nodeId(node.getId())
                                 .build()
                 );
-                eol = par.isEol();
-            }
-            if (eol) {
-                res1.add(new LinkedList<>());
             }
         }
         int maxSize = res1.stream().map(List::size).max(Integer::compareTo).get();
