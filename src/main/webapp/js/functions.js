@@ -14,6 +14,14 @@ function doPost(params) {
     });
 }
 
+function doGet(params) {
+    $.ajax({
+        type: "GET",
+        url: params.url,
+        success: params.success
+    });
+}
+
 function submitSelection(actionType, selectedElems, onSuccess) {
     let selection = {
         actionType: actionType,

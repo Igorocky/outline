@@ -1,0 +1,79 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../../css/jquery-ui-1.12.1.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css" href="../../../css/style.css">
+
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../../js/underscore-min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions" src="../../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: icon-selector" src="../../../js/prepareText.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // var engTextId = /*[[${engTextId}]]*/;
+        /*]]>*/
+        var engTextId = "197f721f-d5eb-4a37-8f16-8a818d25a6fd";
+        var textDataJson = undefined;
+
+        $( function() {
+            // initPage(textDataJson);
+            prepareTextPageEndpoints.getEngText(engTextId, function (data) {
+                initPage();
+            });
+        } );
+    </script>
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+        } );
+    </script>
+</head>
+<body>
+
+<h2 id="text-title"></h2>
+<hr/>
+<div>
+    <button onclick="translateSelection()">Translate</button>
+    <button onclick="saveSelectedWord()">Save word</button>
+</div>
+<h4 id="main-text-area"></h4>
+<hr/>
+<div>
+    <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
+</div>
+<table id="words-to-learn-table" class="outline-bordered-table">
+    <tr>
+        <td></td><td><b>Word in text</b></td><td><b>Normal form</b></td><td><b>Transcription</b></td><td><b>Meaning</b></td>
+    </tr>
+</table>
+<hr/>
+<div>
+    Learn mode:
+    <span id="learn-mode-select">
+    </span>
+</div>
+<table id="sentences-table" class="outline-bordered-table"></table>
+<hr/>
+<div>
+    <button onclick="ignoreSelectedWord()">Ignore</button>
+    <button onclick="unignoreSelectedWord()">Unignore</button>
+</div>
+<div id="ignore-list-text-area"></div>
+<hr/>
+
+<div id="dialog-confirm" hidden="hidden">
+</div>
+</body>
+</html>

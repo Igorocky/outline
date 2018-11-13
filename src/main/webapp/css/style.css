@@ -24,3 +24,15 @@
 .icons-table td a:hover {
     outline: 1px solid blue;
 }
+
+.outline-bordered-table table, .outline-bordered-table td {
+    border: 1px solid lightgrey;
+}
+
+.word-to-learn {
+    font-weight: bold;
+}
+
+.word-ignored {
+    color: lightslategray;
+}
