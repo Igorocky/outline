@@ -14,7 +14,7 @@ function initPage() {
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
     initLearnModeSelect(textDataJson);
-    initSentencesTable(textDataJson);
+    // initSentencesTable(textDataJson);
     initIgnoreListTextArea(textDataJson);
 }
 
@@ -158,6 +158,8 @@ function appendWordToLearn(word) {
                 })
             )
         ).append(
+            $("<td/>", {id: "word-group-" + word.id})
+        ).append(
             $("<td/>", {id: "word-wordInText-" + word.id})
         ).append(
             $("<td/>", {id: "word-word-" + word.id})
@@ -166,6 +168,16 @@ function appendWordToLearn(word) {
         ).append(
             $("<td/>", {id: "word-meaning-" + word.id})
         )
+    );
+    editableSelectReadMode(
+        "word-group-" + word.id,
+        word.group,
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeWordGroup(word.id, newText, respHandler)
+        },
+        function (optionsLoadedHandler) {
+            prepareTextPageEndpoints.getAvailableWordGroups(word.id, optionsLoadedHandler)
+        }
     );
     editableTextFieldReadMode(
         "word-wordInText-" + word.id,
@@ -242,6 +254,71 @@ function editableTextFieldWriteMode(contId, value, onEditDone) {
     $("#" + contId + " input").focus();
 }
 
+function editableSelectReadMode(contId, value, onEditDone, loadOptions) {
+    $cont = $("#" + contId);
+    $cont.html(
+        $("<button/>", {text: "Edit"}).click(function () {
+            editableSelectWriteMode(contId, value, onEditDone, loadOptions);
+        })
+    ).append(
+        $("<span/>", {text: value})
+    );
+}
+
+var editableSelectWriteModeId = 1;
+function editableSelectWriteMode(contId, value, onEditDone, loadOptions) {
+    onSave = function () {
+        onEditDone(
+            $("#" + contId + " input").val(),
+            function (resp) {
+                if (resp.status == "ok") {
+                    editableSelectReadMode(contId, resp.value, onEditDone, loadOptions);
+                } else {
+                    editableSelectWriteMode(contId, resp.value, onEditDone, loadOptions);
+                }
+            }
+        );
+    };
+    $cont = $("#" + contId);
+    let currId = "editableSelectWriteMode-" + editableSelectWriteModeId++;
+    $cont.html(
+        $("<button/>", {text: "Save"}).click(function () {
+            onSave();
+        })
+    ).append(
+        $("<div/>", {'class':"select-editable"})
+            .append(
+                $("<select/>", {id:currId}).html(
+                    $("<option/>", {value:""})
+                ).change(function (event) {
+                    this.nextElementSibling.value=this.value;
+                    onSave();
+                })
+            ).append(
+                $("<input/>", {type:"text", value: value})
+                    .keypress(function (event) {
+                        let keycode = (event.keyCode ? event.keyCode : event.which);
+                        if (keycode == '13') {
+                            onSave();
+                        }
+                    })
+            )
+    ).append(
+        $("<button/>", {text: "Cancel"}).click(function () {
+            editableSelectReadMode(contId, value, onEditDone, loadOptions);
+        })
+    );
+    $("#" + contId + " input").select();
+    loadOptions(function (options) {
+        $select = $("#" + currId);
+        _.each(options, function(option) {
+            $select.append(
+                $("<option/>", {value:option}).html(option)
+            )
+        });
+    })
+}
+
 function editableTextAreaReadMode(contId, value, onEditDone) {
     $cont = $("#" + contId);
     $cont.html(
@@ -287,22 +364,6 @@ function editableTextAreaWriteMode(contId, value, onEditDone) {
 }
 
 function translateSelection() {
-    // var editor = document.getElementById(MAIN_TEXT_AREA);
-    // var editorHTML = $("#" + MAIN_TEXT_AREA).val();
-    // var selectionStart = 0;
-    // var selectionEnd = 0;
-    // if (editor.selectionStart) selectionStart = editor.selectionStart;
-    // if (editor.selectionEnd) selectionEnd = editor.selectionEnd;
-    // if (selectionStart != selectionEnd) {
-    //     let editorCharArray = editorHTML.split("");
-    //     let selection = editorCharArray.slice(selectionStart, selectionEnd).join("");
-    //     // let urlPrefix = "https://translate.google.ru/#en/ru/";
-    //     let urlPrefix = "https://www.lingvolive.com/ru-ru/translate/en-ru/";
-    //     window.open(urlPrefix + selection, '_blank');
-    // }
-    // $("#" + MAIN_TEXT_AREA).focus();
-
-    // let urlPrefix = "https://translate.google.ru/#en/ru/";
     let urlPrefix = "https://www.lingvolive.com/ru-ru/translate/en-ru/";
     window.open(urlPrefix + window.getSelection().toString(), '_blank');
 }
@@ -315,7 +376,7 @@ function ignoreListChangeHandler() {
     prepareTextPageEndpoints.getEngText(textDataJson.textId, function (data) {
         console.log("IgnoreListChange.");
         initLearnModeSelect(textDataJson);
-        initSentencesTable(textDataJson);
+        // initSentencesTable(textDataJson);
         initIgnoreListTextArea(textDataJson);
     })
 }
@@ -371,6 +432,9 @@ let prepareTextPageEndpoints = {
     },
     changeIgnoreList: function (newText, respHandler) {
         changeAttrValueEndpoint(textDataJson.textId, "eng-text-ignore-list", newText, respHandler);
+    },
+    changeWordGroup: function (wordId, newText, respHandler) {
+        changeAttrValueEndpoint(wordId, "eng-text-word-group", newText, respHandler);
     },
     changeWordInText: function (wordId, newText, respHandler) {
         changeAttrValueEndpoint(wordId, "eng-text-word-wordInText", newText, respHandler);
@@ -481,6 +545,25 @@ let prepareTextPageEndpoints = {
                 return mockTextDataJson(_.last(url.slice("/")));
             }
         );
+    },
+    getAvailableWordGroups: function (textId, onDataRetrieved) {
+        doGetWithMock(
+            USE_MOCK_RESPONSE,
+            {
+                url: "/engText/availableWordGroups/" + textId,
+                success: function (response) {
+                    if (response.status == "ok") {
+                        onDataRetrieved(response.availableWordGroups);
+                    }
+                }
+            },
+            function (url) {
+                return {
+                    status: "ok",
+                    availableWordGroups: ["G1", "G2", "Ggg"]
+                };
+            }
+        );
     }
 };
 
@@ -529,9 +612,9 @@ function mockTextDataJson(engTextId) {
         title: "Some title",
         text: "So far, Hulu has been the only streaming service available in North America on the Switch, leaving Netflix, Amazon, and others out in the cold. Its 6.2-inch 720p screen is very capable for both gaming and streaming, so users have been itching for more things to do with it.",
         wordsToLearn: [
-            {id: "a97f721f-d5eb-4a37-8f16-8a818d25a6fd", wordInText: "been", word: "been", transcription: "ssdsdsd", meaning: "asda sasd asd a sd"},
-            {id: "b97f721f-d5eb-4a37-8f16-8a818d25a6fd", wordInText: "only", word: "only", transcription: "uiopuio", meaning: "[as,mnbv;[[i"},
-            {id: "c97f721f-d5eb-4a37-8f16-8a818d25a6fd", wordInText: "screen", word: "screen", transcription: "qwe,jp", meaning: "lkgjksve fsd sdf"}
+            {id: "a97f721f-d5eb-4a37-8f16-8a818d25a6fd", group: "A", wordInText: "been", word: "been", transcription: "ssdsdsd", meaning: "asda sasd asd a sd"},
+            {id: "b97f721f-d5eb-4a37-8f16-8a818d25a6fd", group: "B", wordInText: "only", word: "only", transcription: "uiopuio", meaning: "[as,mnbv;[[i"},
+            {id: "c97f721f-d5eb-4a37-8f16-8a818d25a6fd", group: "C", wordInText: "screen", word: "screen", transcription: "qwe,jp", meaning: "lkgjksve fsd sdf"}
         ],
         ignoreList: ignoreList,
         ignoreListArr: ignoreList.slice("\n"),

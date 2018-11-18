@@ -89,11 +89,11 @@
                 <span th:replace="selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='PARAGRAPH')"></span>
                 <a th:if="${childNode.hasChildren}" th:href="@{firstChild(id=${childNode.id})}" >&#8681;&nbsp;</a>
                 <span th:unless="${childNode.hasChildren}">&#8681;&nbsp;</span>
-                <a th:href="@{paragraph(id=${childNode.id})}" th:text="${childNode.name}"></a>
+                <a th:href="@{paragraph(id=${childNode.id},showContent=true)}" th:text="${childNode.name}"></a>
             </span>
             <span th:if="${childNode instanceof T(org.igye.outline.model.Topic)}">
                 <span th:replace="selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='TOPIC')"></span>
-                <a th:href="@{topic(id=${childNode.id})}" th:text="${childNode.name}"></a>
+                <a th:href="@{topic(id=${childNode.id},showContent=true)}" th:text="${childNode.name}"></a>
             </span>
         </li>
     </ul>
