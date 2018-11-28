@@ -55,8 +55,4 @@ public class Topic extends Node {
         }
         content.setTopic(null);
     }
-
-    public boolean getHasParent() {
-        return getParentNode() != null;
-    }
 }

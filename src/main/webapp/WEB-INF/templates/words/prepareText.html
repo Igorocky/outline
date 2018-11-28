@@ -12,17 +12,16 @@
     <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../../js/jquery-ui-1.12.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../../js/underscore-min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../../js/functions.js"></script>
-    <script type="text/javascript" th:replace="common-scripts :: icon-selector" src="../../../js/prepareText.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: prepareText" src="../../../js/prepareText.js"></script>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // var engTextId = /*[[${engTextId}]]*/;
+        var engTextId = /*[[${engTextId}]]*/;
         /*]]>*/
-        var engTextId = "197f721f-d5eb-4a37-8f16-8a818d25a6fd";
+        // var engTextId = "197f721f-d5eb-4a37-8f16-8a818d25a6fd";
         var textDataJson = undefined;
 
         $( function() {
-            // initPage(textDataJson);
             prepareTextPageEndpoints.getEngText(engTextId, function (data) {
                 initPage();
             });

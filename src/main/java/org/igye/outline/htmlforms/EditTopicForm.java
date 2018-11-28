@@ -8,9 +8,7 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class EditTopicForm {
-    private UUID parentId;
-    private UUID id;
+public class EditTopicForm extends EditNodeForm {
     private String name;
     private UUID iconId;
     private boolean sol;

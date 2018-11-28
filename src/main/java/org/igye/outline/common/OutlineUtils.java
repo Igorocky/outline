@@ -1,5 +1,6 @@
 package org.igye.outline.common;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
@@ -211,4 +212,18 @@ public class OutlineUtils {
         }
         return res;
     }
+
+    public static Map<String, Object> createResponse(String attrName, Object value) {
+        return ImmutableMap.of(
+                "status", "ok",
+                attrName, value
+        );
+    }
+
+    public static Map<String, Object> createVoidResponse() {
+        return ImmutableMap.of(
+                "status", "ok"
+        );
+    }
+
 }

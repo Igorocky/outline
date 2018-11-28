@@ -1,4 +1,4 @@
-let USE_MOCK_RESPONSE = true;
+let USE_MOCK_RESPONSE = false;
 let ONLY_WORDS_TO_LEARN = "onlyWordsToLearn";
 let TEXT_TITLE = "text-title";
 let MAIN_TEXT_AREA = "main-text-area";
@@ -13,7 +13,7 @@ function initPage() {
     initTextTitle(textDataJson);
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
-    initLearnModeSelect(textDataJson);
+    initlearnGroupSelect(textDataJson);
     // initSentencesTable(textDataJson);
     initIgnoreListTextArea(textDataJson);
 }
@@ -35,7 +35,7 @@ function initMainTextArea(textDataJson) {
 function initIgnoreListTextArea(textDataJson) {
     editableTextAreaReadMode(IGNORE_LIST_TEXT_AREA, textDataJson.ignoreList, function (newValue, respHandler) {
         console.log("newValue = '" + newValue + "'");
-        prepareTextPageEndpoints.changeText(newValue, function (response) {
+        prepareTextPageEndpoints.changeIgnoreList(newValue, function (response) {
             respHandler(response);
             ignoreListChangeHandler();
         });
@@ -62,8 +62,8 @@ function createWordForSentenceSpan(textDataJson, wordOfSentence) {
     return $("<span/>", {'class': wordClass, text: wordOfSentence.word});
 }
 
-function initLearnModeSelect(textDataJson) {
-    let onlyWordsToLearn = (textDataJson.learnMode == ONLY_WORDS_TO_LEARN);
+function initlearnGroupSelect(textDataJson) {
+    let onlyWordsToLearn = (textDataJson.learnGroup == ONLY_WORDS_TO_LEARN);
     $("#" + LEARN_MODE_SELECT).html(
         $("<select/>").html(
             $("<option/>", {value: ONLY_WORDS_TO_LEARN, text: "Only words to learn", selected: onlyWordsToLearn})
@@ -73,7 +73,7 @@ function initLearnModeSelect(textDataJson) {
             // console.log("event = '" + JSON.stringify(event) + "'");
             let newSelectValue = $( "#" + LEARN_MODE_SELECT + " option:selected" ).val();
             console.log("newSelectValue = '" + JSON.stringify(newSelectValue) + "'");
-            prepareTextPageEndpoints.changeLearnMode(newSelectValue, function () {
+            prepareTextPageEndpoints.changelearnGroup(newSelectValue, function () {
                 ignoreListChangeHandler();
             });
         })
@@ -176,7 +176,7 @@ function appendWordToLearn(word) {
             prepareTextPageEndpoints.changeWordGroup(word.id, newText, respHandler)
         },
         function (optionsLoadedHandler) {
-            prepareTextPageEndpoints.getAvailableWordGroups(word.id, optionsLoadedHandler)
+            prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
         }
     );
     editableTextFieldReadMode(
@@ -326,13 +326,15 @@ function editableTextAreaReadMode(contId, value, onEditDone) {
             editableTextAreaWriteMode(contId, value, onEditDone);
         })
     );
-    _.reduce(
-        value.split("\n"),
-        function(memo, line){
-            return memo.append($("<div/>", {text: line}));
-        },
-        $cont
-    )
+    if (value) {
+        _.reduce(
+            value.split("\n"),
+            function(memo, line){
+                return memo.append($("<div/>", {text: line}));
+            },
+            $cont
+        )
+    }
 }
 
 function editableTextAreaWriteMode(contId, value, onEditDone) {
@@ -375,7 +377,7 @@ function saveSelectedWord() {
 function ignoreListChangeHandler() {
     prepareTextPageEndpoints.getEngText(textDataJson.textId, function (data) {
         console.log("IgnoreListChange.");
-        initLearnModeSelect(textDataJson);
+        initlearnGroupSelect(textDataJson);
         // initSentencesTable(textDataJson);
         initIgnoreListTextArea(textDataJson);
     })
@@ -448,14 +450,14 @@ let prepareTextPageEndpoints = {
     changeWordMeaning: function (wordId, newText, respHandler) {
         changeAttrValueEndpoint(wordId, "eng-text-word-meaning", newText, respHandler);
     },
-    changeLearnMode: function (newText, respHandler) {
-        changeAttrValueEndpoint(textDataJson.textId, "eng-text-learn-mode", newText, respHandler);
+    changelearnGroup: function (newText, respHandler) {
+        changeAttrValueEndpoint(textDataJson.textId, "eng-text-learn-group", newText, respHandler);
     },
     createNewWord: function (spelling) {
         doPostWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/createWord",
+                url: "createWord",
                 data: {
                     engTextId: textDataJson.textId,
                     word: {
@@ -480,7 +482,7 @@ let prepareTextPageEndpoints = {
         doPostWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/removeWord",
+                url: "removeWord",
                 data: {engTextId: textDataJson.textId, wordId: word.id},
                 success: function (response) {
                     if (response.status == "ok") {
@@ -497,7 +499,7 @@ let prepareTextPageEndpoints = {
         doPostWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/ignoreWord",
+                url: "ignoreWord",
                 data: {engTextId: textDataJson.textId, spelling: spelling},
                 success: function (response) {
                     if (response.status == "ok") {
@@ -515,7 +517,7 @@ let prepareTextPageEndpoints = {
         doPostWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/unignoreWord",
+                url: "unignoreWord",
                 data: {engTextId: textDataJson.textId, spelling: spelling},
                 success: function (response) {
                     if (response.status == "ok") {
@@ -532,7 +534,7 @@ let prepareTextPageEndpoints = {
         doGetWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/engText/" + textId,
+                url: "engText/" + textId,
                 success: function (response) {
                     if (response.status == "ok") {
                         response.engText.ignoreListArr = response.engText.ignoreList.split(/\r?\n/);
@@ -546,11 +548,11 @@ let prepareTextPageEndpoints = {
             }
         );
     },
-    getAvailableWordGroups: function (textId, onDataRetrieved) {
+    getAvailableWordGroups: function (onDataRetrieved) {
         doGetWithMock(
             USE_MOCK_RESPONSE,
             {
-                url: "/engText/availableWordGroups/" + textId,
+                url: "engText/availableWordGroups/" + textDataJson.textId,
                 success: function (response) {
                     if (response.status == "ok") {
                         onDataRetrieved(response.availableWordGroups);
@@ -594,7 +596,7 @@ function createWordForSentence(textDataJson, wordSpelling) {
         return word.wordInText == wordSpelling;
     }) != undefined;
     var isIgnored = false;
-    if (textDataJson.learnMode == ONLY_WORDS_TO_LEARN) {
+    if (textDataJson.learnGroup == ONLY_WORDS_TO_LEARN) {
         if (!isWordToLearn) {
             isIgnored = true;
         }
@@ -618,7 +620,7 @@ function mockTextDataJson(engTextId) {
         ],
         ignoreList: ignoreList,
         ignoreListArr: ignoreList.slice("\n"),
-        learnMode: "onlyWordsToLearn",
+        learnGroup: "onlyWordsToLearn",
         sentencesRow: [
             ["So", " ", "far", ",", " ", "Hulu", " ", "has", " ", "been", " ", "the", " ", "only", "."],
             ["Its", " ", "6.2-inch", " ", "720p", " ", "screen", " ", "is", " ", "very", " ", "capable", " ", "for", " ", "both", "."]

@@ -7,8 +7,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.NodeDao;
+import org.igye.outline.data.WordsDao;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.export.Exporter;
+import org.igye.outline.htmlforms.ChangeAttrValueRequest;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
@@ -38,15 +40,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.igye.outline.common.OutlineUtils.NOTHING;
+import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.getIconsInfo;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.map;
@@ -76,6 +77,8 @@ public class NodeController {
     @Autowired
     private NodeDao nodeDao;
     @Autowired
+    private WordsDao wordsDao;
+    @Autowired
     private Exporter exporter;
 
     private ObjectMapper mapper = new ObjectMapper();
@@ -104,7 +107,7 @@ public class NodeController {
         }
         model.addAttribute("paragraph", paragraph);
         model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
-        addPath(model, (Paragraph) paragraph.getParentNode());
+        commonModelMethods.addPath(model, (Paragraph) paragraph.getParentNode());
 
         if (isLeftmostSibling.orElse(false)) {
             model.addAttribute("isLeftmostSibling", true);
@@ -135,7 +138,9 @@ public class NodeController {
                 node ->
                         (node instanceof Topic)
                                 ? ((Topic)node).getIcon() != null
-                                : ((Paragraph)node).getIcon() != null);
+                                : (node instanceof Paragraph)
+                                  ? ((Paragraph)node).getIcon() != null : false
+        );
     }
 
     @GetMapping(EDIT_PARAGRAPH)
@@ -150,7 +155,7 @@ public class NodeController {
             form.setIconId(paragraph.getIcon() != null ? paragraph.getIcon().getId() : null);
             form.setSol(paragraph.isSol());
         }
-        prepareModelForEditParagraph(model, form);
+        commonModelMethods.prepareModelForEditNode(model, form);
         return prefix(EDIT_PARAGRAPH);
     }
 
@@ -158,7 +163,7 @@ public class NodeController {
     public String editParagraphPost(Model model, EditParagraphForm form,
                                     HttpServletResponse response) throws IOException {
         if (StringUtils.isBlank(form.getName())) {
-            prepareModelForEditParagraph(model, form);
+            commonModelMethods.prepareModelForEditNode(model, form);
             return redirect(prefix(EDIT_PARAGRAPH));
         } else {
             UUID idToRedirectTo;
@@ -188,7 +193,7 @@ public class NodeController {
         if (isRightmostSibling.orElse(false)) {
             model.addAttribute("isRightmostSibling", true);
         }
-        addPath(model, (Paragraph) topic.getParentNode());
+        commonModelMethods.addPath(model, (Paragraph) topic.getParentNode());
         showContent.ifPresent(b -> model.addAttribute("showContent", b));
         model.addAttribute(
                 "hasWhatToPaste",
@@ -219,7 +224,7 @@ public class NodeController {
         EditTopicForm form = new EditTopicForm();
         parentId.ifPresent(parId -> {
             form.setParentId(parId);
-            addPath(model, nodeDao.getParagraphById(parId));
+            commonModelMethods.addPath(model, nodeDao.getParagraphById(parId));
         });
         if (id.isPresent()) {
             Topic topic = nodeDao.getTopicById(id.get());
@@ -241,7 +246,7 @@ public class NodeController {
                     }
             ));
             if (topic.getParentNode() != null) {
-                addPath(model, (Paragraph) topic.getParentNode());
+                commonModelMethods.addPath(model, (Paragraph) topic.getParentNode());
             }
         }
         commonModelMethods.initModel(model);
@@ -341,6 +346,15 @@ public class NodeController {
         return prefix(NOTHING);
     }
 
+    @PostMapping("changeAttrValue")
+    @ResponseBody
+    public Map<String, Object> changeAttrValue(@RequestBody ChangeAttrValueRequest request) {
+        if (request.getAttrName().startsWith("eng-text-")) {
+            return createResponse("value", wordsDao.changeAttr(request));
+        }
+        throw new OutlineException("Unrecognized ChangeAttrValueRequest.attrName: " + request.getAttrName());
+    }
+
     private String getNode(Optional<UUID> id, Supplier<Optional<?>> getter,
                            Consumer<UriComponentsBuilder> onPresent,
                            Consumer<UriComponentsBuilder> onAbsent) {
@@ -384,35 +398,8 @@ public class NodeController {
                 ;
     }
 
-    private void prepareModelForEditParagraph(Model model, EditParagraphForm form) {
-        commonModelMethods.initModel(model);
-        if (form.getParentId() != null) {
-            addPath(model, nodeDao.getParagraphById(form.getParentId()));
-        } else {
-            addPath(model, null);
-        }
-        model.addAttribute("form", form);
-    }
-
     private String prefix(String url) {
         return OutlineUtils.prefix(PREFIX, url);
-    }
-
-    private void addPath(Model model, Paragraph paragraph) {
-        List<Paragraph> path = buildPath(paragraph);
-        Collections.reverse(path);
-        model.addAttribute("path", path);
-    }
-
-    private List<Paragraph> buildPath(Paragraph paragraph) {
-        if (paragraph == null) {
-            return new ArrayList<>();
-        } else {
-            List<Paragraph> res = new ArrayList<>();
-            res.add(paragraph);
-            res.addAll(buildPath((Paragraph) paragraph.getParentNode()));
-            return res;
-        }
     }
 
     private byte[] getImgFileById(UUID id) {

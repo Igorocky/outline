@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Table;
 import java.util.UUID;
 
 import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
@@ -23,22 +23,28 @@ import static org.igye.outline.common.OutlineUtils.UUID_CHAR;
 @AllArgsConstructor
 @Builder
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Node {
+@Table(name = "WORD")
+public class Word {
     @Id
     @Type(type = UUID_CHAR)
     private UUID id = UUID.randomUUID();
 
     @ManyToOne
+    @JoinColumn(name = "OWNER_ID")
     private User owner;
 
-    @NotNull
-    private String name;
-
     @ManyToOne
-    private Node parentNode;
+    @JoinColumn(name = "ENG_TEXT_ID")
+    private EngText engText;
 
-    public boolean getHasParent() {
-        return getParentNode() != null;
-    }
+    @Column(name = "LEARN_GROUP")
+    private String group;
+    @Column(name = "WORD_IN_TEXT")
+    private String wordInText;
+    @Column(name = "WORD")
+    private String word;
+    @Column(name = "TRANSCRIPTION")
+    private String transcription;
+    @Column(name = "MEANING")
+    private String meaning;
 }

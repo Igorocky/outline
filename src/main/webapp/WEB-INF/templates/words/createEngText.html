@@ -1,0 +1,37 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../css/jquery-ui-1.12.1.min.css">
+
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions" src="../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: icon-selector" src="../../js/icon-selector.js"></script>
+
+    <script type="text/javascript">
+        focusOnLoad('#name');
+    </script>
+</head>
+<body>
+<div th:replace="path :: path"/>
+<form th:action="createEngText" th:object="${form}" method="post">
+    <input type="hidden" th:field="*{parentId}"/>
+    <input type="hidden" th:field="*{id}"/>
+    <table>
+        <tr>
+            <td>Name</td>
+            <td><input id="name" type="text" th:field="*{name}"/></td>
+        </tr>
+        <tr>
+            <td><a th:href="@{paragraph(id=${form.idToRedirectToIfCancelled})}">Cancel</a></td>
+            <td><input type="submit" th:value="Create" value="Save"/></td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>
