@@ -13,15 +13,15 @@ import static org.junit.Assert.assertEquals;
 
 public class TextProcessingTest {
     @Test
-    public void test1() throws IOException {
+    public void splitOnSentences_should_work_correctly() throws IOException {
         //given
         String text = IOUtils.resourceToString("/text-parsing/text-to-parse-1.txt", StandardCharsets.UTF_8);
 
         //when
         List<List<TextToken>> res = TextProcessing.splitOnSentences(
                 text,
-                listF("word3", "phrase to learn"),
-                listF("ignored")
+                listF("word3", "phrase to learn", ""),
+                listF("ignored", "")
         );
 
         //then

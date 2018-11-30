@@ -1,8 +1,12 @@
 package org.igye.outline.common;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.igye.outline.common.OutlineUtils.listF;
 
 public class TextProcessing {
     /*
@@ -14,10 +18,14 @@ public class TextProcessing {
     private static final String BORDER_SYMBOL = "[\\.?!\\u2026\\s\\r\\n,:;\"\\(\\)\\[\\]\\\\/\\*\\u201E\\u201D]";
     private static final String SENTENCE_PARTS_DELIMITER = "((?<=" + BORDER_SYMBOL + ")(?!" + BORDER_SYMBOL + "))|((?<!" + BORDER_SYMBOL + ")(?=" + BORDER_SYMBOL + "))";
     private static final Pattern HIDABLE_PATTERN = Pattern.compile("^[\\(\\)-.,\\s–\":\\[\\]\\\\/;!?\\u2014\\u2026\\u201E\\u201D]+$");
-    private static final List<String> SENTENCE_ENDS = OutlineUtils.listF(".", "!", "?", "…");
-    private static final List<String> R_N = OutlineUtils.listF("\r", "\n");
+    private static final List<String> SENTENCE_ENDS = listF(".", "!", "?", "…");
+    private static final List<String> R_N = listF("\r", "\n");
 
-    public static List<List<TextToken>> splitOnSentences(String text, List<String> wordsToLearn, List<String> ignoreList) {
+    public static List<List<TextToken>> splitOnSentences(String text,
+                                                         List<String> wordsToLearnRow,
+                                                         List<String> ignoreListRow) {
+        List<String> wordsToLearn = OutlineUtils.filter(wordsToLearnRow, StringUtils::isNoneEmpty);
+        List<String> ignoreList = OutlineUtils.filter(ignoreListRow, StringUtils::isNoneEmpty);
         List<TextToken> tokens = tokenize(extractWordsToLearn(extractUnsplittable(text), wordsToLearn));
         tokens = splitByLongestSequence(tokens, R_N);
         tokens = splitByLongestSequence(tokens, SENTENCE_ENDS);
@@ -56,7 +64,7 @@ public class TextProcessing {
                 }
                 res.add(TextToken.builder().value(val.substring(s,e)).build());
                 if (e < val.length()) {
-                    res.add(TextToken.builder().value(val.substring(e)).build());
+                    res.addAll(splitByLongestSequence(listF(TextToken.builder().value(val.substring(e)).build()), substrings));
                 }
             } else {
                 res.add(token);
@@ -86,14 +94,14 @@ public class TextProcessing {
         }
     }
 
-    public static List<Object> extractWordsToLearn(List<Object> res, List<String> wordsToLearn) {
+    private static List<Object> extractWordsToLearn(List<Object> res, List<String> wordsToLearn) {
         for (String wordToLearn : wordsToLearn) {
             res = extractWordToLearn(res, wordToLearn);
         }
         return res;
     }
 
-    public static List<Object> extractUnsplittable(String text) {
+    private static List<Object> extractUnsplittable(String text) {
         List<Object> res = new LinkedList<>();
         String tail = text;
         int idxS = tail.indexOf("[[");

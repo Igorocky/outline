@@ -1,7 +1,7 @@
 package org.igye.outline.data;
 
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline.common.OutlineUtils;
+import org.igye.outline.common.TextProcessing;
 import org.igye.outline.data.repository.EngTextRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
 import org.igye.outline.data.repository.WordRepository;
@@ -24,10 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.igye.outline.common.OutlineUtils.map;
 
 @Component
 public class WordsDao {
@@ -59,17 +62,19 @@ public class WordsDao {
 
     @Transactional
     public EngTextDto getEngTextDtoById(UUID id) {
-        EngText text = engTextRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
-        if (text == null) {
-            throw new OutlineException("Text with id " + id + " was not found.");
-        }
+        EngText text = getEngTextById(id);
         return EngTextDto.builder()
                 .textId(text.getId())
                 .title(text.getName())
                 .text(text.getText())
+                .sentences(TextProcessing.splitOnSentences(
+                        text.getText(),
+                        map(text.getWords(), Word::getWordInText),
+                        new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")))
+                ))
                 .ignoreList(text.getIgnoreList())
                 .learnGroup(text.getLearnGroup())
-                .wordsToLearn(OutlineUtils.map(text.getWords(), this::mapWord))
+                .wordsToLearn(map(text.getWords(), this::mapWord))
                 .build();
     }
 
