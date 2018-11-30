@@ -1,6 +1,8 @@
 package org.igye.outline.common;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.igye.outline.config.UserDetailsImpl;
@@ -226,4 +228,11 @@ public class OutlineUtils {
         );
     }
 
+    public static <E> List<E> listF(E... elems) {
+        return ImmutableList.copyOf(elems);
+    }
+
+    public static <E> Set<E> setF(E... elems) {
+        return ImmutableSet.copyOf(elems);
+    }
 }
