@@ -21,6 +21,7 @@ public class TextProcessingTest {
         List<List<TextToken>> res = TextProcessing.splitOnSentences(
                 text,
                 listF("word3", "phrase to learn", ""),
+                listF("word3", ""),
                 listF("ignored", "")
         );
 
@@ -38,7 +39,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1word2").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("!").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("    ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1Word").word(true).build(), flattened.get(i++));

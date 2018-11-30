@@ -23,9 +23,11 @@ public class TextProcessing {
 
     public static List<List<TextToken>> splitOnSentences(String text,
                                                          List<String> wordsToLearnRow,
+                                                         List<String> currentGroupRow,
                                                          List<String> ignoreListRow) {
-        List<String> wordsToLearn = OutlineUtils.filter(wordsToLearnRow, StringUtils::isNoneEmpty);
-        List<String> ignoreList = OutlineUtils.filter(ignoreListRow, StringUtils::isNoneEmpty);
+        List<String> wordsToLearn = getNonEmpty(wordsToLearnRow);
+        List<String> currentGroup = getNonEmpty(currentGroupRow);
+        List<String> ignoreList = getNonEmpty(ignoreListRow);
         List<TextToken> tokens = tokenize(extractWordsToLearn(extractUnsplittable(text), wordsToLearn));
         tokens = splitByLongestSequence(tokens, R_N);
         tokens = splitByLongestSequence(tokens, SENTENCE_ENDS);
@@ -33,7 +35,7 @@ public class TextProcessing {
         List<List<TextToken>> res = new LinkedList<>();
         List<TextToken> sentence = new LinkedList<>();
         for (TextToken token : tokens) {
-            enhanceWithAttributes(token, ignoreList, wordsToLearn);
+            enhanceWithAttributes(token, ignoreList, wordsToLearn, currentGroup);
             sentence.add(token);
             if (containsOneOf(token.getValue(), SENTENCE_ENDS)) {
                 res.add(sentence);
@@ -44,6 +46,10 @@ public class TextProcessing {
             res.add(sentence);
         }
         return res;
+    }
+
+    private static List<String> getNonEmpty(List<String> strList) {
+        return OutlineUtils.filter(strList, StringUtils::isNoneEmpty);
     }
 
     private static List<TextToken> splitByLongestSequence(List<TextToken> tokens, List<String> substrings) {
@@ -82,14 +88,20 @@ public class TextProcessing {
         return false;
     }
 
-    private static void enhanceWithAttributes(TextToken token, List<String> ignoreList, List<String> wordsToLearn) {
-        if (wordsToLearn.contains(token.getValue())) {
+    private static void enhanceWithAttributes(TextToken token,
+                                              List<String> ignoreList,
+                                              List<String> wordsToLearn, List<String> currentGroup) {
+        String val = token.getValue();
+        if (wordsToLearn.contains(val)) {
             token.setWordToLearn(true);
         }
-        if (!(ignoreList.contains(token.getValue()) || HIDABLE_PATTERN.matcher(token.getValue()).matches())) {
+        if (currentGroup.contains(val)) {
+            token.setSelectedGroup(true);
+        }
+        if (!(ignoreList.contains(val) || HIDABLE_PATTERN.matcher(val).matches())) {
             token.setWord(true);
         }
-        if ("\r".equals(token.getValue()) || "\n".equals(token.getValue()) || "\r\n".equals(token.getValue())) {
+        if (containsOneOf(val, R_N)) {
             token.setMeta(true);
         }
     }

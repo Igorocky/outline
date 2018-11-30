@@ -29,12 +29,23 @@
     border: 1px solid lightgrey;
 }
 
-.word-to-learn {
-    font-weight: bold;
-}
-
 .word-ignored {
     color: lightslategray;
+    /*border: 1px solid lightgrey;*/
+}
+
+.word-general {
+    /*border: 1px solid lightgrey;*/
+}
+
+.word-to-learn {
+    font-weight: bold;
+    /*border: 1px solid lightgrey;*/
+}
+
+.word-selected-group {
+    font-weight: bold;
+    /*border: 1px solid lightgrey;*/
 }
 
 .select-editable {

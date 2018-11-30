@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.map;
 
 @Component
@@ -70,6 +71,13 @@ public class WordsDao {
                 .sentences(TextProcessing.splitOnSentences(
                         text.getText(),
                         map(text.getWords(), Word::getWordInText),
+                        map(
+                                filter(
+                                        text.getWords(),
+                                        w -> w.getGroup() != null && w.getGroup().equals(text.getLearnGroup())
+                                ),
+                                Word::getWordInText
+                        ),
                         new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")))
                 ))
                 .ignoreList(text.getIgnoreList())

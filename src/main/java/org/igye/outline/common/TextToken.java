@@ -22,6 +22,7 @@ public class TextToken {
 
     private boolean word;
     private boolean wordToLearn;
+    private boolean selectedGroup;
     private boolean meta;
     private boolean hidden;
 }

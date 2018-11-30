@@ -3,9 +3,10 @@ let ONLY_WORDS_TO_LEARN = "onlyWordsToLearn";
 let TEXT_TITLE = "text-title";
 let MAIN_TEXT_AREA = "main-text-area";
 let WORDS_TO_LEARN_TABLE = "words-to-learn-table";
-let SENTENCES_TABLE = "sentences-table";
-let WORD_TO_LEARN = "word-to-learn";
 let WORD_IGNORED = "word-ignored";
+let WORD_GENERAL = "word-general";
+let WORD_TO_LEARN = "word-to-learn";
+let WORD_SELECTED_GROUP = "word-selected-group";
 let IGNORE_LIST_TEXT_AREA = "ignore-list-text-area";
 let LEARN_MODE_SELECT = "learn-mode-select";
 
@@ -14,7 +15,6 @@ function initPage() {
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
     initlearnGroupSelect(textDataJson);
-    // initSentencesTable(textDataJson);
     initIgnoreListTextArea(textDataJson);
 }
 
@@ -26,20 +26,50 @@ function initTextTitle(textDataJson) {
 }
 
 function initMainTextArea(textDataJson) {
-    editableTextAreaReadMode(MAIN_TEXT_AREA, textDataJson.text, function (newValue, respHandler) {
-        console.log("newValue = '" + newValue + "'");
-        prepareTextPageEndpoints.changeText(newValue, respHandler);
-    })
+    editableTextAreaReadMode(
+        MAIN_TEXT_AREA,
+        textDataJson,
+        function (textDataJson) {
+            return createSentencesTable(textDataJson);
+        },
+        function (textDataJson) {
+            return textDataJson.text;
+        },
+        function (newValue, respHandler) {
+            console.log("newValue = '" + newValue + "'");
+            prepareTextPageEndpoints.changeText(newValue, respHandler);
+        }
+    )
+}
+
+function strToDivs(str) {
+    return _.reduce(
+        str.split("\n"),
+        function(memo, line){
+            return memo.append($("<div/>", {text: line}));
+        },
+        $("<div/>")
+    );
 }
 
 function initIgnoreListTextArea(textDataJson) {
-    editableTextAreaReadMode(IGNORE_LIST_TEXT_AREA, textDataJson.ignoreList, function (newValue, respHandler) {
-        console.log("newValue = '" + newValue + "'");
-        prepareTextPageEndpoints.changeIgnoreList(newValue, function (response) {
-            respHandler(response);
-            ignoreListChangeHandler();
-        });
-    })
+    editableTextAreaReadMode(
+        IGNORE_LIST_TEXT_AREA,
+        textDataJson.ignoreList,
+        function (ignoreList) {
+            return strToDivs(ignoreList);
+        },
+        function (ignoreList) {
+            return ignoreList;
+        },
+        function (newValue, respHandler) {
+            console.log("newValue = '" + newValue + "'");
+            prepareTextPageEndpoints.changeIgnoreList(newValue, function (response) {
+                respHandler(response);
+                reloadEngText();
+            });
+        }
+    )
 }
 
 function initWordsToLearnTable(textDataJson) {
@@ -51,15 +81,25 @@ function initWordsToLearnTable(textDataJson) {
     )
 }
 
-function createWordForSentenceSpan(textDataJson, wordOfSentence) {
-    var wordClass = "";
-    if (wordOfSentence.isWordToLearn) {
-        wordClass += " " + WORD_TO_LEARN;
+function createWordForSentenceSpan(wordOfSentence) {
+    if (wordOfSentence.meta) {
+        return $("<span/>");
+    } else {
+        var wordClass;
+        if (!wordOfSentence.word) {
+            wordClass = WORD_IGNORED;
+        } else {
+            wordClass = WORD_GENERAL;
+        }
+        if (wordOfSentence.wordToLearn) {
+            wordClass = WORD_TO_LEARN;
+        }
+        if (wordOfSentence.selectedGroup) {
+            wordClass = WORD_SELECTED_GROUP;
+        }
+
+        return $("<span/>", {'class': wordClass, text: wordOfSentence.value});
     }
-    if (wordOfSentence.isIgnored) {
-        wordClass += " " + WORD_IGNORED;
-    }
-    return $("<span/>", {'class': wordClass, text: wordOfSentence.word});
 }
 
 function initlearnGroupSelect(textDataJson) {
@@ -74,15 +114,14 @@ function initlearnGroupSelect(textDataJson) {
             let newSelectValue = $( "#" + LEARN_MODE_SELECT + " option:selected" ).val();
             console.log("newSelectValue = '" + JSON.stringify(newSelectValue) + "'");
             prepareTextPageEndpoints.changelearnGroup(newSelectValue, function () {
-                ignoreListChangeHandler();
+                reloadEngText();
             });
         })
     )
 }
 
-function initSentencesTable(textDataJson) {
-    let $sentencesTable = $("#" + SENTENCES_TABLE);
-    $sentencesTable.html("");
+function createSentencesTable(textDataJson) {
+    let $sentencesTable = $("<table/>", {"class": "outline-bordered-table"});
     _.each(
         textDataJson.sentences,
         function (sentence) {
@@ -91,62 +130,15 @@ function initSentencesTable(textDataJson) {
                     _.reduce(
                         sentence,
                         function(memo, wordOfSentence){
-                            return memo.append(createWordForSentenceSpan(textDataJson, wordOfSentence));
+                            return memo.append(createWordForSentenceSpan(wordOfSentence));
                         },
                         $("<td/>")
                     )
                 )
             );
         }
-    )
-}
-
-function appendWordToIgnore(ignoreWord) {
-    $("#" + IGNORE_LISTS_TABLE + " tr:nth-last-child(1)").after(
-        $("<tr/>", {id: "word-" + word.id}).html(
-            $("<td/>").html(
-                $("<button/>", {text: "Delete"}).click(function () {
-                    removeWord(word);
-                })
-            )
-        ).append(
-            $("<td/>", {id: "word-wordInText-" + word.id})
-        ).append(
-            $("<td/>", {id: "word-word-" + word.id})
-        ).append(
-            $("<td/>", {id: "word-transcription-" + word.id})
-        ).append(
-            $("<td/>", {id: "word-meaning-" + word.id})
-        )
     );
-    editableTextFieldReadMode(
-        "word-wordInText-" + word.id,
-        word.wordInText,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordInText(word.id, newText, respHandler)
-        }
-    );
-    editableTextFieldReadMode(
-        "word-word-" + word.id,
-        word.word,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordSpelling(word.id, newText, respHandler)
-        }
-    );
-    editableTextFieldReadMode(
-        "word-transcription-" + word.id,
-        word.transcription,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordTranscription(word.id, newText, respHandler)
-        }
-    );
-    editableTextAreaReadMode(
-        "word-meaning-" + word.id,
-        word.meaning,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordMeaning(word.id, newText, respHandler)
-        }
-    );
+    return $sentencesTable;
 }
 
 function appendWordToLearn(word) {
@@ -155,6 +147,7 @@ function appendWordToLearn(word) {
             $("<td/>").html(
                 $("<button/>", {text: "Delete"}).click(function () {
                     removeWord(word);
+                    reloadEngText();
                 })
             )
         ).append(
@@ -183,7 +176,10 @@ function appendWordToLearn(word) {
         "word-wordInText-" + word.id,
         word.wordInText,
         function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordInText(word.id, newText, respHandler)
+            prepareTextPageEndpoints.changeWordInText(word.id, newText, function (resp) {
+                respHandler(resp);
+                reloadEngText();
+            });
         }
     );
     editableTextFieldReadMode(
@@ -203,6 +199,12 @@ function appendWordToLearn(word) {
     editableTextAreaReadMode(
         "word-meaning-" + word.id,
         word.meaning,
+        function (meaning) {
+            return strToDivs(meaning);
+        },
+        function (meaning) {
+            return meaning;
+        },
         function (newText, respHandler) {
             prepareTextPageEndpoints.changeWordMeaning(word.id, newText, respHandler)
         }
@@ -319,33 +321,27 @@ function editableSelectWriteMode(contId, value, onEditDone, loadOptions) {
     })
 }
 
-function editableTextAreaReadMode(contId, value, onEditDone) {
+function editableTextAreaReadMode(contId, value, valueView, valueEdit, onEditDone) {
     $cont = $("#" + contId);
     $cont.html(
         $("<button/>", {text: "Edit"}).click(function () {
-            editableTextAreaWriteMode(contId, value, onEditDone);
+            editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDone);
         })
     );
     if (value) {
-        _.reduce(
-            value.split("\n"),
-            function(memo, line){
-                return memo.append($("<div/>", {text: line}));
-            },
-            $cont
-        )
+        $cont.append(valueView(value))
     }
 }
 
-function editableTextAreaWriteMode(contId, value, onEditDone) {
+function editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDone) {
     onSave = function () {
         onEditDone(
             $("#" + contId + " textarea").val(),
             function (resp) {
                 if (resp.status == "ok") {
-                    editableTextAreaReadMode(contId, resp.value, onEditDone);
+                    editableTextAreaReadMode(contId, resp.value, valueView, valueEdit, onEditDone);
                 } else {
-                    editableTextAreaWriteMode(contId, resp.value, onEditDone);
+                    editableTextAreaWriteMode(contId, resp.value, valueView, valueEdit, onEditDone);
                 }
             }
         );
@@ -357,10 +353,10 @@ function editableTextAreaWriteMode(contId, value, onEditDone) {
         })
     ).append(
         $("<button/>", {text: "Cancel"}).click(function () {
-            editableTextAreaReadMode(contId, value, onEditDone);
+            editableTextAreaReadMode(contId, value, valueView, valueEdit, onEditDone);
         })
     ).append(
-        $("<textarea/>", {cols:"80", rows:"10", text: value})
+        $("<textarea/>", {cols:"80", rows:"10", text: valueEdit(value)})
     );
     $("#" + contId + " textarea").focus();
 }
@@ -374,18 +370,18 @@ function saveSelectedWord() {
     prepareTextPageEndpoints.createNewWord(window.getSelection().toString());
 }
 
-function ignoreListChangeHandler() {
-    prepareTextPageEndpoints.getEngText(textDataJson.textId, function (data) {
-        console.log("IgnoreListChange.");
-        initlearnGroupSelect(textDataJson);
-        // initSentencesTable(textDataJson);
+function reloadEngText() {
+    getEngText(textDataJson.textId, function (data) {
+        console.log("reloadEngText.");
+        initMainTextArea(textDataJson);
+        // initlearnGroupSelect(textDataJson);
         initIgnoreListTextArea(textDataJson);
     })
 }
 
 function createIgnoreListChangeHandler() {
     return function () {
-        ignoreListChangeHandler();
+        reloadEngText();
     }
 }
 
@@ -430,7 +426,23 @@ let prepareTextPageEndpoints = {
         changeAttrValueEndpoint(textDataJson.textId, "eng-text-title", newText, respHandler);
     },
     changeText: function (newText, respHandler) {
-        changeAttrValueEndpoint(textDataJson.textId, "eng-text-text", newText, respHandler);
+        doPostWithMock(
+            USE_MOCK_RESPONSE,
+            {
+                url: "/changeAttrValue",
+                data: {objId: textDataJson.textId, attrName: "eng-text-text", value: newText},
+                success: function (response) {
+                    if (response.status == "ok") {
+                        getEngText(textDataJson.textId, function (textDataJson) {
+                            respHandler({status: "ok", value: textDataJson})
+                        })
+                    }
+                }
+            },
+            function (params) {
+
+            }
+        );
     },
     changeIgnoreList: function (newText, respHandler) {
         changeAttrValueEndpoint(textDataJson.textId, "eng-text-ignore-list", newText, respHandler);
@@ -470,6 +482,7 @@ let prepareTextPageEndpoints = {
                 success: function (response) {
                     if (response.status == "ok") {
                         appendWordToLearn(response.word);
+                        reloadEngText();
                     }
                 }
             },
@@ -487,6 +500,7 @@ let prepareTextPageEndpoints = {
                 success: function (response) {
                     if (response.status == "ok") {
                         $("#" + "word-" + word.id).remove();
+                        reloadEngText();
                     }
                 }
             },
@@ -530,24 +544,6 @@ let prepareTextPageEndpoints = {
             }
         );
     },
-    getEngText: function (textId, onDataRetrieved) {
-        doGetWithMock(
-            USE_MOCK_RESPONSE,
-            {
-                url: "engText/" + textId,
-                success: function (response) {
-                    if (response.status == "ok") {
-                        response.engText.ignoreListArr = response.engText.ignoreList.split(/\r?\n/);
-                        textDataJson = response.engText;
-                        onDataRetrieved(response.engText);
-                    }
-                }
-            },
-            function (url) {
-                return mockTextDataJson(_.last(url.slice("/")));
-            }
-        );
-    },
     getAvailableWordGroups: function (onDataRetrieved) {
         doGetWithMock(
             USE_MOCK_RESPONSE,
@@ -568,6 +564,25 @@ let prepareTextPageEndpoints = {
         );
     }
 };
+
+function getEngText(textId, onDataRetrieved) {
+    doGetWithMock(
+        USE_MOCK_RESPONSE,
+        {
+            url: "engText/" + textId,
+            success: function (response) {
+                if (response.status == "ok") {
+                    response.engText.ignoreListArr = response.engText.ignoreList.split(/\r?\n/);
+                    textDataJson = response.engText;
+                    onDataRetrieved(response.engText);
+                }
+            }
+        },
+        function (url) {
+            return mockTextDataJson(_.last(url.slice("/")));
+        }
+    );
+}
 
 function changeAttrValueEndpoint(objId, attrName, newValue, respHandler) {
     doPostWithMock(
