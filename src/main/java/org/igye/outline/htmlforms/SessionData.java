@@ -10,10 +10,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @NoArgsConstructor
 public class SessionData {
-    @Getter
-    @Setter
+    @Getter @Setter
     private Selection selection;
     private User user;
+    @Getter @Setter
+    private LearnTextData learnTextData;
 
     public User getCurrentUser() {
         if (user == null) {

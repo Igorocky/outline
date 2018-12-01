@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -224,18 +225,18 @@ public class OutlineUtils {
     }
 
     public static Map<String, Object> createResponse(String attrName1, Object value1, String attrName2, Object value2) {
-        return ImmutableMap.of(
-                "status", "ok",
-                attrName1, value1,
-                attrName2, value2
-        );
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", "ok");
+        resp.put(attrName1, value1);
+        resp.put(attrName2, value2);
+        return resp;
     }
 
     public static Map<String, Object> createResponse(String attrName, Object value) {
-        return ImmutableMap.of(
-                "status", "ok",
-                attrName, value
-        );
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", "ok");
+        resp.put(attrName, value);
+        return resp;
     }
 
     public static Map<String, Object> createVoidResponse() {

@@ -12,17 +12,19 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
 public class TextToken {
     private String value;
-    private String userInput;
-    private Boolean correct;
 
     private boolean word;
     private boolean wordToLearn;
     private boolean selectedGroup;
     private boolean meta;
+    private boolean hiddable;
+
     private boolean hidden;
+    private String userInput;
+    private Boolean correct;
 }

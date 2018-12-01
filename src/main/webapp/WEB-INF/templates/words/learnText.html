@@ -14,19 +14,22 @@
     <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../../js/underscore-min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../../js/jquery.multi-select.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../../js/functions.js"></script>
-    <script type="text/javascript" th:replace="common-scripts :: prepareText" src="../../../js/prepareText.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: learnText" src="../../../js/learnText.js"></script>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
         var engTextId = /*[[${engTextId}]]*/;
+        var sentenceNumber = /*[[${sentenceIdx}]]*/;
         /*]]>*/
-        // var engTextId = "197f721f-d5eb-4a37-8f16-8a818d25a6fd";
-        var textDataJson = undefined;
+        var pageState = {
+            engTextId: engTextId,
+            sentenceIdx: sentenceNumber,
+            sentence: undefined,
+            maxSentenceIdx: undefined
+        };
 
         $( function() {
-            getEngText(engTextId, function (data) {
-                initPage();
-            });
+            goToSentence(pageState.sentenceIdx);
         } );
     </script>
     <script type="text/javascript">
@@ -45,49 +48,9 @@
 <div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
 
-<h2 id="text-title"></h2>
+<h4><a th:href="@{/words/prepareText(id=${engTextId})}" th:text="${engTextTitle}"></a></h4>
 <hr/>
-<table>
-    <tr>
-        <td colspan="2">
-            <button onclick="translateSelection('https://www.lingvolive.com/ru-ru/translate/en-ru/')">Translate (Lingvo)</button>
-            <button onclick="translateSelection('https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text=')">Translate (Google)</button>
-            <button onclick="saveSelectedWord()">Save word</button>
-            <button onclick="ignoreSelectedWord()">Ignore</button>
-            <button onclick="unignoreSelectedWord()">Unignore</button>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <h4 id="main-text-area"></h4>
-        </td>
-        <td>
-            Learn groups:
-            <span id="learn-groups-select">
-            </span>
-        </td>
-    </tr>
-</table>
-<hr/>
-<div>
-    <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
-</div>
-<table id="words-to-learn-table" class="outline-bordered-table">
-    <tr>
-        <td></td>
-        <td><b>Group</b></td>
-        <td><b>Word in text</b></td>
-        <td><b>Normal form</b></td>
-        <td><b>Transcription</b></td>
-        <td><b>Meaning</b></td>
-    </tr>
-</table>
-<hr/>
-<table id="sentences-table" class="outline-bordered-table"></table>
-<hr/>
-Ignore list:
-<div id="ignore-list-text-area"></div>
-<hr/>
+<div id="sentence-to-learn-area"></div>
 
 <div id="dialog-confirm" hidden="hidden">
 </div>

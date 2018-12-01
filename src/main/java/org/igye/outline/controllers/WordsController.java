@@ -9,6 +9,7 @@ import org.igye.outline.htmlforms.CreateEngTextForm;
 import org.igye.outline.htmlforms.CreateWordRequest;
 import org.igye.outline.htmlforms.DeleteWordRequest;
 import org.igye.outline.htmlforms.IgnoreWordRequest;
+import org.igye.outline.model.EngText;
 import org.igye.outline.model.Paragraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,11 +36,12 @@ import static org.igye.outline.common.OutlineUtils.redirect;
 @Controller
 @RequestMapping(WordsController.PREFIX)
 public class WordsController {
-    protected static final String PREFIX = "words/";
+    protected static final String PREFIX = "words";
 
     private static final String CREATE_ENG_TEXT = "createEngText";
     private static final String ENG_TEXT = "engText";
     private static final String PREPARE_TEXT = "prepareText";
+    private static final String LEARN_TEXT = "learnText";
 
     @Autowired
     private CommonModelMethods commonModelMethods;
@@ -67,7 +69,7 @@ public class WordsController {
             idToRedirectTo = wordsDao.createEngText(form.getParentId(), form).getId();
             return OutlineUtils.redirect(
                     response,
-                    prefix(ENG_TEXT),
+                    prefix(PREPARE_TEXT),
                     ImmutableMap.of("id", idToRedirectTo)
             );
         }
@@ -131,6 +133,23 @@ public class WordsController {
     @ResponseBody
     public Map<String, Object> learnGroupsInfo(@PathVariable UUID id) {
         return wordsDao.getLearnGroupsInfo(id);
+    }
+
+    @GetMapping("engText/{textId}/sentenceForLearning/{sentenceIdx}")
+    @ResponseBody
+    public Map<String, Object> sentenceForLearning(@PathVariable UUID textId, @PathVariable int sentenceIdx) {
+        return wordsDao.getSentenceForLearning(textId, sentenceIdx);
+    }
+
+    @GetMapping("engText/{textId}/learn")
+    public String learnText(Model model, @PathVariable UUID textId) {
+        commonModelMethods.initModel(model);
+        EngText text = wordsDao.getEngTextById(textId);
+        commonModelMethods.addPath(model, (Paragraph) text.getParentNode());
+        model.addAttribute("engTextId", textId);
+        model.addAttribute("engTextTitle", text.getName());
+        model.addAttribute("sentenceIdx", 0);
+        return prefix(LEARN_TEXT);
     }
 
 

@@ -18,6 +18,7 @@ import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Content;
+import org.igye.outline.model.EngText;
 import org.igye.outline.model.Icon;
 import org.igye.outline.model.Image;
 import org.igye.outline.model.Node;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.igye.outline.common.OutlineUtils.mapToSet;
@@ -85,6 +87,15 @@ public class NodeDao {
     }
 
     @Transactional
+    public Paragraph getParagraphSummary(UUID id) {
+        Paragraph paragraph = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
+        if (paragraph == null) {
+            throw new OutlineException("Paragraph with id " + id + " was not found.");
+        }
+        return paragraph;
+    }
+
+    @Transactional
     public Paragraph createParagraph(UUID parentId, EditParagraphForm form) {
         User currUser = sessionData.getCurrentUser();
         Paragraph paragraph = new Paragraph();
@@ -92,12 +103,7 @@ public class NodeDao {
         paragraph.setIcon(iconRepository.findByOwnerAndId(currUser, form.getIconId()));
         paragraph.setSol(form.isSol());
         paragraph.setOwner(currUser);
-        Paragraph parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
-        if (parent != null) {
-            parent.addChildNode(paragraph);
-        } else {
-            paragraphRepository.save(paragraph);
-        }
+        saveNode(parentId, paragraph, node -> paragraphRepository.save((Paragraph) node));
         return paragraph;
     }
 
@@ -135,16 +141,8 @@ public class NodeDao {
     public UUID createTopic(EditTopicForm request) {
         Topic topic = new Topic();
         User currentUser = sessionData.getCurrentUser();
-        if (request.getParentId() != null) {
-            paragraphRepository.findByOwnerAndId(currentUser, request.getParentId()).addChildNode(
-                topic
-            );
-        } else {
-            topic.setOwner(
-                userRepository.findById(currentUser.getId()).get()
-            );
-            topic = topicRepository.save(topic);
-        }
+        topic.setOwner(currentUser);
+        saveNode(request.getParentId(), topic, node -> topicRepository.save((Topic) node));
         topic.setName(request.getName());
         topic.setIcon(iconRepository.findByOwnerAndId(currentUser, request.getIconId()));
         topic.setSol(request.isSol());
@@ -295,6 +293,20 @@ public class NodeDao {
     @Transactional
     public Optional<Paragraph> loadParent(UUID id) {
         return Optional.ofNullable((Paragraph) loadNodeById(id).getParentNode());
+    }
+
+    @Transactional
+    public void saveNode(UUID parentId, Node node, Consumer<Node> saver) {
+        if (parentId == null) {
+            saver.accept(node);
+        } else {
+            Paragraph parent = getParagraphSummary(parentId);
+            if (parent != null) {
+                parent.addChildNode(node);
+            } else {
+                saver.accept(node);
+            }
+        }
     }
 
     private <T> Optional<T> getSibling(UUID id,

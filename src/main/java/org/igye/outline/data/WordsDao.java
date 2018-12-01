@@ -1,6 +1,7 @@
 package org.igye.outline.data;
 
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.common.TextToken;
 import org.igye.outline.data.repository.EngTextRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
 import org.igye.outline.data.repository.WordRepository;
@@ -14,7 +15,6 @@ import org.igye.outline.htmlforms.IgnoreWordRequest;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.htmlforms.WordDto;
 import org.igye.outline.model.EngText;
-import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.User;
 import org.igye.outline.model.Word;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,13 +34,12 @@ import java.util.stream.Collectors;
 import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.TextProcessing.ALL_GROUPS;
+import static org.igye.outline.common.TextProcessing.ALL_WORDS;
 import static org.igye.outline.common.TextProcessing.splitOnSentences;
 
 @Component
 public class WordsDao {
-    public static final String IGNORE_LIST = "(\n)\n";
-    public static final String ALL_WORDS = "All Words";
-    public static final String ALL_GROUPS = "All Groups";
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -50,6 +48,8 @@ public class WordsDao {
     private EngTextRepository engTextRepository;
     @Autowired
     private WordRepository wordRepository;
+    @Autowired
+    private NodeDao nodeDao;
 
     @Transactional
     public EngText createEngText(UUID parentId, CreateEngTextForm form) {
@@ -57,13 +57,10 @@ public class WordsDao {
         EngText engText = new EngText();
         engText.setName(form.getName());
         engText.setOwner(currUser);
-        engText.setIgnoreList(IGNORE_LIST);
-        Paragraph parent = paragraphRepository.findByOwnerAndId(currUser, parentId);
-        if (parent != null) {
-            parent.addChildNode(engText);
-        } else {
-            engTextRepository.save(engText);
-        }
+        engText.setText("");
+        engText.setIgnoreList("");
+        engText.setLearnGroups("");
+        nodeDao.saveNode(parentId, engText, node -> engTextRepository.save((EngText) node));
         return engText;
     }
 
@@ -71,27 +68,11 @@ public class WordsDao {
     public EngTextDto getEngTextDtoById(UUID id) {
         EngText text = getEngTextById(id);
 
-        List<String> learnGroups = text.getListOfLearnGroups();
-        List<String> wordsToLearnRow = map(text.getWords(), Word::getWordInText);
-        map(
-                filter(text.getWords(), w -> learnGroups.contains(w.getGroup())),
-                Word::getWordInText
-        );
-        List<String> currentGroupRow;
-        if (learnGroups.contains(ALL_GROUPS)) {
-            currentGroupRow = wordsToLearnRow;
-        } else {
-            currentGroupRow = map(
-                    filter(text.getWords(), w -> learnGroups.contains(w.getGroup())),
-                    Word::getWordInText
-            );
-        }
-        LinkedList<String> ignoreListRow = new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")));
         EngTextDto res = EngTextDto.builder()
                 .textId(text.getId())
                 .title(text.getName())
                 .text(text.getText())
-                .sentences(splitOnSentences(text.getText(), wordsToLearnRow, currentGroupRow, ignoreListRow))
+                .sentences(splitOnSentences(text))
                 .ignoreList(text.getIgnoreList())
                 .wordsToLearn(map(text.getWords(), this::mapWord))
                 .build();
@@ -236,4 +217,45 @@ public class WordsDao {
                 "selected", selectedGroups
         );
     }
+
+    @Transactional
+    public Map<String, Object> getSentenceForLearning(UUID textId, int sentenceIdx) {
+        EngText text = getEngTextById(textId);
+        List<List<TextToken>> sentences = splitOnSentences(text);
+        if (sentenceIdx < 0 || sentences.size() <= sentenceIdx) {
+            Map<String, Object> resp = createSentenceResponse(sentences, null);
+            resp.put("maxSentenceIdx", sentences.size()-1);
+            return resp;
+        } else {
+            List<TextToken> sentence = sentences.get(sentenceIdx);
+            if (text.getListOfLearnGroups().contains(ALL_WORDS)) {
+                List<TextToken> hiddable = filter(sentence, TextToken::isHiddable);
+                sessionData.getLearnTextData()
+                        .getIndicesToHide(hiddable.size(), 20, sentence.hashCode()).forEach(idx ->
+                            hiddable.get(idx).setHidden(true)
+                        );
+            } else if (text.getListOfLearnGroups().contains(ALL_GROUPS)) {
+                sentence.forEach(t -> {
+                    if (t.isWordToLearn()) {
+                        t.setHidden(true);
+                    }
+                });
+            } else {
+                sentence.forEach(t -> {
+                    if (t.isSelectedGroup()) {
+                        t.setHidden(true);
+                    }
+                });
+            }
+            return createSentenceResponse(sentences, sentence);
+        }
+    }
+
+    private Map<String, Object> createSentenceResponse(List<List<TextToken>> sentences, List<TextToken> sentence) {
+        return createResponse(
+                "maxSentenceIdx", sentences.size() - 1,
+                "sentence", sentence
+        );
+    }
+
 }

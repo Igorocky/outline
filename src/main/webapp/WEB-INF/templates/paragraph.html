@@ -62,8 +62,8 @@
 <div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
 <div>
-    <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
     <a th:if="${paragraph.id != null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
+    <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
     <a th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
     <a th:href="@{words/createEngText(parentId=${paragraph.id})}" href="#">Create new text</a>&nbsp;
     <a th:if="${paragraph.id != null}" th:href="@{export(id=${paragraph.id})}" href="#">Export</a>&nbsp;
@@ -98,6 +98,7 @@
             </span>
             <span th:if="${childNode instanceof T(org.igye.outline.model.EngText)}">
                 <span th:replace="selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='ENG_TEXT')"></span>
+                <a th:href="@{words/engText/{id}/learn(id=${childNode.id})}" >&#8681;&nbsp;</a>
                 <a th:href="@{words/prepareText(id=${childNode.id})}" th:text="${childNode.name}"></a>
             </span>
         </li>

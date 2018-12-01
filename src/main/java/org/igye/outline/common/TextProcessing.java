@@ -1,12 +1,20 @@
 package org.igye.outline.common;
 
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline.model.EngText;
+import org.igye.outline.model.Word;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.listF;
+import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.OutlineUtils.mapToSet;
 
 public class TextProcessing {
     /*
@@ -20,14 +28,44 @@ public class TextProcessing {
     private static final Pattern HIDABLE_PATTERN = Pattern.compile("^[\\(\\)-.,\\s–\":\\[\\]\\\\/;!?\\u2014\\u2026\\u201E\\u201D]+$");
     private static final List<String> SENTENCE_ENDS = listF(".", "!", "?", "…");
     private static final List<String> R_N = listF("\r", "\n");
+    public static final String ALL_WORDS = "All Words";
+    public static final String ALL_GROUPS = "All Groups";
 
-    public static List<List<TextToken>> splitOnSentences(String text,
-                                                         List<String> wordsToLearnRow,
-                                                         List<String> currentGroupRow,
-                                                         List<String> ignoreListRow) {
-        List<String> wordsToLearn = getNonEmpty(wordsToLearnRow);
-        List<String> currentGroup = getNonEmpty(currentGroupRow);
-        List<String> ignoreList = getNonEmpty(ignoreListRow);
+    public static List<List<TextToken>> splitOnSentences(EngText engText) {
+        Set<String> learnGroups = new HashSet<>(engText.getListOfLearnGroups());
+        Set<String> wordsToLearnRow = mapToSet(engText.getWords(), Word::getWordInText);
+        map(
+                filter(engText.getWords(), w -> learnGroups.contains(w.getGroup())),
+                Word::getWordInText
+        );
+        Set<String> wordsFromCurrentGroupRow;
+        if (learnGroups.contains(ALL_GROUPS)) {
+            wordsFromCurrentGroupRow = wordsToLearnRow;
+        } else {
+            wordsFromCurrentGroupRow = mapToSet(
+                    filter(engText.getWords(), w -> learnGroups.contains(w.getGroup())),
+                    Word::getWordInText
+            );
+        }
+        Set<String> ignoreListRow = new HashSet<>(Arrays.asList(engText.getIgnoreList().split("[\r\n]+")));
+        return splitOnSentences(
+                engText.getText(),
+                wordsToLearnRow,
+                wordsFromCurrentGroupRow,
+                ignoreListRow,
+                learnGroups
+        );
+    }
+
+    protected static List<List<TextToken>> splitOnSentences(String text,
+                                                         Set<String> wordsToLearnRow,
+                                                         Set<String> wordsFromSelectedGroupsRow,
+                                                         Set<String> ignoreListRow,
+                                                         Set<String> selectedGroupsRow) {
+        Set<String> wordsToLearn = getNonEmpty(wordsToLearnRow);
+        Set<String> wordsFromSelectedGroups = getNonEmpty(wordsFromSelectedGroupsRow);
+        Set<String> ignoreList = getNonEmpty(ignoreListRow);
+        Set<String> selectedGroups = getNonEmpty(selectedGroupsRow);
         List<TextToken> tokens = tokenize(extractWordsToLearn(extractUnsplittable(text), wordsToLearn));
         tokens = splitByLongestSequence(tokens, R_N);
         tokens = splitByLongestSequence(tokens, SENTENCE_ENDS);
@@ -35,7 +73,7 @@ public class TextProcessing {
         List<List<TextToken>> res = new LinkedList<>();
         List<TextToken> sentence = new LinkedList<>();
         for (TextToken token : tokens) {
-            enhanceWithAttributes(token, ignoreList, wordsToLearn, currentGroup);
+            enhanceWithAttributes(token, ignoreList, wordsToLearn, wordsFromSelectedGroups, selectedGroups);
             sentence.add(token);
             if (containsOneOf(token.getValue(), SENTENCE_ENDS)) {
                 res.add(sentence);
@@ -48,7 +86,7 @@ public class TextProcessing {
         return res;
     }
 
-    private static List<String> getNonEmpty(List<String> strList) {
+    private static Set<String> getNonEmpty(Set<String> strList) {
         return OutlineUtils.filter(strList, StringUtils::isNoneEmpty);
     }
 
@@ -89,24 +127,31 @@ public class TextProcessing {
     }
 
     private static void enhanceWithAttributes(TextToken token,
-                                              List<String> ignoreList,
-                                              List<String> wordsToLearn, List<String> currentGroup) {
+                                              Set<String> ignoreList,
+                                              Set<String> wordsToLearn,
+                                              Set<String> wordsFromSelectedGroups,
+                                              Set<String> selectedGroups) {
         String val = token.getValue();
         if (wordsToLearn.contains(val)) {
+            token.setWord(true);
             token.setWordToLearn(true);
-        }
-        if (currentGroup.contains(val)) {
-            token.setSelectedGroup(true);
-        }
-        if (!(ignoreList.contains(val) || HIDABLE_PATTERN.matcher(val).matches())) {
+            if (wordsFromSelectedGroups.contains(val)) {
+                token.setSelectedGroup(true);
+            }
+        } else if (!(ignoreList.contains(val) || HIDABLE_PATTERN.matcher(val).matches())) {
             token.setWord(true);
         }
+
         if (containsOneOf(val, R_N)) {
             token.setMeta(true);
         }
+
+        token.setHiddable(
+                token.isWord() && (token.isSelectedGroup() || selectedGroups.contains(ALL_WORDS))
+        );
     }
 
-    private static List<Object> extractWordsToLearn(List<Object> res, List<String> wordsToLearn) {
+    private static List<Object> extractWordsToLearn(List<Object> res, Set<String> wordsToLearn) {
         for (String wordToLearn : wordsToLearn) {
             res = extractWordToLearn(res, wordToLearn);
         }

@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.igye.outline.common.OutlineUtils.listF;
+import static org.igye.outline.common.OutlineUtils.setF;
 import static org.junit.Assert.assertEquals;
 
 public class TextProcessingTest {
@@ -20,9 +20,10 @@ public class TextProcessingTest {
         //when
         List<List<TextToken>> res = TextProcessing.splitOnSentences(
                 text,
-                listF("word3", "phrase to learn", ""),
-                listF("word3", ""),
-                listF("ignored", "")
+                setF("word3", "phrase to learn", ""),
+                setF("word3", ""),
+                setF("ignored", ""),
+                setF("grp1")
         );
 
         //then
@@ -39,7 +40,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1word2").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).hiddable(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("!").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("    ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1Word").word(true).build(), flattened.get(i++));

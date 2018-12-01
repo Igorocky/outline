@@ -205,3 +205,25 @@ function confirmCancelDialog(dialogContainerId, question, confirmButtonName, onC
     });
     $( "#" + dialogContainerId ).dialog('open');
 }
+
+function infoDialog(dialogContainerId, text, confirmButtonName, onConfirm) {
+    $('#' + dialogContainerId).html(
+        $("<p/>").html(
+            $("<span/>", {'class':"ui-icon ui-icon-alert", style:"float:left; margin:12px 12px 20px 0;"})
+        ).append(
+            $("<span/>", {id: "dialog-text"})
+        )
+    );
+
+    $("#" + dialogContainerId + " #dialog-text" ).text(text);
+    let buttons = {};
+    buttons[confirmButtonName] = function() {
+        $( this ).dialog( "close" );
+        onConfirm();
+    }
+    $("#" + dialogContainerId).dialog({
+        title:text,
+        buttons: buttons
+    });
+    $( "#" + dialogContainerId ).dialog('open');
+}
