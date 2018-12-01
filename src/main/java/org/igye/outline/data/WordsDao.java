@@ -1,7 +1,6 @@
 package org.igye.outline.data;
 
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline.common.TextProcessing;
 import org.igye.outline.data.repository.EngTextRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
 import org.igye.outline.data.repository.WordRepository;
@@ -24,18 +23,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.TextProcessing.splitOnSentences;
 
 @Component
 public class WordsDao {
     public static final String IGNORE_LIST = "(\n)\n";
+    public static final String ALL_WORDS = "All Words";
+    public static final String ALL_GROUPS = "All Groups";
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -64,24 +69,29 @@ public class WordsDao {
     @Transactional
     public EngTextDto getEngTextDtoById(UUID id) {
         EngText text = getEngTextById(id);
+
+        List<String> learnGroups = text.getListOfLearnGroups();
+        List<String> wordsToLearnRow = map(text.getWords(), Word::getWordInText);
+        map(
+                filter(text.getWords(), w -> learnGroups.contains(w.getGroup())),
+                Word::getWordInText
+        );
+        List<String> currentGroupRow;
+        if (learnGroups.contains(ALL_GROUPS)) {
+            currentGroupRow = wordsToLearnRow;
+        } else {
+            currentGroupRow = map(
+                    filter(text.getWords(), w -> learnGroups.contains(w.getGroup())),
+                    Word::getWordInText
+            );
+        }
+        LinkedList<String> ignoreListRow = new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")));
         return EngTextDto.builder()
                 .textId(text.getId())
                 .title(text.getName())
                 .text(text.getText())
-                .sentences(TextProcessing.splitOnSentences(
-                        text.getText(),
-                        map(text.getWords(), Word::getWordInText),
-                        map(
-                                filter(
-                                        text.getWords(),
-                                        w -> w.getGroup() != null && w.getGroup().equals(text.getLearnGroup())
-                                ),
-                                Word::getWordInText
-                        ),
-                        new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")))
-                ))
+                .sentences(splitOnSentences(text.getText(), wordsToLearnRow, currentGroupRow, ignoreListRow))
                 .ignoreList(text.getIgnoreList())
-                .learnGroup(text.getLearnGroup())
                 .wordsToLearn(map(text.getWords(), this::mapWord))
                 .build();
     }
@@ -126,8 +136,8 @@ public class WordsDao {
         } else if ("eng-text-ignore-list".equals(request.getAttrName())) {
             getEngTextById(request.getObjId()).setIgnoreList((String) request.getValue());
             return request.getValue();
-        } else if ("eng-text-learn-group".equals(request.getAttrName())) {
-            getEngTextById(request.getObjId()).setLearnGroup((String) request.getValue());
+        } else if ("eng-text-learn-groups".equals(request.getAttrName())) {
+            getEngTextById(request.getObjId()).setLearnGroups((String) request.getValue());
             return request.getValue();
         } else if ("eng-text-word-group".equals(request.getAttrName())) {
             getWordById(request.getObjId()).setGroup((String) request.getValue());
@@ -188,11 +198,39 @@ public class WordsDao {
     }
 
     @Transactional
+    public void changeLearnGroups(UUID textId, List<String> learnGroups) {
+        EngText text = getEngTextById(textId);
+        text.setLearnGroups(StringUtils.join(learnGroups, '\n'));
+    }
+
+    @Transactional
     public Set<String> listAvailableWordGroups(UUID id) {
         EngText text = getEngTextById(id);
-        return text.getWords().stream()
+        Set<String> availableGroups = text.getWords().stream()
                 .map(Word::getGroup)
                 .filter(v -> v != null)
                 .collect(Collectors.toSet());
+        if (!availableGroups.contains(ALL_WORDS)) {
+            availableGroups.add(ALL_WORDS);
+        }
+        if (!availableGroups.contains(ALL_GROUPS)) {
+            availableGroups.add(ALL_GROUPS);
+        }
+        return availableGroups;
+    }
+
+    @Transactional
+    public Map<String, Object> getLearnGroupsInfo(UUID textId) {
+        EngText text = getEngTextById(textId);
+        Set<String> allAvailableGroups = listAvailableWordGroups(textId);
+        List<String> selectedGroups = text.getListOfLearnGroups();
+        Collections.sort(selectedGroups);
+        List<String> availableGroups = new ArrayList<>(allAvailableGroups);
+        availableGroups.removeAll(selectedGroups);
+        Collections.sort(availableGroups);
+        return createResponse(
+                "available", availableGroups,
+                "selected", selectedGroups
+        );
     }
 }

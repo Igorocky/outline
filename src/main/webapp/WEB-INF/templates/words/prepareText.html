@@ -6,11 +6,13 @@
 
     <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../../css/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../../css/jquery-ui-1.12.1.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../../css/multi-select.css">
     <link rel="stylesheet" th:replace="common-scripts :: css" href="../../../css/style.css">
 
     <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../../js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../../js/jquery-ui-1.12.1.min.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../../js/underscore-min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../../js/jquery.multi-select.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: functions" src="../../../js/functions.js"></script>
     <script type="text/javascript" th:replace="common-scripts :: prepareText" src="../../../js/prepareText.js"></script>
 
@@ -44,8 +46,11 @@
 <h2 id="text-title"></h2>
 <hr/>
 <div>
-    <button onclick="translateSelection()">Translate</button>
+    <button onclick="translateSelection('https://www.lingvolive.com/ru-ru/translate/en-ru/')">Translate (Lingvo)</button>
+    <button onclick="translateSelection('https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text=')">Translate (Google)</button>
     <button onclick="saveSelectedWord()">Save word</button>
+    <button onclick="ignoreSelectedWord()">Ignore</button>
+    <button onclick="unignoreSelectedWord()">Unignore</button>
 </div>
 <h4 id="main-text-area"></h4>
 <hr/>
@@ -64,16 +69,14 @@
 </table>
 <hr/>
 <div>
-    Learn mode:
-    <span id="learn-mode-select">
+    Learn groups:
+    <span id="learn-groups-select">
+
     </span>
 </div>
 <table id="sentences-table" class="outline-bordered-table"></table>
 <hr/>
-<div>
-    <button onclick="ignoreSelectedWord()">Ignore</button>
-    <button onclick="unignoreSelectedWord()">Unignore</button>
-</div>
+Ignore list:
 <div id="ignore-list-text-area"></div>
 <hr/>
 

@@ -8,13 +8,14 @@ let WORD_GENERAL = "word-general";
 let WORD_TO_LEARN = "word-to-learn";
 let WORD_SELECTED_GROUP = "word-selected-group";
 let IGNORE_LIST_TEXT_AREA = "ignore-list-text-area";
-let LEARN_MODE_SELECT = "learn-mode-select";
+let LEARN_GROUPS_SELECT = "learn-groups-select";
+let LEARN_GROUP_SELECTOR = "learn-group-selector";
 
 function initPage() {
     initTextTitle(textDataJson);
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
-    initlearnGroupSelect(textDataJson);
+    initLearnGroupsSelect();
     initIgnoreListTextArea(textDataJson);
 }
 
@@ -102,22 +103,44 @@ function createWordForSentenceSpan(wordOfSentence) {
     }
 }
 
-function initlearnGroupSelect(textDataJson) {
-    let onlyWordsToLearn = (textDataJson.learnGroup == ONLY_WORDS_TO_LEARN);
-    $("#" + LEARN_MODE_SELECT).html(
-        $("<select/>").html(
-            $("<option/>", {value: ONLY_WORDS_TO_LEARN, text: "Only words to learn", selected: onlyWordsToLearn})
-        ).append(
-            $("<option/>", {value: "ignoreList", text: "Ignore list", selected: !onlyWordsToLearn})
-        ).change(function (event) {
-            // console.log("event = '" + JSON.stringify(event) + "'");
-            let newSelectValue = $( "#" + LEARN_MODE_SELECT + " option:selected" ).val();
-            console.log("newSelectValue = '" + JSON.stringify(newSelectValue) + "'");
-            prepareTextPageEndpoints.changelearnGroup(newSelectValue, function () {
-                reloadEngText();
-            });
-        })
-    )
+function initLearnGroupsSelect() {
+    $("#" + LEARN_GROUPS_SELECT).html(
+        $("<select/>", {id:LEARN_GROUP_SELECTOR, multiple:"multiple"})
+    );
+    prepareTextPageEndpoints.getLearnGroupsInfo(function (learnGroupsInfo) {
+        _.reduce(
+            learnGroupsInfo.available,
+            function(memo, available){
+                return memo.append(
+                    $("<option/>", {text:available, value:available})
+                );
+            },
+            $("#" + LEARN_GROUP_SELECTOR)
+        );
+        _.reduce(
+            learnGroupsInfo.selected,
+            function(memo, selected){
+                return memo.append(
+                    $("<option/>", {text:selected, value:selected, selected:true})
+                );
+            },
+            $("#" + LEARN_GROUP_SELECTOR)
+        );
+        onChange = function () {
+            let val = $("#" + LEARN_GROUP_SELECTOR).val().toString();
+            prepareTextPageEndpoints.changeLearnGroups(val.split(","))
+        }
+        $("#" + LEARN_GROUP_SELECTOR).multiSelect({
+            selectableHeader: "<div>Available</div>",
+            selectionHeader: "<div>Selected</div>",
+            afterSelect: function (values) {
+                onChange();
+            },
+            afterDeselect: function (values) {
+                onChange();
+            }
+        });
+    });
 }
 
 function createSentencesTable(textDataJson) {
@@ -166,7 +189,10 @@ function appendWordToLearn(word) {
         "word-group-" + word.id,
         word.group,
         function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordGroup(word.id, newText, respHandler)
+            prepareTextPageEndpoints.changeWordGroup(word.id, newText, function (resp) {
+                respHandler(resp);
+                reloadEngText();
+            })
         },
         function (optionsLoadedHandler) {
             prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
@@ -361,8 +387,7 @@ function editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDo
     $("#" + contId + " textarea").focus();
 }
 
-function translateSelection() {
-    let urlPrefix = "https://www.lingvolive.com/ru-ru/translate/en-ru/";
+function translateSelection(urlPrefix) {
     window.open(urlPrefix + window.getSelection().toString(), '_blank');
 }
 
@@ -374,7 +399,7 @@ function reloadEngText() {
     getEngText(textDataJson.textId, function (data) {
         console.log("reloadEngText.");
         initMainTextArea(textDataJson);
-        // initlearnGroupSelect(textDataJson);
+        initLearnGroupsSelect();
         initIgnoreListTextArea(textDataJson);
     })
 }
@@ -462,8 +487,22 @@ let prepareTextPageEndpoints = {
     changeWordMeaning: function (wordId, newText, respHandler) {
         changeAttrValueEndpoint(wordId, "eng-text-word-meaning", newText, respHandler);
     },
-    changelearnGroup: function (newText, respHandler) {
-        changeAttrValueEndpoint(textDataJson.textId, "eng-text-learn-group", newText, respHandler);
+    changeLearnGroups: function (newLearnGroups) {
+        doPostWithMock(
+            USE_MOCK_RESPONSE,
+            {
+                url: "changeLearnGroups/" + textDataJson.textId,
+                data: newLearnGroups,
+                success: function (response) {
+                    if (response.status == "ok") {
+                        reloadEngText();
+                    }
+                }
+            },
+            function (params) {
+
+            }
+        );
     },
     createNewWord: function (spelling) {
         doPostWithMock(
@@ -559,6 +598,26 @@ let prepareTextPageEndpoints = {
                 return {
                     status: "ok",
                     availableWordGroups: ["G1", "G2", "Ggg"]
+                };
+            }
+        );
+    },
+    getLearnGroupsInfo: function (onDataRetrieved) {
+        doGetWithMock(
+            USE_MOCK_RESPONSE,
+            {
+                url: "engText/learnGroupsInfo/" + textDataJson.textId,
+                success: function (response) {
+                    if (response.status == "ok") {
+                        onDataRetrieved(response);
+                    }
+                }
+            },
+            function (url) {
+                return {
+                    status: "ok",
+                    available: ["G1", "G2", "Ggg"],
+                    selected: ["G1", "G2", "Ggg"]
                 };
             }
         );

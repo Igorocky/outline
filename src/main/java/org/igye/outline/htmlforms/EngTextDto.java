@@ -22,5 +22,4 @@ public class EngTextDto {
     private List<List<TextToken>> sentences;
     private List<WordDto> wordsToLearn;
     private String ignoreList;
-    private String learnGroup;
 }

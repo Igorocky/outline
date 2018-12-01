@@ -131,6 +131,14 @@ public class OutlineUtils {
         return collection.stream().map(mapper).collect(Collectors.toList());
     }
 
+    public static <A,B> List<B> map(A[] array, Function<A,B> mapper) {
+        List<B> res = new ArrayList<>();
+        for (A a : array) {
+            res.add(mapper.apply(a));
+        }
+        return res;
+    }
+
     public static <A,B> Set<B> mapToSet(List<A> collection, Function<A,B> mapper) {
         return collection.stream().map(mapper).collect(Collectors.toSet());
     }
@@ -213,6 +221,14 @@ public class OutlineUtils {
             res.add(newRow);
         }
         return res;
+    }
+
+    public static Map<String, Object> createResponse(String attrName1, Object value1, String attrName2, Object value2) {
+        return ImmutableMap.of(
+                "status", "ok",
+                attrName1, value1,
+                attrName2, value2
+        );
     }
 
     public static Map<String, Object> createResponse(String attrName, Object value) {

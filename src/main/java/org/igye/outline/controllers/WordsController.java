@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,10 +111,23 @@ public class WordsController {
         return createVoidResponse();
     }
 
+    @PostMapping("changeLearnGroups/{textId}")
+    @ResponseBody
+    public Map<String, Object> unignoreWord(@PathVariable UUID textId, @RequestBody List<String> request) {
+        wordsDao.changeLearnGroups(textId, request);
+        return createVoidResponse();
+    }
+
     @GetMapping("engText/availableWordGroups/{id}")
     @ResponseBody
     public Map<String, Object> availableWordGroups(@PathVariable UUID id) {
         return createResponse("availableWordGroups", wordsDao.listAvailableWordGroups(id));
+    }
+
+    @GetMapping("engText/learnGroupsInfo/{id}")
+    @ResponseBody
+    public Map<String, Object> learnGroupsInfo(@PathVariable UUID id) {
+        return wordsDao.getLearnGroupsInfo(id);
     }
 
 

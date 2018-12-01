@@ -3,6 +3,7 @@ package org.igye.outline.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 
@@ -19,6 +20,8 @@ import static org.hibernate.annotations.CascadeType.PERSIST;
 import static org.hibernate.annotations.CascadeType.REFRESH;
 import static org.hibernate.annotations.CascadeType.REMOVE;
 import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
+import static org.igye.outline.common.OutlineUtils.filter;
+import static org.igye.outline.common.OutlineUtils.map;
 
 @Getter
 @Setter
@@ -35,8 +38,8 @@ public class EngText extends Node {
 
     @Column(name = "IGNORE_LIST")
     private String ignoreList;
-    @Column(name = "LEARN_GROUP")
-    private String learnGroup;
+    @Column(name = "LEARN_GROUPS")
+    private String learnGroups;
 
     public void addWord(Word word) {
         Hibernate.initialize(getWords());
@@ -57,5 +60,12 @@ public class EngText extends Node {
                 idx++;
             }
         }
+    }
+
+    public List<String> getListOfLearnGroups() {
+        return filter(
+                map(getLearnGroups().split("\n"), String::trim),
+                StringUtils::isNoneEmpty
+        );
     }
 }
