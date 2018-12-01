@@ -29,22 +29,32 @@
     border: 1px solid lightgrey;
 }
 
+.main-text-table {
+    margin: 20px;
+}
+
 .word-ignored {
     color: lightslategray;
+    font-family: "Courier New";
     /*border: 1px solid lightgrey;*/
 }
 
 .word-general {
+    font-family: "Courier New";
     /*border: 1px solid lightgrey;*/
 }
 
 .word-to-learn {
-    font-weight: bold;
+    font-style: italic;
+    font-family: "Arial";
     /*border: 1px solid lightgrey;*/
 }
 
 .word-selected-group {
+    font-style: italic;
+    font-family: "Arial";
     font-weight: bold;
+    /*font-family: "Courier New";*/
     /*border: 1px solid lightgrey;*/
 }
 

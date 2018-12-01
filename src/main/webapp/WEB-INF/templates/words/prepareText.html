@@ -42,17 +42,34 @@
     </script>
 </head>
 <body>
+<div th:replace="common-header :: header"></div>
+<div th:replace="path :: path"/>
 
 <h2 id="text-title"></h2>
 <hr/>
-<div>
-    <button onclick="translateSelection('https://www.lingvolive.com/ru-ru/translate/en-ru/')">Translate (Lingvo)</button>
-    <button onclick="translateSelection('https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text=')">Translate (Google)</button>
-    <button onclick="saveSelectedWord()">Save word</button>
-    <button onclick="ignoreSelectedWord()">Ignore</button>
-    <button onclick="unignoreSelectedWord()">Unignore</button>
-</div>
-<h4 id="main-text-area"></h4>
+<table>
+    <tr>
+        <td>
+            <button onclick="translateSelection('https://www.lingvolive.com/ru-ru/translate/en-ru/')">Translate (Lingvo)</button>
+            <button onclick="translateSelection('https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text=')">Translate (Google)</button>
+            <button onclick="saveSelectedWord()">Save word</button>
+            <button onclick="ignoreSelectedWord()">Ignore</button>
+            <button onclick="unignoreSelectedWord()">Unignore</button>
+        </td>
+        <td>
+            Learn groups:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h4 id="main-text-area"></h4>
+        </td>
+        <td>
+            <span id="learn-groups-select">
+            </span>
+        </td>
+    </tr>
+</table>
 <hr/>
 <div>
     <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
@@ -68,12 +85,6 @@
     </tr>
 </table>
 <hr/>
-<div>
-    Learn groups:
-    <span id="learn-groups-select">
-
-    </span>
-</div>
 <table id="sentences-table" class="outline-bordered-table"></table>
 <hr/>
 Ignore list:

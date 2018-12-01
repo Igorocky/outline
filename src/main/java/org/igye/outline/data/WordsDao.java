@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class WordsDao {
             );
         }
         LinkedList<String> ignoreListRow = new LinkedList<>(Arrays.asList(text.getIgnoreList().split("[\r\n]+")));
-        return EngTextDto.builder()
+        EngTextDto res = EngTextDto.builder()
                 .textId(text.getId())
                 .title(text.getName())
                 .text(text.getText())
@@ -94,6 +95,8 @@ public class WordsDao {
                 .ignoreList(text.getIgnoreList())
                 .wordsToLearn(map(text.getWords(), this::mapWord))
                 .build();
+        Collections.sort(res.getWordsToLearn(), Comparator.comparing(WordDto::getWordInText));
+        return res;
     }
 
     @Transactional

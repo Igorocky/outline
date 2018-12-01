@@ -75,7 +75,7 @@ function initIgnoreListTextArea(textDataJson) {
 
 function initWordsToLearnTable(textDataJson) {
     _.each(
-        textDataJson.wordsToLearn,
+        textDataJson.wordsToLearn.reverse(),
         function (word) {
             appendWordToLearn(word);
         }
@@ -144,7 +144,7 @@ function initLearnGroupsSelect() {
 }
 
 function createSentencesTable(textDataJson) {
-    let $sentencesTable = $("<table/>", {"class": "outline-bordered-table"});
+    let $sentencesTable = $("<table/>", {"class": "outline-bordered-table main-text-table"});
     _.each(
         textDataJson.sentences,
         function (sentence) {
@@ -165,7 +165,7 @@ function createSentencesTable(textDataJson) {
 }
 
 function appendWordToLearn(word) {
-    $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-last-child(1)").after(
+    $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-child(1)").after(
         $("<tr/>", {id: "word-" + word.id}).html(
             $("<td/>").html(
                 $("<button/>", {text: "Delete"}).click(function () {

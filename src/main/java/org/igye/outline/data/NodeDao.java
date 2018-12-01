@@ -242,9 +242,11 @@ public class NodeDao {
                 if (ObjectType.PARAGRAPH.equals(selectionPart.getObjectType())) {
                     moveParagraph(selectionPart.getSelectedId(), destId);
                 } else if (ObjectType.TOPIC.equals(selectionPart.getObjectType())) {
-                    moveTopic(selectionPart.getSelectedId(), destId);
+                    moveNode(selectionPart.getSelectedId(), destId);
                 } else if (ObjectType.IMAGE.equals(selectionPart.getObjectType())) {
                     moveImage(selectionPart.getSelectedId(), destId);
+                } else if (ObjectType.ENG_TEXT.equals(selectionPart.getObjectType())) {
+                    moveNode(selectionPart.getSelectedId(), destId);
                 } else {
                     throw new OutlineException("Object type '" + selectionPart.getObjectType() + "' is not supported.");
                 }
@@ -334,16 +336,16 @@ public class NodeDao {
 
     }
 
-    private void moveTopic(UUID topicToMoveId, UUID parToMoveToId) {
-        Topic topicToMove = topicRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveId);
+    private void moveNode(UUID topicToMoveId, UUID parToMoveToId) {
+        Node nodeToMove = nodeRepository.findByOwnerAndId(sessionData.getCurrentUser(), topicToMoveId);
         if (parToMoveToId != null) {
             Paragraph parToMoveTo = paragraphRepository.findByOwnerAndId(sessionData.getCurrentUser(), parToMoveToId);
-            if (topicToMove.getParentNode() != null) {
-                ((Paragraph)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+            if (nodeToMove.getParentNode() != null) {
+                ((Paragraph)nodeToMove.getParentNode()).removeChildNodeById(nodeToMove.getId());
             }
-            parToMoveTo.addChildNode(topicToMove);
-        } else if (topicToMove.getParentNode() != null) {
-            ((Paragraph)topicToMove.getParentNode()).removeChildNodeById(topicToMove.getId());
+            parToMoveTo.addChildNode(nodeToMove);
+        } else if (nodeToMove.getParentNode() != null) {
+            ((Paragraph)nodeToMove.getParentNode()).removeChildNodeById(nodeToMove.getId());
         }
     }
 

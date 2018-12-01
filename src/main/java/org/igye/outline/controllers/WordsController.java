@@ -9,6 +9,7 @@ import org.igye.outline.htmlforms.CreateEngTextForm;
 import org.igye.outline.htmlforms.CreateWordRequest;
 import org.igye.outline.htmlforms.DeleteWordRequest;
 import org.igye.outline.htmlforms.IgnoreWordRequest;
+import org.igye.outline.model.Paragraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -74,6 +75,8 @@ public class WordsController {
 
     @GetMapping(PREPARE_TEXT)
     public String prepareText(Model model, @RequestParam UUID id) {
+        commonModelMethods.initModel(model);
+        commonModelMethods.addPath(model, (Paragraph) wordsDao.getEngTextById(id).getParentNode());
         model.addAttribute("engTextId", id);
         return prefix(PREPARE_TEXT);
     }

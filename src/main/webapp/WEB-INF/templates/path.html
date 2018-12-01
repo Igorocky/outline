@@ -4,7 +4,7 @@
 <div th:fragment="path" shortcut="a">
     <span th:each="par,stat : ${path}">
         <span th:unless="${stat.first}">&nbsp;/&nbsp;</span>
-        <a th:href="@{paragraph(id=${par.id})}" th:text="${par.name}"></a>
+        <a th:href="@{/paragraph(id=${par.id})}" th:text="${par.name}"></a>
     </span>
 </div>
 
