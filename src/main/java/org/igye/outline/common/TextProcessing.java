@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.listF;
@@ -48,12 +49,17 @@ public class TextProcessing {
             );
         }
         Set<String> ignoreListRow = new HashSet<>(Arrays.asList(engText.getIgnoreList().split("[\r\n]+")));
+        Set<String> wordsWithoutGroup = engText.getWords().stream()
+                .filter(w->StringUtils.isEmpty(w.getGroup()))
+                .map(Word::getWordInText)
+                .collect(Collectors.toSet());
         return splitOnSentences(
                 engText.getText(),
                 wordsToLearnRow,
                 wordsFromCurrentGroupRow,
                 ignoreListRow,
-                learnGroups
+                learnGroups,
+                wordsWithoutGroup
         );
     }
 
@@ -61,7 +67,8 @@ public class TextProcessing {
                                                          Set<String> wordsToLearnRow,
                                                          Set<String> wordsFromSelectedGroupsRow,
                                                          Set<String> ignoreListRow,
-                                                         Set<String> selectedGroupsRow) {
+                                                         Set<String> selectedGroupsRow,
+                                                            Set<String> wordsWithoutGroups) {
         Set<String> wordsToLearn = getNonEmpty(wordsToLearnRow);
         Set<String> wordsFromSelectedGroups = getNonEmpty(wordsFromSelectedGroupsRow);
         Set<String> ignoreList = getNonEmpty(ignoreListRow);
@@ -73,7 +80,14 @@ public class TextProcessing {
         List<List<TextToken>> res = new LinkedList<>();
         List<TextToken> sentence = new LinkedList<>();
         for (TextToken token : tokens) {
-            enhanceWithAttributes(token, ignoreList, wordsToLearn, wordsFromSelectedGroups, selectedGroups);
+            enhanceWithAttributes(
+                    token,
+                    ignoreList,
+                    wordsToLearn,
+                    wordsFromSelectedGroups,
+                    selectedGroups,
+                    wordsWithoutGroups
+            );
             sentence.add(token);
             if (containsOneOf(token.getValue(), SENTENCE_ENDS)) {
                 res.add(sentence);
@@ -130,7 +144,8 @@ public class TextProcessing {
                                               Set<String> ignoreList,
                                               Set<String> wordsToLearn,
                                               Set<String> wordsFromSelectedGroups,
-                                              Set<String> selectedGroups) {
+                                              Set<String> selectedGroups,
+                                              Set<String> wordsWithoutGroups) {
         String val = token.getValue();
         if (wordsToLearn.contains(val)) {
             token.setWord(true);
@@ -149,6 +164,10 @@ public class TextProcessing {
         token.setHiddable(
                 token.isWord() && (token.isSelectedGroup() || selectedGroups.contains(ALL_WORDS))
         );
+
+        if (token.isWordToLearn() && wordsWithoutGroups.contains(val)) {
+            token.setDoesntHaveGroup(true);
+        }
     }
 
     private static List<Object> extractWordsToLearn(List<Object> res, Set<String> wordsToLearn) {

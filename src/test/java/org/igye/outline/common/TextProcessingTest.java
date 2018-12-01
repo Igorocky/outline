@@ -23,7 +23,8 @@ public class TextProcessingTest {
                 setF("word3", "phrase to learn", ""),
                 setF("word3", ""),
                 setF("ignored", ""),
-                setF("grp1")
+                setF("grp1"),
+                setF("word3")
         );
 
         //then
@@ -40,7 +41,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1word2").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).hiddable(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).hiddable(true).doesntHaveGroup(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("!").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("    ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1Word").word(true).build(), flattened.get(i++));

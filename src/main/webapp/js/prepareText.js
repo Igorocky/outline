@@ -6,10 +6,12 @@ let WORDS_TO_LEARN_TABLE = "words-to-learn-table";
 let WORD_IGNORED = "word-ignored";
 let WORD_GENERAL = "word-general";
 let WORD_TO_LEARN = "word-to-learn";
+let WORD_TO_LEARN_NO_GROUP = "word-to-learn-no-group";
 let WORD_SELECTED_GROUP = "word-selected-group";
 let IGNORE_LIST_TEXT_AREA = "ignore-list-text-area";
 let LEARN_GROUPS_SELECT = "learn-groups-select";
 let LEARN_GROUP_SELECTOR = "learn-group-selector";
+let MOVE_TO_GROUP_CURR_VALUE = "move-to-group-curr-value";
 
 function initPage() {
     initTextTitle(textDataJson);
@@ -93,7 +95,11 @@ function createWordForSentenceSpan(wordOfSentence) {
             wordClass = WORD_GENERAL;
         }
         if (wordOfSentence.wordToLearn) {
-            wordClass = WORD_TO_LEARN;
+            if (wordOfSentence.doesntHaveGroup) {
+                wordClass = WORD_TO_LEARN_NO_GROUP;
+            } else {
+                wordClass = WORD_TO_LEARN;
+            }
         }
         if (wordOfSentence.selectedGroup) {
             wordClass = WORD_SELECTED_GROUP;
@@ -282,11 +288,11 @@ function editableTextFieldWriteMode(contId, value, onEditDone) {
     $("#" + contId + " input").focus();
 }
 
-function editableSelectReadMode(contId, value, onEditDone, loadOptions) {
+function editableSelectReadMode(contId, value, onEditDone, loadOptions, params) {
     $cont = $("#" + contId);
     $cont.html(
         $("<button/>", {text: "Edit"}).click(function () {
-            editableSelectWriteMode(contId, value, onEditDone, loadOptions);
+            editableSelectWriteMode(contId, value, onEditDone, loadOptions, params);
         })
     ).append(
         $("<span/>", {text: value})
@@ -294,27 +300,38 @@ function editableSelectReadMode(contId, value, onEditDone, loadOptions) {
 }
 
 var editableSelectWriteModeId = 1;
-function editableSelectWriteMode(contId, value, onEditDone, loadOptions) {
+function editableSelectWriteMode(contId, value, onEditDone, loadOptions, params) {
     onSave = function () {
         onEditDone(
             $("#" + contId + " input").val(),
             function (resp) {
                 if (resp.status == "ok") {
-                    editableSelectReadMode(contId, resp.value, onEditDone, loadOptions);
+                    editableSelectReadMode(contId, resp.value, onEditDone, loadOptions, params);
                 } else {
-                    editableSelectWriteMode(contId, resp.value, onEditDone, loadOptions);
+                    editableSelectWriteMode(contId, resp.value, onEditDone, loadOptions, params);
                 }
             }
         );
     };
     $cont = $("#" + contId);
+    $cont.html("");
     let currId = "editableSelectWriteMode-" + editableSelectWriteModeId++;
-    $cont.html(
+    $cont.append(
+        $("<button/>", {text: "Cancel"}).click(function () {
+            if (params && params.onCancel) {
+                params.onCancel();
+            } else {
+                editableSelectReadMode(contId, value, onEditDone, loadOptions, params);
+            }
+        })
+    );
+    $cont.append(
         $("<button/>", {text: "Save"}).click(function () {
             onSave();
         })
-    ).append(
-        $("<div/>", {'class':"select-editable"})
+    );
+    $cont.append(
+        $((params && params.useSpan)?"<span/>":"<div/>", {'class':"select-editable"})
             .append(
                 $("<select/>", {id:currId}).html(
                     $("<option/>", {value:""})
@@ -331,10 +348,6 @@ function editableSelectWriteMode(contId, value, onEditDone, loadOptions) {
                         }
                     })
             )
-    ).append(
-        $("<button/>", {text: "Cancel"}).click(function () {
-            editableSelectReadMode(contId, value, onEditDone, loadOptions);
-        })
     );
     $("#" + contId + " input").select();
     loadOptions(function (options) {
@@ -422,6 +435,42 @@ function removeWord(word) {
     confirmCancelDialog("dialog-confirm", "Delete word '" + word.wordInText + "'?", "Delete", function () {
         prepareTextPageEndpoints.removeWord(word);
     });
+}
+
+function changeCurrentGroup() {
+    let initialValue = $("#"+MOVE_TO_GROUP_CURR_VALUE).html();
+    editableSelectWriteMode(
+        MOVE_TO_GROUP_CURR_VALUE,
+        initialValue,
+        function (newText, respHandler) {
+            $("#"+MOVE_TO_GROUP_CURR_VALUE).html(newText);
+        },
+        function (optionsLoadedHandler) {
+            prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
+        },
+        {
+            onCancel: function () {
+                $("#"+MOVE_TO_GROUP_CURR_VALUE).html(initialValue);
+            },
+            useSpan: true
+        }
+    );
+}
+
+function moveSelectedWordToGroup() {
+    let selection = window.getSelection().toString();
+    if (selection) {
+        let wordInText = selection.trim();
+        let word = _.find(textDataJson.wordsToLearn, function (word) {
+            return word.wordInText === wordInText;
+        });
+        if (word) {
+            let groupName = $("#"+MOVE_TO_GROUP_CURR_VALUE).html();
+            prepareTextPageEndpoints.changeWordGroup(word.id, groupName, function (resp) {
+                reloadEngText();
+            })
+        }
+    }
 }
 
 function doPostWithMock(useMockResponse, params, mockResponseGenerator) {

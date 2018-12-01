@@ -124,8 +124,13 @@ public class WordsDao {
             getEngTextById(request.getObjId()).setLearnGroups((String) request.getValue());
             return request.getValue();
         } else if ("eng-text-word-group".equals(request.getAttrName())) {
-            getWordById(request.getObjId()).setGroup((String) request.getValue());
-            return request.getValue();
+            String newGroupName = (String) request.getValue();
+            if (!ALL_GROUPS.equals(newGroupName) && !ALL_WORDS.equals(newGroupName)) {
+                getWordById(request.getObjId()).setGroup(newGroupName);
+                return request.getValue();
+            } else {
+                throw new OutlineException("Group name cannot be one of " + ALL_WORDS + " and " + ALL_GROUPS);
+            }
         } else if ("eng-text-word-wordInText".equals(request.getAttrName())) {
             getWordById(request.getObjId()).setWordInText((String) request.getValue());
             return request.getValue();
