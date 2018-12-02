@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
+import org.igye.outline.common.TextToken;
 import org.igye.outline.data.WordsDao;
 import org.igye.outline.htmlforms.CreateEngTextForm;
 import org.igye.outline.htmlforms.CreateWordRequest;
@@ -139,6 +140,17 @@ public class WordsController {
     @ResponseBody
     public Map<String, Object> sentenceForLearning(@PathVariable UUID textId, @PathVariable int sentenceIdx) {
         return wordsDao.getSentenceForLearning(textId, sentenceIdx);
+    }
+
+    @PostMapping("engText/{textId}/checkWords")
+    @ResponseBody
+    public Map<String, Object> checkWords(@PathVariable UUID textId, @RequestBody List<TextToken> sentence) {
+        for (TextToken textToken : sentence) {
+            if (textToken.isHidden()) {
+                textToken.setCorrect(textToken.getValue().equals(textToken.getUserInput()));
+            }
+        }
+        return createResponse("sentence", sentence);
     }
 
     @GetMapping("engText/{textId}/learn")

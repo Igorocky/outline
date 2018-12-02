@@ -25,7 +25,8 @@
             engTextId: engTextId,
             sentenceIdx: sentenceNumber,
             sentence: undefined,
-            maxSentenceIdx: undefined
+            maxSentenceIdx: undefined,
+            firstInput: undefined
         };
 
         $( function() {
@@ -50,7 +51,17 @@
 
 <h4><a th:href="@{/words/prepareText(id=${engTextId})}" th:text="${engTextTitle}"></a></h4>
 <hr/>
+<div>
+    <button id="check-words-btn" onclick="checkWords()">Check</button>
+    <button onclick="goToPrevSentence()">Prev</button>
+    <button id="next-btn" class="focusable-button" onclick="goToNextSentence()">Next</button>
+    <button id="try-again-btn" class="focusable-button" onclick="tryAgain()">Try again</button>
+    <button onclick="goToNextSentenceByNumber()">Go to</button>
+    <input type="text" id="go-to-sentence-number" size="5">
+    <button id="show-sentence-btn" onclick="showSentence()">Show sentence</button>
+</div>
 <div id="sentence-to-learn-area"></div>
+<div id="show-sentence-area"></div>
 
 <div id="dialog-confirm" hidden="hidden">
 </div>

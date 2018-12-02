@@ -67,6 +67,27 @@
     /*border: 1px solid lightgrey;*/
 }
 
+#sentence-to-learn-area {
+    margin: 10px;
+}
+
+.current-sentence-number {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.incorrect-user-input {
+    border: 2px solid red;
+}
+
+.correct-user-input {
+    border: 2px solid green;
+}
+
+.focusable-button:focus {
+    background-color: green;
+}
+
 .select-editable {
     position:relative;
     background-color:white;
