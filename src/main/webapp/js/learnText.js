@@ -2,6 +2,11 @@ let SHOWN = "shown";
 
 function initPage() {
     initTranslateSelectionButtons("translate-buttons", pageState.textLanguage);
+    $("#go-to-sentence-number").keydown(function(e){
+        if (e.which == 13) {
+            goToNextSentenceByNumber();
+        }
+    });
     goToSentence(pageState.sentenceIdx);
 }
 
@@ -102,7 +107,7 @@ function drawSentenceToLearn() {
 
 function createElemForToken(token) {
     if (token.meta) {
-        return "";
+        return $("<span/>");
     } else if (token.hidden) {
         if (token.correct) {
             return $("<span/>", {text:token.value, "class": "correct-user-input"});
