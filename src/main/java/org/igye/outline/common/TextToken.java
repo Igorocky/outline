@@ -17,6 +17,7 @@ import lombok.ToString;
 @ToString
 public class TextToken {
     private String value;
+    private String group;
 
     private boolean word;
     private boolean wordToLearn;

@@ -224,7 +224,23 @@ public class OutlineUtils {
         return res;
     }
 
-    public static Map<String, Object> createResponse(String attrName1, Object value1, String attrName2, Object value2) {
+    public static Map<String, Object> createResponse(
+            String attrName1, Object value1,
+            String attrName2, Object value2,
+            String attrName3, Object value3
+    ) {
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", "ok");
+        resp.put(attrName1, value1);
+        resp.put(attrName2, value2);
+        resp.put(attrName3, value3);
+        return resp;
+    }
+
+    public static Map<String, Object> createResponse(
+            String attrName1, Object value1,
+            String attrName2, Object value2
+    ) {
         Map<String, Object> resp = new HashMap<>();
         resp.put("status", "ok");
         resp.put(attrName1, value1);

@@ -20,15 +20,15 @@
 <body>
 <div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
+<div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=${topic.hasParent}, showFirstChildBtn=false)"/>
+<h3>&#10042;<span id="main-title" th:text="${topic.name}" /></h3>
+<img th:if="${topic.icon != null}" th:src="@{icon/{iconId}(iconId=${topic.icon.id})}"/>
 <div>
     <a th:href="@{editTopic(id=${topic.id})}" href="#">Edit this topic</a>&nbsp;
     <a th:href="@{editTopic(parentId=${topic.parentNode != null ? topic.parentNode.id : null})}" href="#">Create new topic</a>&nbsp;
 
     <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${topic.id})"></span>
 </div>
-<div th:replace="training-navigation :: nav-buttons (id=${topic.id}, showParentBtn=${topic.hasParent}, showFirstChildBtn=false)"/>
-<h3>&#10042;<span id="main-title" th:text="${topic.name}" /></h3>
-<img th:if="${topic.icon != null}" th:src="@{icon/{iconId}(iconId=${topic.icon.id})}"/>
 
 <div>
     <a shortcut="/" th:unless="${showContent}" th:href="@{topic(id=${topic.id},showContent=true)}">Show content</a>&nbsp;

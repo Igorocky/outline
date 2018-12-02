@@ -23,6 +23,7 @@ function goToSentence(sentenceIdx) {
                     pageState.sentenceIdx = sentenceIdx;
                     pageState.sentence = response.sentence;
                     drawSentenceToLearn();
+                    $("#counts-area").html(response.counts);
                 }
             }
         }
@@ -54,6 +55,7 @@ function checkWords() {
         success: function (response) {
             if (response.status == "ok") {
                 pageState.sentence = response.sentence;
+                $("#counts-area").html(response.counts);
                 drawSentenceToLearn();
             }
         }
@@ -76,7 +78,7 @@ function drawSentenceToLearn() {
         $sentenceArea
     );
     if (_.size(inputs) === 0) {
-        $("#next-btn").focus();
+        $("#try-again-btn").focus();
     } else {
         pageState.firstInput = _.first(inputs);
         pageState.firstInput.focus();

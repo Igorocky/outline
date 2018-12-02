@@ -1,5 +1,6 @@
 package org.igye.outline.common;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -24,7 +25,10 @@ public class TextProcessingTest {
                 setF("word3", ""),
                 setF("ignored", ""),
                 setF("grp1"),
-                setF("word3")
+                ImmutableMap.of(
+                        "word3", "",
+                        "phrase to learn", "grp1"
+                )
         );
 
         //then
@@ -41,7 +45,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1word2").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("word3").word(true).wordToLearn(true).selectedGroup(true).hiddable(true).doesntHaveGroup(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("word3").word(true).group("").wordToLearn(true).selectedGroup(true).hiddable(true).doesntHaveGroup(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("!").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("    ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1Word").word(true).build(), flattened.get(i++));
@@ -61,7 +65,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("1word").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("\", ").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("phrase to learn").word(true).wordToLearn(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("phrase to learn").word(true).group("grp1").wordToLearn(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("no").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(".").build(), flattened.get(i++));

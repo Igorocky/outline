@@ -61,6 +61,9 @@
 <body>
 <div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
+<div th:replace="training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
+<h2>&sect;<span id="main-title" th:text="${paragraph.name}" /></h2>
+<img th:if="${paragraph.icon != null}" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
 <div>
     <a th:if="${paragraph.id != null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
     <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
@@ -75,9 +78,6 @@
     <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${paragraph.id})"></span>
 </div>
 
-<div th:replace="training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
-<h2>&sect;<span id="main-title" th:text="${paragraph.name}" /></h2>
-<img th:if="${paragraph.icon != null}" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
 <div>
     <a shortcut="/" th:unless="${showContent}" th:href="@{paragraph#main-title(id=${paragraph.id})}">Show content</a>&nbsp;
     <a shortcut="/" th:if="${showContent}" th:href="@{paragraph#main-title(id=${paragraph.id},showContent=false)}">Hide content</a>
@@ -98,7 +98,7 @@
             </span>
             <span th:if="${childNode instanceof T(org.igye.outline.model.EngText)}">
                 <span th:replace="selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='ENG_TEXT')"></span>
-                <a th:href="@{words/engText/{id}/learn(id=${childNode.id})}" >&#8681;&nbsp;</a>
+                <a th:href="@{words/prepareText(id=${childNode.id},pageMode='taskSelection')}" >&#8681;&nbsp;</a>
                 <a th:href="@{words/prepareText(id=${childNode.id})}" th:text="${childNode.name}"></a>
             </span>
         </li>

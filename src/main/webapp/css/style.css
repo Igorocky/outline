@@ -33,6 +33,14 @@
     margin: 20px;
 }
 
+.main-text-table td {
+    padding: 5px;
+}
+
+.main-text-table tr:hover {
+    background-color: #f5e79e;
+}
+
 .word-ignored {
     color: lightslategray;
     font-family: "Courier New";
@@ -48,7 +56,7 @@
     font-style: italic;
     font-family: "Arial";
     text-decoration: underline;
-    border: 1px solid red;
+    border: 2px solid red;
 }
 
 .word-to-learn {

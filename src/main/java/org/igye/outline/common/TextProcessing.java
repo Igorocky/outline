@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,17 +50,18 @@ public class TextProcessing {
             );
         }
         Set<String> ignoreListRow = new HashSet<>(Arrays.asList(engText.getIgnoreList().split("[\r\n]+")));
-        Set<String> wordsWithoutGroup = engText.getWords().stream()
-                .filter(w->StringUtils.isEmpty(w.getGroup()))
-                .map(Word::getWordInText)
-                .collect(Collectors.toSet());
+        Map<String, String> wordToGroupMap = engText.getWords().stream()
+                .collect(Collectors.toMap(
+                        Word::getWordInText,
+                        word -> word.getGroup() == null ? "" : StringUtils.trim(word.getGroup())
+                ));
         return splitOnSentences(
                 engText.getText(),
                 wordsToLearnRow,
                 wordsFromCurrentGroupRow,
                 ignoreListRow,
                 learnGroups,
-                wordsWithoutGroup
+                wordToGroupMap
         );
     }
 
@@ -68,7 +70,7 @@ public class TextProcessing {
                                                          Set<String> wordsFromSelectedGroupsRow,
                                                          Set<String> ignoreListRow,
                                                          Set<String> selectedGroupsRow,
-                                                            Set<String> wordsWithoutGroups) {
+                                                            Map<String, String> wordToGroupMap) {
         Set<String> wordsToLearn = getNonEmpty(wordsToLearnRow);
         Set<String> wordsFromSelectedGroups = getNonEmpty(wordsFromSelectedGroupsRow);
         Set<String> ignoreList = getNonEmpty(ignoreListRow);
@@ -86,7 +88,7 @@ public class TextProcessing {
                     wordsToLearn,
                     wordsFromSelectedGroups,
                     selectedGroups,
-                    wordsWithoutGroups
+                    wordToGroupMap
             );
             sentence.add(token);
             if (containsOneOf(token.getValue(), SENTENCE_ENDS)) {
@@ -145,7 +147,7 @@ public class TextProcessing {
                                               Set<String> wordsToLearn,
                                               Set<String> wordsFromSelectedGroups,
                                               Set<String> selectedGroups,
-                                              Set<String> wordsWithoutGroups) {
+                                              Map<String, String> wordToGroupMap) {
         String val = token.getValue();
         if (wordsToLearn.contains(val)) {
             token.setWord(true);
@@ -165,9 +167,11 @@ public class TextProcessing {
                 token.isWord() && (token.isSelectedGroup() || selectedGroups.contains(ALL_WORDS))
         );
 
-        if (token.isWordToLearn() && wordsWithoutGroups.contains(val)) {
+        if (token.isWordToLearn() && StringUtils.isEmpty(wordToGroupMap.get(val))) {
             token.setDoesntHaveGroup(true);
         }
+
+        token.setGroup(wordToGroupMap.get(val));
     }
 
     private static List<Object> extractWordsToLearn(List<Object> res, Set<String> wordsToLearn) {

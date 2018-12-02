@@ -238,15 +238,19 @@ public class WordsDao {
         EngText text = getEngTextById(textId);
         List<List<TextToken>> sentences = splitOnSentences(text);
         if (sentenceIdx < 0 || sentences.size() <= sentenceIdx) {
-            Map<String, Object> resp = createSentenceResponse(sentences, null);
-            resp.put("maxSentenceIdx", sentences.size()-1);
-            return resp;
+            return createSentenceResponse(sentences, null, null);
         } else {
             List<TextToken> sentence = sentences.get(sentenceIdx);
+            String counts = null;
             if (text.getListOfLearnGroups().contains(ALL_WORDS)) {
                 List<TextToken> hiddable = filter(sentence, TextToken::isHiddable);
-                sessionData.getLearnTextData()
-                        .getIndicesToHide(hiddable.size(), 20, sentence.hashCode()).forEach(idx ->
+                counts = sessionData.getLearnTextData().getCountsStat(
+                        hiddable.size(), text.getPct(), sentence.hashCode()
+                );
+                sessionData
+                        .getLearnTextData()
+                        .getIndicesToHide(hiddable.size(), text.getPct(), sentence.hashCode())
+                        .forEach(idx ->
                             hiddable.get(idx).setHidden(true)
                         );
             } else if (text.getListOfLearnGroups().contains(ALL_GROUPS)) {
@@ -262,14 +266,15 @@ public class WordsDao {
                     }
                 });
             }
-            return createSentenceResponse(sentences, sentence);
+            return createSentenceResponse(sentences, sentence, counts);
         }
     }
 
-    private Map<String, Object> createSentenceResponse(List<List<TextToken>> sentences, List<TextToken> sentence) {
+    private Map<String, Object> createSentenceResponse(List<List<TextToken>> sentences, List<TextToken> sentence, String counts) {
         return createResponse(
                 "maxSentenceIdx", sentences.size() - 1,
-                "sentence", sentence
+                "sentence", sentence,
+                "counts", counts == null ? "" : counts
         );
     }
 

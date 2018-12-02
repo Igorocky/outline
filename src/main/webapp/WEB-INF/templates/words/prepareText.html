@@ -19,6 +19,7 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         var engTextId = /*[[${engTextId}]]*/;
+        var pageMode = /*[[${pageMode}]]*/;
         /*]]>*/
         // var engTextId = "197f721f-d5eb-4a37-8f16-8a818d25a6fd";
         var textDataJson = undefined;
@@ -45,9 +46,12 @@
 <div th:replace="common-header :: header"></div>
 <div th:replace="path :: path"/>
 
-<h2 id="text-title"></h2>
+<h2 th:unless="${pageMode == 'taskSelection'}" id="text-title"></h2>
+<h2 th:if="${pageMode == 'taskSelection'}" >
+    <a th:href="@{/words/prepareText(id=${engTextId})}" id="text-title"></a>
+</h2>
 <hr/>
-<span>
+<span th:unless="${pageMode == 'taskSelection'}">
     Language: <span id="lang-span" style="margin-right: 150px"></span>
 </span>
 <span>
@@ -55,8 +59,8 @@
 </span>
 <hr/>
 <table>
-    <tr>
-        <td colspan="2">
+    <tr th:unless="${pageMode == 'taskSelection'}">
+        <td colspan="2" id="main-text-area-buttons-td">
             <span id="translate-buttons"></span>
             <button onclick="saveSelectedWord()">Save word</button>
             <button onclick="ignoreSelectedWord()">Ignore</button>
@@ -66,10 +70,11 @@
                 <span id="move-to-group-curr-value"></span>
                 <a href="#" onclick="changeCurrentGroup()" >&#8681;&nbsp;</a>
             </span>
+            <a href="#main-text-area-buttons-td">Up</a>
         </td>
     </tr>
     <tr>
-        <td>
+        <td th:unless="${pageMode == 'taskSelection'}">
             <h4 id="main-text-area"></h4>
         </td>
         <td>
@@ -77,9 +82,19 @@
             <span id="learn-groups-select">
             </span>
         </td>
+        <td th:if="${pageMode == 'taskSelection'}">
+            <div>Chose exercise:</div>
+            <ol>
+                <li>
+                    <a th:href="@{/words/engText/{id}/learn(id=${engTextId})}" >Read text</a>
+                </li>
+            </ol>
+        </td>
     </tr>
 </table>
 <hr/>
+
+<div th:unless="${pageMode == 'taskSelection'}">
 <div>
     <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
 </div>
@@ -94,11 +109,11 @@
     </tr>
 </table>
 <hr/>
-<table id="sentences-table" class="outline-bordered-table"></table>
 <hr/>
 Ignore list:
 <div id="ignore-list-text-area"></div>
 <hr/>
+</div>
 
 <div id="dialog-confirm" hidden="hidden">
 </div>

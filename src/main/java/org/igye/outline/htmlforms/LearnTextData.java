@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,23 +27,48 @@ import static org.igye.outline.common.OutlineUtils.map;
 public class LearnTextData {
     private int hash;
     private int elemsCnt;
-    private List<Integer> lastCounts;
+    private List<Integer> lastCounts = new ArrayList<>();
     private Random rnd = new Random();
+
+    public String getCountsStat() {
+        return getCountsStat(elemsCnt, 100, hash);
+    }
+
+    public String getCountsStat(int elemsCnt, int pct, int hash) {
+        if (this.hash != hash || this.elemsCnt != elemsCnt) {
+            reset(hash, elemsCnt);
+        }
+        int min = Integer.MAX_VALUE;
+        int max = 0;
+        for (Integer cnt : lastCounts) {
+            if (cnt < min) {
+                min = cnt;
+            }
+            if (cnt > max) {
+                max = cnt;
+            }
+        }
+        return "Counts: min " + min + ", max " + max;
+    }
 
     public Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {
         if (this.hash != hash || this.elemsCnt != elemsCnt) {
             reset(hash, elemsCnt);
         }
+        Set<Integer> result = null;
         if (pct <= 50) {
-            return getRandomIndicesUnder50(pct, lastCounts);
+            result = getRandomIndicesUnder50(pct, lastCounts);
         } else if (pct < 100) {
             Set<Integer> invRes = getRandomIndicesUnder50(100 - pct, map(lastCounts, i -> -i));
-            Set<Integer> res = getAllIndices(elemsCnt);
-            res.removeAll(invRes);
-            return res;
+            result = getAllIndices(elemsCnt);
+            result.removeAll(invRes);
         } else {
-            return getAllIndices(elemsCnt);
+            result = getAllIndices(elemsCnt);
         }
+        for (Integer idx : result) {
+            lastCounts.set(idx, lastCounts.get(idx) + 1);
+        }
+        return result;
     }
 
     private Set<Integer> getAllIndices(int hiddableWordsCnt) {
@@ -105,14 +131,4 @@ public class LearnTextData {
         this.elemsCnt = elemsCnt;
         lastCounts = Stream.generate(() -> 0).limit(elemsCnt).collect(Collectors.toList());
     }
-
-//    private int calcHiddableWordsCnt() {
-//        int hiddableWordsCnt = 0;
-//        for (TextToken textToken : currentSentence) {
-//            if (textToken.isHiddable()) {
-//                hiddableWordsCnt++;
-//            }
-//        }
-//        return hiddableWordsCnt;
-//    }
 }

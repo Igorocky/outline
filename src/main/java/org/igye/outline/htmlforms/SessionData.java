@@ -14,7 +14,7 @@ public class SessionData {
     private Selection selection;
     private User user;
     @Getter @Setter
-    private LearnTextData learnTextData;
+    private LearnTextData learnTextData = new LearnTextData();
 
     public User getCurrentUser() {
         if (user == null) {
@@ -22,5 +22,4 @@ public class SessionData {
         }
         return user;
     }
-
 }

@@ -16,11 +16,13 @@ let MOVE_TO_GROUP_CURR_VALUE = "move-to-group-curr-value";
 function initPage() {
     initTextTitle(textDataJson);
     initProps();
-    initTranslateSelectionButtons("translate-buttons", textDataJson.language);
-    initMainTextArea(textDataJson);
-    initWordsToLearnTable(textDataJson);
     initLearnGroupsSelect();
-    initIgnoreListTextArea(textDataJson);
+    if (isFullMode()) {
+        initTranslateSelectionButtons("translate-buttons", textDataJson.language);
+        initMainTextArea(textDataJson);
+        initWordsToLearnTable(textDataJson);
+        initIgnoreListTextArea(textDataJson);
+    }
 }
 
 function initProps() {
@@ -45,10 +47,14 @@ function initProps() {
 }
 
 function initTextTitle(textDataJson) {
-    editableTextFieldReadMode(TEXT_TITLE, textDataJson.title, function (newValue, respHandler) {
-        console.log("newValue = '" + newValue + "'");
-        prepareTextPageEndpoints.changeTitle(newValue, respHandler);
-    });
+    if (isFullMode()) {
+        editableTextFieldReadMode(TEXT_TITLE, textDataJson.title, function (newValue, respHandler) {
+            console.log("newValue = '" + newValue + "'");
+            prepareTextPageEndpoints.changeTitle(newValue, respHandler);
+        });
+    } else {
+        $("#text-title").html(textDataJson.title);
+    }
 }
 
 function initMainTextArea(textDataJson) {
@@ -128,7 +134,7 @@ function createWordForSentenceSpan(wordOfSentence) {
             wordClass = WORD_SELECTED_GROUP;
         }
 
-        return $("<span/>", {'class': wordClass, text: wordOfSentence.value});
+        return $("<span/>", {'class': wordClass, text: wordOfSentence.value + (wordOfSentence.wordToLearn ? " {" + wordOfSentence.group + "}" : "") });
     }
 }
 
@@ -176,18 +182,19 @@ function createSentencesTable(textDataJson) {
     let $sentencesTable = $("<table/>", {"class": "outline-bordered-table main-text-table"});
     _.each(
         textDataJson.sentences,
-        function (sentence) {
-            $sentencesTable.append(
-                $("<tr/>").html(
-                    _.reduce(
-                        sentence,
-                        function(memo, wordOfSentence){
-                            return memo.append(createWordForSentenceSpan(wordOfSentence));
-                        },
-                        $("<td/>")
-                    )
+        function (sentence, idx) {
+            let $tr = $("<tr/>");
+            $tr.append($("<td/>").html(idx + 1));
+            $tr.append(
+                _.reduce(
+                    sentence,
+                    function(memo, wordOfSentence){
+                        return memo.append(createWordForSentenceSpan(wordOfSentence));
+                    },
+                    $("<td/>")
                 )
-            );
+            )
+            $sentencesTable.append($tr);
         }
     );
     return $sentencesTable;
@@ -195,7 +202,7 @@ function createSentencesTable(textDataJson) {
 
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-child(1)").after(
-        $("<tr/>", {id: "word-" + word.id}).html(
+        $("<tr/>", {id: "word-" + word.id, "class": "highlight-on-hover"}).html(
             $("<td/>").html(
                 $("<button/>", {text: "Delete"}).click(function () {
                     removeWord(word);
@@ -340,17 +347,17 @@ function editableSelectWriteMode(contId, value, onEditDone, loadOptions, params)
     $cont.html("");
     let currId = "editableSelectWriteMode-" + editableSelectWriteModeId++;
     $cont.append(
+        $("<button/>", {text: "Save"}).click(function () {
+            onSave();
+        })
+    );
+    $cont.append(
         $("<button/>", {text: "Cancel"}).click(function () {
             if (params && params.onCancel) {
                 params.onCancel();
             } else {
                 editableSelectReadMode(contId, value, onEditDone, loadOptions, params);
             }
-        })
-    );
-    $cont.append(
-        $("<button/>", {text: "Save"}).click(function () {
-            onSave();
         })
     );
     $cont.append(
@@ -424,16 +431,25 @@ function editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDo
 }
 
 function saveSelectedWord() {
-    prepareTextPageEndpoints.createNewWord(window.getSelection().toString());
+    var selection = window.getSelection().toString();
+    if (selection && selection.trim() !== "") {
+        prepareTextPageEndpoints.createNewWord(selection);
+    }
+}
+
+function isFullMode() {
+    return pageMode === "full";
 }
 
 function reloadEngText() {
-    getEngText(textDataJson.textId, function (data) {
-        console.log("reloadEngText.");
-        initMainTextArea(textDataJson);
-        initLearnGroupsSelect();
-        initIgnoreListTextArea(textDataJson);
-    })
+    if (isFullMode()) {
+        getEngText(textDataJson.textId, function (data) {
+            console.log("reloadEngText.");
+            initMainTextArea(textDataJson);
+            initLearnGroupsSelect();
+            initIgnoreListTextArea(textDataJson);
+        })
+    }
 }
 
 function createIgnoreListChangeHandler() {

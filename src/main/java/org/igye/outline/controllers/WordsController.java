@@ -1,6 +1,5 @@
 package org.igye.outline.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.common.OutlineUtils;
@@ -10,6 +9,7 @@ import org.igye.outline.htmlforms.CreateEngTextForm;
 import org.igye.outline.htmlforms.CreateWordRequest;
 import org.igye.outline.htmlforms.DeleteWordRequest;
 import org.igye.outline.htmlforms.IgnoreWordRequest;
+import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.EngText;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.TextLanguage;
@@ -34,6 +34,7 @@ import java.util.UUID;
 import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.createVoidResponse;
 import static org.igye.outline.common.OutlineUtils.redirect;
+import static org.igye.outline.common.TextProcessing.ALL_WORDS;
 
 @Controller
 @RequestMapping(WordsController.PREFIX)
@@ -46,11 +47,11 @@ public class WordsController {
     private static final String LEARN_TEXT = "learnText";
 
     @Autowired
+    private SessionData sessionData;
+    @Autowired
     private CommonModelMethods commonModelMethods;
     @Autowired
     private WordsDao wordsDao;
-
-    private ObjectMapper mapper = new ObjectMapper();
 
     @GetMapping(CREATE_ENG_TEXT)
     public String createEngText(Model model, @RequestParam Optional<UUID> parentId) {
@@ -78,10 +79,11 @@ public class WordsController {
     }
 
     @GetMapping(PREPARE_TEXT)
-    public String prepareText(Model model, @RequestParam UUID id) {
+    public String prepareText(Model model, @RequestParam UUID id, Optional<String> pageMode) {
         commonModelMethods.initModel(model);
         commonModelMethods.addPath(model, (Paragraph) wordsDao.getEngTextById(id).getParentNode());
         model.addAttribute("engTextId", id);
+        model.addAttribute("pageMode", pageMode.orElse("full"));
         return prefix(PREPARE_TEXT);
     }
 
@@ -157,11 +159,17 @@ public class WordsController {
                 textToken.setCorrect(textToken.getValue().equals(textToken.getUserInput()));
             }
         }
-        return createResponse("sentence", sentence);
+        EngText text = wordsDao.getEngTextById(textId);
+        return createResponse(
+                "sentence", sentence,
+                "counts", text.getListOfLearnGroups().contains(ALL_WORDS) ?
+                        sessionData.getLearnTextData().getCountsStat() : ""
+        );
     }
 
     @GetMapping("engText/{textId}/learn")
     public String learnText(Model model, @PathVariable UUID textId) {
+        sessionData.getLearnTextData().getCountsStat(0,0, 0);
         commonModelMethods.initModel(model);
         EngText text = wordsDao.getEngTextById(textId);
         commonModelMethods.addPath(model, (Paragraph) text.getParentNode());
