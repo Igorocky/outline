@@ -7,13 +7,17 @@ function initPage() {
             goToNextSentenceByNumber();
         }
     });
-    goToSentence(pageState.sentenceIdx);
+    if (pageState.nextSentenceMode === 'random') {
+        goToSentence("");
+    } else {
+        goToSentence(pageState.sentenceIdx);
+    }
 }
 
 function goToSentence(sentenceIdx) {
     $("#show-sentence-area").html("");
     doGet({
-        url: "/words/engText/" + pageState.engTextId + "/sentenceForLearning/" + sentenceIdx,
+        url: "/words/engText/" + pageState.engTextId + "/sentenceForLearning?sentenceIdx=" + sentenceIdx,
         success: function (response) {
             if (response.status == "ok") {
                 pageState.maxSentenceIdx = response.maxSentenceIdx;
@@ -25,10 +29,10 @@ function goToSentence(sentenceIdx) {
                         function () {}
                     );
                 } else {
-                    pageState.sentenceIdx = sentenceIdx;
+                    pageState.sentenceIdx = response.sentenceIdx;
                     pageState.sentence = response.sentence;
                     drawSentenceToLearn();
-                    $("#counts-area").html(response.counts);
+                    $("#task-description-area").html(response.taskDescription);
                 }
             }
         }
@@ -40,7 +44,11 @@ function goToPrevSentence() {
 }
 
 function goToNextSentence() {
-    goToSentence(pageState.sentenceIdx+1);
+    if (pageState.nextSentenceMode === 'random') {
+        goToSentence("");
+    } else {
+        goToSentence(pageState.sentenceIdx+1);
+    }
 }
 
 function goToNextSentenceByNumber() {
@@ -60,7 +68,7 @@ function checkWords() {
         success: function (response) {
             if (response.status == "ok") {
                 pageState.sentence = response.sentence;
-                $("#counts-area").html(response.counts);
+                $("#task-description-area").html(response.taskDescription);
                 drawSentenceToLearn();
             }
         }

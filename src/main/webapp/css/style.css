@@ -92,8 +92,12 @@
     border: 2px solid green;
 }
 
-.focusable-button:focus {
+.green-on-focus:focus {
     background-color: green;
+}
+
+.orange-on-focus:focus {
+    background-color: orange;
 }
 
 .select-editable {

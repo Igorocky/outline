@@ -83,7 +83,10 @@
             <div>Chose exercise:</div>
             <ol>
                 <li>
-                    <a th:href="@{/words/engText/{id}/learn(id=${engTextId})}" >Read text</a>
+                    <a th:href="@{/words/engText/{id}/learn(id=${engTextId})}" >Fill gaps in a sentence.</a>
+                </li>
+                <li>
+                    <a th:href="@{/words/engText/{id}/learn(id=${engTextId},nextSentenceMode='random')}" >Fill gaps in a sentence: random mode.</a>
                 </li>
             </ol>
         </td>

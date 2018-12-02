@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -234,11 +235,21 @@ public class WordsDao {
     }
 
     @Transactional
-    public Map<String, Object> getSentenceForLearning(UUID textId, int sentenceIdx) {
+    public Map<String, Object> getSentenceForLearning(UUID textId, Optional<Integer> sentenceIdxOpt) {
         EngText text = getEngTextById(textId);
         List<List<TextToken>> sentences = splitOnSentences(text);
+
+        Integer sentenceIdx = sentenceIdxOpt.orElse(
+                sessionData.getCyclicRandom().getRandomIndex(sentences.hashCode(), sentences.size())
+        );
+
         if (sentenceIdx < 0 || sentences.size() <= sentenceIdx) {
-            return createSentenceResponse(sentences, null, null);
+            return createSentenceResponse(
+                    sentences,
+                    null,
+                    null,
+                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups(), null)
+            );
         } else {
             List<TextToken> sentence = sentences.get(sentenceIdx);
             String counts = null;
@@ -251,7 +262,7 @@ public class WordsDao {
                         .getLearnTextData()
                         .getIndicesToHide(hiddable.size(), text.getPct(), sentence.hashCode())
                         .forEach(idx ->
-                            hiddable.get(idx).setHidden(true)
+                                hiddable.get(idx).setHidden(true)
                         );
             } else if (text.getListOfLearnGroups().contains(ALL_GROUPS)) {
                 sentence.forEach(t -> {
@@ -266,15 +277,40 @@ public class WordsDao {
                     }
                 });
             }
-            return createSentenceResponse(sentences, sentence, counts);
+            return createSentenceResponse(
+                    sentences,
+                    sentence,
+                    sentenceIdx,
+                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups(), counts)
+            );
         }
     }
 
-    private Map<String, Object> createSentenceResponse(List<List<TextToken>> sentences, List<TextToken> sentence, String counts) {
+    private String createTaskDescription(boolean isSequential, List<String> groups, String counts) {
+        StringBuilder sb = new StringBuilder();
+        if (isSequential) {
+            sb.append("Fill gaps in a sentence.");
+        } else {
+            sb.append("Fill gaps in a sentence: random mode.");
+        }
+        sb.append(" Groups: ").append(StringUtils.join(groups, ", ")).append(".");
+        if (counts != null) {
+            sb.append(" ").append(counts);
+        }
+        return sb.toString();
+    }
+
+    private Map<String, Object> createSentenceResponse(
+            List<List<TextToken>> sentences,
+            List<TextToken> sentence,
+            Integer sentenceIdx,
+            String taskDescription
+    ) {
         return createResponse(
                 "maxSentenceIdx", sentences.size() - 1,
                 "sentence", sentence,
-                "counts", counts == null ? "" : counts
+                "sentenceIdx", sentenceIdx,
+                "taskDescription", taskDescription
         );
     }
 

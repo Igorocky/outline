@@ -15,6 +15,8 @@ public class SessionData {
     private User user;
     @Getter @Setter
     private LearnTextData learnTextData = new LearnTextData();
+    @Getter @Setter
+    private CyclicRandom cyclicRandom = new CyclicRandom();
 
     public User getCurrentUser() {
         if (user == null) {

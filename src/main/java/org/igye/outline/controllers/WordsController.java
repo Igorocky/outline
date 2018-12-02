@@ -145,9 +145,9 @@ public class WordsController {
         return wordsDao.getLearnGroupsInfo(id);
     }
 
-    @GetMapping("engText/{textId}/sentenceForLearning/{sentenceIdx}")
+    @GetMapping("engText/{textId}/sentenceForLearning")
     @ResponseBody
-    public Map<String, Object> sentenceForLearning(@PathVariable UUID textId, @PathVariable int sentenceIdx) {
+    public Map<String, Object> sentenceForLearning(@PathVariable UUID textId, @RequestParam Optional<Integer> sentenceIdx) {
         return wordsDao.getSentenceForLearning(textId, sentenceIdx);
     }
 
@@ -168,7 +168,7 @@ public class WordsController {
     }
 
     @GetMapping("engText/{textId}/learn")
-    public String learnText(Model model, @PathVariable UUID textId) {
+    public String learnText(Model model, @PathVariable UUID textId, @RequestParam Optional<String> nextSentenceMode) {
         sessionData.getLearnTextData().getCountsStat(0,0, 0);
         commonModelMethods.initModel(model);
         EngText text = wordsDao.getEngTextById(textId);
@@ -177,6 +177,7 @@ public class WordsController {
         model.addAttribute("textLanguage", text.getLanguage());
         model.addAttribute("engTextTitle", text.getName());
         model.addAttribute("sentenceIdx", 0);
+        model.addAttribute("nextSentenceMode", nextSentenceMode.orElse("seq"));
         return prefix(LEARN_TEXT);
     }
 

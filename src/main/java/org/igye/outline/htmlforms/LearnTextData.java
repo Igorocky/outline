@@ -1,11 +1,5 @@
 package org.igye.outline.htmlforms;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,11 +13,6 @@ import java.util.stream.Stream;
 import static org.igye.outline.common.OutlineUtils.listF;
 import static org.igye.outline.common.OutlineUtils.map;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class LearnTextData {
     private int hash;
     private int elemsCnt;
