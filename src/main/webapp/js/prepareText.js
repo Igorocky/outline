@@ -11,7 +11,6 @@ let WORD_SELECTED_GROUP = "word-selected-group";
 let IGNORE_LIST_TEXT_AREA = "ignore-list-text-area";
 let LEARN_GROUPS_SELECT = "learn-groups-select";
 let LEARN_GROUP_SELECTOR = "learn-group-selector";
-let MOVE_TO_GROUP_CURR_VALUE = "move-to-group-curr-value";
 
 function initPage() {
     initTextTitle(textDataJson);
@@ -472,26 +471,6 @@ function removeWord(word) {
     });
 }
 
-function changeCurrentGroup() {
-    let initialValue = $("#"+MOVE_TO_GROUP_CURR_VALUE).html();
-    editableSelectWriteMode(
-        MOVE_TO_GROUP_CURR_VALUE,
-        initialValue,
-        function (newText, respHandler) {
-            $("#"+MOVE_TO_GROUP_CURR_VALUE).html(newText);
-        },
-        function (optionsLoadedHandler) {
-            prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
-        },
-        {
-            onCancel: function () {
-                $("#"+MOVE_TO_GROUP_CURR_VALUE).html(initialValue);
-            },
-            useSpan: true
-        }
-    );
-}
-
 function moveSelectedWordToGroup() {
     let selection = window.getSelection().toString();
     if (selection) {
@@ -500,7 +479,7 @@ function moveSelectedWordToGroup() {
             return word.wordInText === wordInText;
         });
         if (word) {
-            let groupName = $("#"+MOVE_TO_GROUP_CURR_VALUE).html();
+            let groupName = $("#move-to-group-curr-value").val();
             prepareTextPageEndpoints.changeWordGroup(word.id, groupName, function (resp) {
                 reloadEngText();
             })
