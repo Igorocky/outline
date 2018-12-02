@@ -47,21 +47,17 @@
 
 <h2 id="text-title"></h2>
 <hr/>
-<table>
-    <tr>
-        <td>
-            Language: <span id="lang-span" style="margin-right: 30px"></span>
-        </td>
-        <td>
-            Density: <span id="pct-span"></span>
-        </td>
-    </tr>
-</table>
+<span>
+    Language: <span id="lang-span" style="margin-right: 150px"></span>
+</span>
+<span>
+    Density: <span id="pct-span"></span>
+</span>
+<hr/>
 <table>
     <tr>
         <td colspan="2">
-            <button onclick="translateSelection('https://www.lingvolive.com/ru-ru/translate/en-ru/')">Translate (Lingvo)</button>
-            <button onclick="translateSelection('https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text=')">Translate (Google)</button>
+            <span id="translate-buttons"></span>
             <button onclick="saveSelectedWord()">Save word</button>
             <button onclick="ignoreSelectedWord()">Ignore</button>
             <button onclick="unignoreSelectedWord()">Unignore</button>

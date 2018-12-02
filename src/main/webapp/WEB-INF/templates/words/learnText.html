@@ -19,10 +19,12 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         var engTextId = /*[[${engTextId}]]*/;
+        var textLanguage = /*[[${textLanguage}]]*/;
         var sentenceNumber = /*[[${sentenceIdx}]]*/;
         /*]]>*/
         var pageState = {
             engTextId: engTextId,
+            textLanguage: textLanguage,
             sentenceIdx: sentenceNumber,
             sentence: undefined,
             maxSentenceIdx: undefined,
@@ -30,7 +32,7 @@
         };
 
         $( function() {
-            goToSentence(pageState.sentenceIdx);
+            initPage();
         } );
     </script>
     <script type="text/javascript">
@@ -52,6 +54,7 @@
 <h4><a th:href="@{/words/prepareText(id=${engTextId})}" th:text="${engTextTitle}"></a></h4>
 <hr/>
 <div>
+    <span id="translate-buttons"></span>
     <button id="check-words-btn" onclick="checkWords()">Check</button>
     <button onclick="goToPrevSentence()">Prev</button>
     <button id="next-btn" class="focusable-button" onclick="goToNextSentence()">Next</button>

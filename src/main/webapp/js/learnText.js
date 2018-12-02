@@ -1,5 +1,10 @@
 let SHOWN = "shown";
 
+function initPage() {
+    initTranslateSelectionButtons("translate-buttons", pageState.textLanguage);
+    goToSentence(pageState.sentenceIdx);
+}
+
 function goToSentence(sentenceIdx) {
     $("#show-sentence-area").html("");
     doGet({

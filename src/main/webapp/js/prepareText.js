@@ -16,6 +16,7 @@ let MOVE_TO_GROUP_CURR_VALUE = "move-to-group-curr-value";
 function initPage() {
     initTextTitle(textDataJson);
     initProps();
+    initTranslateSelectionButtons("translate-buttons", textDataJson.language);
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
     initLearnGroupsSelect();
@@ -28,7 +29,7 @@ function initProps() {
         textDataJson.language,
         function (newText, respHandler) {
             prepareTextPageEndpoints.changeLanguage(newText, function (resp) {
-                respHandler(resp);
+                location.reload();
             })
         },
         function (optionsLoadedHandler) {
@@ -420,10 +421,6 @@ function editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDo
         $("<textarea/>", {cols:"80", rows:"10", text: valueEdit(value)})
     );
     $("#" + contId + " textarea").focus();
-}
-
-function translateSelection(urlPrefix) {
-    window.open(urlPrefix + window.getSelection().toString(), '_blank');
 }
 
 function saveSelectedWord() {

@@ -166,6 +166,7 @@ public class WordsController {
         EngText text = wordsDao.getEngTextById(textId);
         commonModelMethods.addPath(model, (Paragraph) text.getParentNode());
         model.addAttribute("engTextId", textId);
+        model.addAttribute("textLanguage", text.getLanguage());
         model.addAttribute("engTextTitle", text.getName());
         model.addAttribute("sentenceIdx", 0);
         return prefix(LEARN_TEXT);

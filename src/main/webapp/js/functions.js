@@ -227,3 +227,38 @@ function infoDialog(dialogContainerId, text, confirmButtonName, onConfirm) {
     });
     $( "#" + dialogContainerId ).dialog('open');
 }
+
+function initTranslateSelectionButtons(containerId, lang) {
+    var $cont = $("#" + containerId);
+    $cont.html("");
+    $cont.append(
+        $("<button/>", {text: "Google translate"}).click(
+            function () {
+                var urlPrefix;
+                if (lang === "EN") {
+                    urlPrefix = "https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text="
+                } else if (lang === "PL") {
+                    urlPrefix = "https://translate.google.ru/#view=home&op=translate&sl=pl&tl=ru&text="
+                }
+                translateSelection(urlPrefix);
+            }
+        )
+    );
+    $cont.append(
+        $("<button/>", {text: "Abby translate"}).click(
+            function () {
+                var urlPrefix;
+                if (lang === "EN") {
+                    urlPrefix = "https://www.lingvolive.com/ru-ru/translate/en-ru/"
+                } else if (lang === "PL") {
+                    urlPrefix = "https://www.lingvolive.com/ru-ru/translate/pl-ru/"
+                }
+                translateSelection(urlPrefix);
+            }
+        )
+    );
+}
+
+function translateSelection(urlPrefix) {
+    window.open(urlPrefix + window.getSelection().toString(), '_blank');
+}
