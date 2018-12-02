@@ -63,6 +63,7 @@
     <button th:if="${nextSentenceMode == 'random'}" disabled>Prev</button>
     <button id="try-again-btn" class="green-on-focus" onclick="tryAgain()">Try again</button>
     <button id="next-btn" class="green-on-focus" onclick="goToNextSentence()">Next</button>
+    <button th:unless="${nextSentenceMode == 'random'}" id="first-sentence-btn" class="green-on-focus" onclick="goToSentence(0)">First sentence</button>
     <button onclick="goToNextSentenceByNumber()">Go to</button>
     <input type="text" id="go-to-sentence-number" size="5">
     <button id="show-sentence-btn" onclick="showSentence()">Show sentence</button>

@@ -26,7 +26,9 @@ function goToSentence(sentenceIdx) {
                         "dialog-confirm",
                         "No sentence available. Max sentence number = " + (response.maxSentenceIdx + 1),
                         "OK",
-                        function () {}
+                        function () {
+                            $("#first-sentence-btn").focus();
+                        }
                     );
                 } else {
                     pageState.sentenceIdx = response.sentenceIdx;
