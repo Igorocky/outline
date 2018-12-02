@@ -15,6 +15,7 @@ import org.igye.outline.htmlforms.IgnoreWordRequest;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.htmlforms.WordDto;
 import org.igye.outline.model.EngText;
+import org.igye.outline.model.TextLanguage;
 import org.igye.outline.model.User;
 import org.igye.outline.model.Word;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,7 @@ public class WordsDao {
         engText.setText("");
         engText.setIgnoreList("");
         engText.setLearnGroups("");
+        engText.setLanguage(TextLanguage.EN);
         nodeDao.saveNode(parentId, engText, node -> engTextRepository.save((EngText) node));
         return engText;
     }
@@ -75,6 +77,8 @@ public class WordsDao {
                 .sentences(splitOnSentences(text))
                 .ignoreList(text.getIgnoreList())
                 .wordsToLearn(map(text.getWords(), this::mapWord))
+                .language(text.getLanguage())
+                .pct(text.getPct())
                 .build();
         Collections.sort(res.getWordsToLearn(), Comparator.comparing(WordDto::getWordInText));
         return res;
@@ -116,6 +120,12 @@ public class WordsDao {
             return request.getValue();
         } else if ("eng-text-text".equals(request.getAttrName())) {
             getEngTextById(request.getObjId()).setText((String) request.getValue());
+            return request.getValue();
+        } else if ("eng-text-lang".equals(request.getAttrName())) {
+            getEngTextById(request.getObjId()).setLanguage(TextLanguage.valueOf((String) request.getValue()));
+            return request.getValue();
+        } else if ("eng-text-pct".equals(request.getAttrName())) {
+            getEngTextById(request.getObjId()).setPct(Integer.parseInt((String) request.getValue()));
             return request.getValue();
         } else if ("eng-text-ignore-list".equals(request.getAttrName())) {
             getEngTextById(request.getObjId()).setIgnoreList((String) request.getValue());

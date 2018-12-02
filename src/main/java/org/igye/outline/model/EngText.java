@@ -9,6 +9,8 @@ import org.hibernate.annotations.Cascade;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
@@ -40,6 +42,12 @@ public class EngText extends Node {
     private String ignoreList;
     @Column(name = "LEARN_GROUPS")
     private String learnGroups;
+    @Column(name = "LANG")
+    @Enumerated(EnumType.STRING)
+    private TextLanguage language;
+    @Column(name = "PCT")
+    private int pct;
+
 
     public void addWord(Word word) {
         Hibernate.initialize(getWords());

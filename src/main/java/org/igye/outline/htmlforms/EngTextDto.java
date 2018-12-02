@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.igye.outline.common.TextToken;
+import org.igye.outline.model.TextLanguage;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,4 +23,6 @@ public class EngTextDto {
     private List<List<TextToken>> sentences;
     private List<WordDto> wordsToLearn;
     private String ignoreList;
+    private TextLanguage language;
+    private int pct;
 }

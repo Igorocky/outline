@@ -15,17 +15,39 @@ let MOVE_TO_GROUP_CURR_VALUE = "move-to-group-curr-value";
 
 function initPage() {
     initTextTitle(textDataJson);
+    initProps();
     initMainTextArea(textDataJson);
     initWordsToLearnTable(textDataJson);
     initLearnGroupsSelect();
     initIgnoreListTextArea(textDataJson);
 }
 
+function initProps() {
+    editableSelectReadMode(
+        "lang-span",
+        textDataJson.language,
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeLanguage(newText, function (resp) {
+                respHandler(resp);
+            })
+        },
+        function (optionsLoadedHandler) {
+            prepareTextPageEndpoints.getAvailableLanguages(optionsLoadedHandler)
+        },
+        {
+            useSpan: true
+        }
+    );
+    editableTextFieldReadMode("pct-span", textDataJson.pct, function (newValue, respHandler) {
+        prepareTextPageEndpoints.changePct(newValue, respHandler);
+    });
+}
+
 function initTextTitle(textDataJson) {
     editableTextFieldReadMode(TEXT_TITLE, textDataJson.title, function (newValue, respHandler) {
         console.log("newValue = '" + newValue + "'");
         prepareTextPageEndpoints.changeTitle(newValue, respHandler);
-    })
+    });
 }
 
 function initMainTextArea(textDataJson) {
@@ -499,6 +521,12 @@ let prepareTextPageEndpoints = {
     changeTitle: function (newText, respHandler) {
         changeAttrValueEndpoint(textDataJson.textId, "eng-text-title", newText, respHandler);
     },
+    changePct: function (newText, respHandler) {
+        changeAttrValueEndpoint(textDataJson.textId, "eng-text-pct", newText, respHandler);
+    },
+    changeLanguage: function (newText, respHandler) {
+        changeAttrValueEndpoint(textDataJson.textId, "eng-text-lang", newText, respHandler);
+    },
     changeText: function (newText, respHandler) {
         doPostWithMock(
             USE_MOCK_RESPONSE,
@@ -647,6 +675,25 @@ let prepareTextPageEndpoints = {
                 return {
                     status: "ok",
                     availableWordGroups: ["G1", "G2", "Ggg"]
+                };
+            }
+        );
+    },
+    getAvailableLanguages: function (onDataRetrieved) {
+        doGetWithMock(
+            USE_MOCK_RESPONSE,
+            {
+                url: "availableLanguages",
+                success: function (response) {
+                    if (response.status == "ok") {
+                        onDataRetrieved(response.languages);
+                    }
+                }
+            },
+            function (url) {
+                return {
+                    status: "ok",
+                    languages: ["EN", "PL"]
                 };
             }
         );

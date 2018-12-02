@@ -12,6 +12,7 @@ import org.igye.outline.htmlforms.DeleteWordRequest;
 import org.igye.outline.htmlforms.IgnoreWordRequest;
 import org.igye.outline.model.EngText;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.TextLanguage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -128,6 +129,12 @@ public class WordsController {
     @ResponseBody
     public Map<String, Object> availableWordGroups(@PathVariable UUID id) {
         return createResponse("availableWordGroups", wordsDao.listAvailableWordGroups(id));
+    }
+
+    @GetMapping("availableLanguages")
+    @ResponseBody
+    public Map<String, Object> availableLanguages() {
+        return createResponse("languages", TextLanguage.values());
     }
 
     @GetMapping("engText/learnGroupsInfo/{id}")
