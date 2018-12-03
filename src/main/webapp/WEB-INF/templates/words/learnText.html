@@ -38,6 +38,7 @@
 
         $( function() {
             initPage();
+            registerShortcuts();
         } );
     </script>
     <script type="text/javascript">
@@ -64,7 +65,7 @@
     <button id="check-words-btn" class="orange-on-focus" onclick="checkWords()">Check</button>
     <button th:unless="${nextSentenceMode == 'random'}" onclick="goToPrevSentence()">Prev</button>
     <button th:if="${nextSentenceMode == 'random'}" disabled>Prev</button>
-    <button id="try-again-btn" class="green-on-focus" onclick="tryAgain()">Try again</button>
+    <button id="try-again-btn" shortcut="r" class="green-on-focus" onclick="tryAgain()">Try again</button>
     <button id="next-btn" class="green-on-focus" onclick="goToNextSentence()">Next</button>
     <button th:unless="${nextSentenceMode == 'random'}" id="first-sentence-btn" class="green-on-focus" onclick="goToSentence(0)">First sentence</button>
     <button onclick="goToNextSentenceByNumber()">Go to</button>
