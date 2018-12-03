@@ -121,6 +121,10 @@
     font-weight: bold;
 }
 
+.start-task-selection-lnk {
+    font-size: large;
+}
+
 .select-editable {
     position:relative;
     background-color:white;
