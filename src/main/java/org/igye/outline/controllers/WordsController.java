@@ -167,11 +167,7 @@ public class WordsController {
             }
         }
         EngText text = wordsDao.getEngTextById(textId);
-        return createResponse(
-                "sentence", sentence,
-                "counts", text.getListOfLearnGroups().contains(ALL_WORDS) ?
-                        sessionData.getLearnTextData().getCountsStat() : ""
-        );
+        return createResponse("sentence", sentence);
     }
 
     @GetMapping("engText/{textId}/wordForLearning")
@@ -182,7 +178,7 @@ public class WordsController {
 
     @GetMapping("engText/{textId}/learn")
     public String learnText(Model model, @PathVariable UUID textId, @RequestParam Optional<String> nextSentenceMode) {
-        sessionData.getLearnTextData().getCountsStat(0,0, 0);
+        sessionData.getLearnTextData().getCountsStat(0,0);
         commonModelMethods.initModel(model);
         EngText text = wordsDao.getEngTextById(textId);
         commonModelMethods.addPath(model, (Paragraph) text.getParentNode());

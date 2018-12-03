@@ -267,22 +267,25 @@ public class WordsDao {
                     sentences,
                     null,
                     null,
-                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups(), null)
+                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups()),
+                    null,
+                    null
             );
         } else {
             List<TextToken> sentence = sentences.get(sentenceIdx);
-            String counts = null;
+            String countsBefore = null;
+            String countsAfter = null;
             if (text.getListOfLearnGroups().contains(ALL_WORDS)) {
                 List<TextToken> hiddable = filter(sentence, TextToken::isHiddable);
-                counts = sessionData.getLearnTextData().getCountsStat(
-                        hiddable.size(), text.getPct(), sentence.hashCode()
-                );
+                int hash = sentence.hashCode();
+                countsBefore = sessionData.getLearnTextData().getCountsStat(hiddable.size(), hash);
                 sessionData
                         .getLearnTextData()
                         .getIndicesToHide(hiddable.size(), text.getPct(), sentence.hashCode())
                         .forEach(idx ->
                                 hiddable.get(idx).setHidden(true)
                         );
+                countsAfter = sessionData.getLearnTextData().getCountsStat(hiddable.size(), hash);
             } else if (text.getListOfLearnGroups().contains(ALL_GROUPS)) {
                 sentence.forEach(t -> {
                     if (t.isWordToLearn()) {
@@ -300,7 +303,9 @@ public class WordsDao {
                     sentences,
                     sentence,
                     sentenceIdx,
-                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups(), counts)
+                    createTaskDescription(sentenceIdxOpt.isPresent(), text.getListOfLearnGroups()),
+                    countsBefore,
+                    countsAfter
             );
         }
     }
@@ -335,7 +340,7 @@ public class WordsDao {
         );
     }
 
-    private String createTaskDescription(boolean isSequential, List<String> groups, String counts) {
+    private String createTaskDescription(boolean isSequential, List<String> groups) {
         StringBuilder sb = new StringBuilder();
         if (isSequential) {
             sb.append("Fill gaps in a sentence.");
@@ -343,9 +348,6 @@ public class WordsDao {
             sb.append("Fill gaps in a sentence: random mode.");
         }
         sb.append(" Groups: ").append(StringUtils.join(groups, ", ")).append(".");
-        if (counts != null) {
-            sb.append(" ").append(counts);
-        }
         return sb.toString();
     }
 
@@ -353,14 +355,18 @@ public class WordsDao {
             List<List<TextToken>> sentences,
             List<TextToken> sentence,
             Integer sentenceIdx,
-            String taskDescription
+            String taskDescription,
+            String countsBefore,
+            String countsAfter
     ) {
-        return createResponse(
-                "maxSentenceIdx", sentences.size() - 1,
-                "sentence", sentence,
-                "sentenceIdx", sentenceIdx,
-                "taskDescription", taskDescription
-        );
+        Map<String, Object> response = createVoidResponse();
+        response.put("maxSentenceIdx", sentences.size() - 1);
+        response.put("sentence", sentence);
+        response.put("sentenceIdx", sentenceIdx);
+        response.put("taskDescription", taskDescription);
+        response.put("countsBefore", countsBefore);
+        response.put("countsAfter", countsAfter);
+        return response;
     }
 
     private Map<String, Object> createWordResponse(

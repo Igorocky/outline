@@ -33,8 +33,10 @@ function goToSentence(sentenceIdx) {
                 } else {
                     pageState.sentenceIdx = response.sentenceIdx;
                     pageState.sentence = response.sentence;
+                    pageState.taskDescription = response.taskDescription;
+                    pageState.countsBefore = response.countsBefore;
+                    pageState.countsAfter = response.countsAfter;
                     drawSentenceToLearn();
-                    $("#task-description-area").html(response.taskDescription);
                 }
             }
         }
@@ -70,7 +72,6 @@ function checkWords() {
         success: function (response) {
             if (response.status == "ok") {
                 pageState.sentence = response.sentence;
-                $("#task-description-area").html(response.taskDescription);
                 drawSentenceToLearn();
             }
         }
@@ -94,7 +95,13 @@ function drawSentenceToLearn() {
     );
     if (_.size(inputs) === 0) {
         $("#try-again-btn").focus();
+        $("#task-description-area").html(
+            pageState.taskDescription + " " + (pageState.countsAfter?pageState.countsAfter:"")
+        );
     } else {
+        $("#task-description-area").html(
+            pageState.taskDescription + " " + (pageState.countsBefore?pageState.countsBefore:"")
+        );
         pageState.firstInput = _.first(inputs);
         pageState.firstInput.focus();
         for (var i = 0; i < _.size(inputs) - 1; i++) {

@@ -99,7 +99,7 @@
             <span th:if="${childNode instanceof T(org.igye.outline.model.EngText)}">
                 <span th:replace="selection-controls :: selection-checkbox (id=${childNode.id}, objecttype='ENG_TEXT')"></span>
                 <a th:href="@{words/prepareText(id=${childNode.id},pageMode='taskSelection')}"
-                   class="start-task-selection-lnk" >&#9654;&nbsp;</a>
+                   class="start-task-selection-lnk" >&#10148;&nbsp;</a>
                 <a th:href="@{words/prepareText(id=${childNode.id})}" th:text="${childNode.name}"></a>
             </span>
         </li>

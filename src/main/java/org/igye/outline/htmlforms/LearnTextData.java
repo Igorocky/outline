@@ -19,14 +19,8 @@ public class LearnTextData {
     private List<Integer> lastCounts = new ArrayList<>();
     private Random rnd = new Random();
 
-    public String getCountsStat() {
-        return getCountsStat(elemsCnt, 100, hash);
-    }
-
-    public String getCountsStat(int elemsCnt, int pct, int hash) {
-        if (this.hash != hash || this.elemsCnt != elemsCnt) {
-            reset(hash, elemsCnt);
-        }
+    public String getCountsStat(int elemsCnt, int hash) {
+        resetCountsIfNecessary(elemsCnt, hash);
         int min = Integer.MAX_VALUE;
         int max = 0;
         for (Integer cnt : lastCounts) {
@@ -41,9 +35,7 @@ public class LearnTextData {
     }
 
     public Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {
-        if (this.hash != hash || this.elemsCnt != elemsCnt) {
-            reset(hash, elemsCnt);
-        }
+        resetCountsIfNecessary(elemsCnt, hash);
         Set<Integer> result = null;
         if (pct <= 50) {
             result = getRandomIndicesUnder50(pct, lastCounts);
@@ -58,6 +50,12 @@ public class LearnTextData {
             lastCounts.set(idx, lastCounts.get(idx) + 1);
         }
         return result;
+    }
+
+    private void resetCounts(int hash, int elemsCnt) {
+        this.hash = hash;
+        this.elemsCnt = elemsCnt;
+        lastCounts = Stream.generate(() -> 0).limit(elemsCnt).collect(Collectors.toList());
     }
 
     private Set<Integer> getAllIndices(int hiddableWordsCnt) {
@@ -115,9 +113,9 @@ public class LearnTextData {
         return idxs.get(rnd.nextInt(idxs.size()));
     }
 
-    private void reset(int hash, int elemsCnt) {
-        this.hash = hash;
-        this.elemsCnt = elemsCnt;
-        lastCounts = Stream.generate(() -> 0).limit(elemsCnt).collect(Collectors.toList());
+    private void resetCountsIfNecessary(int elemsCnt, int hash) {
+        if (this.hash != hash || this.elemsCnt != elemsCnt) {
+            resetCounts(hash, elemsCnt);
+        }
     }
 }
