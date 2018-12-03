@@ -195,6 +195,55 @@ function createSentencesTable(textDataJson) {
     return $sentencesTable;
 }
 
+function wordInTextEditableTextField(contId, word) {
+    return editableTextFieldReadModeElem(
+        contId,
+        word.wordInText,
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeWordInText(word.id, newText, function (resp) {
+                respHandler(resp);
+                reloadEngText();
+            });
+        }
+    )
+}
+
+function basicFormEditableTextField(contId, word) {
+    return editableTextFieldReadModeElem(
+        contId,
+        word.word,
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeWordSpelling(word.id, newText, respHandler)
+        }
+    )
+}
+
+function transcriptionEditableTextField(contId, word) {
+    return editableTextFieldReadModeElem(
+        contId,
+        word.transcription,
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeWordTranscription(word.id, newText, respHandler)
+        }
+    )
+}
+
+function meaningEditableTextArea(contId, word) {
+    return editableTextAreaReadModeElem(
+        contId,
+        word.meaning,
+        function (meaning) {
+            return strToDivs(meaning);
+        },
+        function (meaning) {
+            return meaning;
+        },
+        function (newText, respHandler) {
+            prepareTextPageEndpoints.changeWordMeaning(word.id, newText, respHandler)
+        }
+    );
+}
+
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-child(1)").after(
         $("<tr/>", {id: "word-" + word.id}).html(
@@ -207,13 +256,21 @@ function appendWordToLearn(word) {
         ).append(
             $("<td/>", {id: "word-group-" + word.id})
         ).append(
-            $("<td/>", {id: "word-wordInText-" + word.id})
+            $("<td/>", {id: "word-wordInText-" + word.id}).html(
+                wordInTextEditableTextField("word-wordInText-" + word.id, word)
+            )
         ).append(
-            $("<td/>", {id: "word-word-" + word.id})
+            $("<td/>", {id: "word-word-" + word.id}).html(
+                basicFormEditableTextField("word-word-" + word.id, word)
+            )
         ).append(
-            $("<td/>", {id: "word-transcription-" + word.id})
+            $("<td/>", {id: "word-transcription-" + word.id}).html(
+                transcriptionEditableTextField("word-transcription-" + word.id, word)
+            )
         ).append(
-            $("<td/>", {id: "word-meaning-" + word.id})
+            $("<td/>", {id: "word-meaning-" + word.id}).html(
+                meaningEditableTextArea("word-meaning-" + word.id, word)
+            )
         )
     );
     editableSelectReadMode(
@@ -229,47 +286,10 @@ function appendWordToLearn(word) {
             prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
         }
     );
-    editableTextFieldReadMode(
-        "word-wordInText-" + word.id,
-        word.wordInText,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordInText(word.id, newText, function (resp) {
-                respHandler(resp);
-                reloadEngText();
-            });
-        }
-    );
-    editableTextFieldReadMode(
-        "word-word-" + word.id,
-        word.word,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordSpelling(word.id, newText, respHandler)
-        }
-    );
-    editableTextFieldReadMode(
-        "word-transcription-" + word.id,
-        word.transcription,
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordTranscription(word.id, newText, respHandler)
-        }
-    );
-    editableTextAreaReadMode(
-        "word-meaning-" + word.id,
-        word.meaning,
-        function (meaning) {
-            return strToDivs(meaning);
-        },
-        function (meaning) {
-            return meaning;
-        },
-        function (newText, respHandler) {
-            prepareTextPageEndpoints.changeWordMeaning(word.id, newText, respHandler)
-        }
-    );
 }
 
-function editableTextFieldReadMode(contId, value, onEditDone) {
-    $cont = $("<div/>");
+function editableTextFieldReadModeElem(contId, value, onEditDone) {
+    $cont = $("<span/>");
     $cont.append(
         $("<button/>", {text: "Edit"}).click(function () {
             editableTextFieldWriteMode(contId, value, onEditDone);
@@ -277,7 +297,11 @@ function editableTextFieldReadMode(contId, value, onEditDone) {
     ).append(
         $("<span/>", {text: value})
     );
-    $("#" + contId).html($cont);
+    return $cont;
+}
+
+function editableTextFieldReadMode(contId, value, onEditDone) {
+    $("#" + contId).html(editableTextFieldReadModeElem(contId, value, onEditDone));
 }
 
 function editableTextFieldWriteMode(contId, value, onEditDone) {
@@ -386,8 +410,8 @@ function editableSelectWriteMode(contId, value, onEditDone, loadOptions, params)
     })
 }
 
-function editableTextAreaReadMode(contId, value, valueView, valueEdit, onEditDone) {
-    $cont = $("#" + contId);
+function editableTextAreaReadModeElem(contId, value, valueView, valueEdit, onEditDone) {
+    $cont = $("<span/>");
     $cont.html(
         $("<button/>", {text: "Edit"}).click(function () {
             editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDone);
@@ -396,6 +420,14 @@ function editableTextAreaReadMode(contId, value, valueView, valueEdit, onEditDon
     if (value) {
         $cont.append(valueView(value))
     }
+    return $cont;
+}
+
+function editableTextAreaReadMode(contId, value, valueView, valueEdit, onEditDone) {
+    $cont = $("#" + contId);
+    $cont.html(
+        editableTextAreaReadModeElem(contId, value, valueView, valueEdit, onEditDone)
+    );
 }
 
 function editableTextAreaWriteMode(contId, value, valueView, valueEdit, onEditDone) {
@@ -430,6 +462,81 @@ function saveSelectedWord() {
     var selection = window.getSelection().toString();
     if (selection && selection.trim() !== "") {
         prepareTextPageEndpoints.createNewWord(selection);
+    }
+}
+
+function editSelectedWord() {
+    let selectedWord = getSelectedWord();
+    if (selectedWord) {
+        doGet(
+            {
+                url: "engText/word/" + selectedWord.id,
+                success: function (response) {
+                    if (response.status == "ok") {
+                        modalDialog(
+                            "dialog-modal",
+                            "Edit word: " + response.word.wordInText,
+                            function () {
+                                $content = $("<div/>");
+                                $content.append(
+                                    $("<div/>").html(generateTranslateSelectionButtons(textDataJson.language))
+                                );
+                                $table = $("<table/>", {"class": "word-to-learn-table"});
+                                $content.append($table);
+                                $table.append(
+                                    $("<tr/>")
+                                        .append($("<td/>", {text:"In text:"}))
+                                        .append(
+                                            $("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}).html(
+                                                response.word.wordInText
+                                            )
+                                        )
+                                );
+                                $table.append(
+                                    $("<tr/>")
+                                        .append($("<td/>", {text:"Basic form:"}))
+                                        .append(
+                                            $("<td/>", {id: BASIC_FORM_CONTAINER_ID}).html(
+                                                basicFormEditableTextField(BASIC_FORM_CONTAINER_ID, response.word)
+                                            )
+                                        )
+                                );
+                                $table.append(
+                                    $("<tr/>")
+                                        .append($("<td/>", {text:"Transcription:"}))
+                                        .append(
+                                            $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}).html(
+                                                transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID, response.word)
+                                            )
+                                        )
+                                );
+                                $table.append(
+                                    $("<tr/>")
+                                        .append($("<td/>", {text:"Meaning:"}))
+                                        .append(
+                                            $("<td/>", {id:MEANING_CONTAINER_ID}).html(
+                                                meaningEditableTextArea(MEANING_CONTAINER_ID, response.word)
+                                            )
+                                        )
+                                );
+                                $table.append(
+                                    $("<tr/>")
+                                        .append($("<td/>", {text: "Examples:"}))
+                                        .append(
+                                            $("<td/>", {id: EXAMPLES_CONTAINER_ID}).html(
+                                                composeExamples(response.word.wordInText, response.word.examples, false)
+                                            )
+                                        )
+                                );
+                                return $content;
+                            },
+                            "OK",
+                            function () {}
+                        )
+                    }
+                }
+            }
+        );
     }
 }
 
@@ -468,19 +575,23 @@ function removeWord(word) {
     });
 }
 
-function moveSelectedWordToGroup() {
+function getSelectedWord() {
     let selection = window.getSelection().toString();
     if (selection) {
         let wordInText = selection.trim();
-        let word = _.find(textDataJson.wordsToLearn, function (word) {
+        return _.find(textDataJson.wordsToLearn, function (word) {
             return word.wordInText === wordInText;
         });
-        if (word) {
-            let groupName = $("#move-to-group-curr-value").val();
-            prepareTextPageEndpoints.changeWordGroup(word.id, groupName, function (resp) {
-                reloadEngText();
-            })
-        }
+    }
+}
+
+function moveSelectedWordToGroup() {
+    let selectedWord = getSelectedWord();
+    if (selectedWord) {
+        let groupName = $("#move-to-group-curr-value").val();
+        prepareTextPageEndpoints.changeWordGroup(selectedWord.id, groupName, function (resp) {
+            reloadEngText();
+        })
     }
 }
 

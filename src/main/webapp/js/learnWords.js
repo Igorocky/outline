@@ -86,7 +86,7 @@ function createOpenedTranscriptionElement() {
 }
 
 function createOpenedExamplesElement(hideWord) {
-    return composeExamples(pageState.word.examples, false);
+    return composeExamples(pageState.word.wordInText, pageState.word.examples, false);
 }
 
 function drawTranscription(containerId) {
@@ -122,7 +122,7 @@ function drawMeaning(containerId) {
 function drawExamples(containerId) {
     let $container = $("#" + containerId);
     $container.html(createShowButton($container, function () {
-        return composeExamples(pageState.word.examples, pageState.learnDirection);
+        return composeExamples(pageState.word.wordInText, pageState.word.examples, pageState.learnDirection);
     }));
 }
 
@@ -207,32 +207,32 @@ function composeMeaning(meaning) {
     return strToDivs(meaning);
 }
 
-function composeExamples(examples, hideWord) {
+function composeExamples(currentWordInText, examples, hideWord) {
     return _.reduce(
         examples,
         function(memo, example){
-            return memo.append(drawSentence(example, hideWord));
+            return memo.append(drawSentence(currentWordInText, example, hideWord));
         },
         $("<ul/>")
     );
 
 }
 
-function drawSentence(sentence, hideWord) {
+function drawSentence(currentWordInText, sentence, hideWord) {
     return _.reduce(
         sentence,
         function(memo, token){
-            return memo.append(createElemForToken(token, hideWord));
+            return memo.append(createElemForToken(currentWordInText, token, hideWord));
         },
         $("<li/>")
     );
 }
 
-function createElemForToken(token, hideWord) {
+function createElemForToken(currentWordInText, token, hideWord) {
     if (token.meta) {
         return $("<span/>");
     }
-    let isCurrentWord = pageState.word.wordInText === token.value;
+    let isCurrentWord = currentWordInText === token.value;
     let $currentWordSpan = $("<span/>", {
         text:token.value,
         "class": (isCurrentWord)?"word-selected-group":""

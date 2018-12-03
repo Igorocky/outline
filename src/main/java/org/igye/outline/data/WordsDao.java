@@ -88,6 +88,23 @@ public class WordsDao {
     }
 
     @Transactional
+    public WordDto getWordDtoById(UUID wordId) {
+        Word word = wordRepository.findByOwnerAndId(sessionData.getCurrentUser(), wordId);
+        EngText text = word.getEngText();
+
+        List<List<TextToken>> exampleSentences = splitOnSentences(text)
+                .stream()
+                .filter(tokens -> tokens.stream()
+                        .anyMatch(token -> token.getValue().equals(word.getWordInText()))
+                )
+                .collect(Collectors.toList());
+
+        WordDto WordDto = mapWord(word);
+        WordDto.setExamples(exampleSentences);
+        return WordDto;
+    }
+
+    @Transactional
     public EngText getEngTextById(UUID id) {
         EngText text = engTextRepository.findByOwnerAndId(sessionData.getCurrentUser(), id);
         if (text == null) {
@@ -310,21 +327,12 @@ public class WordsDao {
                         wordsInSelectedGroups.size()
                 )
         );
-        List<List<TextToken>> exampleSentences = splitOnSentences(text)
-                .stream()
-                .filter(tokens -> tokens.stream()
-                        .anyMatch(token -> token.getValue().equals(word.getWordInText()))
-                )
-                .collect(Collectors.toList());
-
-        WordDto WordDto = mapWord(word);
-        WordDto.setExamples(exampleSentences);
+        WordDto WordDto = getWordDtoById(word.getId());
         return createWordResponse(
                 selectedGroupsList,
                 sessionData.getCyclicRandom().getCounts(),
                 WordDto
         );
-
     }
 
     private String createTaskDescription(boolean isSequential, List<String> groups, String counts) {

@@ -94,6 +94,12 @@ public class WordsController {
         return createResponse("engText", wordsDao.getEngTextDtoById(id));
     }
 
+    @GetMapping("engText/word/{wordId}")
+    @ResponseBody
+    public Map<String, Object> getWord(@PathVariable UUID wordId) {
+        return createResponse("word", wordsDao.getWordDtoById(wordId));
+    }
+
     @PostMapping("createWord")
     @ResponseBody
     public Map<String, Object> createWord(@RequestBody CreateWordRequest request) {

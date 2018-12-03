@@ -228,9 +228,24 @@ function infoDialog(dialogContainerId, text, confirmButtonName, onConfirm) {
     $( "#" + dialogContainerId ).dialog('open');
 }
 
-function initTranslateSelectionButtons(containerId, lang) {
-    var $cont = $("#" + containerId);
-    $cont.html("");
+function modalDialog(dialogContainerId, title, contentProducer, confirmButtonName, onConfirm) {
+    let $dialogContainer = $('#' + dialogContainerId);
+    $dialogContainer.html(contentProducer());
+
+    let buttons = {};
+    buttons[confirmButtonName] = function() {
+        $( this ).dialog( "close" );
+        onConfirm();
+    }
+    $dialogContainer.dialog({
+        title:title,
+        buttons: buttons
+    });
+    $dialogContainer.dialog('open');
+}
+
+function generateTranslateSelectionButtons(lang) {
+    var $cont = $("<span/>");
     $cont.append(
         $("<button/>", {text: "Google translate"}).click(
             function () {
@@ -257,6 +272,11 @@ function initTranslateSelectionButtons(containerId, lang) {
             }
         )
     );
+    return $cont;
+}
+
+function initTranslateSelectionButtons(containerId, lang) {
+    $("#" + containerId).html(generateTranslateSelectionButtons(lang));
 }
 
 function translateSelection(urlPrefix) {
