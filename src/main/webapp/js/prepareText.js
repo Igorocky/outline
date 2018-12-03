@@ -21,6 +21,8 @@ function initPage() {
         initMainTextArea(textDataJson);
         initWordsToLearnTable(textDataJson);
         initIgnoreListTextArea(textDataJson);
+    } else {
+        initExerciseSelector();
     }
 }
 
@@ -43,6 +45,11 @@ function initProps() {
     editableTextFieldReadMode("pct-span", textDataJson.pct, function (newValue, respHandler) {
         prepareTextPageEndpoints.changePct(newValue, respHandler);
     });
+}
+
+function initExerciseSelector() {
+    $("#x-ru-link").text("Words: " + textDataJson.language + " -> RU");
+    $("#ru-x-link").text("Words: RU -> " + textDataJson.language);
 }
 
 function initTextTitle(textDataJson) {
@@ -113,14 +120,13 @@ function createWordForSentenceSpan(wordOfSentence) {
             wordClass = WORD_GENERAL;
         }
         if (wordOfSentence.wordToLearn) {
-            if (wordOfSentence.doesntHaveGroup) {
-                wordClass = WORD_TO_LEARN_NO_GROUP;
-            } else {
-                wordClass = WORD_TO_LEARN;
-            }
+            wordClass = WORD_TO_LEARN;
         }
         if (wordOfSentence.selectedGroup) {
             wordClass = WORD_SELECTED_GROUP;
+        }
+        if (wordOfSentence.doesntHaveGroup) {
+            wordClass = WORD_TO_LEARN_NO_GROUP;
         }
 
         return $("<span/>", {'class': wordClass, text: wordOfSentence.value + (wordOfSentence.wordToLearn ? " {" + wordOfSentence.group + "}" : "") });
@@ -263,14 +269,15 @@ function appendWordToLearn(word) {
 }
 
 function editableTextFieldReadMode(contId, value, onEditDone) {
-    $cont = $("#" + contId);
-    $cont.html(
+    $cont = $("<div/>");
+    $cont.append(
         $("<button/>", {text: "Edit"}).click(function () {
             editableTextFieldWriteMode(contId, value, onEditDone);
         })
     ).append(
         $("<span/>", {text: value})
     );
+    $("#" + contId).html($cont);
 }
 
 function editableTextFieldWriteMode(contId, value, onEditDone) {

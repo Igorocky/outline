@@ -1,3 +1,12 @@
+let NEXT_BTN_ID = "next-btn";
+let USER_INPUT_ID = "user-input";
+let BASIC_FORM_CONTAINER_ID = "basic-form-container";
+let WORD_IN_TEXT_CONTAINER_ID = "word-in-text-container";
+let TRANSCRIPTION_CONTAINER_ID = "transcription-container";
+let MEANING_CONTAINER_ID = "meaning-container";
+let SHOW_MEANING_BTN_ID = "SHOW_MEANING_BTN_ID";
+let EXAMPLES_CONTAINER_ID = "examples-container";
+
 function initPage() {
     initTranslateSelectionButtons("translate-buttons", pageState.textLanguage);
     goToNextWord();
@@ -10,12 +19,152 @@ function goToNextWord() {
             if (response.status == "ok") {
                 pageState.word = response.word;
                 drawWordToLearn();
+                var taskName;
+                if (pageState.learnDirection) {
+                    taskName = "Words: RU -> " + pageState.textLanguage + ".";
+                } else {
+                    taskName = "Words: " + pageState.textLanguage + " -> RU.";
+                }
                 $("#task-description-area").html(
-                    "Learn words. Groups: " + response.groups + ". Counts: " + response.counts
+                    taskName + " Groups: " + response.groups + ". Counts: " + response.counts
                 );
+                focusNextControl();
             }
         }
     });
+}
+
+function hasBasicForm() {
+    return pageState.word.word && pageState.word.word.trim().length > 0;
+}
+
+function drawBasicForm(containerId) {
+    if (hasBasicForm()) {
+        let $container = $("#" + containerId);
+        if (pageState.learnDirection) {
+            let $input = createUserInputTextField(pageState.word.word, function () {
+                $container.html($("<span/>", {text:pageState.word.word, "class": "correct-user-input"}));
+                $("#" + WORD_IN_TEXT_CONTAINER_ID).html(
+                    $("<span/>", {text:pageState.word.wordInText})
+                );
+            });
+            $container.html($input);
+            focusNextControl();
+        } else {
+            $container.html($("<span/>", {text:pageState.word.word}));
+        }
+    }
+}
+
+function drawWordInText(containerId) {
+    let $container = $("#" + containerId);
+    let $span = $("<span/>", {text:pageState.word.wordInText});
+    if (pageState.learnDirection) {
+        if (hasBasicForm()) {
+            $container.html(
+                createShowButton($container, function () {
+                    return $span;
+                })
+            );
+        } else {
+            let $input = createUserInputTextField(pageState.word.wordInText, function () {
+                $container.html($("<span/>", {text:pageState.word.wordInText, "class": "correct-user-input"}));
+                $("#" + BASIC_FORM_CONTAINER_ID).html(
+                    $("<span/>", {text:pageState.word.word})
+                );
+            });
+            $container.html($input);
+            focusNextControl();
+        }
+    } else {
+        return $container.html($span);
+    }
+}
+
+function createOpenedTranscriptionElement() {
+    return $("<span/>", {text:pageState.word.transcription});
+}
+
+function createOpenedExamplesElement(hideWord) {
+    return composeExamples(pageState.word.examples, false);
+}
+
+function drawTranscription(containerId) {
+    let $container = $("#" + containerId);
+    $container.html(
+        createShowButton($container, function () {
+            return createOpenedTranscriptionElement();
+        })
+    );
+}
+
+function drawMeaning(containerId) {
+    let $container = $("#" + containerId);
+    if (pageState.learnDirection) {
+        $container.html(composeMeaning(pageState.word.meaning));
+    } else {
+        $container.html(
+            createShowButton(
+                $container,
+                function () {
+                    focusNextControl();
+                    return composeMeaning(pageState.word.meaning);
+                },
+                {
+                    id: SHOW_MEANING_BTN_ID,
+                    "class": "green-on-focus"
+                }
+            )
+        );
+    }
+}
+
+function drawExamples(containerId) {
+    let $container = $("#" + containerId);
+    $container.html(createShowButton($container, function () {
+        return composeExamples(pageState.word.examples, pageState.learnDirection);
+    }));
+}
+
+function focusNextControl() {
+    $("#" + NEXT_BTN_ID).focus();
+    $("#" + SHOW_MEANING_BTN_ID).focus();
+    $("#" + USER_INPUT_ID).focus();
+}
+
+function createUserInputTextField(correctValue, onCorrectInput) {
+    let $input = $("<input/>", {"type": "text", id: USER_INPUT_ID});
+    $input.keypress(function (e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            if (this.value != correctValue) {
+                $("#user-input").addClass("incorrect-user-input")
+            } else {
+                onCorrectInput();
+                $("#" + TRANSCRIPTION_CONTAINER_ID).html(createOpenedTranscriptionElement());
+                $("#" + EXAMPLES_CONTAINER_ID).html(createOpenedExamplesElement(false));
+                focusNextControl();
+            }
+        }
+    });
+    return $input;
+}
+
+function createShowButton($container, valueProducer, params) {
+    let $button = $("<button/>", {"text": "Show"});
+    $button.click(function (e) {
+        $container.html(valueProducer());
+        focusNextControl();
+    });
+    if (params) {
+        if (params.id) {
+            $button.prop("id", params.id)
+        }
+        if (params["class"]) {
+            $button.prop("class", params["class"])
+        }
+    }
+    return $button;
 }
 
 function drawWordToLearn() {
@@ -25,59 +174,78 @@ function drawWordToLearn() {
     $table.append(
         $("<tr/>")
             .append($("<td/>", {text:"Basic form:"}))
-            .append($("<td/>", {text:pageState.word.word}))
+            .append($("<td/>", {id: BASIC_FORM_CONTAINER_ID}))
     );
-    $table.append(
-        $("<tr/>")
-            .append($("<td/>", {text:"In text:"}))
-            .append($("<td/>", {text:pageState.word.wordInText}))
-    );
+    drawBasicForm(BASIC_FORM_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
             .append($("<td/>", {text:"Transcription:"}))
-            .append($("<td/>", {text:pageState.word.transcription}))
+            .append($("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}))
     );
+    drawTranscription(TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
             .append($("<td/>", {text:"Meaning:"}))
-            .append($("<td/>").html(composeMeaning(pageState.word.meaning)))
+            .append($("<td/>", {id:MEANING_CONTAINER_ID}))
     );
+    drawMeaning(MEANING_CONTAINER_ID);
+    $table.append(
+        $("<tr/>")
+            .append($("<td/>", {text:"In text:"}))
+            .append($("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}))
+    );
+    drawWordInText(WORD_IN_TEXT_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
             .append($("<td/>", {text:"Examples:"}))
-            .append($("<td/>").html(composeExamples(pageState.word.examples)))
+            .append($("<td/>", {id:EXAMPLES_CONTAINER_ID}))
     );
+    drawExamples(EXAMPLES_CONTAINER_ID);
 }
 
 function composeMeaning(meaning) {
     return strToDivs(meaning);
 }
 
-function composeExamples(examples) {
+function composeExamples(examples, hideWord) {
     return _.reduce(
         examples,
         function(memo, example){
-            return memo.append(drawSentence(example));
+            return memo.append(drawSentence(example, hideWord));
         },
-        $("<div/>")
+        $("<ul/>")
     );
 
 }
 
-function drawSentence(sentence) {
+function drawSentence(sentence, hideWord) {
     return _.reduce(
         sentence,
         function(memo, token){
-            return memo.append(createElemForToken(token));
+            return memo.append(createElemForToken(token, hideWord));
         },
-        $("<div/>")
+        $("<li/>")
     );
 }
 
-function createElemForToken(token) {
+function createElemForToken(token, hideWord) {
     if (token.meta) {
         return $("<span/>");
+    }
+    let isCurrentWord = pageState.word.wordInText === token.value;
+    let $currentWordSpan = $("<span/>", {
+        text:token.value,
+        "class": (isCurrentWord)?"word-selected-group":""
+    });
+    if (isCurrentWord && hideWord) {
+        $container = $("<span/>");
+        $container.html(
+            createShowButton($container, function () {
+                return $currentWordSpan;
+            })
+        );
+        return $container;
     } else {
-        return $("<span/>", {text:token.value});
+        return $currentWordSpan;
     }
 }

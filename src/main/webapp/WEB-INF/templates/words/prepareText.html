@@ -79,7 +79,7 @@
             <span id="learn-groups-select">
             </span>
         </td>
-        <td th:if="${pageMode == 'taskSelection'}">
+        <td class="exercise-selector" th:if="${pageMode == 'taskSelection'}">
             <div>Chose exercise:</div>
             <ol>
                 <li>
@@ -89,7 +89,10 @@
                     <a th:href="@{/words/engText/{id}/learn(id=${engTextId},nextSentenceMode='random')}" >Fill gaps in a sentence: random mode.</a>
                 </li>
                 <li>
-                    <a th:href="@{/words/engText/{id}/learnWords(id=${engTextId})}" >Words.</a>
+                    <a th:href="@{/words/engText/{id}/learnWords(id=${engTextId},learnDirection=false)}" id="x-ru-link">Words: X -> RU </a>
+                </li>
+                <li>
+                    <a th:href="@{/words/engText/{id}/learnWords(id=${engTextId},learnDirection=true)}" id="ru-x-link">Words: RU -> X</a>
                 </li>
             </ol>
         </td>
@@ -106,7 +109,7 @@
         <td></td>
         <td><b>Group</b></td>
         <td><b>Word in text</b></td>
-        <td><b>Normal form</b></td>
+        <td><b>Basic form</b></td>
         <td><b>Transcription</b></td>
         <td><b>Meaning</b></td>
     </tr>

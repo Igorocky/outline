@@ -79,6 +79,10 @@
     /*border: 1px solid lightgrey;*/
 }
 
+.exercise-selector li {
+    margin: 15px;
+}
+
 #sentence-to-learn-area {
     margin: 10px;
 }

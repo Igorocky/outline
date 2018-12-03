@@ -152,12 +152,6 @@ public class WordsController {
         return wordsDao.getSentenceForLearning(textId, sentenceIdx);
     }
 
-    @GetMapping("engText/{textId}/wordForLearning")
-    @ResponseBody
-    public Map<String, Object> wordForLearning(@PathVariable UUID textId) {
-        return wordsDao.getWordForLearning(textId);
-    }
-
     @PostMapping("engText/{textId}/checkWords")
     @ResponseBody
     public Map<String, Object> checkWords(@PathVariable UUID textId, @RequestBody List<TextToken> sentence) {
@@ -172,6 +166,12 @@ public class WordsController {
                 "counts", text.getListOfLearnGroups().contains(ALL_WORDS) ?
                         sessionData.getLearnTextData().getCountsStat() : ""
         );
+    }
+
+    @GetMapping("engText/{textId}/wordForLearning")
+    @ResponseBody
+    public Map<String, Object> wordForLearning(@PathVariable UUID textId) {
+        return wordsDao.getWordForLearning(textId);
     }
 
     @GetMapping("engText/{textId}/learn")
@@ -189,13 +189,14 @@ public class WordsController {
     }
 
     @GetMapping("engText/{textId}/learnWords")
-    public String learnWords(Model model, @PathVariable UUID textId) {
+    public String learnWords(Model model, @PathVariable UUID textId, @RequestParam boolean learnDirection) {
         commonModelMethods.initModel(model);
         EngText text = wordsDao.getEngTextById(textId);
         commonModelMethods.addPath(model, (Paragraph) text.getParentNode());
         model.addAttribute("engTextId", textId);
         model.addAttribute("textLanguage", text.getLanguage());
         model.addAttribute("engTextTitle", text.getName());
+        model.addAttribute("learnDirection", learnDirection);
         return prefix(LEARN_WORDS);
     }
 
