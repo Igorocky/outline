@@ -73,16 +73,6 @@ function initMainTextArea(textDataJson) {
     )
 }
 
-function strToDivs(str) {
-    return _.reduce(
-        str.split("\n"),
-        function(memo, line){
-            return memo.append($("<div/>", {text: line}));
-        },
-        $("<div/>")
-    );
-}
-
 function initIgnoreListTextArea(textDataJson) {
     editableTextAreaReadMode(
         IGNORE_LIST_TEXT_AREA,
@@ -192,7 +182,7 @@ function createSentencesTable(textDataJson) {
                     },
                     $("<td/>")
                 )
-            )
+            );
             $sentencesTable.append($tr);
         }
     );
@@ -201,7 +191,7 @@ function createSentencesTable(textDataJson) {
 
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-child(1)").after(
-        $("<tr/>", {id: "word-" + word.id, "class": "highlight-on-hover"}).html(
+        $("<tr/>", {id: "word-" + word.id}).html(
             $("<td/>").html(
                 $("<button/>", {text: "Delete"}).click(function () {
                     removeWord(word);

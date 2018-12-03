@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.createResponse;
+import static org.igye.outline.common.OutlineUtils.createVoidResponse;
 import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.map;
 import static org.igye.outline.common.TextProcessing.ALL_GROUPS;
@@ -286,6 +288,45 @@ public class WordsDao {
         }
     }
 
+    @Transactional
+    public Map<String, Object> getWordForLearning(UUID textId) {
+        EngText text = getEngTextById(textId);
+        List<String> selectedGroupsList = text.getListOfLearnGroups();
+        List<Word> wordsInSelectedGroups = null;
+        Set<String> selectedGroups = new HashSet<>(selectedGroupsList);
+        if (selectedGroups.contains(ALL_GROUPS) || selectedGroups.contains(ALL_WORDS)) {
+            wordsInSelectedGroups = text.getWords().stream()
+                    .sorted(Comparator.comparing(Word::getWordInText))
+                    .collect(Collectors.toList());
+        } else {
+            wordsInSelectedGroups = text.getWords().stream()
+                    .filter(word -> selectedGroups.contains(word.getGroup()))
+                    .sorted(Comparator.comparing(Word::getWordInText))
+                    .collect(Collectors.toList());
+        }
+        Word word = wordsInSelectedGroups.get(
+                sessionData.getCyclicRandom().getRandomIndex(
+                        map(wordsInSelectedGroups, Word::getWordInText).hashCode(),
+                        wordsInSelectedGroups.size()
+                )
+        );
+        List<List<TextToken>> exampleSentences = splitOnSentences(text)
+                .stream()
+                .filter(tokens -> tokens.stream()
+                        .anyMatch(token -> token.getValue().equals(word.getWordInText()))
+                )
+                .collect(Collectors.toList());
+
+        WordDto WordDto = mapWord(word);
+        WordDto.setExamples(exampleSentences);
+        return createWordResponse(
+                selectedGroupsList,
+                sessionData.getCyclicRandom().getCounts(),
+                WordDto
+        );
+
+    }
+
     private String createTaskDescription(boolean isSequential, List<String> groups, String counts) {
         StringBuilder sb = new StringBuilder();
         if (isSequential) {
@@ -312,6 +353,18 @@ public class WordsDao {
                 "sentenceIdx", sentenceIdx,
                 "taskDescription", taskDescription
         );
+    }
+
+    private Map<String, Object> createWordResponse(
+            List<String> selectedGroups,
+            String counts,
+            WordDto word
+    ) {
+        Map<String, Object> res = createVoidResponse();
+        res.put("groups", StringUtils.join(selectedGroups, ", "));
+        res.put("counts", counts);
+        res.put("word", word);
+        return res;
     }
 
 }

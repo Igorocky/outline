@@ -18,6 +18,10 @@ public class CyclicRandom {
         return rest.remove(rnd.nextInt(rest.size()));
     }
 
+    public String getCounts() {
+        return (elemsCnt - rest.size()) + "/" + elemsCnt;
+    }
+
     private void reset(int hash, int elemsCnt) {
         this.hash = hash;
         this.elemsCnt = elemsCnt;

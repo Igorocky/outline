@@ -1,0 +1,64 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" th:replace="common-scripts :: css-bootstrap" href="../../../css/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: jquery-ui-css" href="../../../css/jquery-ui-1.12.1.min.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css-multiselect" href="../../../css/multi-select.css">
+    <link rel="stylesheet" th:replace="common-scripts :: css" href="../../../css/style.css">
+
+    <script type="text/javascript" th:replace="common-scripts :: jquery" src="../../../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: jquery-ui" src="../../../js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: underscore" src="../../../js/underscore-min.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: js-multi-select" src="../../../js/jquery.multi-select.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: functions" src="../../../js/functions.js"></script>
+    <script type="text/javascript" th:replace="common-scripts :: learnWords" src="../../../js/learnWords.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var engTextId = /*[[${engTextId}]]*/;
+        var textLanguage = /*[[${textLanguage}]]*/;
+        /*]]>*/
+        var pageState = {
+            engTextId: engTextId,
+            textLanguage: textLanguage,
+            word: undefined
+        };
+
+        $( function() {
+            initPage();
+        } );
+    </script>
+    <script type="text/javascript">
+        $( function() {
+            $( "#dialog-confirm" ).dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                autoOpen: false
+            });
+        } );
+    </script>
+</head>
+<body>
+<div th:replace="common-header :: header"></div>
+<div th:replace="path :: path"/>
+
+<h4><a th:href="@{/words/prepareText(id=${engTextId})}" th:text="${engTextTitle}"></a></h4>
+<div id="task-description-area"></div>
+<hr/>
+<div>
+    <span id="translate-buttons"></span>
+    <button id="check-word-btn" class="orange-on-focus" onclick="checkWord()">Check</button>
+    <button id="next-btn" class="green-on-focus" onclick="goToNextWord()">Next</button>
+    <a th:href="@{/words/prepareText(id=${engTextId},pageMode='taskSelection')}" >Exercises</a>
+</div>
+<div id="word-to-learn-area"></div>
+
+<div id="dialog-confirm" hidden="hidden">
+</div>
+</body>
+</html>

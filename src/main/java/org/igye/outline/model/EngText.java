@@ -14,16 +14,16 @@ import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.hibernate.annotations.CascadeType.MERGE;
 import static org.hibernate.annotations.CascadeType.PERSIST;
 import static org.hibernate.annotations.CascadeType.REFRESH;
 import static org.hibernate.annotations.CascadeType.REMOVE;
 import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
-import static org.igye.outline.common.OutlineUtils.filter;
-import static org.igye.outline.common.OutlineUtils.map;
 
 @Getter
 @Setter
@@ -71,9 +71,9 @@ public class EngText extends Node {
     }
 
     public List<String> getListOfLearnGroups() {
-        return filter(
-                map(getLearnGroups().split("\n"), String::trim),
-                StringUtils::isNoneEmpty
-        );
+        return Arrays.asList(getLearnGroups().split("\n")).stream()
+                .map(String::trim)
+                .filter(StringUtils::isNoneEmpty)
+                .collect(Collectors.toList());
     }
 }

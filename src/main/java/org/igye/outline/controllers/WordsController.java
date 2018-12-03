@@ -45,6 +45,7 @@ public class WordsController {
     private static final String ENG_TEXT = "engText";
     private static final String PREPARE_TEXT = "prepareText";
     private static final String LEARN_TEXT = "learnText";
+    private static final String LEARN_WORDS = "learnWords";
 
     @Autowired
     private SessionData sessionData;
@@ -151,6 +152,12 @@ public class WordsController {
         return wordsDao.getSentenceForLearning(textId, sentenceIdx);
     }
 
+    @GetMapping("engText/{textId}/wordForLearning")
+    @ResponseBody
+    public Map<String, Object> wordForLearning(@PathVariable UUID textId) {
+        return wordsDao.getWordForLearning(textId);
+    }
+
     @PostMapping("engText/{textId}/checkWords")
     @ResponseBody
     public Map<String, Object> checkWords(@PathVariable UUID textId, @RequestBody List<TextToken> sentence) {
@@ -179,6 +186,17 @@ public class WordsController {
         model.addAttribute("sentenceIdx", 0);
         model.addAttribute("nextSentenceMode", nextSentenceMode.orElse("seq"));
         return prefix(LEARN_TEXT);
+    }
+
+    @GetMapping("engText/{textId}/learnWords")
+    public String learnWords(Model model, @PathVariable UUID textId) {
+        commonModelMethods.initModel(model);
+        EngText text = wordsDao.getEngTextById(textId);
+        commonModelMethods.addPath(model, (Paragraph) text.getParentNode());
+        model.addAttribute("engTextId", textId);
+        model.addAttribute("textLanguage", text.getLanguage());
+        model.addAttribute("engTextTitle", text.getName());
+        return prefix(LEARN_WORDS);
     }
 
 

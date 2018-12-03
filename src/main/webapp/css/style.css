@@ -41,6 +41,10 @@
     background-color: #f5e79e;
 }
 
+#words-to-learn-table tr:hover {
+    background-color: #f5e79e;
+}
+
 .word-ignored {
     color: lightslategray;
     font-family: "Courier New";
@@ -98,6 +102,19 @@
 
 .orange-on-focus:focus {
     background-color: orange;
+}
+
+.word-to-learn-table {
+    margin: 20px;
+}
+
+.word-to-learn-table td {
+    padding: 5px;
+    border-top: 1px solid lightgrey;
+}
+
+.word-to-learn-table td:nth-child(1) {
+    font-weight: bold;
 }
 
 .select-editable {

@@ -264,16 +264,15 @@ public class OutlineUtils {
     }
 
     public static Map<String, Object> createResponse(String attrName, Object value) {
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("status", "ok");
+        Map<String, Object> resp = createVoidResponse();
         resp.put(attrName, value);
         return resp;
     }
 
     public static Map<String, Object> createVoidResponse() {
-        return ImmutableMap.of(
-                "status", "ok"
-        );
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", "ok");
+        return resp;
     }
 
     public static <E> List<E> listF(E... elems) {

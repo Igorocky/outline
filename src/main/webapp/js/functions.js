@@ -262,3 +262,13 @@ function initTranslateSelectionButtons(containerId, lang) {
 function translateSelection(urlPrefix) {
     window.open(urlPrefix + window.getSelection().toString(), '_blank');
 }
+
+function strToDivs(str) {
+    return _.reduce(
+        str.split("\n"),
+        function(memo, line){
+            return memo.append($("<div/>", {text: line}));
+        },
+        $("<div/>")
+    );
+}
