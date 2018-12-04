@@ -31,9 +31,15 @@ import org.igye.outline.selection.ObjectType;
 import org.igye.outline.selection.Selection;
 import org.igye.outline.selection.SelectionPart;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.File;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +72,12 @@ public class NodeDao {
     private IconRepository iconRepository;
     @Autowired
     private ContentRepository contentRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
+    @Value("${h2.version}")
+    private String h2Version;
+    @Value("${backup.dir}")
+    private String backupDirPath;
 
     @Transactional
     public List<Node> getRootNodes() {
@@ -307,6 +319,21 @@ public class NodeDao {
                 saver.accept(node);
             }
         }
+    }
+
+    @Transactional
+    public void backup() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        String time = ZonedDateTime.now().format(formatter);
+        File backupDir = new File(backupDirPath + "/" + time);
+        backupDir.mkdirs();
+        OutlineUtils.getCurrentSession(entityManager).doWork(connection -> {
+            connection
+                    .prepareStatement(
+                            "BACKUP TO '" + backupDir.getAbsolutePath() + "/outline-db-" + h2Version + ".zip'"
+                    )
+                    .executeUpdate();
+        });
     }
 
     private <T> Optional<T> getSibling(UUID id,

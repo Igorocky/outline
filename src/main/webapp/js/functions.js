@@ -293,3 +293,20 @@ function strToDivs(str) {
         $("<div/>")
     );
 }
+
+function doBackup() {
+    confirmCancelDialog("dialog-confirm", "Create backup?", "Yes", function () {
+        doPost({
+            url:"/backup",
+            success: function () {
+                infoDialog(
+                    "dialog-confirm",
+                    "Back was created.",
+                    "OK",
+                    function () {}
+                );
+
+            }
+        })
+    });
+}

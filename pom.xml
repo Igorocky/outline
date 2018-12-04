@@ -15,6 +15,7 @@
 
     <properties>
         <functional.java.version>4.8</functional.java.version>
+        <h2.version>1.4.197</h2.version>
     </properties>
 
     <scm>
@@ -39,6 +40,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

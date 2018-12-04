@@ -279,12 +279,14 @@ public class WordsDao {
                 List<TextToken> hiddable = filter(sentence, TextToken::isHiddable);
                 int hash = sentence.hashCode();
                 countsBefore = sessionData.getLearnTextData().getCountsStat(hiddable.size(), hash);
-                sessionData
-                        .getLearnTextData()
-                        .getIndicesToHide(hiddable.size(), text.getPct(), sentence.hashCode())
-                        .forEach(idx ->
-                                hiddable.get(idx).setHidden(true)
-                        );
+                if (!hiddable.isEmpty()) {
+                    sessionData
+                            .getLearnTextData()
+                            .getIndicesToHide(hiddable.size(), text.getPct(), sentence.hashCode())
+                            .forEach(idx ->
+                                    hiddable.get(idx).setHidden(true)
+                            );
+                }
                 countsAfter = sessionData.getLearnTextData().getCountsStat(hiddable.size(), hash);
             } else if (text.getListOfLearnGroups().contains(ALL_GROUPS)) {
                 sentence.forEach(t -> {

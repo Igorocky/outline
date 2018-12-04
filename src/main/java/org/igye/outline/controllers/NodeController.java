@@ -70,6 +70,8 @@ public class NodeController {
     private String homeUrl;
     @Value("${topic.images.location}")
     private String imagesLocation;
+    @Value("${app.version}")
+    private String appVersion;
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -88,6 +90,12 @@ public class NodeController {
     public String home(Model model) {
         commonModelMethods.initModel(model);
         return redirect(prefix(PARAGRAPH));
+    }
+
+    @GetMapping("/")
+    public String home2(Model model) {
+        commonModelMethods.initModel(model);
+        return redirect(prefix("home"));
     }
 
     @GetMapping(PARAGRAPH)
@@ -353,6 +361,18 @@ public class NodeController {
             return createResponse("value", wordsDao.changeAttr(request));
         }
         throw new OutlineException("Unrecognized ChangeAttrValueRequest.attrName: " + request.getAttrName());
+    }
+
+    @PostMapping("backup")
+    @ResponseBody
+    public void backup() {
+        nodeDao.backup();
+    }
+
+    @GetMapping("version")
+    @ResponseBody
+    public String version() {
+        return appVersion + "<br/>https://github.com/Igorocky/outline";
     }
 
     private String getNode(Optional<UUID> id, Supplier<Optional<?>> getter,

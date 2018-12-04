@@ -20,16 +20,21 @@ public class LearnTextData {
     private Random rnd = new Random();
 
     public String getCountsStat(int elemsCnt, int hash) {
-        resetCountsIfNecessary(elemsCnt, hash);
         int min = Integer.MAX_VALUE;
         int max = 0;
-        for (Integer cnt : lastCounts) {
-            if (cnt < min) {
-                min = cnt;
+        if (elemsCnt > 0) {
+            resetCountsIfNecessary(elemsCnt, hash);
+            for (Integer cnt : lastCounts) {
+                if (cnt < min) {
+                    min = cnt;
+                }
+                if (cnt > max) {
+                    max = cnt;
+                }
             }
-            if (cnt > max) {
-                max = cnt;
-            }
+        } else {
+            min = 0;
+            max = 0;
         }
         return "Counts: min " + min + ", max " + max;
     }

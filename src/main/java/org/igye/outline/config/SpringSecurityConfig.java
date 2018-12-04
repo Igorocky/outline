@@ -38,6 +38,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().formLogin().defaultSuccessUrl("/" + homeUrl)
                 .and().csrf().disable()
         ;
+        http.headers().frameOptions().disable();
     }
 
     @Bean
