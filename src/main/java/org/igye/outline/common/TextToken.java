@@ -19,6 +19,7 @@ public class TextToken {
     private String value;
     private String group;
 
+    private boolean unsplittable;
     private boolean word;
     private boolean wordToLearn;
     private boolean selectedGroup;

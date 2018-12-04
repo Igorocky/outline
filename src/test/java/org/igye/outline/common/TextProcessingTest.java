@@ -51,7 +51,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value("1Word").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(": ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("[[").meta(true).build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("1word3").word(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("1word3").word(true).unsplittable(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("]]").meta(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("-").build(), flattened.get(i++));
@@ -69,6 +69,33 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("no").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(".").build(), flattened.get(i++));
+        assertEquals(i, flattened.size());
+    }
+
+    @Test
+    public void splitOnSentences_should_work_correctly_2() throws IOException {
+        //given
+        String text = "[[site.com]]";
+
+        //when
+        List<List<TextToken>> res = TextProcessing.splitOnSentences(
+                text,
+                setF(),
+                setF(),
+                setF(),
+                setF(),
+                ImmutableMap.of()
+        );
+
+        //then
+        assertEquals(1, res.size());
+        int i = 0;
+        List<TextToken> flattened = new ArrayList<>();
+        res.forEach(flattened::addAll);
+
+        assertEquals(TextToken.builder().value("[[").meta(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("site.com").word(true).unsplittable(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value("]]").meta(true).build(), flattened.get(i++));
         assertEquals(i, flattened.size());
     }
 }

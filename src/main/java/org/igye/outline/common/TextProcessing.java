@@ -94,7 +94,7 @@ public class TextProcessing {
                     wordToGroupMap
             );
             sentence.add(token);
-            if (containsOneOf(token.getValue(), SENTENCE_ENDS)) {
+            if (isEndOfSentence(token)) {
                 res.add(sentence);
                 sentence = new LinkedList<>();
             }
@@ -105,6 +105,10 @@ public class TextProcessing {
         return res;
     }
 
+    private static boolean isEndOfSentence(TextToken token) {
+        return isSplittableBy(token, SENTENCE_ENDS);
+    }
+
     private static Set<String> getNonEmpty(Set<String> strList) {
         return OutlineUtils.filter(strList, StringUtils::isNoneEmpty);
     }
@@ -113,7 +117,7 @@ public class TextProcessing {
         List<TextToken> res = new LinkedList<>();
         for (TextToken token : tokens) {
             String val = token.getValue();
-            if (containsOneOf(val, substrings)) {
+            if (isSplittableBy(token, substrings)) {
                 int s = 0;
                 while (s < val.length() && !substrings.contains(val.substring(s,s+1))) {
                     s++;
@@ -143,6 +147,10 @@ public class TextProcessing {
             }
         }
         return false;
+    }
+
+    private static boolean isSplittableBy(TextToken token, List<String> substrings) {
+        return !token.isUnsplittable() && containsOneOf(token.getValue(), substrings);
     }
 
     private static void enhanceWithAttributes(TextToken token,
@@ -189,10 +197,12 @@ public class TextProcessing {
         String tail = text;
         int idxS = tail.indexOf("[[");
         int idxE = idxS < 0 ? -1 : tail.indexOf("]]", idxS+2);
-        while (idxE >= 0) {
-            res.add(tail.substring(0, idxS));
+        while (idxE >= 2) {
+            if (idxS > 0) {
+                res.add(tail.substring(0, idxS));
+            }
             res.add(TextToken.builder().value("[[").meta(true).build());
-            res.add(TextToken.builder().value(tail.substring(idxS+2, idxE)).build());
+            res.add(TextToken.builder().value(tail.substring(idxS+2, idxE)).unsplittable(true).build());
             res.add(TextToken.builder().value("]]").meta(true).build());
             tail = tail.substring(idxE + 2);
             idxS = tail.indexOf("[[");
