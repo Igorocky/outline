@@ -75,7 +75,10 @@ public class TextProcessing {
         Set<String> wordsFromSelectedGroups = getNonEmpty(wordsFromSelectedGroupsRow);
         Set<String> ignoreList = getNonEmpty(ignoreListRow);
         Set<String> selectedGroups = getNonEmpty(selectedGroupsRow);
-        List<TextToken> tokens = tokenize(extractWordsToLearn(extractUnsplittable(text), wordsToLearn));
+        List<Object> tokensRow = extractUnsplittable(text);
+        tokensRow = extractPredefinedParts(tokensRow, wordsToLearn);
+        tokensRow = extractPredefinedParts(tokensRow, ignoreList);
+        List<TextToken> tokens = tokenize(tokensRow);
         tokens = splitByLongestSequence(tokens, R_N);
         tokens = splitByLongestSequence(tokens, SENTENCE_ENDS);
 
@@ -174,9 +177,9 @@ public class TextProcessing {
         token.setGroup(wordToGroupMap.get(val));
     }
 
-    private static List<Object> extractWordsToLearn(List<Object> res, Set<String> wordsToLearn) {
-        for (String wordToLearn : wordsToLearn) {
-            res = extractWordToLearn(res, wordToLearn);
+    private static List<Object> extractPredefinedParts(List<Object> res, Set<String> predefinedParts) {
+        for (String wordToLearn : predefinedParts) {
+            res = extractPredefinedPart(res, wordToLearn);
         }
         return res;
     }
@@ -201,7 +204,7 @@ public class TextProcessing {
         return res;
     }
 
-    private static List<Object> extractWordToLearn(List<Object> text, String wordToLearn) {
+    private static List<Object> extractPredefinedPart(List<Object> text, String wordToLearn) {
         List<Object> res = new LinkedList<>();
         for (Object obj : text) {
             if (obj instanceof TextToken) {

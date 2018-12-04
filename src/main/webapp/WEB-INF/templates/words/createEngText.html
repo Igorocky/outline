@@ -27,7 +27,7 @@
             <td><input id="name" type="text" th:field="*{name}" size="120"/></td>
         </tr>
         <tr>
-            <td><a th:href="@{paragraph(id=${form.idToRedirectToIfCancelled})}">Cancel</a></td>
+            <td><a th:href="@{/paragraph(id=${form.idToRedirectToIfCancelled})}">Cancel</a></td>
             <td><input type="submit" th:value="Create" value="Save"/></td>
         </tr>
     </table>

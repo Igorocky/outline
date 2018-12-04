@@ -65,8 +65,8 @@
 <h2>&sect;<span id="main-title" th:text="${paragraph.name}" /></h2>
 <img th:if="${paragraph.icon != null}" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
 <div>
-    <a th:if="${paragraph.id != null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this paragraph</a>&nbsp;
-    <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new paragraph</a>&nbsp;
+    <a th:if="${paragraph.id != null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this directory</a>&nbsp;
+    <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new directory</a>&nbsp;
     <a th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
     <a th:href="@{words/createEngText(parentId=${paragraph.id})}" href="#">Create new text</a>&nbsp;
     <a th:if="${paragraph.id != null}" th:href="@{export(id=${paragraph.id})}" href="#">Export</a>&nbsp;
