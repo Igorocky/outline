@@ -468,76 +468,79 @@ function saveSelectedWord() {
 function editSelectedWord() {
     let selectedWord = getSelectedWord();
     if (selectedWord) {
-        doGet(
-            {
-                url: "engText/word/" + selectedWord.id,
-                success: function (response) {
-                    if (response.status == "ok") {
-                        modalDialog(
-                            "dialog-modal",
-                            "Edit word: " + response.word.wordInText,
-                            function () {
-                                $content = $("<div/>");
-                                $content.append(
-                                    $("<div/>").html(generateTranslateSelectionButtons(textDataJson.language))
-                                );
-                                $table = $("<table/>", {"class": "word-to-learn-table"});
-                                $content.append($table);
-                                $table.append(
-                                    $("<tr/>")
-                                        .append($("<td/>", {text:"In text:"}))
-                                        .append(
-                                            $("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}).html(
-                                                response.word.wordInText
-                                            )
+        editWord(selectedWord.id);
+    }
+}
+function editWord(wordId) {
+    doGet(
+        {
+            url: "engText/word/" + wordId,
+            success: function (response) {
+                if (response.status == "ok") {
+                    modalDialog(
+                        "dialog-modal",
+                        "Edit word: " + response.word.wordInText,
+                        function () {
+                            $content = $("<div/>");
+                            $content.append(
+                                $("<div/>").html(generateTranslateSelectionButtons(textDataJson.language))
+                            );
+                            $table = $("<table/>", {"class": "word-to-learn-table"});
+                            $content.append($table);
+                            $table.append(
+                                $("<tr/>")
+                                    .append($("<td/>", {text:"In text:"}))
+                                    .append(
+                                        $("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}).html(
+                                            response.word.wordInText
                                         )
-                                );
-                                $table.append(
-                                    $("<tr/>")
-                                        .append($("<td/>", {text:"Basic form:"}))
-                                        .append(
-                                            $("<td/>", {id: BASIC_FORM_CONTAINER_ID}).html(
-                                                basicFormEditableTextField(BASIC_FORM_CONTAINER_ID, response.word)
-                                            )
+                                    )
+                            );
+                            $table.append(
+                                $("<tr/>")
+                                    .append($("<td/>", {text:"Basic form:"}))
+                                    .append(
+                                        $("<td/>", {id: BASIC_FORM_CONTAINER_ID}).html(
+                                            basicFormEditableTextField(BASIC_FORM_CONTAINER_ID, response.word)
                                         )
-                                );
-                                $table.append(
-                                    $("<tr/>")
-                                        .append($("<td/>", {text:"Transcription:"}))
-                                        .append(
-                                            $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}).html(
-                                                transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID, response.word)
-                                            )
+                                    )
+                            );
+                            $table.append(
+                                $("<tr/>")
+                                    .append($("<td/>", {text:"Transcription:"}))
+                                    .append(
+                                        $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}).html(
+                                            transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID, response.word)
                                         )
-                                );
-                                $table.append(
-                                    $("<tr/>")
-                                        .append($("<td/>", {text:"Meaning:"}))
-                                        .append(
-                                            $("<td/>", {id:MEANING_CONTAINER_ID}).html(
-                                                meaningEditableTextArea(MEANING_CONTAINER_ID, response.word)
-                                            )
+                                    )
+                            );
+                            $table.append(
+                                $("<tr/>")
+                                    .append($("<td/>", {text:"Meaning:"}))
+                                    .append(
+                                        $("<td/>", {id:MEANING_CONTAINER_ID}).html(
+                                            meaningEditableTextArea(MEANING_CONTAINER_ID, response.word)
                                         )
-                                );
-                                $table.append(
-                                    $("<tr/>")
-                                        .append($("<td/>", {text: "Examples:"}))
-                                        .append(
-                                            $("<td/>", {id: EXAMPLES_CONTAINER_ID}).html(
-                                                composeExamples(response.word.wordInText, response.word.examples, false)
-                                            )
+                                    )
+                            );
+                            $table.append(
+                                $("<tr/>")
+                                    .append($("<td/>", {text: "Examples:"}))
+                                    .append(
+                                        $("<td/>", {id: EXAMPLES_CONTAINER_ID}).html(
+                                            composeExamples(response.word.wordInText, response.word.examples, false)
                                         )
-                                );
-                                return $content;
-                            },
-                            "OK",
-                            function () {}
-                        )
-                    }
+                                    )
+                            );
+                            return $content;
+                        },
+                        "OK",
+                        function () {}
+                    )
                 }
             }
-        );
-    }
+        }
+    );
 }
 
 function isFullMode() {
@@ -699,6 +702,7 @@ let prepareTextPageEndpoints = {
                     if (response.status == "ok") {
                         appendWordToLearn(response.word);
                         reloadEngText();
+                        editWord(response.word.id);
                     }
                 }
             },

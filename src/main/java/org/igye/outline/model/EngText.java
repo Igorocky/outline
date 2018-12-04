@@ -34,7 +34,7 @@ public class EngText extends Node {
     @Column(name = "TEXT")
     private String text;
 
-    @OneToMany(mappedBy = "engText", orphanRemoval = true)
+    @OneToMany(mappedBy = "engText")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     private List<Word> words = new ArrayList<>();
 
