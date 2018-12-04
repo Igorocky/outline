@@ -192,7 +192,7 @@ function createSentencesTable(textDataJson) {
             $sentencesTable.append($tr);
         }
     );
-    return $sentencesTable;
+    return $("<div/>", {"class": "main-text-table-wrapper"}).html($sentencesTable);
 }
 
 function wordInTextEditableTextField(contId, word) {
