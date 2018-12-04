@@ -85,16 +85,22 @@ function createOpenedTranscriptionElement() {
     return $("<span/>", {text:pageState.word.transcription});
 }
 
-function createOpenedExamplesElement(hideWord) {
-    return composeExamples(pageState.word.wordInText, pageState.word.examples, false);
-}
-
 function drawTranscription(containerId) {
     let $container = $("#" + containerId);
     $container.html(
         createShowButton($container, function () {
             return createOpenedTranscriptionElement();
         })
+    );
+}
+
+function showTranscription() {
+    $("#" + TRANSCRIPTION_CONTAINER_ID).html(createOpenedTranscriptionElement());
+}
+
+function showExamples() {
+    $("#" + EXAMPLES_CONTAINER_ID).html(
+        composeExamples(pageState.word.wordInText, pageState.word.examples, false)
     );
 }
 
@@ -112,7 +118,11 @@ function drawMeaning(containerId) {
                 },
                 {
                     id: SHOW_MEANING_BTN_ID,
-                    "class": "green-on-focus"
+                    "class": "green-on-focus",
+                    onclick: function () {
+                        showExamples();
+                        showTranscription();
+                    }
                 }
             )
         );
@@ -141,8 +151,8 @@ function createUserInputTextField(correctValue, onCorrectInput) {
                 $("#user-input").addClass("incorrect-user-input")
             } else {
                 onCorrectInput();
-                $("#" + TRANSCRIPTION_CONTAINER_ID).html(createOpenedTranscriptionElement());
-                $("#" + EXAMPLES_CONTAINER_ID).html(createOpenedExamplesElement(false));
+                showTranscription();
+                showExamples();
                 focusNextControl();
             }
         }
@@ -155,6 +165,9 @@ function createShowButton($container, valueProducer, params) {
     $button.click(function (e) {
         $container.html(valueProducer());
         focusNextControl();
+        if (params.onclick) {
+            params.onclick();
+        }
     });
     if (params) {
         if (params.id) {
@@ -173,6 +186,12 @@ function drawWordToLearn() {
     $wordArea.html($table);
     $table.append(
         $("<tr/>")
+            .append($("<td/>", {text:"In text:"}))
+            .append($("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}))
+    );
+    drawWordInText(WORD_IN_TEXT_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
+    $table.append(
+        $("<tr/>")
             .append($("<td/>", {text:"Basic form:"}))
             .append($("<td/>", {id: BASIC_FORM_CONTAINER_ID}))
     );
@@ -189,12 +208,6 @@ function drawWordToLearn() {
             .append($("<td/>", {id:MEANING_CONTAINER_ID}))
     );
     drawMeaning(MEANING_CONTAINER_ID);
-    $table.append(
-        $("<tr/>")
-            .append($("<td/>", {text:"In text:"}))
-            .append($("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}))
-    );
-    drawWordInText(WORD_IN_TEXT_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
             .append($("<td/>", {text:"Examples:"}))
