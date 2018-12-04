@@ -15,7 +15,7 @@ function initPage() {
 }
 
 function goToSentence(sentenceIdx) {
-    $("#show-sentence-area").html("");
+    hideShownHintSentence();
     doGet({
         url: "/words/engText/" + pageState.engTextId + "/sentenceForLearning?sentenceIdx=" + sentenceIdx,
         success: function (response) {
@@ -63,8 +63,13 @@ function tryAgain() {
     goToSentence(pageState.sentenceIdx);
 }
 
-function checkWords() {
+function hideShownHintSentence() {
     $("#show-sentence-area").html("");
+    $("#show-sentence-btn").prop(SHOWN, false);
+}
+
+function checkWords() {
+    hideShownHintSentence();
     $("#check-words-btn").focus();
     doPost({
         url: "/words/engText/" + pageState.engTextId + "/checkWords",
@@ -158,7 +163,7 @@ function showSentence() {
             $showArea
         );
     } else {
-        $btn.prop(SHOWN, false);
+        hideShownHintSentence();
     }
     pageState.firstInput.focus();
 }

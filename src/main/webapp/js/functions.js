@@ -133,9 +133,10 @@ function uploadImage(imageType, file, onSuccess) {
 }
 
 function registerShortcuts() {
-  registerShortcutsOnElems("a", function (elem) {elem.click();});
-  registerShortcutsOnElems("button", function (elem) {elem.click();});
-  registerShortcutsOnElems("div, ul", focusFirstChild("a"));
+    return;
+    registerShortcutsOnElems("a", function (elem) {elem.click();});
+    registerShortcutsOnElems("button", function (elem) {elem.click();});
+    registerShortcutsOnElems("div, ul", focusFirstChild("a"));
 }
 
 function registerShortcutsOnElems(elemsSelector, action) {
