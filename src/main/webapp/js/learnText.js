@@ -105,7 +105,11 @@ function drawSentenceToLearn() {
         $sentenceArea
     );
     if (_.size(inputs) === 0) {
-        $("#next-btn").focus();
+        if (pageState.countsAfter) {
+            $("#try-again-btn").focus();
+        } else {
+            $("#next-btn").focus();
+        }
         $("#task-description-area").html(
             pageState.taskDescription + " " + (pageState.countsAfter?pageState.countsAfter:"")
         );
