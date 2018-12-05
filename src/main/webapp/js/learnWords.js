@@ -300,3 +300,7 @@ function createElemForToken(currentWordInText, token, hideWord) {
         return $currentWordSpan;
     }
 }
+
+function editCurrentWord() {
+    editWord(pageState.word.id, pageState.textLanguage);
+}

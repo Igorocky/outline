@@ -468,13 +468,13 @@ function saveSelectedWord() {
 function editSelectedWord() {
     let selectedWord = getSelectedWord();
     if (selectedWord) {
-        editWord(selectedWord.id);
+        editWord(selectedWord.id, textDataJson.language);
     }
 }
-function editWord(wordId) {
+function editWord(wordId, language) {
     doGet(
         {
-            url: "engText/word/" + wordId,
+            url: "/words/engText/word/" + wordId,
             success: function (response) {
                 if (response.status == "ok") {
                     modalDialog(
@@ -483,7 +483,7 @@ function editWord(wordId) {
                         function () {
                             $content = $("<div/>");
                             $content.append(
-                                $("<div/>").html(generateTranslateSelectionButtons(textDataJson.language))
+                                $("<div/>").html(generateTranslateSelectionButtons(language))
                             );
                             $table = $("<table/>", {"class": "word-to-learn-table"});
                             $content.append($table);
@@ -702,7 +702,7 @@ let prepareTextPageEndpoints = {
                     if (response.status == "ok") {
                         appendWordToLearn(response.word);
                         reloadEngText();
-                        editWord(response.word.id);
+                        editWord(response.word.id, textDataJson.language);
                     }
                 }
             },
