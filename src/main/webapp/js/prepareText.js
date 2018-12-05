@@ -24,6 +24,13 @@ function initPage() {
                 translateSelection(urlPrefix);
             }
         );
+        initTranslateSelectionButtons(
+            "translate-buttons-for-words-table",
+            textDataJson.language,
+            function (urlPrefix) {
+                translateSelection(urlPrefix);
+            }
+        );
         initMainTextArea(textDataJson);
         initWordsToLearnTable(textDataJson);
         initIgnoreListTextArea(textDataJson);
