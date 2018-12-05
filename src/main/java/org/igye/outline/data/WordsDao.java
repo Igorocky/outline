@@ -383,4 +383,13 @@ public class WordsDao {
         return res;
     }
 
+    @Transactional
+    public WordDto getWordByWordInText(UUID textId, String wordInText) {
+        EngText text = getEngTextById(textId);
+        return text.getWords().stream()
+                .filter(word -> wordInText.equals(word.getWordInText()))
+                .findFirst()
+                .map(this::mapWord)
+                .orElse(null);
+    }
 }

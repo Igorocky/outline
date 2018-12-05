@@ -92,6 +92,14 @@
     margin: 10px;
 }
 
+#show-sentence-area .word-to-learn:hover {
+    cursor: pointer;
+}
+
+#show-sentence-area .word-selected-group:hover {
+    cursor: pointer;
+}
+
 .current-sentence-number {
     font-weight: bold;
     margin-right: 10px;

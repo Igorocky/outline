@@ -90,7 +90,7 @@ function drawSentenceToLearn() {
     _.reduce(
         pageState.sentence,
         function(memo, token){
-            let elem = createElemForToken(token);
+            let elem = createElemForTokenInLearnSentence(token);
             if (elem.is("input")) {
                 inputs.push(elem);
             }
@@ -127,7 +127,7 @@ function drawSentenceToLearn() {
     }
 }
 
-function createElemForToken(token) {
+function createElemForTokenInLearnSentence(token) {
     if (token.meta) {
         return $("<span/>");
     } else if (token.hidden) {
@@ -158,7 +158,7 @@ function showSentence() {
         _.reduce(
             pageState.sentence,
             function(memo, token){
-                return memo.append($("<span/>", {text:token.value}));
+                return memo.append(createElemForTokenInShownSentence(token));
             },
             $showArea
         );
@@ -166,4 +166,28 @@ function showSentence() {
         hideShownHintSentence();
     }
     pageState.firstInput.focus();
+}
+
+function createElemForTokenInShownSentence(token) {
+    if (!token.wordToLearn) {
+        return $("<span/>", {text:token.value});
+    } else {
+        return $(
+            "<span/>",
+            {
+                text: token.value,
+                "class": token.selectedGroup ? "word-selected-group" : "word-to-learn"
+            }
+        ).click(function () {
+            doPost({
+                url: "/words/changeLearnGroups/" + pageState.engTextId + "/wordByWordInText",
+                data: {wordInText: token.value},
+                success: function (response) {
+                    if (response.status == "ok") {
+                        editWord(response.word.id, pageState.textLanguage);
+                    }
+                }
+            })
+        });
+    }
 }

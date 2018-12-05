@@ -372,7 +372,7 @@ public class NodeController {
     @GetMapping("version")
     @ResponseBody
     public String version() {
-        return appVersion + "<br/>https://github.com/Igorocky/outline";
+        return appVersion;
     }
 
     private String getNode(Optional<UUID> id, Supplier<Optional<?>> getter,

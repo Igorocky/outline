@@ -34,7 +34,6 @@ import java.util.UUID;
 import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.createVoidResponse;
 import static org.igye.outline.common.OutlineUtils.redirect;
-import static org.igye.outline.common.TextProcessing.ALL_WORDS;
 
 @Controller
 @RequestMapping(WordsController.PREFIX)
@@ -132,6 +131,15 @@ public class WordsController {
     public Map<String, Object> unignoreWord(@PathVariable UUID textId, @RequestBody List<String> request) {
         wordsDao.changeLearnGroups(textId, request);
         return createVoidResponse();
+    }
+
+    @PostMapping("changeLearnGroups/{textId}/wordByWordInText")
+    @ResponseBody
+    public Map<String, Object> getWordByWordInText(@PathVariable UUID textId,
+                                                   @RequestBody Map<String, String> request) {
+        return createResponse(
+                "word", wordsDao.getWordByWordInText(textId, request.get("wordInText"))
+        );
     }
 
     @GetMapping("engText/availableWordGroups/{id}")

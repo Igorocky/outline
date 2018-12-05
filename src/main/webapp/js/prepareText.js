@@ -534,7 +534,7 @@ function editWord(wordId, language) {
                             );
                             return $content;
                         },
-                        "OK",
+                        "Close",
                         function () {}
                     )
                 }
