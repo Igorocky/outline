@@ -5,6 +5,8 @@ let WORD_IN_TEXT_CONTAINER_ID = "word-in-text-container";
 let TRANSCRIPTION_CONTAINER_ID = "transcription-container";
 let MEANING_CONTAINER_ID = "meaning-container";
 let SHOW_MEANING_BTN_ID = "SHOW_MEANING_BTN_ID";
+let SHOW_EXAMPLES_BTN_ID = "SHOW_EXAMPLES_BTN_ID";
+let SHOW_TRANSCRIPTION_BTN_ID = "SHOW_TRANSCRIPTION_BTN_ID";
 let EXAMPLES_CONTAINER_ID = "examples-container";
 
 function initPage() {
@@ -35,15 +37,16 @@ function goToNextWord() {
 }
 
 function hasBasicForm() {
-    return pageState.word.word && pageState.word.word.trim().length > 0;
+    return !isEmptyString(pageState.word.word);
 }
 
 function drawBasicForm(containerId) {
+    const basicForm = pageState.word.word;
+    let $container = $("#" + containerId);
     if (hasBasicForm()) {
-        let $container = $("#" + containerId);
         if (pageState.learnDirection) {
-            let $input = createUserInputTextField(pageState.word.word, function () {
-                $container.html($("<span/>", {text:pageState.word.word, "class": "correct-user-input"}));
+            let $input = createUserInputTextField(basicForm, function () {
+                $container.html($("<span/>", {text:basicForm, "class": "correct-user-input"}));
                 $("#" + WORD_IN_TEXT_CONTAINER_ID).html(
                     $("<span/>", {text:pageState.word.wordInText})
                 );
@@ -51,14 +54,21 @@ function drawBasicForm(containerId) {
             $container.html($input);
             focusNextControl();
         } else {
-            $container.html($("<span/>", {text:pageState.word.word}));
+            $container.html($("<span/>", {text:basicForm}));
         }
+    } else {
+        $container.html("");
     }
 }
 
 function drawWordInText(containerId) {
     let $container = $("#" + containerId);
-    let $span = $("<span/>", {text:pageState.word.wordInText});
+    const wordInText = pageState.word.wordInText;
+    if (isEmptyString(wordInText)) {
+        $container.html("");
+        return;
+    }
+    let $span = $("<span/>", {text: wordInText});
     if (pageState.learnDirection) {
         if (hasBasicForm()) {
             $container.html(
@@ -67,8 +77,8 @@ function drawWordInText(containerId) {
                 })
             );
         } else {
-            let $input = createUserInputTextField(pageState.word.wordInText, function () {
-                $container.html($("<span/>", {text:pageState.word.wordInText, "class": "correct-user-input"}));
+            let $input = createUserInputTextField(wordInText, function () {
+                $container.html($("<span/>", {text:wordInText, "class": "correct-user-input"}));
                 $("#" + BASIC_FORM_CONTAINER_ID).html(
                     $("<span/>", {text:pageState.word.word})
                 );
@@ -87,11 +97,22 @@ function createOpenedTranscriptionElement() {
 
 function drawTranscription(containerId) {
     let $container = $("#" + containerId);
-    $container.html(
-        createShowButton($container, function () {
-            return createOpenedTranscriptionElement();
-        })
-    );
+    if (isEmptyString(pageState.word.transcription)) {
+        $container.html("");
+    } else {
+        $container.html(
+            createShowButton(
+                $container,
+                function () {
+                    return createOpenedTranscriptionElement();
+                },
+                {
+                    id: SHOW_TRANSCRIPTION_BTN_ID,
+                    "class": "green-on-focus"
+                }
+            )
+        );
+    }
 }
 
 function showTranscription() {
@@ -106,15 +127,20 @@ function showExamples() {
 
 function drawMeaning(containerId) {
     let $container = $("#" + containerId);
+    const meaning = pageState.word.meaning;
+    if (isEmptyString(meaning)) {
+        $container.html("");
+        return;
+    }
     if (pageState.learnDirection) {
-        $container.html(composeMeaning(pageState.word.meaning));
+        $container.html(composeMeaning(meaning));
     } else {
         $container.html(
             createShowButton(
                 $container,
                 function () {
                     focusNextControl();
-                    return composeMeaning(pageState.word.meaning);
+                    return composeMeaning(meaning);
                 },
                 {
                     id: SHOW_MEANING_BTN_ID,
@@ -131,13 +157,25 @@ function drawMeaning(containerId) {
 
 function drawExamples(containerId) {
     let $container = $("#" + containerId);
-    $container.html(createShowButton($container, function () {
-        return composeExamples(pageState.word.wordInText, pageState.word.examples, pageState.learnDirection);
-    }));
+    const examples = pageState.word.examples;
+    if (_.size(examples) === 0) {
+        $container.html("");
+    } else {
+        $container.html(createShowButton(
+            $container, function () {
+                return composeExamples(pageState.word.wordInText, examples, pageState.learnDirection);
+            }, {
+                id: SHOW_EXAMPLES_BTN_ID,
+                "class": "green-on-focus"
+            }
+        ));
+    }
 }
 
 function focusNextControl() {
     $("#" + NEXT_BTN_ID).focus();
+    $("#" + SHOW_TRANSCRIPTION_BTN_ID).focus();
+    $("#" + SHOW_EXAMPLES_BTN_ID).focus();
     $("#" + SHOW_MEANING_BTN_ID).focus();
     $("#" + USER_INPUT_ID).focus();
 }

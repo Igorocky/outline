@@ -310,3 +310,7 @@ function doBackup() {
         })
     });
 }
+
+function isEmptyString(string) {
+    return !string || string.trim().length === 0;
+}
