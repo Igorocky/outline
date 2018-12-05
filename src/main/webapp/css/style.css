@@ -25,8 +25,17 @@
     outline: 1px solid blue;
 }
 
-.outline-bordered-table table, .outline-bordered-table td {
+.outline-bordered-table td, .outline-bordered-table th {
     border: 1px solid lightgrey;
+}
+
+.outline-noborder-table td, .outline-noborder-table tr, .outline-noborder-table {
+    padding-left: 3px;
+    border: none;
+}
+
+#text-title span {
+    font-size: xx-large;
 }
 
 .main-text-table-wrapper {
@@ -125,12 +134,12 @@
     margin: 20px;
 }
 
-.word-to-learn-table td {
+.word-to-learn-table > tr > td {
     padding: 5px;
     border-top: 1px solid lightgrey;
 }
 
-.word-to-learn-table td:nth-child(1) {
+.word-to-learn-attr-name {
     font-weight: bold;
 }
 

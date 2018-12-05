@@ -155,7 +155,6 @@ function drawMeaning(containerId) {
             createShowButton(
                 $container,
                 function () {
-                    focusNextControl();
                     return composeMeaning(meaning);
                 },
                 {
@@ -218,10 +217,10 @@ function createShowButton($container, valueProducer, params) {
     let $button = $("<button/>", {"text": "Show"});
     $button.click(function (e) {
         $container.html(valueProducer());
-        focusNextControl();
-        if (params.onclick) {
+        if (params && params.onclick) {
             params.onclick();
         }
+        focusNextControl();
     });
     if (params) {
         if (params.id) {
@@ -240,31 +239,31 @@ function drawWordToLearn() {
     $wordArea.html($table);
     $table.append(
         $("<tr/>")
-            .append($("<td/>", {text:"In text:"}))
+            .append($("<td/>", {text:"In text:", "class": "word-to-learn-attr-name"}))
             .append($("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}))
     );
     drawWordInText(WORD_IN_TEXT_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
-            .append($("<td/>", {text:"Basic form:"}))
+            .append($("<td/>", {text:"Basic form:", "class": "word-to-learn-attr-name"}))
             .append($("<td/>", {id: BASIC_FORM_CONTAINER_ID}))
     );
     drawBasicForm(BASIC_FORM_CONTAINER_ID, TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
-            .append($("<td/>", {text:"Transcription:"}))
+            .append($("<td/>", {text:"Transcription:", "class": "word-to-learn-attr-name"}))
             .append($("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}))
     );
     drawTranscription(TRANSCRIPTION_CONTAINER_ID);
     $table.append(
         $("<tr/>")
-            .append($("<td/>", {text:"Meaning:"}))
+            .append($("<td/>", {text:"Meaning:", "class": "word-to-learn-attr-name"}))
             .append($("<td/>", {id:MEANING_CONTAINER_ID}))
     );
     drawMeaning(MEANING_CONTAINER_ID);
     $table.append(
         $("<tr/>")
-            .append($("<td/>", {text:"Examples:"}))
+            .append($("<td/>", {text:"Examples:", "class": "word-to-learn-attr-name"}))
             .append($("<td/>", {id:EXAMPLES_CONTAINER_ID}))
     );
     drawExamples(EXAMPLES_CONTAINER_ID);

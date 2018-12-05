@@ -107,6 +107,21 @@ function initIgnoreListTextArea(textDataJson) {
 }
 
 function initWordsToLearnTable(textDataJson) {
+    $("#words-to-learn-table-container").html(
+        $("<table/>", {"class":"outline-bordered-table"}).html(
+            $("<thead/>").html(
+                $("<tr/>").html(
+                    $("<th/>")
+                )
+                    .append($("<th/>", {text: "Group"}))
+                    .append($("<th/>", {text: "Word in text"}))
+                    .append($("<th/>", {text: "Basic form"}))
+                    .append($("<th/>", {text: "Transcription"}))
+                    .append($("<th/>", {text: "Meaning"}))
+            )
+        ).append($("<tbody/>", {id:WORDS_TO_LEARN_TABLE}))
+    );
+
     _.each(
         textDataJson.wordsToLearn.reverse(),
         function (word) {
@@ -251,10 +266,10 @@ function meaningEditableTextArea(contId, word) {
 }
 
 function appendWordToLearn(word) {
-    $("#" + WORDS_TO_LEARN_TABLE + " tr:nth-child(1)").after(
+    $("#" + WORDS_TO_LEARN_TABLE).prepend(
         $("<tr/>", {id: "word-" + word.id}).html(
             $("<td/>").html(
-                $("<button/>", {text: "Delete"}).click(function () {
+                $("<button/>", {text: "x"}).click(function () {
                     removeWord(word);
                     reloadEngText();
                 })
@@ -295,15 +310,19 @@ function appendWordToLearn(word) {
 }
 
 function editableTextFieldReadModeElem(contId, value, onEditDone) {
-    $cont = $("<span/>");
-    $cont.append(
-        $("<button/>", {text: "Edit"}).click(function () {
-            editableTextFieldWriteMode(contId, value, onEditDone);
-        })
-    ).append(
-        $("<span/>", {text: value})
+    return $("<table/>", {"class":"outline-noborder-table"}).html(
+        $("<tr/>").html(
+            $("<td/>").html(
+                $("<button/>", {text: "Edit"}).click(function () {
+                    editableTextFieldWriteMode(contId, value, onEditDone);
+                })
+            )
+        ).append(
+            $("<td/>").html(
+                $("<span/>", {text: value})
+            )
+        )
     );
-    return $cont;
 }
 
 function editableTextFieldReadMode(contId, value, onEditDone) {
@@ -345,13 +364,20 @@ function editableTextFieldWriteMode(contId, value, onEditDone) {
 }
 
 function editableSelectReadMode(contId, value, onEditDone, loadOptions, params) {
-    $cont = $("#" + contId);
-    $cont.html(
-        $("<button/>", {text: "Edit"}).click(function () {
-            editableSelectWriteMode(contId, value, onEditDone, loadOptions, params);
-        })
-    ).append(
-        $("<span/>", {text: value})
+    $("#" + contId).html(
+        $("<table/>", {"class":"outline-noborder-table"}).html(
+            $("<tr/>").html(
+                $("<td/>").html(
+                    $("<button/>", {text: "Edit"}).click(function () {
+                        editableSelectWriteMode(contId, value, onEditDone, loadOptions, params);
+                    })
+                )
+            ).append(
+                $("<td/>").html(
+                    $("<span/>", {text: value})
+                )
+            )
+        )
     );
 }
 
@@ -512,7 +538,7 @@ function editWord(wordId, language) {
                             $content.append($table);
                             $table.append(
                                 $("<tr/>")
-                                    .append($("<td/>", {text:"In text:"}))
+                                    .append($("<td/>", {text:"In text:", "class": "word-to-learn-attr-name"}))
                                     .append(
                                         $("<td/>").html(
                                             response.word.wordInText
@@ -521,7 +547,7 @@ function editWord(wordId, language) {
                             );
                             $table.append(
                                 $("<tr/>")
-                                    .append($("<td/>", {text:"Basic form:"}))
+                                    .append($("<td/>", {text:"Basic form:", "class": "word-to-learn-attr-name"}))
                                     .append(
                                         $("<td/>", {id: BASIC_FORM_CONTAINER_ID+"-prepareText"}).html(
                                             basicFormEditableTextField(BASIC_FORM_CONTAINER_ID+"-prepareText", response.word)
@@ -530,7 +556,7 @@ function editWord(wordId, language) {
                             );
                             $table.append(
                                 $("<tr/>")
-                                    .append($("<td/>", {text:"Transcription:"}))
+                                    .append($("<td/>", {text:"Transcription:", "class": "word-to-learn-attr-name"}))
                                     .append(
                                         $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID+"-prepareText"}).html(
                                             transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID+"-prepareText", response.word)
@@ -539,7 +565,7 @@ function editWord(wordId, language) {
                             );
                             $table.append(
                                 $("<tr/>")
-                                    .append($("<td/>", {text:"Meaning:"}))
+                                    .append($("<td/>", {text:"Meaning:", "class": "word-to-learn-attr-name"}))
                                     .append(
                                         $("<td/>", {id:MEANING_CONTAINER_ID+"-prepareText"}).html(
                                             meaningEditableTextArea(MEANING_CONTAINER_ID+"-prepareText", response.word)
@@ -548,7 +574,7 @@ function editWord(wordId, language) {
                             );
                             $table.append(
                                 $("<tr/>")
-                                    .append($("<td/>", {text: "Examples:"}))
+                                    .append($("<td/>", {text: "Examples:", "class": "word-to-learn-attr-name"}))
                                     .append(
                                         $("<td/>", {id: EXAMPLES_CONTAINER_ID+"-prepareText"}).html(
                                             composeExamples(response.word.wordInText, response.word.examples, false)
@@ -596,9 +622,13 @@ function unignoreSelectedWord() {
 }
 
 function removeWord(word) {
-    confirmCancelDialog("dialog-confirm", "Delete word '" + word.wordInText + "'?", "Delete", function () {
+    confirmCancelDialog(
+        "dialog-confirm",
+        "Delete word '" + (isEmptyString(word.word)?word.wordInText:word.word) + "'?", "Delete",
+        function () {
         prepareTextPageEndpoints.removeWord(word);
-    });
+    }
+    );
 }
 
 function getSelectedWord() {

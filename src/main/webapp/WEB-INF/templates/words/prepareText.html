@@ -59,12 +59,14 @@
     <a th:href="@{/words/prepareText(id=${engTextId})}" id="text-title"></a>
 </h2>
 <hr/>
-<span th:unless="${pageMode == 'taskSelection'}">
-    Language: <span id="lang-span" style="margin-right: 150px"></span>
-</span>
-<span>
-    Density: <span id="pct-span"></span>
-</span>
+<table>
+    <tr>
+        <td th:unless="${pageMode == 'taskSelection'}">Language:</td>
+        <td th:unless="${pageMode == 'taskSelection'}"><span id="lang-span" style="margin-right: 150px"></span></td>
+        <td>Density:</td>
+        <td><span id="pct-span"></span></td>
+    </tr>
+</table>
 <hr/>
 <table>
     <tr th:unless="${pageMode == 'taskSelection'}">
@@ -113,16 +115,7 @@
 <div>
     <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
 </div>
-<table id="words-to-learn-table" class="outline-bordered-table">
-    <tr>
-        <td></td>
-        <td><b>Group</b></td>
-        <td><b>Word in text</b></td>
-        <td><b>Basic form</b></td>
-        <td><b>Transcription</b></td>
-        <td><b>Meaning</b></td>
-    </tr>
-</table>
+<div id="words-to-learn-table-container"></div>
 <hr/>
 <hr/>
 Ignore list:
