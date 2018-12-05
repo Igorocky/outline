@@ -55,6 +55,10 @@
     background-color: #f5e79e;
 }
 
+#words-to-learn-table-buttons-container {
+    margin-bottom: 5px;
+}
+
 #words-to-learn-table tr:hover {
     background-color: #f5e79e;
 }
