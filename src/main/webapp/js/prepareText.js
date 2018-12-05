@@ -17,7 +17,13 @@ function initPage() {
     initProps();
     initLearnGroupsSelect();
     if (isFullMode()) {
-        initTranslateSelectionButtons("translate-buttons", textDataJson.language);
+        initTranslateSelectionButtons(
+            "translate-buttons",
+            textDataJson.language,
+            function (urlPrefix) {
+                translateSelection(urlPrefix);
+            }
+        );
         initMainTextArea(textDataJson);
         initWordsToLearnTable(textDataJson);
         initIgnoreListTextArea(textDataJson);
@@ -477,13 +483,30 @@ function editWord(wordId, language) {
             url: "/words/engText/word/" + wordId,
             success: function (response) {
                 if (response.status == "ok") {
+                    clearSelection();
                     modalDialog(
                         "dialog-modal",
                         "Edit word: " + response.word.wordInText,
                         function () {
                             $content = $("<div/>");
                             $content.append(
-                                $("<div/>").html(generateTranslateSelectionButtons(language))
+                                $("<div/>").html(generateTranslateSelectionButtons(
+                                    language,
+                                    function (urlPrefix) {
+                                        const selection = getSelectedText();
+                                        if (!isEmptyString(selection)) {
+                                            translateSelection(urlPrefix);
+                                        } else {
+                                            translateText(
+                                                urlPrefix,
+                                                isEmptyString(response.word.word)
+                                                    ?response.word.wordInText
+                                                    :response.word.word
+                                            );
+                                        }
+                                    }
+
+                                ))
                             );
                             $table = $("<table/>", {"class": "word-to-learn-table"});
                             $content.append($table);
@@ -491,7 +514,7 @@ function editWord(wordId, language) {
                                 $("<tr/>")
                                     .append($("<td/>", {text:"In text:"}))
                                     .append(
-                                        $("<td/>", {id: WORD_IN_TEXT_CONTAINER_ID}).html(
+                                        $("<td/>").html(
                                             response.word.wordInText
                                         )
                                     )
@@ -500,8 +523,8 @@ function editWord(wordId, language) {
                                 $("<tr/>")
                                     .append($("<td/>", {text:"Basic form:"}))
                                     .append(
-                                        $("<td/>", {id: BASIC_FORM_CONTAINER_ID}).html(
-                                            basicFormEditableTextField(BASIC_FORM_CONTAINER_ID, response.word)
+                                        $("<td/>", {id: BASIC_FORM_CONTAINER_ID+"-prepareText"}).html(
+                                            basicFormEditableTextField(BASIC_FORM_CONTAINER_ID+"-prepareText", response.word)
                                         )
                                     )
                             );
@@ -509,8 +532,8 @@ function editWord(wordId, language) {
                                 $("<tr/>")
                                     .append($("<td/>", {text:"Transcription:"}))
                                     .append(
-                                        $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID}).html(
-                                            transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID, response.word)
+                                        $("<td/>", {id:TRANSCRIPTION_CONTAINER_ID+"-prepareText"}).html(
+                                            transcriptionEditableTextField(TRANSCRIPTION_CONTAINER_ID+"-prepareText", response.word)
                                         )
                                     )
                             );
@@ -518,8 +541,8 @@ function editWord(wordId, language) {
                                 $("<tr/>")
                                     .append($("<td/>", {text:"Meaning:"}))
                                     .append(
-                                        $("<td/>", {id:MEANING_CONTAINER_ID}).html(
-                                            meaningEditableTextArea(MEANING_CONTAINER_ID, response.word)
+                                        $("<td/>", {id:MEANING_CONTAINER_ID+"-prepareText"}).html(
+                                            meaningEditableTextArea(MEANING_CONTAINER_ID+"-prepareText", response.word)
                                         )
                                     )
                             );
@@ -527,7 +550,7 @@ function editWord(wordId, language) {
                                 $("<tr/>")
                                     .append($("<td/>", {text: "Examples:"}))
                                     .append(
-                                        $("<td/>", {id: EXAMPLES_CONTAINER_ID}).html(
+                                        $("<td/>", {id: EXAMPLES_CONTAINER_ID+"-prepareText"}).html(
                                             composeExamples(response.word.wordInText, response.word.examples, false)
                                         )
                                     )
@@ -579,8 +602,8 @@ function removeWord(word) {
 }
 
 function getSelectedWord() {
-    let selection = window.getSelection().toString();
-    if (selection) {
+    let selection = getSelectedText();
+    if (!isEmptyString(selection)) {
         let wordInText = selection.trim();
         return _.find(textDataJson.wordsToLearn, function (word) {
             return word.wordInText === wordInText;

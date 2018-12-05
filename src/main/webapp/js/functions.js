@@ -245,18 +245,18 @@ function modalDialog(dialogContainerId, title, contentProducer, confirmButtonNam
     $dialogContainer.dialog('open');
 }
 
-function generateTranslateSelectionButtons(lang) {
+function generateTranslateSelectionButtons(lang, onTranslate) {
     var $cont = $("<span/>");
     $cont.append(
         $("<button/>", {text: "Google translate"}).click(
             function () {
-                var urlPrefix;
+                let urlPrefix;
                 if (lang === "EN") {
                     urlPrefix = "https://translate.google.ru/#view=home&op=translate&sl=en&tl=ru&text="
                 } else if (lang === "PL") {
                     urlPrefix = "https://translate.google.ru/#view=home&op=translate&sl=pl&tl=ru&text="
                 }
-                translateSelection(urlPrefix);
+                onTranslate(urlPrefix);
             }
         )
     );
@@ -269,19 +269,37 @@ function generateTranslateSelectionButtons(lang) {
                 } else if (lang === "PL") {
                     urlPrefix = "https://www.lingvolive.com/ru-ru/translate/pl-ru/"
                 }
-                translateSelection(urlPrefix);
+                onTranslate(urlPrefix);
             }
         )
     );
     return $cont;
 }
 
-function initTranslateSelectionButtons(containerId, lang) {
-    $("#" + containerId).html(generateTranslateSelectionButtons(lang));
+function initTranslateSelectionButtons(containerId, lang, onTranslate) {
+    $("#" + containerId).html(generateTranslateSelectionButtons(lang, onTranslate));
+}
+
+function getSelectedText() {
+    return window.getSelection().toString();
+}
+
+function clearSelection() {
+    if (window.getSelection) {
+        if (window.getSelection().empty) {  // Chrome
+            window.getSelection().empty();
+        } else if (window.getSelection().removeAllRanges) {  // Firefox
+            window.getSelection().removeAllRanges();
+        }
+    }
 }
 
 function translateSelection(urlPrefix) {
-    window.open(urlPrefix + window.getSelection().toString(), '_blank');
+    translateText(urlPrefix, getSelectedText().trim());
+}
+
+function translateText(urlPrefix, word) {
+    window.open(urlPrefix + word, '_blank');
 }
 
 function strToDivs(str) {

@@ -10,7 +10,23 @@ let SHOW_TRANSCRIPTION_BTN_ID = "SHOW_TRANSCRIPTION_BTN_ID";
 let EXAMPLES_CONTAINER_ID = "examples-container";
 
 function initPage() {
-    initTranslateSelectionButtons("translate-buttons", pageState.textLanguage);
+    initTranslateSelectionButtons(
+        "translate-buttons",
+        pageState.textLanguage,
+        function (urlPrefix) {
+            const selection = getSelectedText();
+            if (!isEmptyString(selection)) {
+                translateSelection(urlPrefix);
+            } else {
+                translateText(
+                    urlPrefix,
+                    isEmptyString(pageState.word.word)
+                        ?pageState.word.wordInText
+                        :pageState.word.word
+                );
+            }
+        }
+    );
     goToNextWord();
 }
 

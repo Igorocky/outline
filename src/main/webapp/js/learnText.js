@@ -1,7 +1,13 @@
 let SHOWN = "shown";
 
 function initPage() {
-    initTranslateSelectionButtons("translate-buttons", pageState.textLanguage);
+    initTranslateSelectionButtons(
+        "translate-buttons",
+        pageState.textLanguage,
+        function (urlPrefix) {
+            translateSelection(urlPrefix);
+        }
+    );
     $("#go-to-sentence-number").keydown(function(e){
         if (e.which == 13) {
             goToNextSentenceByNumber();
