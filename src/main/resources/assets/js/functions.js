@@ -229,7 +229,7 @@ function infoDialog(dialogContainerId, text, confirmButtonName, onConfirm) {
     $( "#" + dialogContainerId ).dialog('open');
 }
 
-function modalDialog(dialogContainerId, title, contentProducer, confirmButtonName, onConfirm) {
+function modalDialog(dialogContainerId, title, contentProducer, confirmButtonName, onConfirm, params) {
     let $dialogContainer = $('#' + dialogContainerId);
     $dialogContainer.html(contentProducer());
 
@@ -237,10 +237,15 @@ function modalDialog(dialogContainerId, title, contentProducer, confirmButtonNam
     buttons[confirmButtonName] = function() {
         $( this ).dialog( "close" );
         onConfirm();
-    }
+    };
     $dialogContainer.dialog({
         title:title,
-        buttons: buttons
+        buttons: buttons,
+        close: function () {
+            if (params && params.onClose) {
+                params.onClose();
+            }
+        }
     });
     $dialogContainer.dialog('open');
 }

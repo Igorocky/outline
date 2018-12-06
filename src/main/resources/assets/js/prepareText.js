@@ -514,15 +514,6 @@ function editWord(wordId, language) {
             success: function (response) {
                 if (response.status == "ok") {
                     clearSelection();
-                    $("#words-to-learn-table-buttons-container").hide();
-                    $("#words-to-learn-table-container").html(
-                        $("<button/>", {text: "Show all words"}).click(function () {
-                            getEngText(textDataJson.textId, function (data) {
-                                $("#words-to-learn-table-buttons-container").show();
-                                initWordsToLearnTable(textDataJson);
-                            })
-                        })
-                    );
                     modalDialog(
                         "dialog-modal",
                         "Edit word: " + response.word.wordInText,
@@ -597,7 +588,16 @@ function editWord(wordId, language) {
                             return $content;
                         },
                         "Close",
-                        function () {}
+                        function () {},
+                        {
+                            onClose: function () {
+                                if (typeof(textDataJson) !== 'undefined') {
+                                    getEngText(textDataJson.textId, function (textDataJson) {
+                                        initWordsToLearnTable(textDataJson);
+                                    });
+                                }
+                            }
+                        }
                     )
                 }
             }
