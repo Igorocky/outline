@@ -5,13 +5,13 @@ import org.igye.outline.model.EngText;
 import org.igye.outline.model.Word;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.igye.outline.common.OutlineUtils.filter;
 import static org.igye.outline.common.OutlineUtils.listF;
@@ -50,12 +50,16 @@ public class TextProcessing {
             );
         }
         Set<String> ignoreListRow = new HashSet<>(Arrays.asList(engText.getIgnoreList().split("[\r\n]+")));
-        Map<String, String> wordToGroupMap = engText.getWords().stream()
+        Map<String, String> wordToGroupMap = new HashMap<>();
+        engText.getWords().stream()
                 .filter(word -> StringUtils.isNoneBlank(word.getWordInText()))
-                .collect(Collectors.toMap(
-                        Word::getWordInText,
-                        word -> word.getGroup() == null ? "" : StringUtils.trim(word.getGroup())
-                ));
+                .forEach(word ->
+                        wordToGroupMap.put(
+                                word.getWordInText(),
+                                word.getGroup() == null ? "" : StringUtils.trim(word.getGroup())
+                        )
+                );
+
         return splitOnSentences(
                 engText.getText(),
                 wordsToLearnRow,
