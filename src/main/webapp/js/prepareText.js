@@ -68,7 +68,6 @@ function initExerciseSelector() {
 function initTextTitle(textDataJson) {
     if (isFullMode()) {
         editableTextFieldReadMode(TEXT_TITLE, textDataJson.title, function (newValue, respHandler) {
-            console.log("newValue = '" + newValue + "'");
             prepareTextPageEndpoints.changeTitle(newValue, respHandler);
         });
     } else {
@@ -87,7 +86,6 @@ function initMainTextArea(textDataJson) {
             return textDataJson.text;
         },
         function (newValue, respHandler) {
-            console.log("newValue = '" + newValue + "'");
             prepareTextPageEndpoints.changeText(newValue, respHandler);
         }
     )
@@ -104,7 +102,6 @@ function initIgnoreListTextArea(textDataJson) {
             return ignoreList;
         },
         function (newValue, respHandler) {
-            console.log("newValue = '" + newValue + "'");
             prepareTextPageEndpoints.changeIgnoreList(newValue, function (response) {
                 respHandler(response);
                 reloadEngText();
@@ -805,7 +802,6 @@ let prepareTextPageEndpoints = {
                 data: {engTextId: textDataJson.textId, spelling: spelling},
                 success: function (response) {
                     if (response.status == "ok") {
-                        console.log("word was ignored.");
                         onSuccess();
                     }
                 }

@@ -41,6 +41,7 @@
 .main-text-table-wrapper {
     max-height: 500px;
     overflow-y: auto;
+    resize: vertical;
 }
 
 .main-text-table {
@@ -63,15 +64,19 @@
     background-color: #f5e79e;
 }
 
+#words-to-learn-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    resize: vertical;
+}
+
 .word-ignored {
     color: lightslategray;
     font-family: "Courier New";
-    /*border: 1px solid lightgrey;*/
 }
 
 .word-general {
     font-family: "Courier New";
-    /*border: 1px solid lightgrey;*/
 }
 
 .word-to-learn-no-group {
@@ -85,7 +90,6 @@
     font-style: italic;
     font-family: "Arial";
     text-decoration: underline;
-    /*border: 1px solid lightgrey;*/
 }
 
 .word-selected-group {
@@ -93,8 +97,6 @@
     font-family: "Arial";
     font-weight: bold;
     text-decoration: underline;
-    /*font-family: "Courier New";*/
-    /*border: 1px solid lightgrey;*/
 }
 
 .exercise-selector li {

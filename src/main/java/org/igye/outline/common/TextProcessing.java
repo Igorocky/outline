@@ -51,6 +51,7 @@ public class TextProcessing {
         }
         Set<String> ignoreListRow = new HashSet<>(Arrays.asList(engText.getIgnoreList().split("[\r\n]+")));
         Map<String, String> wordToGroupMap = engText.getWords().stream()
+                .filter(word -> StringUtils.isNoneBlank(word.getWordInText()))
                 .collect(Collectors.toMap(
                         Word::getWordInText,
                         word -> word.getGroup() == null ? "" : StringUtils.trim(word.getGroup())
