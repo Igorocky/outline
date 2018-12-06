@@ -65,9 +65,9 @@
 }
 
 #words-to-learn-table-container {
-    max-height: 500px;
-    overflow-y: auto;
-    resize: vertical;
+    /*max-height: 500px;*/
+    /*overflow-y: auto;*/
+    /*resize: vertical;*/
 }
 
 .word-ignored {
