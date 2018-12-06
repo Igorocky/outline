@@ -19,7 +19,7 @@ public class LearnTextData {
     private List<Integer> lastCounts = new ArrayList<>();
     private Random rnd = new Random();
 
-    public String getCountsStat(int elemsCnt, int hash) {
+    public int[] getCountsStat(int elemsCnt, int hash) {
         int min = Integer.MAX_VALUE;
         int max = 0;
         if (elemsCnt > 0) {
@@ -36,7 +36,7 @@ public class LearnTextData {
             min = 0;
             max = 0;
         }
-        return "Counts: min " + min + ", max " + max;
+        return new int[] {min, max};
     }
 
     public Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {

@@ -273,8 +273,8 @@ public class WordsDao {
             );
         } else {
             List<TextToken> sentence = sentences.get(sentenceIdx);
-            String countsBefore = null;
-            String countsAfter = null;
+            int[] countsBefore = null;
+            int[] countsAfter = null;
             if (text.getListOfLearnGroups().contains(ALL_WORDS)) {
                 List<TextToken> hiddable = filter(sentence, TextToken::isHiddable);
                 int hash = sentence.hashCode();
@@ -358,8 +358,8 @@ public class WordsDao {
             List<TextToken> sentence,
             Integer sentenceIdx,
             String taskDescription,
-            String countsBefore,
-            String countsAfter
+            int[] countsBefore,
+            int[] countsAfter
     ) {
         Map<String, Object> response = createVoidResponse();
         response.put("maxSentenceIdx", sentences.size() - 1);

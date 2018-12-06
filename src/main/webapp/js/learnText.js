@@ -89,6 +89,10 @@ function checkWords() {
     });
 }
 
+function composeCountsStat(countsStat) {
+    return countsStat?("Counts: min " + countsStat[0] + ", max " + countsStat[1]):"";
+}
+
 function drawSentenceToLearn() {
     let $sentenceArea = $("#sentence-to-learn-area");
     $sentenceArea.html($("<span/>", {text:(pageState.sentenceIdx + 1) + ":  ", "class": "current-sentence-number"}));
@@ -105,17 +109,17 @@ function drawSentenceToLearn() {
         $sentenceArea
     );
     if (_.size(inputs) === 0) {
-        if (pageState.countsAfter) {
+        if (pageState.countsAfter && pageState.countsAfter[0] < 1) {
             $("#try-again-btn").focus();
         } else {
             $("#next-btn").focus();
         }
         $("#task-description-area").html(
-            pageState.taskDescription + " " + (pageState.countsAfter?pageState.countsAfter:"")
+            pageState.taskDescription + " " + composeCountsStat(pageState.countsAfter)
         );
     } else {
         $("#task-description-area").html(
-            pageState.taskDescription + " " + (pageState.countsBefore?pageState.countsBefore:"")
+            pageState.taskDescription + " " + composeCountsStat(pageState.countsBefore)
         );
         pageState.firstInput = _.first(inputs);
         pageState.firstInput.focus();
