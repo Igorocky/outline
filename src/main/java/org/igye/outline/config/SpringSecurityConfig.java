@@ -28,8 +28,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/js/**");
-        web.ignoring().antMatchers("/resources/**");
+//        web.ignoring().antMatchers("/js/**");
+//        web.ignoring().antMatchers("/resources/**");
     }
 
     @Override

@@ -226,6 +226,14 @@ public class NodeController {
         return getImgFileById(nodeDao.getIconById(iconId).getId());
     }
 
+    @GetMapping("jss/{fileName}")
+    @ResponseBody
+    public byte[] js(@PathVariable String fileName) {
+        System.out.println(">>>fileName = " + fileName);
+//        return FileUtils.readFileToByteArray(getImgFile(imagesLocation, nodeDao.getIconById(iconId).getId()));
+        return null;
+    }
+
     @GetMapping(EDIT_TOPIC)
     public String editTopic(Model model,
                             @RequestParam Optional<UUID> parentId, @RequestParam Optional<UUID> id) throws JsonProcessingException {
