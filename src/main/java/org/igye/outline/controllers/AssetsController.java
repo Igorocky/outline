@@ -3,6 +3,7 @@ package org.igye.outline.controllers;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline.exceptions.OutlineException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.HandlerMapping;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,16 +24,19 @@ import java.util.stream.Collectors;
 
 @Controller
 public class AssetsController {
+    public static final String ASSETS = "assets";
     @Value("${app.version}")
     private String appVersion;
+    @Autowired
+    ServletContext servletContext;
 
-    @GetMapping("assets/{assetType:js|css|img}/**")
+    @GetMapping(ASSETS + "/{assetType:js|css|img}/**")
     @ResponseBody
-    public ResponseEntity<byte[]> assets(@PathVariable String assetType, HttpServletRequest request) throws IOException {
+    public ResponseEntity<byte[]> assets(HttpServletRequest request) throws IOException {
 
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         List<String> pathElems = Arrays.asList(path.split("/")).stream()
-                .filter(str -> !appVersion.equals(str) && StringUtils.isNoneBlank(str))
+                .filter(str -> !ASSETS.equals(str) && !appVersion.equals(str) && StringUtils.isNoneBlank(str))
                 .collect(Collectors.toList());
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(getMediaType(path));
@@ -56,7 +61,7 @@ public class AssetsController {
 
     private byte[] getBytes(@PathVariable String filePath) throws IOException {
         return IOUtils.toByteArray(
-                getClass().getClassLoader().getResourceAsStream(filePath)
+                servletContext.getResourceAsStream(filePath)
         );
     }
 }
