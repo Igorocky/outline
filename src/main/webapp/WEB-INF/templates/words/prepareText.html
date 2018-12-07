@@ -65,6 +65,8 @@
         <td th:unless="${pageMode == 'taskSelection'}"><span id="lang-span" style="margin-right: 150px"></span></td>
         <td>Density:</td>
         <td><span id="pct-span"></span></td>
+        <td th:unless="${pageMode == 'taskSelection'}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a th:href="@{/words/prepareText(id=${engTextId},pageMode='taskSelection')}">Start</a></td>
     </tr>
 </table>
 <hr/>
