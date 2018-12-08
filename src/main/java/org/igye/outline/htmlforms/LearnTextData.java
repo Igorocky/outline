@@ -41,6 +41,7 @@ public class LearnTextData {
 
     public Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {
         resetCountsIfNecessary(elemsCnt, hash);
+        // TODO: 08.12.2018 use words with low counts more frequently
         Set<Integer> result = null;
         if (pct <= 50) {
             result = getRandomIndicesUnder50(pct, lastCounts);
@@ -108,6 +109,9 @@ public class LearnTextData {
     }
 
     private int findIdxWithMinCnt(List<Integer> counts, Set<Integer> alreadySelectedIndices) {
+        /*java.util.NoSuchElementException: No value present
+	at java.util.Optional.get(Unknown Source) ~[na:1.8.0_181]
+	at org.igye.outline.htmlforms.LearnTextData.findIdxWithMinCnt(LearnTextData.java:111) ~[classes!/:0.2.5-SNAPSHOT]*/
         Integer min = counts.stream().filter(i->!alreadySelectedIndices.contains(i)).min(Integer::compareTo).get();
         List<Integer> idxs = new LinkedList<>();
         for (int i = 0; i < counts.size(); i++) {
