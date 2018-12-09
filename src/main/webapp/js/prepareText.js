@@ -114,14 +114,13 @@ function initWordsToLearnTable(textDataJson) {
     $("#words-to-learn-table-container").html(
         $("<table/>", {"class":"outline-bordered-table"}).html(
             $("<thead/>").html(
-                $("<tr/>").html(
-                    $("<th/>")
-                )
+                $("<tr/>").html("")
                     .append($("<th/>", {text: "Group"}))
                     .append($("<th/>", {text: "Word in text"}))
                     .append($("<th/>", {text: "Basic form"}))
                     .append($("<th/>", {text: "Transcription"}))
                     .append($("<th/>", {text: "Meaning"}))
+                    .append($("<th/>"))
             )
         ).append($("<tbody/>", {id:WORDS_TO_LEARN_TABLE}))
     );
@@ -271,14 +270,7 @@ function meaningEditableTextArea(contId, word) {
 
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE).prepend(
-        $("<tr/>", {id: "word-" + word.id}).html(
-            $("<td/>").html(
-                $("<button/>", {text: "x"}).click(function () {
-                    removeWord(word);
-                    reloadEngText();
-                })
-            )
-        ).append(
+        $("<tr/>", {id: "word-" + word.id}).html("").append(
             $("<td/>", {id: "word-group-" + word.id})
         ).append(
             $("<td/>", {id: "word-wordInText-" + word.id}).html(
@@ -295,6 +287,13 @@ function appendWordToLearn(word) {
         ).append(
             $("<td/>", {id: "word-meaning-" + word.id}).html(
                 meaningEditableTextArea("word-meaning-" + word.id, word)
+            )
+        ).append(
+            $("<td/>").html(
+                $("<button/>", {text: "x"}).click(function () {
+                    removeWord(word);
+                    reloadEngText();
+                })
             )
         )
     );
