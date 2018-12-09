@@ -46,7 +46,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = NodeDao.class)
+@ContextConfiguration(classes = {NodeDao.class, WordsDao.class})
 public class NodeDaoTest extends AbstractHibernateTest {
     private static final Logger DEBUG_LOG = LogManager.getLogger(SQL_DEBUG_LOGGER_NAME);
     public static final String OWNER = "owner";
