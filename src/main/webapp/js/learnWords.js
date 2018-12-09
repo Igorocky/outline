@@ -197,6 +197,7 @@ function focusNextControl() {
 
 function createUserInputTextField(correctValue, onCorrectInput) {
     let $input = $("<input/>", {"type": "text", id: USER_INPUT_ID});
+    $input.prop("autocomplete", "off");
     $input.keypress(function (e) {
         if (e.which == 13) {
             e.preventDefault();
