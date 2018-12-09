@@ -11,14 +11,14 @@ public class CyclicRandom {
     private List<Integer> rest;
     private Random rnd = new Random();
 
-    public Integer getRandomIndex(int hash, int elemsCnt) {
+    public synchronized Integer getRandomIndex(int hash, int elemsCnt) {
         if (this.hash != hash || this.elemsCnt != elemsCnt || rest.isEmpty()) {
             reset(hash, elemsCnt);
         }
         return rest.remove(rnd.nextInt(rest.size()));
     }
 
-    public String getCounts() {
+    public synchronized String getCounts() {
         return (elemsCnt - rest.size()) + "/" + elemsCnt;
     }
 

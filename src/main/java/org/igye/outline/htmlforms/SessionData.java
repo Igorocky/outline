@@ -18,7 +18,7 @@ public class SessionData {
     @Getter @Setter
     private CyclicRandom cyclicRandom = new CyclicRandom();
 
-    public User getCurrentUser() {
+    public synchronized User getCurrentUser() {
         if (user == null) {
             user = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         }

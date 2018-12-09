@@ -19,7 +19,7 @@ public class LearnTextData {
     private List<Integer> lastCounts = new ArrayList<>();
     private Random rnd = new Random();
 
-    public int[] getCountsStat(int elemsCnt, int hash) {
+    public synchronized int[] getCountsStat(int elemsCnt, int hash) {
         int min = Integer.MAX_VALUE;
         int max = 0;
         if (elemsCnt > 0) {
@@ -39,7 +39,7 @@ public class LearnTextData {
         return new int[] {min, max};
     }
 
-    public Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {
+    public synchronized Set<Integer> getIndicesToHide(int elemsCnt, int pct, int hash) {
         resetCountsIfNecessary(elemsCnt, hash);
         // TODO: 08.12.2018 use words with low counts more frequently
         Set<Integer> result = null;
@@ -109,10 +109,12 @@ public class LearnTextData {
     }
 
     private int findIdxWithMinCnt(List<Integer> counts, Set<Integer> alreadySelectedIndices) {
-        /*java.util.NoSuchElementException: No value present
-	at java.util.Optional.get(Unknown Source) ~[na:1.8.0_181]
-	at org.igye.outline.htmlforms.LearnTextData.findIdxWithMinCnt(LearnTextData.java:111) ~[classes!/:0.2.5-SNAPSHOT]*/
-        Integer min = counts.stream().filter(i->!alreadySelectedIndices.contains(i)).min(Integer::compareTo).get();
+        Integer min = Integer.MAX_VALUE;
+        for (int i = 0; i < counts.size(); i++) {
+            if (!alreadySelectedIndices.contains(i)) {
+                min = min < counts.get(i) ? min : counts.get(i);
+            }
+        }
         List<Integer> idxs = new LinkedList<>();
         for (int i = 0; i < counts.size(); i++) {
             if (counts.get(i) == min) {
