@@ -72,6 +72,8 @@ public class NodeDao {
     private IconRepository iconRepository;
     @Autowired
     private ContentRepository contentRepository;
+    @Autowired
+    private WordsDao wordsDao;
     @PersistenceContext
     private EntityManager entityManager;
     @Value("${h2.version}")
@@ -257,6 +259,8 @@ public class NodeDao {
                     moveImage(selectionPart.getSelectedId(), destId);
                 } else if (ObjectType.ENG_TEXT.equals(selectionPart.getObjectType())) {
                     moveNode(selectionPart.getSelectedId(), destId);
+                } else if (ObjectType.ENG_WORD.equals(selectionPart.getObjectType())) {
+                    wordsDao.moveWord(selectionPart.getSelectedId(), destId);
                 } else {
                     throw new OutlineException("Object type '" + selectionPart.getObjectType() + "' is not supported.");
                 }

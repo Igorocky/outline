@@ -392,4 +392,12 @@ public class WordsDao {
                 .map(this::mapWord)
                 .orElse(null);
     }
+
+    @Transactional
+    public void moveWord(UUID selectedId, UUID destId) {
+        Word wordToMove = wordRepository.findByOwnerAndId(sessionData.getCurrentUser(), selectedId);
+        EngText textToMoveTo = engTextRepository.findByOwnerAndId(sessionData.getCurrentUser(), destId);
+        wordToMove.getEngText().detachWordById(wordToMove.getId());
+        textToMoveTo.addWord(wordToMove);
+    }
 }

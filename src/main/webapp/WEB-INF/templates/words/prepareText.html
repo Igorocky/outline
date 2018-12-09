@@ -119,6 +119,7 @@
     <span id="translate-buttons-for-words-table"></span>
     <button onclick="prepareTextPageEndpoints.createNewWord('')">Add new word</button>
     <!--<button onclick="importWord('278710b5-a4a2-43aa-a96c-dfdc13c8f31e', 0)">Import all words</button>-->
+    <span th:replace="selection-controls :: selection-buttons (hasWhatToPaste=${hasWhatToPaste}, id=${engTextId})"></span>
     <a href="#words-to-learn-table-buttons-container">Up</a>
 </div>
 <div id="words-to-learn-table-container"></div>

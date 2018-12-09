@@ -115,6 +115,7 @@ function initWordsToLearnTable(textDataJson) {
         $("<table/>", {"class":"outline-bordered-table"}).html(
             $("<thead/>").html(
                 $("<tr/>").html("")
+                    .append($("<th/>"))
                     .append($("<th/>", {text: "Group"}))
                     .append($("<th/>", {text: "Word in text"}))
                     .append($("<th/>", {text: "Basic form"}))
@@ -271,6 +272,15 @@ function meaningEditableTextArea(contId, word) {
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE).prepend(
         $("<tr/>", {id: "word-" + word.id}).html("").append(
+            $("<td/>").html(
+                $("<input/>", {
+                    "class":"selection-checkbox",
+                    "type":"checkbox",
+                    "hidden":"hidden",
+                    "id":word.id,
+                    objecttype:"ENG_WORD"})
+            )
+        ).append(
             $("<td/>", {id: "word-group-" + word.id})
         ).append(
             $("<td/>", {id: "word-wordInText-" + word.id}).html(

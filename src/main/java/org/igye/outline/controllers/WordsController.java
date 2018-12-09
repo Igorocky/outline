@@ -84,6 +84,7 @@ public class WordsController {
         commonModelMethods.addPath(model, (Paragraph) wordsDao.getEngTextById(id).getParentNode());
         model.addAttribute("engTextId", id);
         model.addAttribute("pageMode", pageMode.orElse("full"));
+        model.addAttribute("hasWhatToPaste", sessionData.getSelection() != null);
         return prefix(PREPARE_TEXT);
     }
 
