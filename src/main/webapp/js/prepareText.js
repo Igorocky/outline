@@ -269,6 +269,12 @@ function meaningEditableTextArea(contId, word) {
     );
 }
 
+function updateWordsCount() {
+    $("#number-of-words-span").html(
+        $("#" + WORDS_TO_LEARN_TABLE + " > tr").length
+    )
+}
+
 function appendWordToLearn(word) {
     $("#" + WORDS_TO_LEARN_TABLE).prepend(
         $("<tr/>", {id: "word-" + word.id}).html("").append(
@@ -305,7 +311,9 @@ function appendWordToLearn(word) {
                     reloadEngText();
                 })
             )
-        )
+        ).click(function () {
+            $("#" + word.id).click();
+        })
     );
     editableSelectReadMode(
         "word-group-" + word.id,
@@ -320,6 +328,8 @@ function appendWordToLearn(word) {
             prepareTextPageEndpoints.getAvailableWordGroups(optionsLoadedHandler)
         }
     );
+
+    updateWordsCount();
 }
 
 function editableTextFieldReadModeElem(contId, value, onEditDone) {
@@ -794,6 +804,7 @@ let prepareTextPageEndpoints = {
                 success: function (response) {
                     if (response.status == "ok") {
                         $("#" + "word-" + word.id).remove();
+                        updateWordsCount();
                         reloadEngText();
                     }
                 }

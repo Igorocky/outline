@@ -22,6 +22,12 @@ function doGet(params) {
     });
 }
 
+function cleanSelectionCheckboxes() {
+    $(".selection-checkbox").each(function (idx) {
+        $(this).prop("checked", false);
+    })
+}
+
 function submitSelection(actionType, selectedElems, onSuccess) {
     let selection = {
         actionType: actionType,
@@ -44,6 +50,7 @@ function selectedElemToSelectionPart() {
 }
 
 function selectionModeOn() {
+    cleanSelectionCheckboxes();
     $( ".selection-checkbox" ).show();
     $( "#selection-mode-on-btn" ).hide();
     $( "#selection-mode-off-btn" ).show();
@@ -56,6 +63,7 @@ function selectionModeOn() {
 }
 
 function selectionModeOff() {
+    cleanSelectionCheckboxes();
     $( ".selection-checkbox" ).hide();
     $( "#selection-mode-on-btn" ).show();
     $( "#selection-mode-off-btn" ).hide();
