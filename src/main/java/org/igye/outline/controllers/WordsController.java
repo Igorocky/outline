@@ -201,6 +201,7 @@ public class WordsController {
 
     @GetMapping("engText/{textId}/learnWords")
     public String learnWords(Model model, @PathVariable UUID textId, @RequestParam boolean learnDirection) {
+        sessionData.getCyclicRandom().getRandomIndex(0, 1);
         commonModelMethods.initModel(model);
         EngText text = wordsDao.getEngTextById(textId);
         commonModelMethods.addPath(model, (Paragraph) text.getParentNode());

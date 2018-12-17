@@ -330,7 +330,7 @@ public class WordsDao {
         }
         Word word = wordsInSelectedGroups.get(
                 sessionData.getCyclicRandom().getRandomIndex(
-                        map(wordsInSelectedGroups, Word::getWordInText).hashCode(),
+                        map(wordsInSelectedGroups, w -> w.getWordInText() + w.getWord()).hashCode(),
                         wordsInSelectedGroups.size()
                 )
         );
