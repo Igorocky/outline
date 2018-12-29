@@ -320,12 +320,12 @@ public class WordsDao {
         Set<String> selectedGroups = new HashSet<>(selectedGroupsList);
         if (selectedGroups.contains(ALL_GROUPS) || selectedGroups.contains(ALL_WORDS)) {
             wordsInSelectedGroups = text.getWords().stream()
-                    .sorted(Comparator.comparing(Word::getWordInText))
+                    .sorted(Comparator.comparing(Word::getId))
                     .collect(Collectors.toList());
         } else {
             wordsInSelectedGroups = text.getWords().stream()
                     .filter(word -> selectedGroups.contains(word.getGroup()))
-                    .sorted(Comparator.comparing(Word::getWordInText))
+                    .sorted(Comparator.comparing(Word::getId))
                     .collect(Collectors.toList());
         }
         Word word = wordsInSelectedGroups.get(
