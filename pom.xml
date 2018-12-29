@@ -4,7 +4,7 @@
 
     <groupId>org.igye</groupId>
     <artifactId>outline</artifactId>
-    <version>0.2.7-SNAPSHOT</version>
+    <version>0.2.7</version>
     <packaging>war</packaging>
 
     <parent>
@@ -20,7 +20,7 @@
 
     <scm>
         <developerConnection>scm:git:file://./.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>outline-0.2.7</tag>
   </scm>
 
     <dependencies>
