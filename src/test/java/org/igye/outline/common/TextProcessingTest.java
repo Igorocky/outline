@@ -59,7 +59,7 @@ public class TextProcessingTest {
         assertEquals(TextToken.builder().value("ignored").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("!…").build(), flattened.get(i++));
-        assertEquals(TextToken.builder().value("\r\n").meta(true).build(), flattened.get(i++));
+        assertEquals(TextToken.builder().value(System.lineSeparator()).meta(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("\"").build(), flattened.get(i++));
         assertEquals(TextToken.builder().value("the").word(true).build(), flattened.get(i++));
         assertEquals(TextToken.builder().value(" ").build(), flattened.get(i++));
