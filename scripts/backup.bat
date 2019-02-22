@@ -2,7 +2,7 @@
 
 set DIR_TO_STORE_BACKUP_TO="DIR_TO_STORE_BACKUP_TO"
 ::set DB_URL="jdbc:h2:tcp://host:port/dbname"
-::set DB_USER="DB_USER"
+set DB_USER="DB_USER"
 ::set DB_PASSWORD="DB_PASSWORD"
 set DIR_WITH_IMAGES="D:\Books\math\DIR_WITH_IMAGES"
 ::set PATH_TO_H2_JAR="PATH_TO_H2_JAR"
