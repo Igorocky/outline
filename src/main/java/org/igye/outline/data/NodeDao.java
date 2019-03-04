@@ -40,12 +40,7 @@ import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -338,6 +333,20 @@ public class NodeDao {
                     )
                     .executeUpdate();
         });
+    }
+
+    @Transactional
+    public Node loadAllNodesRecursively(UUID rootId) {
+        Node root = nodeRepository.findByOwnerAndId(sessionData.getCurrentUser(), rootId);
+        Queue<Node> queue = new ArrayDeque<>();
+        queue.addAll(((Paragraph)root).getChildNodes());
+        while (!queue.isEmpty()) {
+            Node currNode = queue.remove();
+            if (currNode instanceof Paragraph) {
+                queue.addAll(((Paragraph)currNode).getChildNodes());
+            }
+        }
+        return root;
     }
 
     private <T> Optional<T> getSibling(UUID id,
