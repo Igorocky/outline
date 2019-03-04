@@ -15,9 +15,11 @@ import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ImageType;
+import org.igye.outline.htmlforms.NodeDto;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Image;
+import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Text;
 import org.igye.outline.model.Topic;
@@ -40,6 +42,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -96,6 +99,29 @@ public class NodeController {
     public String home2(Model model) {
         commonModelMethods.initModel(model);
         return redirect(prefix("home"));
+    }
+
+    @GetMapping("learnNodes")
+    @ResponseBody
+    public List<NodeDto> learNodes(@RequestParam UUID id) {
+        return map(
+                sessionData.getLearnNodesData().getNodesToLearn(id),
+                n -> NodeDto.builder()
+                        .id(n.getId())
+                        .iconId(getIconId(n))
+                        .title(n.getName())
+                        .build()
+        );
+    }
+
+    private UUID getIconId(Node node) {
+        if (node instanceof Paragraph) {
+            return ((Paragraph)node).getIcon().getId();
+        } else if (node instanceof Topic) {
+            return ((Topic)node).getIcon().getId();
+        } else {
+            throw new OutlineException("Unexpected type of node: " + node.getClass());
+        }
     }
 
     @GetMapping(PARAGRAPH)

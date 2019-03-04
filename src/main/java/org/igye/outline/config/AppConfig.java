@@ -1,6 +1,7 @@
 package org.igye.outline.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.igye.outline.data.NodeDao;
 import org.igye.outline.htmlforms.SessionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -15,6 +16,8 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 @Configuration
 public class AppConfig implements WebMvcConfigurer {
+    @Autowired
+    private NodeDao nodeDao;
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -47,7 +50,7 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     @SessionScope
     public SessionData sessionData() {
-        return new SessionData();
+        return new SessionData(nodeDao);
     }
 
     @Bean

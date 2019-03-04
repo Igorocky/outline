@@ -109,7 +109,6 @@ public class LearnNodesData {
     }
 
     @Data
-    @Builder
     private static class NodeWrapper {
         private Node node;
         private boolean wasReturned;
