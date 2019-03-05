@@ -28,7 +28,7 @@ public class LearnNodesData {
     }
 
     public List<NodeDto> getNodesToLearn(UUID rootNodeId) {
-        if (this.rootNodeId != rootNodeId) {
+        if (!Objects.equals(this.rootNodeId, rootNodeId)) {
             this.rootNodeId = rootNodeId;
             reset();
         }
@@ -114,9 +114,9 @@ public class LearnNodesData {
                     wStart = -1;
                 }
             }
-            if (wStart >= 0) {
-                allWindows.add(Pair.of(wStart, line.size()-1));
-            }
+        }
+        if (wStart >= 0) {
+            allWindows.add(Pair.of(wStart, line.size()-1));
         }
         Pair<Integer, Integer> maxWindowExample =
                 allWindows.stream().max(comparingInt(p -> (p.getRight() - p.getLeft()))).get();
