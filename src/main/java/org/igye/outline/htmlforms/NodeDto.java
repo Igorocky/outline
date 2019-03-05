@@ -13,4 +13,5 @@ public class NodeDto {
     private UUID id;
     private UUID iconId;
     private String title;
+    private String url;
 }

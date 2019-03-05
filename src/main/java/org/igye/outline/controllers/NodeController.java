@@ -54,6 +54,7 @@ import static org.igye.outline.common.OutlineUtils.createResponse;
 import static org.igye.outline.common.OutlineUtils.getIconsInfo;
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.OutlineUtils.mapF;
 import static org.igye.outline.common.OutlineUtils.redirect;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
@@ -102,26 +103,20 @@ public class NodeController {
     }
 
     @GetMapping("learnNodes")
-    @ResponseBody
-    public List<NodeDto> learNodes(@RequestParam UUID id) {
-        return map(
-                sessionData.getLearnNodesData().getNodesToLearn(id),
-                n -> NodeDto.builder()
-                        .id(n.getId())
-                        .iconId(getIconId(n))
-                        .title(n.getName())
-                        .build()
-        );
+    public String learnNodes(@RequestParam UUID id, Model model) {
+        commonModelMethods.initModel(model);
+        model.addAttribute("pageType", "LearnNodes");
+        model.addAttribute("pageData", mapF(
+                "rootId", id.toString(),
+                "rootNodeName", nodeDao.loadNodeById(id).getName()
+        ));
+        return prefix("index");
     }
 
-    private UUID getIconId(Node node) {
-        if (node instanceof Paragraph) {
-            return ((Paragraph)node).getIcon().getId();
-        } else if (node instanceof Topic) {
-            return ((Topic)node).getIcon().getId();
-        } else {
-            throw new OutlineException("Unexpected type of node: " + node.getClass());
-        }
+    @GetMapping("nodesToLearn")
+    @ResponseBody
+    public List<NodeDto> getNodesToLearn(@RequestParam UUID id) {
+        return sessionData.getLearnNodesData().getNodesToLearn(id);
     }
 
     @GetMapping(PARAGRAPH)

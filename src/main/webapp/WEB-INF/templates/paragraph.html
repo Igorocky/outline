@@ -70,6 +70,7 @@
     <a th:href="@{editTopic(parentId=${paragraph.id})}" href="#">Create new topic</a>&nbsp;
     <a th:href="@{words/createEngText(parentId=${paragraph.id})}" href="#">Create new text</a>&nbsp;
     <a th:if="${paragraph.id != null}" th:href="@{export(id=${paragraph.id})}" href="#">Export</a>&nbsp;
+    <a th:if="${paragraph.id != null}" th:href="@{learnNodes(id=${paragraph.id})}" href="#">Learn nodes</a>&nbsp;
 
     <span th:unless="${paragraph.id == null}" id="reorder-btn"><a href="#" onclick="reorderMode()">Reorder</a>&nbsp;</span>
     <span th:unless="${paragraph.id == null}" id="cancel-reorder-btn" hidden="hidden"><a href="#"  onclick="cancelReorder()">Cancel reordering</a>&nbsp;</span>

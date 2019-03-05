@@ -282,4 +282,22 @@ public class OutlineUtils {
     public static <E> Set<E> setF(E... elems) {
         return ImmutableSet.copyOf(elems);
     }
+
+    public static <K,V> Map<K,V> mapF(K k1, V v1) {
+        Map<K, V> resp = new HashMap<>();
+        resp.put(k1, v1);
+        return resp;
+    }
+
+    public static <K,V> Map<K,V> mapF(K k1, V v1, K k2, V v2) {
+        Map<K, V> resp = mapF(k2,v2);
+        resp.put(k1, v1);
+        return resp;
+    }
+
+    public static <K,V> Map<K,V> mapF(K k1, V v1, K k2, V v2, K k3, V v3) {
+        Map<K, V> resp = mapF(k2,v2,k3,v3);
+        resp.put(k1, v1);
+        return resp;
+    }
 }

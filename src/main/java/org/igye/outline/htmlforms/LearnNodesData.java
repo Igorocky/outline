@@ -4,8 +4,12 @@ import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline.data.NodeDao;
+import org.igye.outline.exceptions.OutlineException;
+import org.igye.outline.model.EngText;
+import org.igye.outline.model.Icon;
 import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
+import org.igye.outline.model.Topic;
 
 import java.util.*;
 
@@ -23,7 +27,7 @@ public class LearnNodesData {
         this.nodeDao = nodeDao;
     }
 
-    public List<Node> getNodesToLearn(UUID rootNodeId) {
+    public List<NodeDto> getNodesToLearn(UUID rootNodeId) {
         if (this.rootNodeId != rootNodeId) {
             this.rootNodeId = rootNodeId;
             reset();
@@ -37,23 +41,63 @@ public class LearnNodesData {
         return extractSeq(line, maxWindow, 2);
     }
 
-    private List<Node> extractSeq(List<NodeWrapper> line, Pair<Integer, Integer> maxWindow, int padding) {
-        int seqSize = padding * 2 + 1;
+    private List<NodeDto> extractSeq(List<NodeWrapper> line, Pair<Integer, Integer> maxWindow, int padding) {
         int winSize = maxWindow.getRight() - maxWindow.getLeft() + 1;
-        int startIdx;
-        if (winSize <= seqSize) {
-            startIdx = maxWindow.getLeft();
-        } else {
-            startIdx = maxWindow.getLeft() + rnd.nextInt(winSize - seqSize + 1);
-        }
-        List<Node> res = new ArrayList<>();
-        int endIdx = startIdx + seqSize - 1;
+        int centerIdx = maxWindow.getLeft() + rnd.nextInt(winSize);
+        int startIdx = centerIdx - padding;
+        int endIdx = centerIdx + padding;
+        List<NodeDto> res = new ArrayList<>();
         for (int i = startIdx; i <= endIdx; i++) {
-            NodeWrapper nodeWrapper = line.get(i);
-            res.add(nodeWrapper.getNode());
-            nodeWrapper.setWasReturned(true);
+            res.add(getNodeDto(line,i));
         }
         return res;
+    }
+
+    private NodeDto getNodeDto(List<NodeWrapper> line, int idx) {
+        if (idx < 0 || idx >= line.size()) {
+            return NodeDto.builder()
+                    .id(null)
+                    .iconId(null)
+                    .title("EMPTY")
+                    .url(null)
+                    .build();
+        } else {
+            NodeWrapper nodeWrapper = line.get(idx);
+            nodeWrapper.setWasReturned(true);
+            Node node = nodeWrapper.getNode();
+            return NodeDto.builder()
+                    .id(node.getId())
+                    .iconId(getIconId(node))
+                    .title(node.getName())
+                    .url(getUrl(node))
+                    .build();
+        }
+    }
+
+    private UUID getIconId(Node node) {
+        if (node instanceof Paragraph) {
+            Icon icon = ((Paragraph) node).getIcon();
+            return icon != null ? icon.getId() : null;
+        } else if (node instanceof Topic) {
+            Icon icon = ((Topic)node).getIcon();
+            return icon != null ? icon.getId() : null;
+        } else if (node instanceof EngText) {
+            return null;
+        } else {
+            throw new OutlineException("Unexpected type of node: " + node.getClass());
+        }
+    }
+
+    private String getUrl(Node node) {
+        if (node instanceof Paragraph) {
+            return "paragraph?id=" + node.getId() + "&showContent=true#main-title";
+        } else if (node instanceof Topic) {
+            return "topic?id=" + node.getId() + "&showContent=true#main-title";
+        } else if (node instanceof EngText) {
+            return "words/prepareText?id=" + node.getId() + "&showContent=true#main-title";
+        } else {
+            throw new OutlineException("Unexpected type of node: " + node.getClass());
+        }
     }
 
     private Pair<Integer, Integer> getMaxWindow(List<NodeWrapper> line) {
