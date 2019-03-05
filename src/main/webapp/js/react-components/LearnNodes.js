@@ -9,9 +9,7 @@ class NodesContainer extends React.Component {
 
     render() {
         return re('div',{},
-            re('a', {href:"paragraph?id=" + this.props.rootId + "&showContent=true#main-title"},
-                re(Typography,{variant:"subheading"}, this.props.rootNodeName)
-            ),
+            re(TitleComponent, {rootId:this.props.rootId, rootNodeName:this.props.rootNodeName, key:this.state.cycleNum + "-title"}),
             re('div',{}, re(Button,{variant:"contained", color:"primary", onClick:this.reloadNodes},"Reload")),
             this.renderNodes()
         )
@@ -73,6 +71,28 @@ class NodeComponent extends React.Component {
     }
 
     openImage() {
+        this.setState((state,props)=>({opened: true}))
+    }
+}
+
+class TitleComponent extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {opened: false}
+        this.openTitle = this.openTitle.bind(this)
+    }
+
+    render() {
+        if (this.state.opened) {
+            return re('a', {href:"paragraph?id=" + this.props.rootId + "&showContent=true#main-title"},
+                re(Typography,{variant:"subheading"}, this.props.rootNodeName)
+            )
+        } else {
+            return re(Button, {color:"primary", onClick:this.openTitle}, "Show")
+        }
+    }
+
+    openTitle() {
         this.setState((state,props)=>({opened: true}))
     }
 }
