@@ -10,7 +10,7 @@ class NodesContainer extends React.Component {
     render() {
         return re('div',{},
             re('a', {href:"paragraph?id=" + this.props.rootId + "&showContent=true#main-title"},
-                re(Typography,{variant:"display1"}, this.props.rootNodeName)
+                re(Typography,{variant:"subheading"}, this.props.rootNodeName)
             ),
             re('div',{}, re(Button,{variant:"contained", color:"primary", onClick:this.reloadNodes},"Reload")),
             this.renderNodes()
