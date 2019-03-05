@@ -3,20 +3,20 @@ const LearnNodes = props => re(NodesContainer,{...props.pageData})
 class NodesContainer extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {nodes: null, cycleNum:0}
+        this.state = {cycleNum:0}
         this.reloadNodes = this.reloadNodes.bind(this)
     }
 
     render() {
         return re('div',{},
-            re(TitleComponent, {rootId:this.props.rootId, rootNodeName:this.props.rootNodeName, key:this.state.cycleNum + "-title"}),
+            re(TitleComponent, {path:this.state.path, key:this.state.cycleNum + "-title"}),
             re('div',{}, re(Button,{variant:"contained", color:"primary", onClick:this.reloadNodes},"Reload")),
             this.renderNodes()
         )
     }
 
     renderNodes() {
-        if (this.state.nodes) {
+        if (this.state.nodesToLearn) {
             return re('ul',{className:"NodesContainer-list-of-nodes"}, [
                 re('li', {}, re(NodeComponent, this.getPropsForNodeComponent(0))),
                 re('li', {}, re(NodeComponent, this.getPropsForNodeComponent(1))),
@@ -30,13 +30,13 @@ class NodesContainer extends React.Component {
     }
 
     getPropsForNodeComponent(idx) {
-        return {opened:idx === 2, key:this.state.cycleNum + "-" + idx, ...this.state.nodes[idx]}
+        return {opened:idx === 2, key:this.state.cycleNum + "-" + idx, ...this.state.nodesToLearn[idx]}
     }
 
     reloadNodes() {
         doGet({
             url: "nodesToLearn?id=" + this.props.rootId,
-            success: nodes => this.setState((state,props)=>({nodes: nodes, cycleNum: state.cycleNum+1}))
+            success: nodesToLearnDto => this.setState((state,props)=>({cycleNum: state.cycleNum+1, ...nodesToLearnDto}))
         })
     }
 
@@ -84,9 +84,11 @@ class TitleComponent extends React.Component {
 
     render() {
         if (this.state.opened) {
-            return re('a', {href:"paragraph?id=" + this.props.rootId + "&showContent=true#main-title"},
-                re(Typography,{variant:"subheading"}, this.props.rootNodeName)
-            )
+            return re('div', {}, _.map(this.props.path, pathNode=>
+                re('a', {href:pathNode.url, key:pathNode.id},
+                    re(Typography,{variant:"subheading"}, pathNode.title)
+                )
+            ))
         } else {
             return re(Button, {color:"primary", onClick:this.openTitle}, "Show")
         }

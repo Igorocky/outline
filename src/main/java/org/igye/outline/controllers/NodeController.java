@@ -15,11 +15,10 @@ import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
 import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ImageType;
-import org.igye.outline.htmlforms.NodeDto;
+import org.igye.outline.htmlforms.NodesToLearnDto;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Image;
-import org.igye.outline.model.Node;
 import org.igye.outline.model.Paragraph;
 import org.igye.outline.model.Text;
 import org.igye.outline.model.Topic;
@@ -42,7 +41,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -107,15 +105,14 @@ public class NodeController {
         commonModelMethods.initModel(model);
         model.addAttribute("pageType", "LearnNodes");
         model.addAttribute("pageData", mapF(
-                "rootId", id.toString(),
-                "rootNodeName", nodeDao.loadNodeById(id).getName()
+                "rootId", id.toString()
         ));
         return prefix("index");
     }
 
     @GetMapping("nodesToLearn")
     @ResponseBody
-    public List<NodeDto> getNodesToLearn(@RequestParam UUID id) {
+    public NodesToLearnDto getNodesToLearn(@RequestParam UUID id) {
         return sessionData.getLearnNodesData().getNodesToLearn(id);
     }
 

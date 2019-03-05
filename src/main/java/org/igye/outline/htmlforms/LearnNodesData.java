@@ -27,7 +27,7 @@ public class LearnNodesData {
         this.nodeDao = nodeDao;
     }
 
-    public List<NodeDto> getNodesToLearn(UUID rootNodeId) {
+    public NodesToLearnDto getNodesToLearn(UUID rootNodeId) {
         if (!Objects.equals(this.rootNodeId, rootNodeId)) {
             this.rootNodeId = rootNodeId;
             reset();
@@ -38,7 +38,26 @@ public class LearnNodesData {
             line = findLine();
         }
         Pair<Integer, Integer> maxWindow = getMaxWindow(line);
-        return extractSeq(line, maxWindow, 2);
+
+        List<NodeDto> nodesToLearn = extractSeq(line, maxWindow, 2);
+        return NodesToLearnDto.builder()
+                .nodesToLearn(nodesToLearn)
+                .path(buildPath(nodesToLearn))
+                .build();
+    }
+
+    private List<NodeDto> buildPath(List<NodeDto> nodesToLearn) {
+        NodeDto childNode = nodesToLearn.stream().filter(n -> n.getId() != null).findFirst().get();
+        List<NodeDto> path = new ArrayList<>();
+
+        Node lastNode = nodeDao.loadNodeById(childNode.getId()).getParentNode();
+        path.add(nodeToNodeDto(lastNode));
+        while (!Objects.equals(rootNodeId, lastNode.getId())) {
+            lastNode = lastNode.getParentNode();
+            path.add(nodeToNodeDto(lastNode));
+        }
+        Collections.reverse(path);
+        return path;
     }
 
     private List<NodeDto> extractSeq(List<NodeWrapper> line, Pair<Integer, Integer> maxWindow, int padding) {
@@ -65,13 +84,17 @@ public class LearnNodesData {
             NodeWrapper nodeWrapper = line.get(idx);
             nodeWrapper.setWasReturned(true);
             Node node = nodeWrapper.getNode();
-            return NodeDto.builder()
-                    .id(node.getId())
-                    .iconId(getIconId(node))
-                    .title(node.getName())
-                    .url(getUrl(node))
-                    .build();
+            return nodeToNodeDto(node);
         }
+    }
+
+    private NodeDto nodeToNodeDto(Node node) {
+        return NodeDto.builder()
+                .id(node.getId())
+                .iconId(getIconId(node))
+                .title(node.getName())
+                .url(getUrl(node))
+                .build();
     }
 
     private UUID getIconId(Node node) {
