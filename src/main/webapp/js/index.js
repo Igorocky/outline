@@ -4,6 +4,7 @@ const re = React.createElement;
 
 const {
     Button,
+    Paper,
     colors,
     createMuiTheme,
     CssBaseline,

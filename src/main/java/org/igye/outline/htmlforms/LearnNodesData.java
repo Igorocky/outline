@@ -1,27 +1,25 @@
 package org.igye.outline.htmlforms;
 
-import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline.data.NodeDao;
 import org.igye.outline.exceptions.OutlineException;
-import org.igye.outline.model.EngText;
-import org.igye.outline.model.Icon;
-import org.igye.outline.model.Node;
-import org.igye.outline.model.Paragraph;
-import org.igye.outline.model.Topic;
+import org.igye.outline.model.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingInt;
-import static org.igye.outline.common.OutlineUtils.filter;
-import static org.igye.outline.common.OutlineUtils.map;
+import static org.igye.outline.common.OutlineUtils.*;
 
 public class LearnNodesData {
     private final NodeDao nodeDao;
     private UUID rootNodeId;
     private List<List<NodeWrapper>> nodes;
     private Random rnd = new Random();
+    private int nodesTotalCnt;
+    private Set<Set<UUID>> unions;
+    private int numberOfCycles;
 
     public LearnNodesData(NodeDao nodeDao) {
         this.nodeDao = nodeDao;
@@ -31,6 +29,7 @@ public class LearnNodesData {
         if (!Objects.equals(this.rootNodeId, rootNodeId)) {
             this.rootNodeId = rootNodeId;
             reset();
+            resetStat(true);
         }
         List<NodeWrapper> line = findLine();
         if (line == null) {
@@ -40,10 +39,57 @@ public class LearnNodesData {
         Pair<Integer, Integer> maxWindow = getMaxWindow(line);
 
         List<NodeDto> nodesToLearn = extractSeq(line, maxWindow, 2);
+        updateStat(nodesToLearn);
         return NodesToLearnDto.builder()
                 .nodesToLearn(nodesToLearn)
                 .path(buildPath(nodesToLearn))
+                .nodesTotalCnt(nodesTotalCnt)
+                .numberOfUnions(unions.size())
+                .numberOfCycles(numberOfCycles)
                 .build();
+    }
+
+    public void resetStat() {
+        resetStat(true);
+    }
+
+    private void resetStat(boolean resetCyclesCnt) {
+        nodesTotalCnt = calcTotalNodesCnt();
+        if (nodes != null) {
+            unions = nodes.stream().flatMap(line->line.stream().map(e->setF(e.node.getId()))).collect(Collectors.toSet());
+        }
+        if (resetCyclesCnt) {
+            numberOfCycles = 0;
+        }
+    }
+
+    private int calcTotalNodesCnt() {
+        return nodes == null ? 0 : nodes.stream().map(List::size).reduce(0, (l,r)->l+r);
+    }
+
+    private void updateStat(List<NodeDto> nodesToLearn) {
+        if (unions.size() == 1) {
+            resetStat(false);
+            numberOfCycles++;
+        }
+        Set<UUID> newUnion = new HashSet<>(
+                nodesToLearn.stream()
+                        .filter(e->e!=null)
+                        .map(NodeDto::getId)
+                        .collect(Collectors.toSet())
+        );
+        Set<Set<UUID>> affectedUnions = new HashSet<>();
+        for (Set<UUID> union : unions) {
+            for (NodeDto nodeDto : nodesToLearn) {
+                if (nodeDto.getId() != null && union.contains(nodeDto.getId())) {
+                    affectedUnions.add(union);
+                    newUnion.addAll(union);
+                    break;
+                }
+            }
+        }
+        unions.removeAll(affectedUnions);
+        unions.add(newUnion);
     }
 
     private List<NodeDto> buildPath(List<NodeDto> nodesToLearn) {

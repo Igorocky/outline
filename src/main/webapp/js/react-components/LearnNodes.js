@@ -1,5 +1,9 @@
 const LearnNodes = props => re(NodesContainer,{...props.pageData})
 
+const NODES_TOTAL_CNT = "nodesTotalCnt"
+const NUMBER_OF_UNIONS = "numberOfUnions"
+const NUMBER_OF_CYCLES = "numberOfCycles"
+
 class NodesContainer extends React.Component {
     constructor(props) {
         super(props)
@@ -10,7 +14,14 @@ class NodesContainer extends React.Component {
     render() {
         return re('div',{},
             re(TitleComponent, {path:this.state.path, key:this.state.cycleNum + "-title"}),
-            re('div',{}, re(Button,{variant:"contained", color:"primary", onClick:this.reloadNodes},"Reload")),
+            re('div',{},
+                re(Button,{variant:"contained", color:"primary", onClick:this.reloadNodes}, "Reload"),
+                re(Paper, {},
+                    this.state[NUMBER_OF_CYCLES] +
+                    "/" + this.state[NUMBER_OF_UNIONS] +
+                    "/" + this.state[NODES_TOTAL_CNT]
+                )
+            ),
             this.renderNodes()
         )
     }

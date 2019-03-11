@@ -102,6 +102,7 @@ public class NodeController {
 
     @GetMapping("learnNodes")
     public String learnNodes(@RequestParam UUID id, Model model) {
+        sessionData.getLearnNodesData().resetStat();
         commonModelMethods.initModel(model);
         model.addAttribute("pageType", "LearnNodes");
         model.addAttribute("pageData", mapF(
