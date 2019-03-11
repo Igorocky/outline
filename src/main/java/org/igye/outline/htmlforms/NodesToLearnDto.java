@@ -12,8 +12,8 @@ import java.util.List;
 public class NodesToLearnDto {
     private List<NodeDto> path;
     private List<NodeDto> nodesToLearn;
-    private int nodesTotalCnt;
-    private int numberOfUnions;
+    private int transitionsTotalCnt;
+    private int numberOfConnectedTransitions;
     private int numberOfCycles;
 
 }

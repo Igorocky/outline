@@ -7,19 +7,19 @@ import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.model.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingInt;
-import static org.igye.outline.common.OutlineUtils.*;
+import static org.igye.outline.common.OutlineUtils.filter;
+import static org.igye.outline.common.OutlineUtils.map;
 
 public class LearnNodesData {
     private final NodeDao nodeDao;
     private UUID rootNodeId;
     private List<List<NodeWrapper>> nodes;
     private Random rnd = new Random();
-    private int nodesTotalCnt;
-    private Set<Set<UUID>> unions;
     private int numberOfCycles;
+    private static final int PADDING = 2;
+    private static final int ELEMS_IN_RESPONSE = PADDING*2+1;
 
     public LearnNodesData(NodeDao nodeDao) {
         this.nodeDao = nodeDao;
@@ -28,68 +28,38 @@ public class LearnNodesData {
     public NodesToLearnDto getNodesToLearn(UUID rootNodeId) {
         if (!Objects.equals(this.rootNodeId, rootNodeId)) {
             this.rootNodeId = rootNodeId;
-            reset();
-            resetStat(true);
+            reset(true);
         }
         List<NodeWrapper> line = findLine();
         if (line == null) {
-            reset();
+            reset(false);
             line = findLine();
         }
         Pair<Integer, Integer> maxWindow = getMaxWindow(line);
 
-        List<NodeDto> nodesToLearn = extractSeq(line, maxWindow, 2);
-        updateStat(nodesToLearn);
+        List<NodeDto> nodesToLearn = extractSeq(line, maxWindow, PADDING);
         return NodesToLearnDto.builder()
                 .nodesToLearn(nodesToLearn)
                 .path(buildPath(nodesToLearn))
-                .nodesTotalCnt(nodesTotalCnt)
-                .numberOfUnions(unions.size())
+                .transitionsTotalCnt(countTransitionsTotalCnt())
+                .numberOfConnectedTransitions(countConnectedTransitions())
                 .numberOfCycles(numberOfCycles)
                 .build();
     }
 
-    public void resetStat() {
-        resetStat(true);
-    }
-
-    private void resetStat(boolean resetCyclesCnt) {
-        nodesTotalCnt = calcTotalNodesCnt();
-        if (nodes != null) {
-            unions = nodes.stream().flatMap(line->line.stream().map(e->setF(e.node.getId()))).collect(Collectors.toSet());
-        }
-        if (resetCyclesCnt) {
-            numberOfCycles = 0;
+    private int countConnectedTransitions() {
+        int res = nodes.stream()
+                .map(list->(int)list.stream().filter(NodeWrapper::isConnectedToTheNext).count())
+                .reduce(0, (l,r)->l+r);
+        if (res < ELEMS_IN_RESPONSE) {
+            return -1;
+        } else {
+            return res;
         }
     }
 
-    private int calcTotalNodesCnt() {
-        return nodes == null ? 0 : nodes.stream().map(List::size).reduce(0, (l,r)->l+r);
-    }
-
-    private void updateStat(List<NodeDto> nodesToLearn) {
-        if (unions.size() == 1) {
-            resetStat(false);
-            numberOfCycles++;
-        }
-        Set<UUID> newUnion = new HashSet<>(
-                nodesToLearn.stream()
-                        .filter(e->e!=null)
-                        .map(NodeDto::getId)
-                        .collect(Collectors.toSet())
-        );
-        Set<Set<UUID>> affectedUnions = new HashSet<>();
-        for (Set<UUID> union : unions) {
-            for (NodeDto nodeDto : nodesToLearn) {
-                if (nodeDto.getId() != null && union.contains(nodeDto.getId())) {
-                    affectedUnions.add(union);
-                    newUnion.addAll(union);
-                    break;
-                }
-            }
-        }
-        unions.removeAll(affectedUnions);
-        unions.add(newUnion);
+    private int countTransitionsTotalCnt() {
+        return nodes.stream().map(list->list.size()).reduce(0, (l,r)->l+r);
     }
 
     private List<NodeDto> buildPath(List<NodeDto> nodesToLearn) {
@@ -113,12 +83,12 @@ public class LearnNodesData {
         int endIdx = centerIdx + padding;
         List<NodeDto> res = new ArrayList<>();
         for (int i = startIdx; i <= endIdx; i++) {
-            res.add(getNodeDto(line,i));
+            res.add(getNodeDto(line, i, i == endIdx));
         }
         return res;
     }
 
-    private NodeDto getNodeDto(List<NodeWrapper> line, int idx) {
+    private NodeDto getNodeDto(List<NodeWrapper> line, int idx, boolean isLast) {
         if (idx < 0 || idx >= line.size()) {
             return NodeDto.builder()
                     .id(null)
@@ -128,7 +98,7 @@ public class LearnNodesData {
                     .build();
         } else {
             NodeWrapper nodeWrapper = line.get(idx);
-            nodeWrapper.setWasReturned(true);
+            nodeWrapper.setConnectedToTheNext(nodeWrapper.isConnectedToTheNext() || !isLast);
             Node node = nodeWrapper.getNode();
             return nodeToNodeDto(node);
         }
@@ -174,11 +144,11 @@ public class LearnNodesData {
         int wStart = -1;
         for (int i = 0; i < line.size(); i++) {
             if (wStart == -1) {
-                if (!line.get(i).isWasReturned()) {
+                if (!line.get(i).isConnectedToTheNext()) {
                     wStart = i;
                 }
             } else {
-                if (line.get(i).isWasReturned()) {
+                if (line.get(i).isConnectedToTheNext()) {
                     allWindows.add(Pair.of(wStart, i-1));
                     wStart = -1;
                 }
@@ -195,7 +165,7 @@ public class LearnNodesData {
     }
 
     private List<NodeWrapper> findLine() {
-        List<List<NodeWrapper>> availableLines = filter(nodes, l -> l.stream().anyMatch(n -> !n.wasReturned));
+        List<List<NodeWrapper>> availableLines = filter(nodes, l -> l.stream().anyMatch(n -> !n.isConnectedToTheNext()));
         if (availableLines.isEmpty()) {
             return null;
         } else {
@@ -203,7 +173,12 @@ public class LearnNodesData {
         }
     }
 
-    private void reset() {
+    private void reset(boolean resetNumberOfCycles) {
+        if (resetNumberOfCycles) {
+            numberOfCycles = 0;
+        } else {
+            numberOfCycles++;
+        }
         nodes = new ArrayList<>();
         Node rootNode = nodeDao.loadAllNodesRecursively(rootNodeId);
         Queue<Node> unprocessedParagraphs = new ArrayDeque<>();
@@ -224,7 +199,7 @@ public class LearnNodesData {
     @Data
     private static class NodeWrapper {
         private Node node;
-        private boolean wasReturned;
+        private boolean connectedToTheNext;
 
         public NodeWrapper(Node node) {
             this.node = node;
