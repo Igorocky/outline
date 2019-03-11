@@ -186,7 +186,15 @@ public class LearnNodesData {
         while (!unprocessedParagraphs.isEmpty()) {
             Paragraph par = (Paragraph) unprocessedParagraphs.remove();
             if (!par.getChildNodes().isEmpty()) {
-                nodes.add(map(par.getChildNodes(), NodeWrapper::new));
+                Node firstFakeNode = new Topic();
+                firstFakeNode.setId(null);
+                firstFakeNode.setName("EMPTY");
+
+                ArrayList<Node> notMappedNodes = new ArrayList<>();
+                notMappedNodes.add(firstFakeNode);
+                notMappedNodes.addAll(par.getChildNodes());
+
+                nodes.add(map(notMappedNodes, NodeWrapper::new));
                 for (Node childNode : par.getChildNodes()) {
                     if (childNode instanceof Paragraph) {
                         unprocessedParagraphs.add(childNode);
