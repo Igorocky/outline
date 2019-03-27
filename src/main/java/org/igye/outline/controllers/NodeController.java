@@ -310,7 +310,7 @@ public class NodeController {
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
-        file.transferTo(imgFile);
+        file.transferTo(new File(imgFile.getAbsolutePath()));
         return imgId;
     }
 
