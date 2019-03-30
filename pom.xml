@@ -82,6 +82,11 @@
             <artifactId>functionaljava-java8</artifactId>
             <version>${functional.java.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javaxt</groupId>
+            <artifactId>javaxt-core</artifactId>
+            <version>1.9.0</version>
+        </dependency>
 
 
 
@@ -93,6 +98,13 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>javaxt.com</id>
+            <url>http://www.javaxt.com/maven</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

@@ -17,7 +17,12 @@
     <script th:inline="javascript">
         $( function() {
             /*<![CDATA[*/
-            iconSelector('icon-container', function () {removeIcon();}, "iconId", /*[[${form.iconId}]]*/);
+            iconSelector({
+                iconSelectorContainerId:'icon-container',
+                onIconDelete: function() {removeIcon();},
+                attrName:"iconId",
+                initIconId: /*[[${form.iconId}]]*/
+            });
             var formDataJson = JSON.parse(/*[[${formDataJson}]]*/);
             /*]]>*/
             _.each(formDataJson.content, function (content) {
@@ -41,10 +46,10 @@
                 autoOpen: false
             });
             document.onpaste = function(event){
-                uploadImage(
-                    isWaitingForIcon('icon-container') ? 'ICON' : 'TOPIC_IMAGE',
-                    extractFileFromEvent(event),
-                    function (imgId) {
+                uploadImage({
+                    imageType: isWaitingForIcon('icon-container') ? 'ICON' : 'TOPIC_IMAGE',
+                    file: extractFileFromEvent(event),
+                    onSuccess: function (imgId) {
                         console.log("imgId = " + JSON.stringify(imgId));
                         if (isWaitingForIcon('icon-container')) {
                             setIcon('icon-container', imgId)
@@ -52,7 +57,7 @@
                             addImage(imgId);
                         }
                     }
-                )
+                })
             };
         } );
         focusOnLoad('#name');

@@ -18,7 +18,12 @@
     <script th:inline="javascript">
         $( function() {
             /*<![CDATA[*/
-            iconSelector('icon-container', function () {removeIcon();}, "iconId", /*[[${form.iconId}]]*/);
+            iconSelector({
+                iconSelectorContainerId: 'icon-container',
+                onIconDelete: function () {removeIcon();},
+                attrName: "iconId",
+                initIconId: /*[[${form.iconId}]]*/
+            });
             /*]]>*/
             $( function() {
                 $( "#dialog-confirm" ).dialog({
@@ -29,17 +34,17 @@
                     autoOpen: false
                 });
                 document.onpaste = function(event){
-                    uploadImage(
-                        isWaitingForIcon('icon-container') ? 'ICON' : 'UNKNOWN_IMAGE_TYPE',
-                        extractFileFromEvent(event),
-                        function (imgId) {
+                    uploadImage({
+                        imageType: isWaitingForIcon('icon-container') ? 'ICON' : 'UNKNOWN_IMAGE_TYPE',
+                        file: extractFileFromEvent(event),
+                        onSuccess: function (imgId) {
                             if (isWaitingForIcon('icon-container')) {
                                 setIcon('icon-container', imgId)
                             } else {
                                 alert("Error E0571.")
                             }
                         }
-                    )
+                    })
                 };
             } );
         } );

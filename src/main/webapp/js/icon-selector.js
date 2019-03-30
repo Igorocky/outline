@@ -1,10 +1,11 @@
 let WAIT_FOR_ICON = "waitForIcon";
 
-function iconSelector(iconSelectorContainerId, onIconDelete, attrName, initIconId) {
-    $('#' + iconSelectorContainerId).html(
+//params(iconSelectorContainerId, onIconDelete, attrName, initIconId)
+function iconSelector(params) {
+    $('#' + params.iconSelectorContainerId).html(
         $("<span/>", {
             id: "no-icon-span", text: "No icon.",
-            onclick: "waitForIcon('" + iconSelectorContainerId + "')", hidden: "hidden"
+            onclick: "waitForIcon('" + params.iconSelectorContainerId + "')", hidden: "hidden"
         })
     ).append(
         $("<span/>", {
@@ -13,26 +14,37 @@ function iconSelector(iconSelectorContainerId, onIconDelete, attrName, initIconI
     ).append(
         $("<a/>", {
             id: "cancel-wait-for-icon-btn", text: " Cancel",
-            onclick: "cancelWaitForIcon('" + iconSelectorContainerId + "')", hidden: "hidden"
+            onclick: "cancelWaitForIcon('" + params.iconSelectorContainerId + "')", hidden: "hidden"
         })
     ).append(
         $("<a/>", {
             id: "delete-icon-btn", text: "Delete", hidden: "hidden"
-        }).click(function () {onIconDelete();})
+        }).click(function () {params.onIconDelete();})
     ).append(
         $("<img/>", {
             id: "icon-img", hidden: "hidden"
         })
     ).append(
+        $("<a/>", {
+            id: "upload-icon-from-serv-btn", text: "Upload from server"
+        }).click(function () {
+            uploadImage({
+                imageType: 'ICON',
+                onSuccess: imgId => {
+                    setIcon(params.iconSelectorContainerId, imgId)
+                }
+            })
+        })
+    ).append(
         $("<input/>", {
-            id: "icon-hidden-input", type:"hidden", name: attrName
+            id: "icon-hidden-input", type:"hidden", name: params.attrName
         })
     ).prop(WAIT_FOR_ICON, false);
 
-    if (initIconId == null) {
-        unsetIcon(iconSelectorContainerId);
+    if (params.initIconId == null) {
+        unsetIcon(params.iconSelectorContainerId);
     } else {
-        setIcon(iconSelectorContainerId, initIconId);
+        setIcon(params.iconSelectorContainerId, params.initIconId);
     }
 }
 

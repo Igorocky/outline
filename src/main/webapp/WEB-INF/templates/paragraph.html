@@ -63,7 +63,7 @@
 <div th:replace="path :: path"/>
 <div th:replace="training-navigation :: nav-buttons (id=${paragraph.id}, showParentBtn=${paragraph.hasParent}, showFirstChildBtn=${paragraph.hasChildren})"/>
 <h2>&sect;<span id="main-title" th:text="${paragraph.name}" /></h2>
-<img th:if="${paragraph.icon != null}" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
+<img th:if="${paragraph.icon != null}" class="icon-img" th:src="@{icon/{iconId}(iconId=${paragraph.icon.id})}"/>
 <div>
     <a th:if="${paragraph.id != null}" th:href="@{editParagraph(id=${paragraph.id})}" href="#">Edit this directory</a>&nbsp;
     <a th:href="@{editParagraph(parentId=${paragraph.id})}" href="#">Create new directory</a>&nbsp;

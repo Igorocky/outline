@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.NodeDao;
 import org.igye.outline.data.WordsDao;
@@ -41,6 +42,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,6 +79,11 @@ public class NodeController {
     private String imagesLocation;
     @Value("${app.version}")
     private String appVersion;
+    @Value("${external.images.dir}")
+    private File externalImagesDir;
+    @Value("${external.icon.size:85}")
+    private int externalIconSize;
+
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -86,7 +96,6 @@ public class NodeController {
     private Exporter exporter;
 
     private ObjectMapper mapper = new ObjectMapper();
-
 
     @GetMapping("home")
     public String home(Model model) {
@@ -304,13 +313,54 @@ public class NodeController {
     @ResponseBody
     public UUID uploadImage(@RequestParam("file") MultipartFile file,
                             @RequestParam("imageType") ImageType imageType) throws IOException {
+        return saveImageToDb(imageType, imgFile -> {
+            try {
+                file.transferTo(new File(imgFile.getAbsolutePath()));
+            } catch (IOException ex) {
+                throw new OutlineException(ex);
+            }
+        });
+    }
+
+    @PostMapping("uploadImageFromServ")
+    @ResponseBody
+    public UUID uploadImageFromServ(@RequestParam("imageType") ImageType imageType) throws IOException {
+        return saveImageToDb(imageType, imgFile -> {
+            javaxt.io.Image image = new javaxt.io.Image(getNewestFile(externalImagesDir));
+
+            image.trim(255,255,255);
+            image.resize(externalIconSize, externalIconSize, true);
+
+            File resultImgFile = new File(imgFile.getAbsolutePath() + ".png");
+            image.saveAs(resultImgFile);
+            resultImgFile.renameTo(imgFile);
+            resultImgFile.delete();
+        });
+    }
+
+    private File getNewestFile(File baseDir) {
+        return Arrays.stream(externalImagesDir.listFiles())
+                .map(file -> {
+                    try {
+                        return Pair.of(
+                                file,
+                                Files.readAttributes(file.toPath(), BasicFileAttributes.class).lastModifiedTime()
+                        );
+                    } catch (IOException ex) {
+                        throw new OutlineException(ex);
+                    }
+                }).max(Comparator.comparing(Pair::getRight))
+                .get().getLeft();
+    }
+
+    private UUID saveImageToDb(ImageType imageType, Consumer<File> fileConsumer) throws IOException {
         UUID imgId = imageType == ImageType.TOPIC_IMAGE ? nodeDao.createImage() : nodeDao.createIcon();
         File imgFile = getImgFile(imagesLocation, imgId);
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
-        file.transferTo(new File(imgFile.getAbsolutePath()));
+        fileConsumer.accept(imgFile);
         return imgId;
     }
 
@@ -450,7 +500,7 @@ public class NodeController {
 
     private byte[] getImgFileById(UUID id) {
         try {
-            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, id));
+            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, id).getAbsoluteFile());
         } catch (IOException e) {
             throw new OutlineException(e);
         }

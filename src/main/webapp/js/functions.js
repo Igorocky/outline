@@ -122,20 +122,23 @@ function extractFileFromEvent(event) {
     return blob;
 }
 
-function uploadImage(imageType, file, onSuccess) {
+//params(imageType, file, onSuccess)
+function uploadImage(params) {
     let fd = new FormData();
-    fd.append("imageType", imageType);
-    fd.append("file", file);
+    fd.append("imageType", params.imageType);
+    if (params.file) {
+        fd.append("file", params.file);
+    }
     $.ajax({
         type: "POST",
-        url: "/uploadImage",
+        url: params.file ? "/uploadImage" : "uploadImageFromServ",
         data: fd,
         contentType: false,
         cache: false,
         dataType: 'json',
         processData: false,
         success: function (data) {
-            onSuccess(data);
+            params.onSuccess(data);
         }
     });
 }
