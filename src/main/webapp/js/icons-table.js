@@ -14,7 +14,7 @@ function iconsTable(iconTableContainerId, iconsDataJson) {
 
 function createLink(iconInfo) {
     return $("<a/>", {href: iconInfo.cellType.toLowerCase() + "?id=" + iconInfo.nodeId + "&showContent=true#main-title"}).html(
-        $("<img/>", {src: "icon/" + iconInfo.iconId})
+        iconInfo.iconId != null ? $("<img/>", {src: "icon/" + iconInfo.iconId}) : $("<span/>", {text: "?"})
     )
 }
 
@@ -28,11 +28,7 @@ function createCell(iconInfo) {
             $content = $("<span/>", {text: iconInfo.number});
             break;
         default:
-            if (iconInfo.iconId == null) {
-                $content = $("<span/>", {text: "?"});
-            } else {
-                $content = createLink(iconInfo);
-            }
+            $content = createLink(iconInfo);
     }
     return $("<td/>").html($content);
 }
