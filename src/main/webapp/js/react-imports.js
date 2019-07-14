@@ -16,5 +16,13 @@ const {
     Icon,
     MuiThemeProvider,
     Typography,
+    AppBar,
+    Toolbar,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
     withStyles,
 } = window['material-ui'];
