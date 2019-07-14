@@ -4,9 +4,9 @@
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no">
 
     <script src="js/underscore-min-1.9.1.js"></script>
-    <script src="js/react.production.min.js"></script>
-    <script src="js/react-dom.production.min.js"></script>
-    <script src="js/material-ui.production.min.js"></script>
+    <script src="js/react.development.js"></script>
+    <script src="js/react-dom.development.js"></script>
+    <script src="js/material-ui.development.js"></script>
 
     <link rel="stylesheet" href="css/roboto-300-400-500.css" />
     <link rel="stylesheet" href="css/mui-icons.css">
@@ -14,8 +14,10 @@
     <link rel="stylesheet" th:href="'/assets/css/' + ${@environment.getProperty('app.version')} + '/style.css'">
 
     <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/functions.js'"></script>
+    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/messages.js'"></script>
     <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-imports.js'"></script>
     <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-components/Views.js'"></script>
+    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-components/NodeView.js'"></script>
     <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-components/ViewSelector.js'"></script>
 
 </head>
