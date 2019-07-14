@@ -3,7 +3,6 @@
 <head>
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no">
 
-    <script src="js/jquery-3.3.1.min.js" ></script>
     <script src="js/underscore-min-1.9.1.js"></script>
     <script src="js/react.production.min.js"></script>
     <script src="js/react-dom.production.min.js"></script>
@@ -12,20 +11,16 @@
     <link rel="stylesheet" href="css/roboto-300-400-500.css" />
     <link rel="stylesheet" href="css/mui-icons.css">
 
-    <link rel="stylesheet" th:href="'/assets/css/' + ${@environment.getProperty('app.version')} + '/style-v2.css'">
+    <link rel="stylesheet" th:href="'/assets/css/' + ${@environment.getProperty('app.version')} + '/style.css'">
 
-    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/functions-v2.js'"></script>
-    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-components/LearnNodes.js'"></script>
+    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/functions.js'"></script>
+    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-imports.js'"></script>
+    <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/react-components/ViewSelector.js'"></script>
 
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var pageType = /*[[${pageType}]]*/;
-        var pageData = /*[[${pageData}]]*/;
-        /*]]>*/
-    </script>
 </head>
 <body>
 <div id="react-container"></div>
+
 <script th:src="'/assets/js/' + ${@environment.getProperty('app.version')} + '/index.js'"></script>
 </body>
 </html>
