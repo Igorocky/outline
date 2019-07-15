@@ -7,7 +7,7 @@ const VIEWS = [
 class ViewSelector extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {sideMenuIsOpen:false, selectedView: null, selectedViewActions: null, context: null}
+        this.state = {sideMenuIsOpen:false, selectedView: VIEWS[0], selectedViewActions: null, context: null}
 
         this.openSideMenu = this.openSideMenu.bind(this)
         this.closeSideMenu = this.closeSideMenu.bind(this)

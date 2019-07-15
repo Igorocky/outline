@@ -6,7 +6,13 @@ class NodeView extends React.Component {
     }
 
     render() {
-        return "View1"
+        return re(TextNodeView,
+            {
+                value:"1+asdasd asg adfg sdhf dsfh sfg\n2+dgh kjdghsfg hsfg jfsg\n3+sasd fas dfsd ",
+                onSave: (newValue, onSuccess) =>
+                    updateTextOfTextNode({id:"guid-guid-123", text:newValue, onSuccess:onSuccess})
+            }
+        )
     }
 
     componentDidMount() {
