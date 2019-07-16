@@ -6,10 +6,8 @@ class NodeView extends React.Component {
     }
 
     render() {
-        return re(EditableTextField,
+        return re(EditableTextArea,
             {
-                multiline: true,
-                textFieldStyle: {width:"1000px"},
                 value:"1+asdasd asg adfg sdhf dsfh sfg\n2+dgh kjdghsfg hsfg jfsg\n3+sasd fas dfsd ",
                 onSave: (newValue, onSuccess) =>
                     updateTextOfTextNode({id:"guid-guid-123", text:newValue, onSuccess:onSuccess})
