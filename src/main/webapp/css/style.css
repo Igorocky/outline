@@ -1,3 +1,7 @@
 .black-text textarea {
     color: black
 }
+
+.black-text input {
+    color: black
+}

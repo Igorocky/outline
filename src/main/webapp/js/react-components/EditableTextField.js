@@ -1,5 +1,5 @@
 
-class TextNodeView extends React.Component {
+class EditableTextField extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -22,8 +22,10 @@ class TextNodeView extends React.Component {
                     )
                 ),
                 re(Grid, {item:true},
-                    re(TextField,{className: "black-text", style:{width:"1000px", margin:"0px 0px 10px 10px"},
-                        multiline:true, rowsMax:30,
+                    re(TextField,{className: "black-text",
+                        style:{width:"250px", margin:"0px 0px 10px 10px",
+                            ...(this.props.textFieldStyle?this.props.textFieldStyle:{})},
+                        multiline:Boolean(this.props.multiline), rowsMax:30,
                         value: this.state.value,
                         disabled: !this.state.editMode,
                         variant: this.state.editMode?"outlined":"standard",
