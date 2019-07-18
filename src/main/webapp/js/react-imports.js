@@ -1,6 +1,8 @@
 'use strict';
 
 const re = React.createElement;
+const useState = React.useState;
+const useEffect = React.useEffect;
 
 const {
     Button,
@@ -26,5 +28,12 @@ const {
     ListItemText,
     TextField,
     Grid,
+    Popover,
+    Popper,
+    ClickAwayListener,
     withStyles,
-} = window['material-ui'];
+} = window['MaterialUI'];
+
+function paper(children) {
+    return re(Paper,{},children)
+}

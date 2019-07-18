@@ -6,7 +6,7 @@ class NodeView extends React.Component {
     }
 
     render() {
-        return re(EditableTextArea,
+        return re(EditableTextArea2,
             {
                 value:"1+asdasd asg adfg sdhf dsfh sfg\n2+dgh kjdghsfg hsfg jfsg\n3+sasd fas dfsd ",
                 onSave: (newValue, onSuccess) =>
