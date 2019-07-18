@@ -37,3 +37,13 @@ const {
 function paper(children) {
     return re(Paper,{},children)
 }
+
+function iconButton({onClick, iconName}) {
+    return re(IconButton, {key: iconName, color: "inherit", onClick: onClick},
+        re(Icon, {style: {fontSize: "24px"}}, iconName)
+    )
+}
+
+function clickAwayListener({onClickAway, children, key}) {
+    return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
+}

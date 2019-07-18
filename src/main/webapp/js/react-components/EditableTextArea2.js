@@ -4,22 +4,28 @@ const EditableTextArea2 = props => {
     const [value, setValue] = useState(props.value)
     const [anchorEl, setAnchorEl] = useState(null);
 
-    function iconButton({onClick, iconName}) {
-        return re(IconButton, {key: iconName, color: "inherit", onClick: onClick},
-            re(Icon, {style: {fontSize: "24px"}}, iconName)
-        )
+    function save(value) {
+        if (props.onSave(value)) {
+            setEditMode(false);
+            setAnchorEl(null)
+        }
     }
 
-    function editButton() {
-        return iconButton({onClick: () => setEditMode(true), iconName: "edit"})
+    function viewModeButtons() {
+        return [
+            iconButton({iconName: "edit", onClick: () => setEditMode(true)}),
+            iconButton({iconName: "vertical_align_top", onClick: props.onMoveToStart}),
+            iconButton({iconName: "keyboard_arrow_up", onClick: props.onMoveUp}),
+            iconButton({iconName: "keyboard_arrow_down", onClick: props.onMoveDown}),
+            iconButton({iconName: "vertical_align_bottom", onClick: props.onMoveToEnd}),
+            iconButton({iconName: "delete", onClick: props.onDelete}),
+        ]
     }
-
-    function saveButtonButton() {
-        return iconButton({onClick: () => null, iconName: "save"})
-    }
-
-    function clickAwayListener({onClickAway, children, key}) {
-        return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
+    function editModeButtons() {
+        return [
+            iconButton({iconName: "save", onClick: () => save(value)}),
+            iconButton({iconName: "cancel", onClick: () => {setValue(props.value);setEditMode(false);setAnchorEl(null)}}),
+        ]
     }
 
     return [
@@ -41,7 +47,7 @@ const EditableTextArea2 = props => {
                 key: "Popper",
                 onClickAway: () => !editMode ? setAnchorEl(null) : null,
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
-                    paper([editButton(), saveButtonButton()])
+                    paper(editMode?editModeButtons():viewModeButtons())
                 )
             })
             : null
