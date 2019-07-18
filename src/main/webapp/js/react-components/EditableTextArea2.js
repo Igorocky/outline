@@ -36,6 +36,7 @@ const EditableTextArea2 = props => {
             onDoubleClick: () => !editMode?setAnchorEl(null):null,
             onClick: !editMode ? e => setAnchorEl(e.currentTarget) : e => null
         }),
+        //todo - return popper only if it is open
         re(Popper,
             {
                 key: "Popper",
