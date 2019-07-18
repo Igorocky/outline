@@ -18,15 +18,15 @@ const EditableTextArea2 = props => {
         return iconButton({onClick: () => null, iconName: "save"})
     }
 
-    function clickAwayListener(onClickAway, children) {
-        return re(ClickAwayListener, {onClickAway: onClickAway}, children)
+    function clickAwayListener({onClickAway, children, key}) {
+        return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
     }
 
     return [
         re(TextField, {
             key: "TextField",
             className: "black-text",
-            style: props.style,
+            style: props.textAreaStyle,
             multiline: true,
             rowsMax: editMode?30:3000,
             value: value,
@@ -36,18 +36,14 @@ const EditableTextArea2 = props => {
             onDoubleClick: () => !editMode?setAnchorEl(null):null,
             onClick: !editMode ? e => setAnchorEl(e.currentTarget) : e => null
         }),
-        //todo - return popper only if it is open
-        re(Popper,
-            {
+        anchorEl
+            ? clickAwayListener({
                 key: "Popper",
-                open: Boolean(anchorEl),
-                anchorEl: anchorEl,
-                placement: 'top-start'
-            },
-            clickAwayListener(
-                () => !editMode?setAnchorEl(null):null,
-                paper([editButton(), saveButtonButton()])
-            )
-        )
+                onClickAway: () => !editMode ? setAnchorEl(null) : null,
+                children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
+                    paper([editButton(), saveButtonButton()])
+                )
+            })
+            : null
     ]
 }
