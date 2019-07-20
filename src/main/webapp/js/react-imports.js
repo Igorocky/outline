@@ -3,6 +3,7 @@
 const re = React.createElement;
 const useState = React.useState;
 const useEffect = React.useEffect;
+const Fragment = React.Fragment;
 
 const {
     Button,
@@ -31,6 +32,7 @@ const {
     Popover,
     Popper,
     ClickAwayListener,
+    LinearProgress,
     withStyles,
 } = window['MaterialUI'];
 

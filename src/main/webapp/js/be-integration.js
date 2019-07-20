@@ -1,12 +1,22 @@
 'use strict';
 
+function getLastViewedNode(responseHandler) {
+    doGetMocked({url: "getLastViewedNode", onSuccess: responseHandler, response:NODE})
+}
+
 function updateTextOfTextNode({id,text,onSuccess}) {
     doPostMocked({url:"updateTextOfTextNode", data:{id:id,text:text}, onSuccess: onSuccess})
 }
 
-function doPostMocked({url, data, onSuccess}) {
+function doPostMocked({url, data, onSuccess, response}) {
     console.log("POST " + url + "\n" + JSON.stringify(data));
-    onSuccess()
+    onSuccess(response)
+}
+
+function doGetMocked({url, onSuccess, response}) {
+    console.log("GET " + url);
+    console.log("response: " + JSON.stringify(response));
+    onSuccess(response)
 }
 
 function doPost({url, data, onSuccess}) {
