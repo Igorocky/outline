@@ -1,31 +1,40 @@
-const NODE_VIEW_LISTENER_NAME = "NODE_VIEW_LISTENER"
+const actionButtonsStyle = {marginRight: "10px"}
 
-class NodeView extends React.Component {
-    constructor(props) {
-        super(props)
+const NodeView = props => {
+    const [curNode, setCurNode] = useState(null)
+
+    useEffect(() => {
+        getLastViewedNode(resp => setCurNode(resp))
+    }, [])
+
+    function renderNode(node) {
+        if (node[NODE_OBJECT_CLASS] === NODE_OBJECT_CLASS_TEXT) {
+            return re(ListItem,{key:node[NODE_ID]},
+                re(ListItemText,{},
+                    paper(re(EditableTextArea,
+                        {
+                            value:node[NODE_TEXT],
+                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"}
+                        }
+                    ))
+                )
+            )
+        } else {
+            return re(ListItem,{key:node[NODE_ID]},
+                paper("Unknown type of node")
+            )
+        }
     }
 
-    render() {
-        return re(EditableTextArea2,
-            {
-                value:"1+asdasd asg adfg sdhf dsfh sfg\n2+dgh kjdghsfg hsfg jfsg\n3+sasd fas dfsd ",
-                onSave: (newValue, onSuccess) =>
-                    updateTextOfTextNode({id:"guid-guid-123", text:newValue, onSuccess:onSuccess})
-            }
+    return [
+        !curNode
+        ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
+        : re(List, {key:"List",component:"nav"},
+            curNode[NODE_CHILDREN].map(ch => renderNode(ch))
+        ),
+        re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
+            re(Button,{key:"action1", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 1 + "'")}, "Action1"),
+            re(Button,{key:"action2", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 2 + "'")}, "Action2")
         )
-    }
-
-    componentDidMount() {
-        const style = {marginRight: "10px"}
-        addMessageListener({name: NODE_VIEW_LISTENER_NAME, callback: msg => console.log("msg = '" + msg + "'")})
-        this.props.setActions([
-            re(Button,{key:"action1", style:style, variant:"contained", onClick: ()=>sendMessage(toListener(NODE_VIEW_LISTENER_NAME), "1111")}, "Action1"),
-            re(Button,{key:"action2", style:style, variant:"contained", onClick: ()=>sendMessage(toListener(NODE_VIEW_LISTENER_NAME), "2222")}, "Action2"),
-        ])
-    }
-
-    componentWillUnmount() {
-        console.log("componentWillUnmount = '" + 5555 + "'");
-        removeMessageListener(NODE_VIEW_LISTENER_NAME)
-    }
+    ]
 }

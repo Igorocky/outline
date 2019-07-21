@@ -1,42 +1,55 @@
 
-class EditableTextArea extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            value: props.value,
-            editMode: false
+const EditableTextArea = props => {
+    const [editMode, setEditMode] = useState(false)
+    const [value, setValue] = useState(props.value)
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    function save(value) {
+        if (props.onSave(value)) {
+            setEditMode(false);
+            setAnchorEl(null)
         }
-        this.changeState = this.changeState.bind(this)
     }
 
-    render() {
-        return re(Paper,{},
-            re(Grid, {container:true, direction:"column", justify:"flex-start", alignItems:"flex-start"},
-                re(Grid, {item:true},
-                    re(IconButton, {color: "inherit",
-                            onClick: () => !this.state.editMode
-                                ?this.changeState("editMode", true)
-                                :this.props.onSave(this.state.value, () => this.changeState("editMode", false))
-                        },
-                        re(Icon, {style: {fontSize: "24px"}}, this.state.editMode?"save":"edit")
-                    )
-                ),
-                re(Grid, {item:true},
-                    re(TextField,{className: "black-text",
-                        style:{width:"1000px", margin:"0px 0px 10px 10px",
-                            ...(this.props.textFieldStyle?this.props.textFieldStyle:{})},
-                        multiline:true, rowsMax:30,
-                        value: this.state.value,
-                        disabled: !this.state.editMode,
-                        variant: this.state.editMode?"outlined":"standard",
-                        onChange: e => this.changeState("value", e.target.value)
-                    })
+    function viewModeButtons() {
+        return [
+            iconButton({iconName: "edit", onClick: () => setEditMode(true)}),
+            iconButton({iconName: "vertical_align_top", onClick: props.onMoveToStart}),
+            iconButton({iconName: "keyboard_arrow_up", onClick: props.onMoveUp}),
+            iconButton({iconName: "keyboard_arrow_down", onClick: props.onMoveDown}),
+            iconButton({iconName: "vertical_align_bottom", onClick: props.onMoveToEnd}),
+            iconButton({iconName: "delete", onClick: props.onDelete}),
+        ]
+    }
+    function editModeButtons() {
+        return [
+            iconButton({iconName: "save", onClick: () => save(value)}),
+            iconButton({iconName: "cancel", onClick: () => {setValue(props.value);setEditMode(false);setAnchorEl(null)}}),
+        ]
+    }
+
+    return [
+        re(TextField, {
+            key: "TextField",
+            className: "black-text",
+            style: props.textAreaStyle,
+            multiline: true,
+            rowsMax: editMode?30:3000,
+            value: value,
+            disabled: !editMode,
+            variant: editMode ? "outlined" : "standard",
+            onChange: e => setValue(e.target.value),
+            onDoubleClick: () => !editMode?setAnchorEl(null):null,
+            onClick: !editMode ? e => setAnchorEl(e.currentTarget) : e => null
+        }),
+        anchorEl
+            ? clickAwayListener({
+                key: "Popper",
+                onClickAway: () => !editMode ? setAnchorEl(null) : null,
+                children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
+                    paper(editMode?editModeButtons():viewModeButtons())
                 )
-            )
-        )
-    }
-
-    changeState(prop,value) {
-        this.setState({[prop]:value})
-    }
+            })
+            : null
+    ]
 }
