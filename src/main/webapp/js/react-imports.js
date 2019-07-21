@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
-const re = React.createElement;
-const useState = React.useState;
-const useEffect = React.useEffect;
-const Fragment = React.Fragment;
+const re = React.createElement
+const useState = React.useState
+const useEffect = React.useEffect
+const Fragment = React.Fragment
 
 const {
     Button,
@@ -35,7 +35,14 @@ const {
     LinearProgress,
     Portal,
     withStyles,
-} = window['MaterialUI'];
+} = window['MaterialUI']
+
+const {
+    BrowserRouter,
+    Redirect,
+    Route,
+    Switch
+} = window["ReactRouterDOM"]
 
 function paper(children) {
     return re(Paper,{},children)

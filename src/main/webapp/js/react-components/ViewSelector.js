@@ -1,13 +1,13 @@
 const VIEWS = [
-    {name:"NodeView", component: NodeView},
-    {name:"View2", component: View2},
-    {name:"View3", component: View3},
+    {name:"NodeView", component: NodeView, path: PATH.node},
+    {name:"View2", component: View2, path: PATH.view1},
+    {name:"View3", component: View3, path: PATH.view2},
 ]
 
 const ViewSelector = props => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
-    const [selectedView, setSelectedView] = useState(VIEWS[0])
-    const actionsContainerRef = React.useRef(null);
+    const [redirect, setRedirect] = useState(window.location.pathname)
+    const actionsContainerRef = React.useRef(null)
 
     function isTabOrShift(event) {
         return event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')
@@ -45,21 +45,30 @@ const ViewSelector = props => {
                 onKeyDown: closeSideMenu
             },
             re(List, {},
-                VIEWS.map((view,idx) => re(ListItem,{button:true, key:idx, onClick:()=>setSelectedView(VIEWS[idx])},
+                VIEWS.map((view,idx) => re(ListItem,{button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path)},
                     re(ListItemText,{},view.name)
                 ))
             )
         )
     }
 
-    return [
+    function getViewRoutes() {
+        return VIEWS.map(view => re(Route, {
+            key: view.path, path: view.path,
+            render: props => re(view.component, {...props, actionsContainerRef: actionsContainerRef})
+        }))
+    }
+
+    return re(BrowserRouter, {},
         renderAppBar(),
         renderDrawer(),
-        selectedView
-            ?re(selectedView.component,{
-                key:selectedView.name,
-                actionsContainerRef: actionsContainerRef
-            })
-            :null
-    ]
+        re(Switch, {}, [
+            re(Route, {
+                key: PATH.nodeWithId, path: PATH.nodeWithId, exact: true,
+                render: props => re(NodeView, {nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef})
+            }),
+            ...getViewRoutes()
+        ]),
+        redirect ? re(Redirect,{to: redirect}) : null
+    )
 }
