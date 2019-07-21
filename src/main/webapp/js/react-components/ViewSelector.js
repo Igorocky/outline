@@ -1,8 +1,8 @@
-const VIEWS = [
-    {name:"NodeView", component: NodeView2},
-    {name:"View2", component: View2},
-    {name:"View3", component: View3},
-]
+// const VIEWS = [
+//     {name:"NodeView", component: NodeView2},
+//     {name:"View2", component: View2},
+//     {name:"View3", component: View3},
+// ]
 
 class ViewSelector extends React.Component {
     constructor(props) {

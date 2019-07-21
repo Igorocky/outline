@@ -1,3 +1,4 @@
+const actionButtonsStyle = {marginRight: "10px"}
 
 const NodeView2 = props => {
     const [curNode, setCurNode] = useState(null)
@@ -25,9 +26,15 @@ const NodeView2 = props => {
         }
     }
 
-    return !curNode
-        ? re(LinearProgress, {color:"secondary"})
-        : re(List, {component:"nav"},
+    return [
+        !curNode
+        ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
+        : re(List, {key:"List",component:"nav"},
             curNode[NODE_CHILDREN].map(ch => renderNode(ch))
+        ),
+        re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
+            re(Button,{key:"action1", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 1 + "'")}, "Action1"),
+            re(Button,{key:"action2", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 2 + "'")}, "Action2")
         )
+    ]
 }

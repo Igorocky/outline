@@ -33,6 +33,7 @@ const {
     Popper,
     ClickAwayListener,
     LinearProgress,
+    Portal,
     withStyles,
 } = window['MaterialUI'];
 
