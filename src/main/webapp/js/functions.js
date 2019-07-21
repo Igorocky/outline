@@ -9,3 +9,7 @@ const PATH = {
     view1: CONTEXT_PATH + "/view1",
     view2: CONTEXT_PATH + "/view2",
 }
+
+function redirectTo(to) {
+    return to ? re(Redirect,{key: to, to: to}) : null
+}

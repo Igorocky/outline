@@ -14,12 +14,12 @@ const NODE0 = {
     [NODE_ID]: "0",
     [NODE_CHILDREN]: [
         {
-            [NODE_ID]: "c-id1",
+            [NODE_ID]: "11",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
             [NODE_TEXT]: "this is a text in node 0"
         },
         {
-            [NODE_ID]: "c-id2",
+            [NODE_ID]: "12",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
             [NODE_TEXT]: "yi\nolu\ni,m\nnrg\nbfcw"
         },
@@ -41,17 +41,17 @@ const NODE1 = {
             [NODE_NAME]: "node2"
         },
         {
-            [NODE_ID]: "c-id1",
+            [NODE_ID]: "13",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "asdf asdf asdf asfd as f"
+            [NODE_TEXT]: "this is a text in node 1"
         },
         {
-            [NODE_ID]: "c-id2",
+            [NODE_ID]: "14",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
             [NODE_TEXT]: "yi\nolu\ni,m\nnrg\nbfcw"
         },
         {
-            [NODE_ID]: "c-id3",
+            [NODE_ID]: "15",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
             [NODE_TEXT]: "xssf667456354efdchv"
         }
@@ -63,12 +63,12 @@ const NODE2 = {
     [NODE_ID]: "2",
     [NODE_CHILDREN]: [
         {
-            [NODE_ID]: "c-id1",
+            [NODE_ID]: "16",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "AAA"
+            [NODE_TEXT]: "this is a text in node 2"
         },
         {
-            [NODE_ID]: "c-id2",
+            [NODE_ID]: "17",
             [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
             [NODE_TEXT]: "BBB"
         }

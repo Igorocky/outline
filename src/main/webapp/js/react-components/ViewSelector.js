@@ -6,8 +6,13 @@ const VIEWS = [
 
 const ViewSelector = props => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
-    const [redirect, setRedirect] = useState(window.location.pathname)
+    const [redirect, setRedirect] = useState(null)
     const actionsContainerRef = React.useRef(null)
+
+    if (!redirect) {
+        setRedirect(window.location.pathname)
+        return redirectTo(window.location.pathname)
+    }
 
     function isTabOrShift(event) {
         return event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')
@@ -62,13 +67,13 @@ const ViewSelector = props => {
     return re(BrowserRouter, {},
         renderAppBar(),
         renderDrawer(),
-        re(Switch, {}, [
+        re(Switch, {key:"Switch"}, [
             re(Route, {
                 key: PATH.nodeWithId, path: PATH.nodeWithId, exact: true,
                 render: props => re(NodeView, {nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef})
             }),
             ...getViewRoutes()
         ]),
-        redirect ? re(Redirect,{to: redirect}) : null
+        redirectTo(redirect)
     )
 }

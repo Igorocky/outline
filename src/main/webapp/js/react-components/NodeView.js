@@ -22,8 +22,8 @@ const NodeView = props => {
             )
         } else if (node[NODE_OBJECT_CLASS] === NODE_OBJECT_CLASS_NODE) {
             return re(ListItem,{key:node[NODE_ID], button: true, onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE_ID]))},
-                re(ListItemIcon, {}, re(Icon, {style: {fontSize: "24px"}}, "folder")),
-                re(ListItemText,{},node[NODE_NAME])
+                re(ListItemIcon,{key:"ListItemIcon"}, re(Icon, {style: {fontSize: "24px"}}, "folder")),
+                re(ListItemText,{key:"ListItemText"},node[NODE_NAME])
             )
         } else {
             return re(ListItem,{key:node[NODE_ID]},
@@ -42,6 +42,6 @@ const NodeView = props => {
             re(Button,{key:"action1", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 1 + "'")}, "Action1"),
             re(Button,{key:"action2", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 2 + "'")}, "Action2")
         ),
-        redirect ? re(Redirect,{to: redirect}) : null
+        redirectTo(redirect)
     ]
 }
