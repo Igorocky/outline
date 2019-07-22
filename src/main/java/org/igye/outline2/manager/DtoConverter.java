@@ -37,7 +37,7 @@ public class DtoConverter {
                 return nodes;
             });
         }
-        nodeDto.setIcon(node.getIcon() == null ? null : Optional.of(node.getIcon().getId()));
+        nodeDto.setIcon(Optional.of(node.getIconId()));
         nodeDto.setOrd(node.getOrd());
 
         if (node instanceof Text) {

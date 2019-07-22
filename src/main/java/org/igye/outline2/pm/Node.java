@@ -37,10 +37,10 @@ public class Node {
     @Id
     private UUID id = UUID.randomUUID();
 
-    private String name;
-
     @ManyToOne
     private Node parentNode;
+
+    private String name;
 
     private int ord;
 
@@ -48,8 +48,8 @@ public class Node {
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
     private List<Node> childNodes = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.EAGER)
-    private Image icon;
+    // TODO: 22.07.2019 add image as a separate entity
+    private UUID iconId;
 
     private Instant createdWhen = Instant.now();
     private Instant updatedWhen = Instant.now();
