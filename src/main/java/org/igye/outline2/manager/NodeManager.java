@@ -1,6 +1,5 @@
 package org.igye.outline2.manager;
 
-import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.pm.Node;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -19,10 +17,14 @@ public class NodeManager {
     private Clock clock = Clock.systemUTC();
 
     @Transactional
-    public Node getNode(UUID id) {
+    public NodeDto getNode(UUID id) {
+        Node result = new Node();
+        result.setId(null);
         if (id == null) {
-            List<NodeDto> childNodes = OutlineUtils.map(nodeRepository.findByParentNodeIsNullOrderByOrd(), n -> DtoConverter.toDto(n, 1));
+            result.setChildNodes(nodeRepository.findByParentNodeIsNullOrderByOrd());
+        } else {
+            result = nodeRepository.findById(id).get();
         }
-        return null;
+        return DtoConverter.toDto(result, 1);
     }
 }

@@ -1,16 +1,5 @@
 'use strict';
 
-const NODE_PARENT_ID = "parentId"
-const NODE_ID = "id"
-const NODE_NAME = "name"
-const NODE_CHILDREN = "childNodes"
-const NODE_ICON = "icon"
-const NODE_OBJECT_CLASS = "objectClass"
-const NODE_OBJECT_CLASS_TEXT = "TEXT"
-const NODE_OBJECT_CLASS_NODE = "NODE"
-const NODE_OBJECT_CLASS_IMAGE = "IMAGE"
-const NODE_TEXT = "text"
-
 const NODE0 = {
     [NODE_PARENT_ID]: null,
     [NODE_ID]: "0",

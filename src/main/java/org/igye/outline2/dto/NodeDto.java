@@ -22,4 +22,6 @@ public class NodeDto {
     private List<NodeDto> childNodes;
     private UUID icon;
     private int ord;
+    private UUID imgId;
+    private String text;
 }
