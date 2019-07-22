@@ -17,7 +17,7 @@ public class NodeManager {
     private Clock clock = Clock.systemUTC();
 
     @Transactional
-    public NodeDto getNode(UUID id) {
+    public NodeDto getNode(UUID id, Integer depth) {
         Node result = new Node();
         result.setId(null);
         if (id == null) {
@@ -25,6 +25,6 @@ public class NodeManager {
         } else {
             result = nodeRepository.findById(id).get();
         }
-        return DtoConverter.toDto(result, 1);
+        return DtoConverter.toDto(result, depth);
     }
 }

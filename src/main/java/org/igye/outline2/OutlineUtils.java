@@ -101,28 +101,28 @@ public class OutlineUtils {
         return toMap(collection, keyExtr, Function.identity());
     }
 
-    public static <E> List<E> listFrom(E... elems) {
+    public static <E> List<E> listOf(E... elems) {
         return ImmutableList.copyOf(elems);
     }
 
-    public static <E> Set<E> setFrom(E... elems) {
+    public static <E> Set<E> setOf(E... elems) {
         return ImmutableSet.copyOf(elems);
     }
 
-    public static <K,V> Map<K,V> mapFrom(K k1, V v1) {
+    public static <K,V> Map<K,V> mapOf(K k1, V v1) {
         Map<K, V> resp = new HashMap<>();
         resp.put(k1, v1);
         return resp;
     }
 
-    public static <K,V> Map<K,V> mapFrom(K k1, V v1, K k2, V v2) {
-        Map<K, V> resp = mapFrom(k2,v2);
+    public static <K,V> Map<K,V> mapOf(K k1, V v1, K k2, V v2) {
+        Map<K, V> resp = mapOf(k2,v2);
         resp.put(k1, v1);
         return resp;
     }
 
-    public static <K,V> Map<K,V> mapFrom(K k1, V v1, K k2, V v2, K k3, V v3) {
-        Map<K, V> resp = mapFrom(k2,v2,k3,v3);
+    public static <K,V> Map<K,V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+        Map<K, V> resp = mapOf(k2,v2,k3,v3);
         resp.put(k1, v1);
         return resp;
     }
