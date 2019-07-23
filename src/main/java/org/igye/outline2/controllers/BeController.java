@@ -36,6 +36,4 @@ public class BeController {
     }
 
     // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed
-    // TODO: 22.07.2019 tc: in PATCH method, when at least one attr is changed - UPDATED_WHEN is updated
-    // TODO: 22.07.2019 tc: in PATCH method, when no attrs are changed - UPDATED_WHEN is not updated
 }

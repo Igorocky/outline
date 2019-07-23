@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -31,6 +32,7 @@ import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 @Builder
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@Audited
 public class Node {
     @Id
     private UUID id = UUID.randomUUID();
@@ -50,5 +52,4 @@ public class Node {
     private Image icon;
 
     private Instant createdWhen = Instant.now();
-    private Instant updatedWhen = Instant.now();
 }
