@@ -52,4 +52,9 @@ public class Node {
     private Image icon;
 
     private Instant createdWhen = Instant.now();
+
+    public void addChild(Node child) {
+        child.setParentNode(this);
+        childNodes.add(child);
+    }
 }

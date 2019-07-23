@@ -4,6 +4,9 @@ import org.igye.outline2.dto.NodeDto;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Instant;
+import java.util.Map;
+
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -67,6 +70,31 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("objectClass"), parseAsMap(res).keySet());
+    }
+
+    @Test
+    public void builder() throws Exception {
+        Map<String, Object> savedObjects = new NodeTreeBuilder()
+                .saveTree("tree")
+                .node(
+                        n -> n.setName("n1"),
+                        n -> n.setCreatedWhen(Instant.now())
+                )
+                .children(b1 -> b1
+                        .node(
+                                n -> n.setName("n3")
+                        )
+                        .node(
+                                n -> n.setName("n4")
+                        )
+                )
+                .node(
+                        n -> n.setName("n2"),
+                        n -> n.setCreatedWhen(Instant.now())
+                )
+                .getSavedObjects();
+
+        System.out.println(savedObjects);
     }
 
 }
