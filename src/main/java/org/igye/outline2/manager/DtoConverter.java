@@ -1,7 +1,7 @@
 package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
-import org.igye.outline2.pm.Image;
+import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.springframework.util.CollectionUtils;
@@ -37,15 +37,15 @@ public class DtoConverter {
                 return nodes;
             });
         }
-        nodeDto.setIcon(Optional.of(node.getIconId()));
+        nodeDto.setIcon(node.getIcon() == null ? null : Optional.of(node.getIcon().getId()));
         nodeDto.setOrd(node.getOrd());
 
         if (node instanceof Text) {
             // TODO: 22.07.2019 tc: for texts objectClass == "..."
             nodeDto.setText(Optional.ofNullable(((Text) node).getText()));
-        } else if (node instanceof Image) {
+        } else if (node instanceof ImageRef) {
             // TODO: 22.07.2019 tc: for images objectClass == "..."
-            nodeDto.setImgId(Optional.ofNullable(((Image) node).getImgId()));
+            nodeDto.setImgId(((ImageRef) node).getImage() == null ? null : Optional.of(((ImageRef) node).getImage().getId()));
         }
 
         return nodeDto;

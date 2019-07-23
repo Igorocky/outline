@@ -1,6 +1,8 @@
 package org.igye.outline2.controllers;
 
+import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.pm.Image;
+import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +30,7 @@ public class OutlineTestUtils {
 
     public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node) {
         assertEquals(
-                node.getParentNode() == null ? null : node.getParentNode().getId(),
+                nullSafeGetter(node.getParentNode(), p->p.getId()),
                 getUuidFromNodeTable(jdbcTemplate, node.getId(), PARENT_NODE_ID)
         );
         assertEquals(
@@ -39,14 +42,14 @@ public class OutlineTestUtils {
                 getIntFromNodeTable(jdbcTemplate, node.getId(), ORD)
         );
         assertEquals(
-                node.getIconId(),
+                nullSafeGetter(node.getIcon(), i -> i.getId()),
                 getUuidFromNodeTable(jdbcTemplate, node.getId(), ICON_ID)
         );
         // TODO: 22.07.2019 check createdWhen and updatedWhen
 
-        if (node instanceof Image) {
+        if (node instanceof ImageRef) {
             assertEquals(
-                    ((Image)node).getImgId(),
+                    nullSafeGetter(((ImageRef)node).getImage(), i->i.getId()),
                     getUuidFromImageTable(jdbcTemplate, node.getId(), IMG_ID)
             );
         } else if (node instanceof Text) {
@@ -68,7 +71,7 @@ public class OutlineTestUtils {
             allKeys.remove(Text.class);
             assertTrue(allKeys.isEmpty());
             assertEquals(
-                    counts.get(Image.class) == null ? 0 : counts.get(Image.class).intValue(),
+                    counts.get(ImageRef.class) == null ? 0 : counts.get(ImageRef.class).intValue(),
                     countRowsInImageTable(jdbcTemplate, node.getId())
             );
             assertEquals(

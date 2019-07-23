@@ -13,8 +13,16 @@ create table NODE
 create table IMAGE
 (
 	ID uuid not null primary key,
-	IMG_ID uuid,
-	constraint IMAGE_FK_ID foreign key (ID) references NODE
+	CREATED_WHEN TIMESTAMP not null,
+	UPDATED_WHEN TIMESTAMP not null
+);
+
+create table IMAGE_REF
+(
+	ID uuid not null primary key,
+	IMAGE_ID uuid,
+	constraint IMAGE_REF_FK_ID foreign key (ID) references NODE,
+	constraint IMAGE_REF_FK_IMAGE_ID foreign key (IMAGE_ID) references IMAGE
 );
 
 create table TEXT

@@ -21,6 +21,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class OutlineUtils {
+    public static <A,B> B nullSafeGetter(A obj, Function<A,B> getter) {
+        return obj == null ? null : getter.apply(obj);
+    }
+
     public static void assertNotNull(Object obj) {
         if (obj == null) {
             throw new OutlineException("obj == null");
