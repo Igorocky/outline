@@ -1,12 +1,12 @@
 package org.igye.outline2.controllers;
 
-import org.igye.outline2.OutlineUtils;
-import org.igye.outline2.pm.Image;
+import org.hibernate.Session;
 import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.persistence.EntityManager;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
@@ -120,6 +120,19 @@ public class OutlineTestUtils {
 
     public static int countRowsInTextTable(JdbcTemplate jdbcTemplate, UUID id) {
         return countRowsInTable(jdbcTemplate, TEXT_TABLE, id);
+    }
+
+    public static <T> T exploreDB(EntityManager entityManager) {
+        getCurrentSession(entityManager).doWork(connection -> org.h2.tools.Server.startWebServer(connection));
+        return null;
+    }
+
+    private static Session getCurrentSession(EntityManager entityManager) {
+        return entityManager.unwrap(Session.class);
+    }
+
+    public static void notImplemented() {
+        throw new NotImplementedException();
     }
 
 }

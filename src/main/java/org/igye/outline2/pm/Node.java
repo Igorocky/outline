@@ -56,5 +56,6 @@ public class Node {
     public void addChild(Node child) {
         child.setParentNode(this);
         childNodes.add(child);
+        child.setOrd(childNodes.size()-1);
     }
 }
