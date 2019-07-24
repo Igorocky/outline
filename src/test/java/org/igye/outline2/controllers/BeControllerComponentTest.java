@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.listOf;
+import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.igye.outline2.controllers.Randoms.randomNode;
 import static org.junit.Assert.assertEquals;
@@ -83,26 +84,26 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         images.forEach(imageRepository::save);
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
-        ObjectHolder<Node> node1 = new ObjectHolder<>();
-        ObjectHolder<Node> node2 = new ObjectHolder<>();
-        ObjectHolder<Node> node3 = new ObjectHolder<>();
+        ObjectHolder<UUID> node1Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node2Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node3Id = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
                 .node(randomNode(images))
                 .node(randomNode(images)).storeId(nodeId)
                 .children(b1->b1
-                        .node(randomNode(images)).storeNode(node1)
+                        .node(randomNode(images)).storeId(node1Id)
                         .children(b2->b2
                                 .node(randomNode(images))
                                 .node(randomNode(images))
                                 .node(randomNode(images))
                         )
-                        .node(randomNode(images)).storeNode(node2)
+                        .node(randomNode(images)).storeId(node2Id)
                         .children(b2->b2
                                 .node(randomNode(images))
                                 .node(randomNode(images))
                                 .node(randomNode(images))
                         )
-                        .node(randomNode(images)).storeNode(node3)
+                        .node(randomNode(images)).storeId(node3Id)
                         .children(b2->b2
                                 .node(randomNode(images))
                                 .node(randomNode(images))
@@ -115,16 +116,15 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         //when
         MvcResult res = mvc.perform(
-                get("/be/node/" + nodeId)
+                get("/be/node/" + nodeId + "?depth=1")
         ).andExpect(status().isOk()).andReturn();
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
-        assertEquals(
-                listOf(node1.get().getId(), node2.get().getId(), node3.get().getId()),
-                nodeDto.getChildNodes().get()
-        );
-        nodeDto.getChildNodes().get().forEach(c -> assertFalse(c.getChildNodes().isPresent()));
+        List<NodeDto> childNodes = nodeDto.getChildNodes().get();
+        List<UUID> childNodeIds = map(childNodes, NodeDto::getId);
+        assertEquals(listOf(node1Id.get(), node2Id.get(), node3Id.get()), childNodeIds);
+        childNodes.forEach(c -> assertFalse(c.getChildNodes().isPresent()));
     }
 
 }
