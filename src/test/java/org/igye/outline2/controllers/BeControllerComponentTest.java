@@ -122,8 +122,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         NodeDto nodeDto = parseNodeDto(res);
         List<NodeDto> childNodes = nodeDto.getChildNodes().get();
-        List<UUID> childNodeIds = map(childNodes, NodeDto::getId);
-        assertEquals(listOf(node1Id.get(), node2Id.get(), node3Id.get()), childNodeIds);
+        assertEquals(
+                listOf(node1Id.get(), node2Id.get(), node3Id.get()),
+                map(childNodes, NodeDto::getId)
+        );
         childNodes.forEach(c -> assertFalse(c.getChildNodes().isPresent()));
     }
 
