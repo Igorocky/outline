@@ -4,10 +4,7 @@ import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.manager.NodeManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -27,7 +24,7 @@ public class BeController {
     }
 
     @GetMapping("/node/{id}")
-    public NodeDto getNode(UUID id,
+    public NodeDto getNode(@PathVariable UUID id,
                            @RequestParam(required = false, defaultValue = "0") Integer depth) {
         // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
         // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes

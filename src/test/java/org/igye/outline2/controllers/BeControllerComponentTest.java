@@ -116,7 +116,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         //when
         MvcResult res = mvc.perform(
-                get("/be/node/" + nodeId + "?depth=1")
+                get("/be/node/" + nodeId.get() + "?depth=1")
         ).andExpect(status().isOk()).andReturn();
 
         //then
