@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
@@ -23,6 +24,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthEq1_RootNodeWithEmptyChildrenListIsReturned() throws Exception {
         //given
+        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -42,6 +44,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
+        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -61,6 +64,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
+        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -80,37 +84,38 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
-        List<Image> images = Randoms.list(100, Randoms::image);
+        List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<UUID> node1Id = new ObjectHolder<>();
         ObjectHolder<UUID> node2Id = new ObjectHolder<>();
         ObjectHolder<UUID> node3Id = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
-                .node(randomNode(images))
-                .node(randomNode(images)).storeId(nodeId)
+                .node(randomNode)
+                .node(randomNode).storeId(nodeId)
                 .children(b1->b1
-                        .node(randomNode(images)).storeId(node1Id)
+                        .node(randomNode).storeId(node1Id)
                         .children(b2->b2
-                                .node(randomNode(images))
-                                .node(randomNode(images))
-                                .node(randomNode(images))
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
                         )
-                        .node(randomNode(images)).storeId(node2Id)
+                        .node(randomNode).storeId(node2Id)
                         .children(b2->b2
-                                .node(randomNode(images))
-                                .node(randomNode(images))
-                                .node(randomNode(images))
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
                         )
-                        .node(randomNode(images)).storeId(node3Id)
+                        .node(randomNode).storeId(node3Id)
                         .children(b2->b2
-                                .node(randomNode(images))
-                                .node(randomNode(images))
-                                .node(randomNode(images))
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
                         )
                 )
-                .node(randomNode(images))
+                .node(randomNode)
         ;
         rootNodes.get().forEach(nodeRepository::save);
 
@@ -127,6 +132,102 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 map(childNodes, NodeDto::getId)
         );
         childNodes.forEach(c -> assertFalse(c.getChildNodes().isPresent()));
+    }
+
+    @Test
+    public void getNode_nodeHas2LevelsOfChildrenAndDepth0Requested_noChildNodesAttributeReturned() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<UUID> nodeId = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<UUID> node1Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node2Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node3Id = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeId(nodeId)
+                .children(b1->b1
+                        .node(randomNode).storeId(node1Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode).storeId(node2Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode).storeId(node3Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+
+        //when
+        MvcResult res = mvc.perform(
+                get("/be/node/" + nodeId.get() + "?depth=0")
+        ).andExpect(status().isOk()).andReturn();
+
+        //then
+        NodeDto nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getChildNodes().isPresent());
+    }
+
+    @Test
+    public void getNode_nodeHas2LevelsOfChildrenAndDepthIsNotRequested_noChildNodesAttributeReturned() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<UUID> nodeId = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<UUID> node1Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node2Id = new ObjectHolder<>();
+        ObjectHolder<UUID> node3Id = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeId(nodeId)
+                .children(b1->b1
+                        .node(randomNode).storeId(node1Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode).storeId(node2Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode).storeId(node3Id)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+
+        //when
+        MvcResult res = mvc.perform(
+                get("/be/node/" + nodeId.get())
+        ).andExpect(status().isOk()).andReturn();
+
+        //then
+        NodeDto nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getChildNodes().isPresent());
     }
 
 }

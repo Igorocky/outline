@@ -19,11 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hibernate.annotations.CascadeType.MERGE;
-import static org.hibernate.annotations.CascadeType.PERSIST;
-import static org.hibernate.annotations.CascadeType.REFRESH;
-import static org.hibernate.annotations.CascadeType.REMOVE;
-import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
+import static org.hibernate.annotations.CascadeType.*;
 
 @Getter
 @Setter
@@ -45,7 +41,7 @@ public class Node {
     private int ord;
 
     @OneToMany(mappedBy = "parentNode")
-    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE})
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
     private List<Node> childNodes = new ArrayList<>();
 
     @ManyToOne
