@@ -1,67 +1,67 @@
 'use strict';
 
 const NODE0 = {
-    [NODE_PARENT_ID]: null,
-    [NODE_ID]: "0",
-    [NODE_CHILDREN]: [
+    [NODE.parentId]: null,
+    [NODE.id]: "0",
+    [NODE.childNodes]: [
         {
-            [NODE_ID]: "11",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "this is a text in node 0"
+            [NODE.id]: "11",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "this is a text in node 0"
         },
         {
-            [NODE_ID]: "12",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "yi\nolu\ni,m\nnrg\nbfcw"
+            [NODE.id]: "12",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "yi\nolu\ni,m\nnrg\nbfcw"
         },
         {
-            [NODE_ID]: "1",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_NODE,
-            [NODE_NAME]: "node1"
+            [NODE.id]: "1",
+            [NODE.objectClass]: OBJECT_CLASS.node,
+            [NODE.name]: "node1"
         }
     ]
 }
 
 const NODE1 = {
-    [NODE_PARENT_ID]: NODE0[NODE_ID],
-    [NODE_ID]: "1",
-    [NODE_CHILDREN]: [
+    [NODE.parentId]: NODE0[NODE.id],
+    [NODE.id]: "1",
+    [NODE.childNodes]: [
         {
-            [NODE_ID]: "2",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_NODE,
-            [NODE_NAME]: "node2"
+            [NODE.id]: "2",
+            [NODE.objectClass]: OBJECT_CLASS.node,
+            [NODE.name]: "node2"
         },
         {
-            [NODE_ID]: "13",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "this is a text in node 1"
+            [NODE.id]: "13",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "this is a text in node 1"
         },
         {
-            [NODE_ID]: "14",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "yi\nolu\ni,m\nnrg\nbfcw"
+            [NODE.id]: "14",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "yi\nolu\ni,m\nnrg\nbfcw"
         },
         {
-            [NODE_ID]: "15",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "xssf667456354efdchv"
+            [NODE.id]: "15",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "xssf667456354efdchv"
         }
     ]
 }
 
 const NODE2 = {
-    [NODE_PARENT_ID]: NODE1[NODE_ID],
-    [NODE_ID]: "2",
-    [NODE_CHILDREN]: [
+    [NODE.parentId]: NODE1[NODE.id],
+    [NODE.id]: "2",
+    [NODE.childNodes]: [
         {
-            [NODE_ID]: "16",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "this is a text in node 2"
+            [NODE.id]: "16",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "this is a text in node 2"
         },
         {
-            [NODE_ID]: "17",
-            [NODE_OBJECT_CLASS]: NODE_OBJECT_CLASS_TEXT,
-            [NODE_TEXT]: "BBB"
+            [NODE.id]: "17",
+            [NODE.objectClass]: OBJECT_CLASS.text,
+            [NODE.text]: "BBB"
         }
     ]
 }

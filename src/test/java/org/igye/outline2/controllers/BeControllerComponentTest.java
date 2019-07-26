@@ -1,11 +1,15 @@
 package org.igye.outline2.controllers;
 
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.pm.Image;
 import org.igye.outline2.pm.Node;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import java.io.FileReader;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -228,6 +232,20 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         NodeDto nodeDto = parseNodeDto(res);
         assertFalse(nodeDto.getChildNodes().isPresent());
+    }
+
+    @Test
+    public void patchNode_newChildNodeAppendedToRootNode_newChildNodeAppearsInDatabaseAndReturnedInResponse() throws Exception {
+        //given
+        NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+        ScriptEngine engine = factory.getScriptEngine(new String[] { "--language=es6" });
+
+        engine.eval(new FileReader("./src/main/webapp/js/libs/underscore-min-1.9.1.js"));
+        engine.eval(new FileReader("./src/test/resources/js-test-utils.js"));
+        engine.eval(new FileReader("./src/main/webapp/js/state-change.js"));
+        Invocable inv = (Invocable) engine;
+        Object result = inv.invokeFunction("doTestCall","addChildNode", "[{\"objectClass\":\"ROOT_NODE\",\"childNodes\":[]}]");
+        System.out.println("result = " + result);
     }
 
 }

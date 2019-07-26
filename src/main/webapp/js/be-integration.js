@@ -2,7 +2,7 @@
 
 function getNodeById(id, responseHandler) {
     id = id?id:""
-    doGetMocked({url: "/be/node/" + id, onSuccess: responseHandler, response:_.find(NODES, n => id == n[NODE_ID])})
+    doGetMocked({url: "/be/node/" + id, onSuccess: responseHandler, response:_.find(NODES, n => id == n[NODE.id])})
 }
 
 function updateTextOfTextNode({id,text,onSuccess}) {

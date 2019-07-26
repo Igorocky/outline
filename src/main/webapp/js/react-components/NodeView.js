@@ -9,25 +9,25 @@ const NodeView = props => {
     }, [props.nodeIdToLoad])
 
     function renderNode(node) {
-        if (node[NODE_OBJECT_CLASS] === NODE_OBJECT_CLASS_TEXT) {
-            return re(ListItem,{key:node[NODE_ID]},
+        if (node[NODE.objectClass] === OBJECT_CLASS.text) {
+            return re(ListItem,{key:node[NODE.id]},
                 re(ListItemText,{},
                     paper(re(EditableTextArea,
                         {
-                            value:node[NODE_TEXT],
+                            value:node[NODE.text],
                             textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"}
                         }
                     ))
                 )
             )
-        } else if (node[NODE_OBJECT_CLASS] === NODE_OBJECT_CLASS_NODE) {
-            return re(ListItem,{key:node[NODE_ID], button: true, onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE_ID]))},
+        } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {
+            return re(ListItem,{key:node[NODE.id], button: true, onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE.id]))},
                 re(ListItemIcon,{key:"ListItemIcon"}, re(Icon, {style: {fontSize: "24px"}}, "folder")),
-                re(ListItemText,{key:"ListItemText"},node[NODE_NAME])
+                re(ListItemText,{key:"ListItemText"},node[NODE.name])
             )
         } else {
-            return re(ListItem,{key:node[NODE_ID]},
-                paper("Unknown type of node: " + node[NODE_OBJECT_CLASS])
+            return re(ListItem,{key:node[NODE.id]},
+                paper("Unknown type of node: " + node[NODE.objectClass])
             )
         }
     }
@@ -36,7 +36,7 @@ const NodeView = props => {
         !curNode
         ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
         : re(List, {key:"List",component:"nav"},
-            curNode[NODE_CHILDREN].map(ch => renderNode(ch))
+            curNode[NODE.childNodes].map(ch => renderNode(ch))
         ),
         re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
             re(Button,{key:"action1", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 1 + "'")}, "Action1"),
