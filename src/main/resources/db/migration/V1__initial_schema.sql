@@ -35,7 +35,7 @@ create table IMAGE_AUD
 	ID uuid not null,
 	REV INTEGER not null,
 	REVTYPE TINYINT,
-	CREATED_WHEN TIMESTAMP not null,
+	CREATED_WHEN TIMESTAMP,
 	primary key (ID, REV),
 	constraint IMAGE_AUD_FK_REV foreign key (REV) references REVINFO
 );
@@ -45,9 +45,9 @@ create table NODE_AUD
 	ID uuid not null,
 	REV INTEGER not null,
 	REVTYPE TINYINT,
-	CREATED_WHEN TIMESTAMP not null,
+	CREATED_WHEN TIMESTAMP,
 	NAME VARCHAR,
-	ORD INTEGER not null,
+	ORD INTEGER,
 	ICON_ID uuid,
 	PARENT_NODE_ID uuid,
 	primary key (ID, REV),

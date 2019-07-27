@@ -26,17 +26,13 @@ public class NodeManager {
         } else {
             result = nodeRepository.findById(id).get();
         }
-        return DtoConverter.toDto(result, depth, null);
+        return DtoConverter.toDto(result, depth);
     }
 
     @Transactional
     public NodeDto patchNode(NodeDto node) {
         if (node.getId() == null) {
-            if (DtoConverter.ROOT_NODE.equals(node.getObjectClass().get())) {
-                return patchRootNode(node);
-            } else {
-                return createNewNode(node);
-            }
+            return createNewNode(node);
         } else {
             return patchExistingNode(node);
         }
@@ -48,22 +44,5 @@ public class NodeManager {
 
     private NodeDto createNewNode(NodeDto node) {
         throw new NotImplementedException("createNewNode");
-    }
-
-    private NodeDto patchRootNode(NodeDto node) {
-        if (!node.getChildNodes().isPresent()) {
-            return getNode(null, 0);
-        }
-//        Set<UUID> nodesToDelete = new HashSet<>();
-//        Set<UUID> nodesToCreate = new HashSet<>();
-//        Set<UUID> nodesToPatch = new HashSet<>();
-
-        for (NodeDto childDto : node.getChildNodes().get()) {
-            if (childDto.getId() == null) {
-
-            }
-//            nodeRepository.findById(childDto.ge)
-        }
-        return null;
     }
 }

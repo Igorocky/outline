@@ -8,9 +8,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.map;
 
@@ -21,21 +19,15 @@ public class DtoConverter {
     public static final String TEXT_NODE = "TEXT";
     public static final String IMAGE_NODE = "IMAGE";
 
-    public static NodeDto toDto(Node node, int depth, NodeDto request) {
-        if (!Objects.equals(node.getId(), request.getId())) {
-            throw new IllegalArgumentException("!Objects.equals(node.getId(), request.getId())");
-        }
+    public static NodeDto toDto(Node node, int depth) {
         NodeDto nodeDto = new NodeDto();
         nodeDto.setId(node.getId());
         nodeDto.setParentId(node.getParentNode() == null ? null : Optional.of(node.getParentNode().getId()));
-        if (node.getId() == null) {
-            nodeDto.setObjectClass(Optional.of(ROOT_NODE));
-        }
         nodeDto.setName(Optional.ofNullable(node.getName()));
-        if (depth > 0 || (request != null && request.getChildNodes().isPresent())) {
+        if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
                 nodeDto.setChildNodes(Optional.of(
-                        map(node.getChildNodes(), n -> toDto(n,depth-1, getChildById(request, n.getId())))
+                        map(node.getChildNodes(), n -> toDto(n,depth-1))
                 ));
             } else {
                 nodeDto.setChildNodes(Optional.of(Collections.emptyList()));
@@ -56,18 +48,14 @@ public class DtoConverter {
             // TODO: 22.07.2019 tc: for images objectClass == "..."
             nodeDto.setObjectClass(Optional.of(IMAGE_NODE));
             nodeDto.setImgId(((ImageRef) node).getImage() == null ? null : Optional.of(((ImageRef) node).getImage().getId()));
+        } else if (node.getId() == null) {
+            // TODO: 22.07.2019 tc: for root node objectClass == "..."
+            nodeDto.setObjectClass(Optional.of(ROOT_NODE));
         } else {
             // TODO: 22.07.2019 tc: for nodes objectClass == "..."
             nodeDto.setObjectClass(Optional.of(NODE));
         }
 
         return nodeDto;
-    }
-
-    private static NodeDto getChildById(NodeDto parent, UUID id) {
-        if (parent == null) {
-            return null;
-        }
-        return parent.getChildNodes().get().stream().filter(c -> c.getId().equals(id)).findFirst().get();
     }
 }
