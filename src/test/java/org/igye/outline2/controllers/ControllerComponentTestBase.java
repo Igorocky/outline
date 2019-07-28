@@ -16,9 +16,6 @@ public class ControllerComponentTestBase extends ComponentTestBase {
     @Autowired
     protected WebApplicationContext wac;
 
-    @Autowired
-    protected ObjectMapper objectMapper;
-
     protected static MockMvc mvc;
 
     @Before

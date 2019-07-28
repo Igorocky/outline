@@ -3,7 +3,9 @@ package org.igye.outline2.controllers;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.pm.Image;
+import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
+import org.igye.outline2.pm.Text;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
@@ -65,7 +67,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertTrue(nodeDto.getChildNodes().get().isEmpty());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "childNodes"), parseAsMap(res).keySet());
     }
-
     @Test
     public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
@@ -85,7 +86,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon"), parseAsMap(res).keySet());
     }
-
     @Test
     public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
@@ -105,7 +105,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon"), parseAsMap(res).keySet());
     }
-
     @Test
     public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
@@ -158,7 +157,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         );
         childNodes.forEach(c -> assertFalse(c.getChildNodes().isPresent()));
     }
-
     @Test
     public void getNode_nodeHas2LevelsOfChildrenAndDepth0Requested_noChildNodesAttributeReturned() throws Exception {
         //given
@@ -206,7 +204,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertFalse(nodeDto.getChildNodes().isPresent());
     }
-
     @Test
     public void getNode_nodeHas2LevelsOfChildrenAndDepthIsNotRequested_noChildNodesAttributeReturned() throws Exception {
         //given
@@ -254,7 +251,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertFalse(nodeDto.getChildNodes().isPresent());
     }
-
     @Test
     public void getNode_returnsNullForIdAndParentIdOfARootNode() throws Exception {
         //given
@@ -278,7 +274,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertTrue(nodeDto.containsKey("parentId"));
         assertNull(nodeDto.get("parentId"));
     }
-
     @Test
     public void getNode_returnsAllRequiredAttributesForTheFakeTopNode() throws Exception {
         //given
@@ -293,14 +288,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertNull(nodeDto.get("id"));
         assertEquals(setOf("parentId", "id", "objectClass", "name", "icon"), parseAsMap(res).keySet());
     }
-
     @Test
     public void patchNode_createsNewRootNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
                 .map(Node::getId).collect(Collectors.toSet());
-        String rootNode = mvc.perform(
+        String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Node expectedNode = new Node();
@@ -308,7 +302,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
-        invokeJsFunction("createChildNode", "[" + rootNode + "]");
+        invokeJsFunction("createChildNode", "[" + topFakeNode + "]");
 
         //then
         UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
@@ -317,6 +311,192 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .findFirst().get();
         expectedNode.setId(newNodeId);
         assertNodeInDatabase(jdbcTemplate, expectedNode);
+    }
+    @Test
+    public void patchNode_createsNewRootTextNode() throws Exception {
+        //given
+        testClock.setFixedTime(2019, 7, 9, 10, 8, 11);
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+                .map(Node::getId).collect(Collectors.toSet());
+        String topFakeNode = mvc.perform(
+                get("/be/node")
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        Text expectedNode = new Text();
+        expectedNode.setOrd(existingNodes.size());
+        expectedNode.setCreatedWhen(testClock.instant());
+
+        //when
+        invokeJsFunction("createChildTextNode", "[" + topFakeNode + "]");
+
+        //then
+        UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+                .map(Node::getId)
+                .filter(id -> !existingNodes.contains(id))
+                .findFirst().get();
+        expectedNode.setId(newNodeId);
+        assertNodeInDatabase(jdbcTemplate, expectedNode);
+    }
+    @Test
+    public void patchNode_createsNewRootImageNode() throws Exception {
+        //given
+        testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+                .map(Node::getId).collect(Collectors.toSet());
+        String topFakeNode = mvc.perform(
+                get("/be/node")
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        ImageRef expectedNode = new ImageRef();
+        expectedNode.setOrd(existingNodes.size());
+        expectedNode.setCreatedWhen(testClock.instant());
+
+        //when
+        invokeJsFunction("createChildImageNode", "[" + topFakeNode + "]");
+
+        //then
+        UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+                .map(Node::getId)
+                .filter(id -> !existingNodes.contains(id))
+                .findFirst().get();
+        expectedNode.setId(newNodeId);
+        assertNodeInDatabase(jdbcTemplate, expectedNode);
+    }
+    @Test
+    public void patchNode_createsNewInnerNode() throws Exception {
+        //given
+        testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<Node> currNode = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeNode(currNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+        String currNodeStr = mvc.perform(
+                get("/be/node/" + currNode.get().getId())
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
+        Node expectedNode = new Node();
+        expectedNode.setOrd(3);
+        expectedNode.setCreatedWhen(testClock.instant());
+
+
+        //when
+        invokeJsFunction("createChildNode", "[" + currNodeStr + "]");
+
+        //then
+        UUID newNodeId = nodeRepository.findAll().stream()
+                .map(Node::getId)
+                .filter(id -> !allNodeIdsBeforeTest.contains(id))
+                .findFirst().get();
+        expectedNode.setId(newNodeId);
+        currNode.get().addChild(expectedNode);
+        assertNodeInDatabase(jdbcTemplate, currNode.get());
+    }
+    @Test
+    public void patchNode_createsNewInnerTextNode() throws Exception {
+        //given
+        testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<Node> currNode = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeNode(currNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+        String currNodeStr = mvc.perform(
+                get("/be/node/" + currNode.get().getId())
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
+        Node expectedNode = new Text();
+        expectedNode.setOrd(3);
+        expectedNode.setCreatedWhen(testClock.instant());
+
+
+        //when
+        invokeJsFunction("createChildTextNode", "[" + currNodeStr + "]");
+
+        //then
+        UUID newNodeId = nodeRepository.findAll().stream()
+                .map(Node::getId)
+                .filter(id -> !allNodeIdsBeforeTest.contains(id))
+                .findFirst().get();
+        expectedNode.setId(newNodeId);
+        currNode.get().addChild(expectedNode);
+        assertNodeInDatabase(jdbcTemplate, currNode.get());
+    }
+    @Test
+    public void patchNode_createsNewInnerImageNode() throws Exception {
+        //given
+        testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<Node> currNode = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeNode(currNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+        String currNodeStr = mvc.perform(
+                get("/be/node/" + currNode.get().getId())
+        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
+        Node expectedNode = new ImageRef();
+        expectedNode.setOrd(3);
+        expectedNode.setCreatedWhen(testClock.instant());
+
+
+        //when
+        invokeJsFunction("createChildImageNode", "[" + currNodeStr + "]");
+
+        //then
+        UUID newNodeId = nodeRepository.findAll().stream()
+                .map(Node::getId)
+                .filter(id -> !allNodeIdsBeforeTest.contains(id))
+                .findFirst().get();
+        expectedNode.setId(newNodeId);
+        currNode.get().addChild(expectedNode);
+        assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
 
     public static void doPatch(String url, String requestBody) throws Exception {

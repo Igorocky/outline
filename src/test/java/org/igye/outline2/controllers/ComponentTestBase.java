@@ -1,10 +1,14 @@
 package org.igye.outline2.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
 import org.igye.outline2.App;
+import org.igye.outline2.manager.DtoConverter;
 import org.igye.outline2.manager.ImageRepository;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
+import org.igye.outline2.pm.Node;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,8 @@ public class ComponentTestBase {
     @Autowired
     protected TestClock testClock;
     @Autowired
+    protected ObjectMapper objectMapper;
+    @Autowired
     protected JdbcTemplate jdbcTemplate;
     @Autowired
     protected NodeManager nodeManager;
@@ -55,6 +61,10 @@ public class ComponentTestBase {
 
     protected void exploreDB() {
         doInTransactionV(session -> OutlineTestUtils.exploreDB(entityManager));
+    }
+
+    protected void printNode(Node node) throws JsonProcessingException {
+        System.out.println(objectMapper.writeValueAsString(DtoConverter.toDto(node, Integer.MAX_VALUE)));
     }
 
     protected <T> T doInTransaction(Function<Session, T> function) {

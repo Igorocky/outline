@@ -32,3 +32,17 @@ function createChildNode(currNode,onSuccess) {
     request[NODE.objectClass] = OBJECT_CLASS.node
     patchNode(request, onSuccess)
 }
+
+function createChildTextNode(currNode,onSuccess) {
+    const request = {}
+    request[NODE.parentId] = currNode[NODE.id]
+    request[NODE.objectClass] = OBJECT_CLASS.text
+    patchNode(request, onSuccess)
+}
+
+function createChildImageNode(currNode,onSuccess) {
+    const request = {}
+    request[NODE.parentId] = currNode[NODE.id]
+    request[NODE.objectClass] = OBJECT_CLASS.image
+    patchNode(request, onSuccess)
+}
