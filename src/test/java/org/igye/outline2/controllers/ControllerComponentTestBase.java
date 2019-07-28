@@ -19,10 +19,10 @@ public class ControllerComponentTestBase extends ComponentTestBase {
     @Autowired
     protected ObjectMapper objectMapper;
 
-    protected MockMvc mvc;
+    protected static MockMvc mvc;
 
     @Before
-    public void init() {
+    public void controllerComponentTestBaseBefore() {
         mvc = MockMvcBuilders.webAppContextSetup(wac).build();
     }
 

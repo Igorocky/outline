@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -34,6 +35,10 @@ public class ComponentTestBase {
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
+    protected TestClock testClock;
+    @Autowired
+    protected JdbcTemplate jdbcTemplate;
+    @Autowired
     protected NodeManager nodeManager;
     @Autowired
     protected NodeRepository nodeRepository;
@@ -43,7 +48,7 @@ public class ComponentTestBase {
     protected TransactionTemplate transactionTemplate;
 
     @Before
-    public void before() {
+    public void componentTestBaseBefore() {
         transactionTemplate = new TransactionTemplate(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }

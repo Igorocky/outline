@@ -1,40 +1,34 @@
 'use strict';
 
+const NODE = {
+    childNodes: "childNodes",
+    objectClass: "objectClass",
+    parentId: "parentId",
+    id: "id",
+    name: "name",
+    text: "text"
+
+}
+
+const OBJECT_CLASS = {
+    rootNode: "ROOT_NODE",
+    node: "NODE",
+    text: "TEXT",
+    image: "IMAGE"
+}
+
 function getNodeById(id, responseHandler) {
     id = id?id:""
     doGetMocked({url: "/be/node/" + id, onSuccess: responseHandler, response:_.find(NODES, n => id == n[NODE.id])})
 }
 
-function updateTextOfTextNode({id,text,onSuccess}) {
-    doPostMocked({url:"updateTextOfTextNode", data:{id:id,text:text}, onSuccess: onSuccess})
+function patchNode(node,onSuccess) {
+    doPatch("/be/node", node, onSuccess)
 }
 
-function doPostMocked({url, data, onSuccess, response}) {
-    console.log("POST " + url + "\n" + JSON.stringify(data));
-    onSuccess(response)
+function createChildNode(currNode,onSuccess) {
+    const request = {}
+    request[NODE.parentId] = currNode[NODE.id]
+    request[NODE.objectClass] = OBJECT_CLASS.node
+    patchNode(request, onSuccess)
 }
-
-function doGetMocked({url, onSuccess, response}) {
-    console.log("GET " + url);
-    console.log("response: " + JSON.stringify(response));
-    onSuccess(response)
-}
-
-function doPost({url, data, onSuccess}) {
-    $.ajax({
-        type: "POST",
-        url: url,
-        data: JSON.stringify(data),
-        contentType: "application/json; charset=utf-8",
-        success: onSuccess
-    });
-}
-
-function doGet({url, onSuccess}) {
-    $.ajax({
-        type: "GET",
-        url: url,
-        success: onSuccess
-    });
-}
-

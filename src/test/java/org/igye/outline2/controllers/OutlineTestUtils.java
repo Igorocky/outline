@@ -7,8 +7,11 @@ import org.igye.outline2.pm.Text;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,7 +29,9 @@ public class OutlineTestUtils {
     public static final String TEXT_TABLE = "TEXT";
     public static final String TEXT_COLUMN = "TEXT";
     public static final String ICON_ID = "ICON_ID";
+    public static final String CREATED_WHEN = "CREATED_WHEN";
     public static final String IMG_ID = "IMG_ID";
+    public static final Calendar UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
     public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node) {
         assertEquals(
@@ -45,7 +50,10 @@ public class OutlineTestUtils {
                 nullSafeGetter(node.getIcon(), i -> i.getId()),
                 getUuidFromNodeTable(jdbcTemplate, node.getId(), ICON_ID)
         );
-        // TODO: 22.07.2019 check createdWhen and updatedWhen
+        assertEquals(
+                node.getCreatedWhen(),
+                getInstantFromNodeTable(jdbcTemplate, node.getId(), CREATED_WHEN)
+        );
 
         if (node instanceof ImageRef) {
             assertEquals(
@@ -60,8 +68,8 @@ public class OutlineTestUtils {
         }
 
         if (node.getChildNodes().isEmpty()) {
-            assertEquals(0, countRowsInImageTable(jdbcTemplate, node.getId()));
-            assertEquals(0, countRowsInTextTable(jdbcTemplate, node.getId()));
+            assertEquals(0, countRowsByParentIdInImageTable(jdbcTemplate, node.getId()));
+            assertEquals(0, countRowsByParentIdInTextTable(jdbcTemplate, node.getId()));
         } else {
             Map<Class<? extends Node>, Integer> counts = node.getChildNodes().stream().map(n -> n.getClass()).collect(Collectors.toMap(
                     cn -> cn, cn -> 1, (l,r) -> l+r
@@ -69,14 +77,19 @@ public class OutlineTestUtils {
             HashSet<Class<? extends Node>> allKeys = new HashSet<>(counts.keySet());
             allKeys.remove(Node.class);
             allKeys.remove(Text.class);
+            allKeys.remove(ImageRef.class);
             assertTrue(allKeys.isEmpty());
             assertEquals(
-                    counts.get(ImageRef.class) == null ? 0 : counts.get(ImageRef.class).intValue(),
-                    countRowsInImageTable(jdbcTemplate, node.getId())
+                    counts.get(Node.class) == null ? 0 : counts.get(Node.class).intValue(),
+                    countRowsByParentIdInNodeTable(jdbcTemplate, node.getId())
             );
             assertEquals(
                     counts.get(Text.class) == null ? 0 : counts.get(Text.class).intValue(),
-                    countRowsInTextTable(jdbcTemplate, node.getId())
+                    countRowsByParentIdInTextTable(jdbcTemplate, node.getId())
+            );
+            assertEquals(
+                    counts.get(ImageRef.class) == null ? 0 : counts.get(ImageRef.class).intValue(),
+                    countRowsByParentIdInImageTable(jdbcTemplate, node.getId())
             );
             node.getChildNodes().forEach(n -> assertNodeInDatabase(jdbcTemplate, n));
         }
@@ -88,6 +101,14 @@ public class OutlineTestUtils {
 
     public static <T> T getValueFromTable(JdbcTemplate jdbcTemplate, String tableName, UUID id, String colName, Class<T> clazz) {
         return jdbcTemplate.queryForObject("select " + colName + " from " + tableName + " where id = ?", new Object[]{id}, clazz);
+    }
+
+    public static Instant getInstantFromTable(JdbcTemplate jdbcTemplate, String tableName, UUID id, String colName) {
+        return jdbcTemplate.queryForObject(
+                "select " + colName + " from " + tableName + " where id = ?",
+                new Object[]{id},
+                (resultSet, i) -> resultSet.getTimestamp(colName, UTC_CALENDAR).toInstant()
+        );
     }
 
     public static <T> T getValueFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName, Class<T> clazz) {
@@ -106,20 +127,28 @@ public class OutlineTestUtils {
         return getValueFromNodeTable(jdbcTemplate, id, colName, UUID.class);
     }
 
+    public static Instant getInstantFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
+        return getInstantFromTable(jdbcTemplate, NODE, id, colName);
+    }
+
     public static UUID getUuidFromImageTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
         return getValueFromTable(jdbcTemplate, IMAGE, id, colName, UUID.class);
     }
 
-    public static int countRowsInImageTable(JdbcTemplate jdbcTemplate, UUID id) {
-        return countRowsInTable(jdbcTemplate, IMAGE, id);
+    public static int countRowsByParentIdInNodeTable(JdbcTemplate jdbcTemplate, UUID parentId) {
+        return jdbcTemplate.queryForObject("select count(1) from NODE n where n.PARENT_NODE_ID = ?", new Object[]{parentId}, Integer.class);
+    }
+
+    public static int countRowsByParentIdInImageTable(JdbcTemplate jdbcTemplate, UUID parentId) {
+        return jdbcTemplate.queryForObject("select count(1) from IMAGE_REF i left join NODE n on i.ID = n.ID where n.PARENT_NODE_ID = ?", new Object[]{parentId}, Integer.class);
+    }
+
+    public static int countRowsByParentIdInTextTable(JdbcTemplate jdbcTemplate, UUID parentId) {
+        return jdbcTemplate.queryForObject("select count(1) from TEXT i left join NODE n on i.ID = n.ID where n.PARENT_NODE_ID = ?", new Object[]{parentId}, Integer.class);
     }
 
     public static String getStringFromTextTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
         return getValueFromTable(jdbcTemplate, TEXT_TABLE, id, colName, String.class);
-    }
-
-    public static int countRowsInTextTable(JdbcTemplate jdbcTemplate, UUID id) {
-        return countRowsInTable(jdbcTemplate, TEXT_TABLE, id);
     }
 
     public static <T> T exploreDB(EntityManager entityManager) {

@@ -1,13 +1,21 @@
 function doTestCall(funcName, args) {
 
     args = eval(args)
-    print("doTestCall for " + funcName)
+    print("js-test-utils.doTestCall for " + funcName)
     args.forEach(function (elem, index) {
         print("arg[" + index + "] = " + JSON.stringify(elem))
     })
 
     const result = JSON.stringify(eval(funcName).apply(null, args));
 
-    print("doTestCall result = " + result)
+    print("js-test-utils.doTestCall result = " + result)
     return result
+}
+
+const MvcAdapter = Java.type('org.igye.outline2.controllers.BeControllerComponentTest');
+
+function doPatch(url, data, onSuccess) {
+    const dataStr = JSON.stringify(data)
+    print("js-test-utils.doPatch: url = " + url + " , data = " + dataStr)
+    MvcAdapter.doPatch(url, dataStr)
 }

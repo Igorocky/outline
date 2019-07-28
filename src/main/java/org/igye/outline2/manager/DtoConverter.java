@@ -23,7 +23,7 @@ public class DtoConverter {
         NodeDto nodeDto = new NodeDto();
         nodeDto.setId(node.getId());
         nodeDto.setParentId(node.getParentNode() == null ? null : Optional.of(node.getParentNode().getId()));
-        nodeDto.setName(Optional.ofNullable(node.getName()));
+        nodeDto.setName(node.getName() == null ? null : Optional.of(node.getName()));
         if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
                 nodeDto.setChildNodes(Optional.of(
@@ -42,12 +42,14 @@ public class DtoConverter {
 
         if (node instanceof Text) {
             // TODO: 22.07.2019 tc: for texts objectClass == "..."
+            Text textNode = (Text) node;
             nodeDto.setObjectClass(Optional.of(TEXT_NODE));
-            nodeDto.setText(Optional.ofNullable(((Text) node).getText()));
+            nodeDto.setText(textNode.getText() == null ? null : Optional.of(textNode.getText()));
         } else if (node instanceof ImageRef) {
             // TODO: 22.07.2019 tc: for images objectClass == "..."
             nodeDto.setObjectClass(Optional.of(IMAGE_NODE));
-            nodeDto.setImgId(((ImageRef) node).getImage() == null ? null : Optional.of(((ImageRef) node).getImage().getId()));
+            ImageRef imageRef = (ImageRef) node;
+            nodeDto.setImgId(imageRef.getImage() == null ? null : Optional.of(imageRef.getImage().getId()));
         } else if (node.getId() == null) {
             // TODO: 22.07.2019 tc: for root node objectClass == "..."
             nodeDto.setObjectClass(Optional.of(ROOT_NODE));
