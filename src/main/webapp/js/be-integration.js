@@ -6,8 +6,9 @@ const NODE = {
     parentId: "parentId",
     id: "id",
     name: "name",
+    icon: "icon",
+    imgId: "imgId",
     text: "text"
-
 }
 
 const OBJECT_CLASS = {
@@ -44,5 +45,33 @@ function createChildImageNode(currNode,onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
     request[NODE.objectClass] = OBJECT_CLASS.image
+    patchNode(request, onSuccess)
+}
+
+function updateNodeName(nodeId,newName,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.name] = newName
+    patchNode(request, onSuccess)
+}
+
+function updateNodeIcon(nodeId,newIconId,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.icon] = newIconId
+    patchNode(request, onSuccess)
+}
+
+function updateTextNodeText(nodeId,newText,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.text] = newText
+    patchNode(request, onSuccess)
+}
+
+function updateImageNodeImage(nodeId,newImageId,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.imgId] = newImageId
     patchNode(request, onSuccess)
 }

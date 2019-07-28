@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class NodeTreeBuilder {
     private List<Node> collectedNodes = new ArrayList<>();
@@ -34,7 +35,11 @@ public class NodeTreeBuilder {
     }
 
     public NodeTreeBuilder node(Consumer<Node> ...setters) {
-        Node node = new Node();
+        return node(() -> new Node());
+    }
+
+    public NodeTreeBuilder node(Supplier<Node> initialNode, Consumer<Node> ...setters) {
+        Node node = initialNode.get();
         node.setId(UUID.randomUUID());
         for (Consumer<Node> setter : setters) {
             setter.accept(node);

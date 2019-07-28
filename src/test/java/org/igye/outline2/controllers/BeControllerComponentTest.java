@@ -1,6 +1,7 @@
 package org.igye.outline2.controllers;
 
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.pm.Image;
 import org.igye.outline2.pm.ImageRef;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
@@ -485,7 +487,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setOrd(3);
         expectedNode.setCreatedWhen(testClock.instant());
 
-
         //when
         invokeJsFunction("createChildImageNode", "[" + currNodeStr + "]");
 
@@ -498,6 +499,151 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         currNode.get().addChild(expectedNode);
         assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
+    @Test
+    public void patchNode_modifiesNameAttrFromNullToSomeStr() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName(null));
+        Node rootNode = existingNodes.getLeft();
+        Node innerNode = existingNodes.getRight();
+        final String expectedName = "adfdf asdf asdf asdf asdf";
+        innerNode.setName(expectedName);
+
+        //when
+        invokeJsFunction("updateNodeName", "['" + innerNode.getId() + "','" + expectedName + "']");
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesNameAttrFromSomeStrToNull() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName("okjhhfafadfd"));
+        Node rootNode = existingNodes.getLeft();
+        Node innerNode = existingNodes.getRight();
+        System.out.println("Before:");
+        printNode(rootNode);
+        final String expectedName = null;
+        innerNode.setName(expectedName);
+
+        //when
+        invokeJsFunction("updateNodeName", "['" + innerNode.getId() + "'," + expectedName + "]");
+
+        //then
+        System.out.println("After:");
+        printNode(rootNode);
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesIconAttrFromNullToSomeUuid() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setIcon(null));
+        Node rootNode = existingNodes.getLeft();
+        Node innerNode = existingNodes.getRight();
+        Image expectedIcon = Randoms.image();
+        imageRepository.save(expectedIcon);
+        innerNode.setIcon(expectedIcon);
+
+        //when
+        invokeJsFunction(
+                "updateNodeIcon",
+                "['" + innerNode.getId() + "','" + expectedIcon.getId() + "']"
+        );
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesIconAttrFromSomeUuidToNull() throws Exception {
+        //given
+        Image existingIcon = Randoms.image();
+        imageRepository.save(existingIcon);
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setIcon(existingIcon));
+        Node rootNode = existingNodes.getLeft();
+        Node innerNode = existingNodes.getRight();
+        Image expectedIcon = null;
+        innerNode.setIcon(expectedIcon);
+
+        //when
+        invokeJsFunction(
+                "updateNodeIcon",
+                "['" + innerNode.getId() + "'," + expectedIcon + "]"
+        );
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesTextAttrFromNullToSomeStr() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText(null));
+        Node rootNode = existingNodes.getLeft();
+        Text innerNode = (Text) existingNodes.getRight();
+        final String expectedText = "pldfnsxnbc agfsd f";
+        innerNode.setText(expectedText);
+
+        //when
+        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "','" + expectedText + "']");
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesTextAttrFromSomeStrToNull() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText("plkjj"));
+        Node rootNode = existingNodes.getLeft();
+        Text innerNode = (Text) existingNodes.getRight();
+        final String expectedText = null;
+        innerNode.setText(expectedText);
+
+        //when
+        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "'," + expectedText + "]");
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesImgAttrFromNullToSomeUuid() throws Exception {
+        //given
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new ImageRef(), image -> ((ImageRef)image).setImage(null));
+        Node rootNode = existingNodes.getLeft();
+        ImageRef innerNode = (ImageRef) existingNodes.getRight();
+        final Image expectedImage = Randoms.image();
+        imageRepository.save(expectedImage);
+        innerNode.setImage(expectedImage);
+
+        //when
+        invokeJsFunction(
+                "updateImageNodeImage",
+                "['" + innerNode.getId() + "','" + expectedImage.getId() + "']"
+        );
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
+    @Test
+    public void patchNode_modifiesImgAttrFromSomeUuidToNull() throws Exception {
+        //given
+        final Image existingImage = Randoms.image();
+        imageRepository.save(existingImage);
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(
+                ()->new ImageRef(),
+                image -> ((ImageRef)image).setImage(existingImage)
+        );
+        Node rootNode = existingNodes.getLeft();
+        ImageRef innerNode = (ImageRef) existingNodes.getRight();
+        final Image expectedImage = null;
+        innerNode.setImage(expectedImage);
+
+        //when
+        invokeJsFunction(
+                "updateImageNodeImage",
+                "['" + innerNode.getId() + "'," + expectedImage + "]"
+        );
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNode);
+    }
 
     public static void doPatch(String url, String requestBody) throws Exception {
         mvc.perform(
@@ -506,6 +652,32 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         .content(requestBody)
         )
                 .andExpect(status().isOk());
+    }
+
+    private Pair<Node, Node> createAndSaveInnerNode(Supplier<Node> initialNode, Consumer<Node> nodeModifier) {
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<Node> rootNode = new ObjectHolder<>();
+        ObjectHolder<Node> innerNode = new ObjectHolder<>();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .node(randomNode).storeNode(rootNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(initialNode, randomNode.andThen(nodeModifier)).storeNode(innerNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        rootNodes.get().forEach(nodeRepository::save);
+        return Pair.of(rootNode.get(), innerNode.get());
     }
 
     private Object invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {

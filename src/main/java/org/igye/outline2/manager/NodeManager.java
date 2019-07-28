@@ -84,7 +84,7 @@ public class NodeManager {
             if (nodeDto.getImgId() == null) {
                 imageRef.setImage(null);
             } else if (nodeDto.getImgId().isPresent()) {
-                imageRef.setImage(imageRepository.findById(nodeDto.getIcon().get()).get());
+                imageRef.setImage(imageRepository.findById(nodeDto.getImgId().get()).get());
             }
         }
 
@@ -92,7 +92,7 @@ public class NodeManager {
             Text text = (Text) node;
             if (nodeDto.getText() == null) {
                 text.setText(null);
-            } else if (nodeDto.getImgId().isPresent()) {
+            } else if (nodeDto.getText().isPresent()) {
                 text.setText(nodeDto.getText().get());
             }
         }
