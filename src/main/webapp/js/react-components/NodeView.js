@@ -1,21 +1,54 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
+const currNodeNameStyle = {
+    paddingLeft: "10px"
+}
+
 const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
-    const [redirect, setRedirect] = useState(null)
+    const [redirect, setRedirect] = useRedirect()
 
     useEffect(() => {
         getNodeById(props.nodeIdToLoad, resp => setCurNode(resp))
     }, [props.nodeIdToLoad])
 
+    function renderCurrNodeName() {
+        if (!curNode || !curNode[NODE.id]) {
+            return null
+        }
+        return re(ListItem,{key:curNode[NODE.id]},
+            re(ListItemText,{},
+                paper(re(EditableTextField,
+                    {
+                        value:curNode[NODE.name],
+                        textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                        multiline: false,
+                        viewComponentProvider: ({value, onClick}) => re(Typography,
+                            {key:"currNodeName", variant:"h5", onClick:onClick,
+                                style:value?currNodeNameStyle:{...currNodeNameStyle, color: "lightgrey"}},
+                            value?value:"Enter node name here"
+                        ),
+                        onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
+                            response => {
+                                onSaved()
+                                getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                            }
+                        )
+                    }
+                ))
+            )
+        )
+    }
+
     function renderNode(node) {
         if (node[NODE.objectClass] === OBJECT_CLASS.text) {
             return re(ListItem,{key:node[NODE.id]},
                 re(ListItemText,{},
-                    paper(re(EditableTextArea,
+                    paper(re(EditableTextField,
                         {
                             value:node[NODE.text],
-                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"}
+                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                            multiline: true
                         }
                     ))
                 )
@@ -36,12 +69,17 @@ const NodeView = props => {
         !curNode
         ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
         : re(List, {key:"List",component:"nav"},
+            renderCurrNodeName(),
             curNode[NODE.childNodes].map(ch => renderNode(ch))
         ),
-        re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
-            re(Button,{key:"action1", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 1 + "'")}, "Action1"),
-            re(Button,{key:"action2", style:actionButtonsStyle, variant:"contained", onClick: ()=>console.log("action = '" + 2 + "'")}, "Action2")
-        ),
+        curNode?re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
+            re(Button,{key:"New node", style:actionButtonsStyle, variant:"contained",
+                        onClick: ()=>createChildNode(
+                            curNode,
+                                resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
+                        )}, "New node")
+
+        ):null,
         redirectTo(redirect)
     ]
 }

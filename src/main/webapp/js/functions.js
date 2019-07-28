@@ -10,6 +10,12 @@ const PATH = {
     view2: CONTEXT_PATH + "/view2",
 }
 
+function useRedirect() {
+    const [redirect, setRedirect] = useState(null)
+    useEffect(()=>setRedirect(null), [redirect])
+    return [redirect, setRedirect]
+}
+
 function redirectTo(to) {
     return to ? re(Redirect,{key: to, to: to}) : null
 }

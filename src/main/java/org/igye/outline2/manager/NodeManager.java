@@ -33,19 +33,21 @@ public class NodeManager {
     }
 
     @Transactional
-    public void patchNode(NodeDto node) {
+    public NodeDto patchNode(NodeDto node) {
         if (node.getId() == null) {
-            createNewNode(node);
+            return createNewNode(node);
         } else {
-            patchExistingNode(node);
+            return patchExistingNode(node);
         }
     }
 
-    private void patchExistingNode(NodeDto nodeDto) {
-        updateNode(nodeDto, nodeRepository.findById(nodeDto.getId()).get());
+    private NodeDto patchExistingNode(NodeDto nodeDto) {
+        Node node = nodeRepository.findById(nodeDto.getId()).get();
+        updateNode(nodeDto, node);
+        return DtoConverter.toDto(node, 0);
     }
 
-    private void createNewNode(NodeDto nodeDto) {
+    private NodeDto createNewNode(NodeDto nodeDto) {
         Node node = null;
         if (DtoConverter.NODE.equals(nodeDto.getObjectClass().get())) {
             node = new Node();
@@ -64,6 +66,7 @@ public class NodeManager {
             node.setOrd(nodeRepository.findByParentNodeIsNullOrderByOrd().size());
             nodeRepository.save(node);
         }
+        return DtoConverter.toDto(nodeRepository.findById(node.getId()).get(), 0);
     }
 
     private void updateNode(NodeDto nodeDto, Node node) {

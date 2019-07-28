@@ -34,7 +34,7 @@ public class BeController {
 
     // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed
     @PatchMapping("/node")
-    public void patchNode(@RequestBody NodeDto request) {
-        nodeManager.patchNode(request);
+    public NodeDto patchNode(@RequestBody NodeDto request) {
+        return nodeManager.patchNode(request);
     }
 }

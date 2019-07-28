@@ -6,7 +6,7 @@ const VIEWS = [
 
 const ViewSelector = props => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
-    const [redirect, setRedirect] = useState(null)
+    const [redirect, setRedirect] = useRedirect()
     const actionsContainerRef = React.useRef(null)
 
     if (!redirect) {

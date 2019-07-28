@@ -23,8 +23,8 @@ function getNodeById(id, responseHandler) {
     doGet(url, responseHandler)
 }
 
-function patchNode(node,onSuccess) {
-    doPatch("/be/node", node, onSuccess)
+function patchNode(request,onSuccess) {
+    doPatch("/be/node", request, onSuccess)
 }
 
 function createChildNode(currNode,onSuccess) {
