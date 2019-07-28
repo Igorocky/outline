@@ -19,8 +19,8 @@ const OBJECT_CLASS = {
 }
 
 function getNodeById(id, responseHandler) {
-    id = id?id:""
-    doGetMocked({url: "/be/node/" + id, onSuccess: responseHandler, response:_.find(NODES, n => id == n[NODE.id])})
+    const url = (id?("/be/node/" + id):"/be/node") + "?depth=1"
+    doGet(url, responseHandler)
 }
 
 function patchNode(node,onSuccess) {

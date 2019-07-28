@@ -34,7 +34,7 @@ function doPatch(url, data, onSuccess) {
     });
 }
 
-function doGet({url, onSuccess}) {
+function doGet(url, onSuccess) {
     $.ajax({
         type: "GET",
         url: url,

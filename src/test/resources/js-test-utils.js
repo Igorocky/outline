@@ -14,6 +14,11 @@ function doTestCall(funcName, args) {
 
 const MvcAdapter = Java.type('org.igye.outline2.controllers.BeControllerComponentTest');
 
+function doGet(url, onSuccess) {
+    print("js-test-utils.doGet: url = " + url)
+    MvcAdapter.doGet(url)
+}
+
 function doPatch(url, data, onSuccess) {
     const dataStr = JSON.stringify(data)
     print("js-test-utils.doPatch: url = " + url + " , data = " + dataStr)

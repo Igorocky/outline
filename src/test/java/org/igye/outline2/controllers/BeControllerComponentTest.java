@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BeControllerComponentTest extends ControllerComponentTestBase {
     private Invocable jsAdapter;
+    private static String actualGetUrl;
 
     @Before
     public void beControllerComponentTestBefore() throws FileNotFoundException, ScriptException {
@@ -289,6 +290,39 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Map<String, Object> nodeDto = parseAsMap(res);
         assertNull(nodeDto.get("id"));
         assertEquals(setOf("parentId", "id", "objectClass", "name", "icon"), parseAsMap(res).keySet());
+    }
+    @Test
+    public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+        //given
+        actualGetUrl = Randoms.string(10,20);
+
+        //when
+        invokeJsFunction("getNodeById", "[null]");
+
+        //then
+        assertEquals("/be/node?depth=1", actualGetUrl);
+    }
+    @Test
+    public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+        //given
+        actualGetUrl = Randoms.string(10,20);
+
+        //when
+        invokeJsFunction("getNodeById", "[undefined]");
+
+        //then
+        assertEquals("/be/node?depth=1", actualGetUrl);
+    }
+    @Test
+    public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
+        //given
+        actualGetUrl = Randoms.string(10,20);
+
+        //when
+        invokeJsFunction("getNodeById", "['bbd97a77-87dc-4f3d-83e1-49a2659e76a0']");
+
+        //then
+        assertEquals("/be/node/bbd97a77-87dc-4f3d-83e1-49a2659e76a0?depth=1", actualGetUrl);
     }
     @Test
     public void patchNode_createsNewRootNode() throws Exception {
@@ -647,11 +681,15 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
     public static void doPatch(String url, String requestBody) throws Exception {
         mvc.perform(
-                patch("/be/node")
+                patch(url)
                         .contentType(APPLICATION_JSON_UTF8)
                         .content(requestBody)
         )
                 .andExpect(status().isOk());
+    }
+
+    public static void doGet(String url) {
+        actualGetUrl = url;
     }
 
     private Pair<Node, Node> createAndSaveInnerNode(Supplier<Node> initialNode, Consumer<Node> nodeModifier) {
