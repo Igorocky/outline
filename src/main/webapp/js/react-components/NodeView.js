@@ -18,16 +18,10 @@ const NodeView = props => {
         }
         return re(ListItem,{key:curNode[NODE.id]},
             re(ListItemText,{},
-                paper(re(EditableTextField,
+                paper(re(NodeNameEditable,
                     {
                         value:curNode[NODE.name],
-                        textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
-                        multiline: false,
-                        viewComponentProvider: ({value, onClick}) => re(Typography,
-                            {key:"currNodeName", variant:"h5", onClick:onClick,
-                                style:value?currNodeNameStyle:{...currNodeNameStyle, color: "lightgrey"}},
-                            value?value:"Enter node name here"
-                        ),
+                        style: {width:"1000px", margin:"0px 0px 10px 10px"},
                         onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
                             response => {
                                 onSaved()
