@@ -19,7 +19,7 @@ const TextNodeEditable = props => {
 
     function viewModeButtons() {
         return [
-            iconButton({iconName: "edit", onClick: () => {setEditMode(true);setAnchorEl(null)}}),
+            iconButton({iconName: "edit", onClick: () => setEditMode(true)}),
             iconButton({iconName: "vertical_align_top", onClick: props.onMoveToStart}),
             iconButton({iconName: "keyboard_arrow_up", onClick: props.onMoveUp}),
             iconButton({iconName: "keyboard_arrow_down", onClick: props.onMoveDown}),
@@ -41,9 +41,7 @@ const TextNodeEditable = props => {
     }
 
     function onKeyDown(event) {
-        if (event.keyCode == 13){
-            save(value)
-        } else if (event.keyCode == 27) {
+        if (event.keyCode == 27) {
             cancel()
         }
     }

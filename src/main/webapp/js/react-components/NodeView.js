@@ -14,9 +14,9 @@ const NodeView = props => {
 
     function renderPathToCurrNode() {
         return re(Breadcrumbs,{key:"path-to-cur-node"},
-            re(Link, {key:"rootLink", color:"primary", class:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
+            re(Link, {key:"rootLink", color:"primary", className:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
-                re(Link, {key:pathElem[NODE.id], color:"primary", class:"path-elem",
+                re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem",
                                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
                     pathElem[NODE.name]
                 )
@@ -30,6 +30,7 @@ const NodeView = props => {
         }
         return re(NodeNameEditable,
             {
+                key:"NodeNameEditable",
                 value:curNode[NODE.name],
                 style: {width:"1000px", margin:"0px 0px 10px 10px"},
                 onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
@@ -49,7 +50,13 @@ const NodeView = props => {
                     paper(re(TextNodeEditable,
                         {
                             value:node[NODE.text],
-                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"}
+                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                            onSave: ({newValue, onSaved}) => updateTextNodeText(node[NODE.id], newValue,
+                                response => {
+                                    onSaved()
+                                    getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                                }
+                            )
                         }
                     ))
                 )
@@ -81,8 +88,18 @@ const NodeView = props => {
                         onClick: ()=>createChildNode(
                             curNode,
                                 resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
-                        )}, "New node")
-
+                        )}, "New node"
+            ),
+            re(NewTextInput, {key:"NewTextInput", onSave: ({newValue, onSaved}) => createChildTextNode(
+                    curNode,
+                    resp => updateTextNodeText(resp[NODE.id], newValue,
+                                        resp => {
+                                            onSaved();
+                                            getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                                        }
+                            )
+                )
+            })
         ):null,
         redirectTo(redirect)
     ]
