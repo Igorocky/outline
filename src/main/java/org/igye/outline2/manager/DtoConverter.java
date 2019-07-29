@@ -1,13 +1,16 @@
 package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.PathElem;
 import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import static org.igye.outline2.OutlineUtils.map;
@@ -59,5 +62,18 @@ public class DtoConverter {
         }
 
         return nodeDto;
+    }
+
+    public static List<PathElem> buildPathTo(Node node) {
+        List<PathElem> path = new ArrayList<>();
+        Node curNode = node;
+        while (curNode != null) {
+            path.add(
+                    PathElem.builder().id(curNode.getId()).name(curNode.getName()).build()
+            );
+            curNode = curNode.getParentNode();
+        }
+        Collections.reverse(path);
+        return path;
     }
 }

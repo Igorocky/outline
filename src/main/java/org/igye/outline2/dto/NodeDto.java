@@ -26,6 +26,9 @@ public class NodeDto {
     @JsonDeserialize(using = DeserializerOfOptionalUuid.class)
     private Optional<UUID> parentId = Optional.empty();
 
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private List<PathElem> path;
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptionExclusionFilter.class)
     private Optional<String> objectClass = Optional.empty();
 

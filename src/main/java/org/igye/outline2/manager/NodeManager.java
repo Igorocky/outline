@@ -22,14 +22,17 @@ public class NodeManager {
 
     @Transactional
     public NodeDto getNode(UUID id, Integer depth) {
-        Node result = new Node();
-        result.setId(null);
+        Node result;
         if (id == null) {
+            result = new Node();
+            result.setId(null);
             result.setChildNodes(nodeRepository.findByParentNodeIsNullOrderByOrd());
         } else {
             result = nodeRepository.findById(id).get();
         }
-        return DtoConverter.toDto(result, depth);
+        NodeDto resultDto = DtoConverter.toDto(result, depth);
+        resultDto.setPath(DtoConverter.buildPathTo(result));
+        return resultDto;
     }
 
     @Transactional

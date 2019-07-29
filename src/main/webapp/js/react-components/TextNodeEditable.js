@@ -1,15 +1,8 @@
 
-const EditableTextField = props => {
+const TextNodeEditable = props => {
     const [editMode, setEditMode] = useState(false)
     const [value, setValue] = useState(props.value)
     const [anchorEl, setAnchorEl] = useState(null);
-    const ref = React.useRef(null)
-
-    useEffect(() => {
-        if (editMode && ref.current) {
-            setAnchorEl(ref.current)
-        }
-    })
 
     function save(newValue) {
         props.onSave({newValue: newValue, onSaved: () => {
@@ -55,31 +48,22 @@ const EditableTextField = props => {
         }
     }
 
-    function renderTextField() {
-        if (!editMode && props.viewComponentProvider) {
-            return props.viewComponentProvider({value:props.value, onClick:onClick, refCallback: ref=>setAnchorEl(ref)})
-        } else {
-            return re(TextField, {
-                key: "TextField",
-                ref:ref,
-                autoFocus: true,
-                onKeyDown: onKeyDown,
-                className: "black-text",
-                style: props.textAreaStyle,
-                multiline: props.multiline,
-                rowsMax: editMode?30:3000,
-                value: value?value:"",
-                disabled: !editMode,
-                variant: editMode ? "outlined" : "standard",
-                onChange: e => setValue(e.target.value),
-                onDoubleClick: () => !editMode?setAnchorEl(null):null,
-                onClick: onClick
-            })
-        }
-    }
-
     return [
-        renderTextField(),
+        re(TextField, {
+            key: "TextField",
+            autoFocus: true,
+            onKeyDown: onKeyDown,
+            className: "black-text",
+            style: props.textAreaStyle,
+            multiline: true,
+            rowsMax: editMode?30:3000,
+            value: value?value:"",
+            disabled: !editMode,
+            variant: editMode ? "outlined" : "standard",
+            onChange: e => setValue(e.target.value),
+            onDoubleClick: () => !editMode?setAnchorEl(null):null,
+            onClick: onClick
+        }),
         anchorEl
             ? clickAwayListener({
                 key: "Popper",

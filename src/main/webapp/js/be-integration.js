@@ -6,6 +6,7 @@ const NODE = {
     parentId: "parentId",
     id: "id",
     name: "name",
+    path: "path",
     icon: "icon",
     imgId: "imgId",
     text: "text"

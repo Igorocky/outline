@@ -12,25 +12,33 @@ const NodeView = props => {
         getNodeById(props.nodeIdToLoad, resp => setCurNode(resp))
     }, [props.nodeIdToLoad])
 
+    function renderPathToCurrNode() {
+        return re(Breadcrumbs,{key:"path-to-cur-node"},
+            re(Link, {key:"rootLink", color:"primary", class:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
+            curNode[NODE.path].map(pathElem =>
+                re(Link, {key:pathElem[NODE.id], color:"primary", class:"path-elem",
+                                        onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
+                    pathElem[NODE.name]
+                )
+            )
+        )
+    }
+    
     function renderCurrNodeName() {
         if (!curNode || !curNode[NODE.id]) {
             return null
         }
-        return re(ListItem,{key:curNode[NODE.id]},
-            re(ListItemText,{},
-                paper(re(NodeNameEditable,
-                    {
-                        value:curNode[NODE.name],
-                        style: {width:"1000px", margin:"0px 0px 10px 10px"},
-                        onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
-                            response => {
-                                onSaved()
-                                getNodeById(curNode[NODE.id], resp => setCurNode(resp))
-                            }
-                        )
+        return re(NodeNameEditable,
+            {
+                value:curNode[NODE.name],
+                style: {width:"1000px", margin:"0px 0px 10px 10px"},
+                onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
+                    response => {
+                        onSaved()
+                        getNodeById(curNode[NODE.id], resp => setCurNode(resp))
                     }
-                ))
-            )
+                )
+            }
         )
     }
 
@@ -38,11 +46,10 @@ const NodeView = props => {
         if (node[NODE.objectClass] === OBJECT_CLASS.text) {
             return re(ListItem,{key:node[NODE.id]},
                 re(ListItemText,{},
-                    paper(re(EditableTextField,
+                    paper(re(TextNodeEditable,
                         {
                             value:node[NODE.text],
-                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
-                            multiline: true
+                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"}
                         }
                     ))
                 )
@@ -62,10 +69,13 @@ const NodeView = props => {
     return [
         !curNode
         ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
-        : re(List, {key:"List",component:"nav"},
+        : [
+            renderPathToCurrNode(),
             renderCurrNodeName(),
-            curNode[NODE.childNodes].map(ch => renderNode(ch))
-        ),
+            re(List, {key:"List",component:"nav"},
+                curNode[NODE.childNodes].map(ch => renderNode(ch))
+            )
+        ],
         curNode?re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
             re(Button,{key:"New node", style:actionButtonsStyle, variant:"contained",
                         onClick: ()=>createChildNode(

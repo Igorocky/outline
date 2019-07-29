@@ -5,3 +5,11 @@
 .black-text input {
     color: black
 }
+
+.path-elem {
+    color: blue;
+}
+
+.path-elem:hover {
+    cursor: pointer;
+}

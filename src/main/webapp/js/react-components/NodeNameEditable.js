@@ -53,13 +53,13 @@ const NodeNameEditable = props => {
     function renderTextField() {
         if (!editMode) {
             return re(Typography,
-                {key:"currNodeName", variant:"h5", onClick:onClick,
+                {key:"NodeNameEditable-Typography", variant:"h5", onClick:onClick,
                     style:value?props.style:{...props.style, color: "lightgrey"}},
                 value?value:"Enter node name here"
             )
         } else {
             return re(TextField, {
-                key: "TextField",
+                key: "NodeNameEditable-TextField",
                 ref:ref,
                 autoFocus: true,
                 style: props.style,
