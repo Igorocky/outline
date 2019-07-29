@@ -32,7 +32,7 @@ const NodeView = props => {
             re(Link, {key:"rootLink", color:"primary", className:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
                 re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem",
-                                        onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
+                        onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
                     pathElem[NODE.name]
                 )
             )
@@ -74,6 +74,12 @@ const NodeView = props => {
                             )
                         }
                     ))
+                )
+            )
+        } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
+            return re(ListItem,{key:node[NODE.id]},
+                re(ListItemText,{},
+                    paper(re(ImageNodeComponent, {imgId: node[NODE.imgId]}))
                 )
             )
         } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {

@@ -55,7 +55,7 @@ public class DtoConverter {
             nodeDto.setObjectClass(Optional.of(IMAGE_NODE));
             ImageRef imageRef = (ImageRef) node;
             nodeDto.setImgId(imageRef.getImage() == null ? null : Optional.of(imageRef.getImage().getId()));
-        } else if (node.getId() == null) {
+        } else if (isRootNode(node)) {
             // TODO: 22.07.2019 tc: for root node objectClass == "..."
             nodeDto.setObjectClass(Optional.of(ROOT_NODE));
         } else {
@@ -75,7 +75,7 @@ public class DtoConverter {
     public static List<PathElem> buildPathTo(Node node) {
         List<PathElem> path = new ArrayList<>();
         Node curNode = node;
-        while (curNode != null) {
+        while (curNode != null && !isRootNode(node)) {
             path.add(
                     PathElem.builder().id(curNode.getId()).name(curNode.getName()).build()
             );
@@ -83,5 +83,9 @@ public class DtoConverter {
         }
         Collections.reverse(path);
         return path;
+    }
+
+    private static boolean isRootNode(Node node) {
+        return node.getId() == null;
     }
 }

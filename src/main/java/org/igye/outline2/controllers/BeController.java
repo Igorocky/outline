@@ -50,4 +50,11 @@ public class BeController {
         return imageManager.createImage(file);
     }
 
+    @GetMapping("/image/{id}")
+    @ResponseBody
+    public byte[] getImage(@PathVariable UUID id) {
+        return imageManager.getImgFileById(id);
+    }
+
+
 }

@@ -1,6 +1,8 @@
 package org.igye.outline2.manager;
 
+import org.apache.commons.io.FileUtils;
 import org.igye.outline2.dto.ImageDto;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Image;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +40,14 @@ public class ImageManager {
         file.transferTo(new File(imgFile.getAbsolutePath()));
 
         return DtoConverter.toDto(image);
+    }
+
+    public byte[] getImgFileById(UUID id) {
+        try {
+            return FileUtils.readFileToByteArray(getImgFile(imagesLocation, id).getAbsoluteFile());
+        } catch (IOException e) {
+            throw new OutlineException(e);
+        }
     }
 
     private File getImgFile(String imagesLocation, UUID imgId) {
