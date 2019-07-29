@@ -68,7 +68,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
         assertTrue(nodeDto.getChildNodes().get().isEmpty());
-        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "childNodes"), parseAsMap(res).keySet());
+        assertEquals(
+                setOf("id", "parentId", "objectClass", "name", "icon", "childNodes", "path"),
+                parseAsMap(res).keySet()
+        );
     }
     @Test
     public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
@@ -87,7 +90,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
         assertFalse(nodeDto.getChildNodes().isPresent());
-        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
     @Test
     public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
@@ -106,7 +109,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
         assertFalse(nodeDto.getChildNodes().isPresent());
-        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
     @Test
     public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
@@ -289,7 +292,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         Map<String, Object> nodeDto = parseAsMap(res);
         assertNull(nodeDto.get("id"));
-        assertEquals(setOf("parentId", "id", "objectClass", "name", "icon"), parseAsMap(res).keySet());
+        assertEquals(setOf("parentId", "id", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
     @Test
     public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {

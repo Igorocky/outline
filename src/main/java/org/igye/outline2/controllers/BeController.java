@@ -1,11 +1,15 @@
 package org.igye.outline2.controllers;
 
+import org.igye.outline2.dto.ImageDto;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.manager.ImageManager;
 import org.igye.outline2.manager.NodeManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Controller
@@ -14,6 +18,8 @@ import java.util.UUID;
 public class BeController {
     @Autowired
     private NodeManager nodeManager;
+    @Autowired
+    private ImageManager imageManager;
 
     @GetMapping("/node")
     public NodeDto getNode(@RequestParam(required = false, defaultValue = "0") Integer depth) {
@@ -37,4 +43,11 @@ public class BeController {
     public NodeDto patchNode(@RequestBody NodeDto request) {
         return nodeManager.patchNode(request);
     }
+
+    @PostMapping("/uploadImage")
+    @ResponseBody
+    public ImageDto uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+        return imageManager.createImage(file);
+    }
+
 }

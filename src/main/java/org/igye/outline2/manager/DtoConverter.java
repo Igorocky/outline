@@ -1,7 +1,9 @@
 package org.igye.outline2.manager;
 
+import org.igye.outline2.dto.ImageDto;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.PathElem;
+import org.igye.outline2.pm.Image;
 import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
@@ -62,6 +64,12 @@ public class DtoConverter {
         }
 
         return nodeDto;
+    }
+
+    public static ImageDto toDto(Image image) {
+        ImageDto imageDto = new ImageDto();
+        imageDto.setId(image.getId());
+        return imageDto;
     }
 
     public static List<PathElem> buildPathTo(Node node) {
