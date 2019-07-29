@@ -12,6 +12,21 @@ const NodeView = props => {
         getNodeById(props.nodeIdToLoad, resp => setCurNode(resp))
     }, [props.nodeIdToLoad])
 
+    useEffect(() => {
+        document.onpaste = event => uploadImage({
+            file: extractFileFromEvent(event),
+            onSuccess: imgDto => createChildImageNode(
+                curNode,
+                imgNode => updateImageNodeImage(
+                    imgNode[NODE.id],
+                    imgDto[NODE.id],
+                    () => getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                )
+            )
+        })
+        return () => document.onpaste = null
+    }, [curNode])
+
     function renderPathToCurrNode() {
         return re(Breadcrumbs,{key:"path-to-cur-node"},
             re(Link, {key:"rootLink", color:"primary", className:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
