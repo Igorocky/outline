@@ -11,6 +11,8 @@ const NodeNameEditable = props => {
         }
     })
 
+    useEffect(() => {setValue(props.value)}, [props.value])
+
     function save(newValue) {
         props.onSave({newValue: newValue, onSaved: () => {
                 setEditMode(false)
@@ -54,8 +56,8 @@ const NodeNameEditable = props => {
         if (!editMode) {
             return re(Typography,
                 {key:"NodeNameEditable-Typography", variant:"h5", onClick:onClick,
-                    style:value?props.style:{...props.style, color: "lightgrey"}},
-                value?value:"Enter node name here"
+                    style:props.value?props.style:{...props.style, color: "lightgrey"}},
+                props.value?props.value:"Enter node name here"
             )
         } else {
             return re(TextField, {

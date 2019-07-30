@@ -8,7 +8,6 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
-    //todo use everywhere
     function reloadCurrNode() {
         getNodeById(curNode[NODE.id], resp => setCurNode(resp))
     }
@@ -25,7 +24,7 @@ const NodeView = props => {
                 imgNode => updateImageNodeImage(
                     imgNode[NODE.id],
                     imgDto[NODE.id],
-                    () => getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                    reloadCurrNode
                 )
             )
         })
@@ -38,7 +37,7 @@ const NodeView = props => {
             curNode[NODE.path].map(pathElem =>
                 re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem",
                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
-                    pathElem[NODE.name]
+                    pathElem[NODE.name]?pathElem[NODE.name]:""
                 )
             )
         )
@@ -56,7 +55,7 @@ const NodeView = props => {
                 onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
                     response => {
                         onSaved()
-                        getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                        reloadCurrNode()
                     }
                 )
             }
@@ -74,7 +73,7 @@ const NodeView = props => {
                             onSave: ({newValue, onSaved}) => updateTextNodeText(node[NODE.id], newValue,
                                 response => {
                                     onSaved()
-                                    getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                                    reloadCurrNode()
                                 }
                             ),
                             onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
@@ -130,8 +129,8 @@ const NodeView = props => {
                     curNode,
                     resp => updateTextNodeText(resp[NODE.id], newValue,
                                         resp => {
-                                            onSaved();
-                                            getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+                                            onSaved()
+                                            reloadCurrNode()
                                         }
                             )
                 )
