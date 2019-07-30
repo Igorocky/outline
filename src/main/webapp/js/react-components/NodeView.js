@@ -37,9 +37,9 @@ const NodeView = props => {
 
     function renderPathToCurrNode() {
         return re(Breadcrumbs,{key:"path-to-cur-node"+getCurrNodeId()},
-            re(Link, {key:"rootLink", color:"primary", className:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
+            re(Link, {key:"rootLink", color:"primary", className:"path-elem pointer-on-hover", onClick: () => setRedirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
-                re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem",
+                re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
                     pathElem[NODE.name]?pathElem[NODE.name]:""
                 )
@@ -101,10 +101,13 @@ const NodeView = props => {
                 )
             )
         } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {
-            return re(ListItem,{key:node[NODE.id], button: true, onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE.id]))},
-                re(ListItemIcon,{key:"ListItemIcon"}, re(Icon, {style: {fontSize: "24px"}}, "folder")),
-                re(ListItemText,{key:"ListItemText"},node[NODE.name])
-            )
+            return re(FolderComponent,{key:node[NODE.id], id:node[NODE.id], name:node[NODE.name],
+                onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE.id])),
+                onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
+                onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
+                onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
+                onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+            })
         } else {
             return re(ListItem,{key:node[NODE.id]},
                 paper("Unknown type of node: " + node[NODE.objectClass])
@@ -118,18 +121,18 @@ const NodeView = props => {
         : [
             renderPathToCurrNode(),
             renderCurrNodeName(),
-            re(List, {key:"List"+getCurrNodeId(),component:"nav"},
+            re(List, {key:"List"+getCurrNodeId(),component:"nav", className:"child-grey-background-on-hover"},
                 curNode[NODE.childNodes].map(ch => renderNode(ch))
             )
         ],
-        curNode?re(Portal, {key:"Portal"+getCurrNodeId(),container: props.actionsContainerRef.current},
+        re(Portal, {key:"Portal"+getCurrNodeId(),container: props.actionsContainerRef.current},
             re(Button,{key:"New node", style:actionButtonsStyle, variant:"contained",
-                        onClick: ()=>createChildNode(
+                        onClick: curNode?()=>createChildNode(
                             curNode,
                                 resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
-                        )}, "New node"
+                        ):()=>{}}, "New node"
             ),
-            re(NewTextInput, {key:"NewTextInput", onSave: ({newValue, onSaved}) => createChildTextNode(
+            re(NewTextInput, {key:"NewTextInput", onSave: curNode?({newValue, onSaved}) => createChildTextNode(
                     curNode,
                     resp => updateTextNodeText(resp[NODE.id], newValue,
                                         resp => {
@@ -137,9 +140,9 @@ const NodeView = props => {
                                             reloadCurrNode()
                                         }
                             )
-                )
+                ):()=>{}
             })
-        ):null,
+        ),
         redirectTo(redirect)
     ]
 }
