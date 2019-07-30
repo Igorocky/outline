@@ -11,8 +11,6 @@ const NodeNameEditable = props => {
         }
     })
 
-    useEffect(() => {setValue(props.value)}, [props.value])
-
     function save(newValue) {
         props.onSave({newValue: newValue, onSaved: () => {
                 setEditMode(false)

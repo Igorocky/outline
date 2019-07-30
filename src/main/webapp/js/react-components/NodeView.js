@@ -8,8 +8,12 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
+    function getCurrNodeId() {
+        return curNode?curNode[NODE.id]:null
+    }
+
     function reloadCurrNode() {
-        getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+        getNodeById(getCurrNodeId(), resp => setCurNode(resp))
     }
 
     useEffect(() => {
@@ -32,7 +36,7 @@ const NodeView = props => {
     }, [curNode])
 
     function renderPathToCurrNode() {
-        return re(Breadcrumbs,{key:"path-to-cur-node"},
+        return re(Breadcrumbs,{key:"path-to-cur-node"+getCurrNodeId()},
             re(Link, {key:"rootLink", color:"primary", className:"path-elem", onClick: () => setRedirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
                 re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem",
@@ -49,7 +53,7 @@ const NodeView = props => {
         }
         return re(NodeNameEditable,
             {
-                key:"NodeNameEditable",
+                key:"NodeNameEditable" + getCurrNodeId(),
                 value:curNode[NODE.name],
                 style: {width:"1000px", margin:"0px 0px 10px 10px"},
                 onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
@@ -114,11 +118,11 @@ const NodeView = props => {
         : [
             renderPathToCurrNode(),
             renderCurrNodeName(),
-            re(List, {key:"List",component:"nav"},
+            re(List, {key:"List"+getCurrNodeId(),component:"nav"},
                 curNode[NODE.childNodes].map(ch => renderNode(ch))
             )
         ],
-        curNode?re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
+        curNode?re(Portal, {key:"Portal"+getCurrNodeId(),container: props.actionsContainerRef.current},
             re(Button,{key:"New node", style:actionButtonsStyle, variant:"contained",
                         onClick: ()=>createChildNode(
                             curNode,
