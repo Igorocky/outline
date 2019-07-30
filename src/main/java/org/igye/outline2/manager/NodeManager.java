@@ -9,7 +9,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 @Component
 public class NodeManager {
@@ -26,7 +30,7 @@ public class NodeManager {
         if (id == null) {
             result = new Node();
             result.setId(null);
-            result.setChildNodes(nodeRepository.findByParentNodeIsNullOrderByOrd());
+            result.setChildNodes(nodeRepository.findByParentNodeIdOrderByOrd(null));
         } else {
             result = nodeRepository.findById(id).get();
         }
@@ -41,6 +45,44 @@ public class NodeManager {
             return createNewNode(node);
         } else {
             return patchExistingNode(node);
+        }
+    }
+
+    @Transactional
+    public void reorderNode(UUID id, int direction) {
+        Node node = nodeRepository.getOne(id);
+        List<Node> nodes = new ArrayList<>(nodeRepository.findByParentNodeIdOrderByOrd(
+                nullSafeGetter(node.getParentNode(), p->p.getId())
+        ));
+        int idx = 0;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).getId().equals(node.getId())) {
+                idx = i;
+                break;
+            }
+        }
+        nodes.remove(idx);
+        if (direction == 1) {
+            idx = 0;
+        } else if (direction == 2) {
+            idx--;
+        } else if (direction == 3) {
+            idx++;
+        } else if (direction == 4) {
+            idx = nodes.size();
+        }
+        if (idx < 0) {
+            idx = 0;
+        } else if (idx > nodes.size()) {
+            idx = nodes.size();
+        }
+        nodes.add(idx, node);
+        updateOrder(nodes);
+    }
+
+    private void updateOrder(List<Node> nodes) {
+        for (int i = 0; i < nodes.size(); i++) {
+            nodes.get(i).setOrd(i);
         }
     }
 
@@ -66,7 +108,7 @@ public class NodeManager {
             parent.addChild(node);
             nodeRepository.save(parent);
         } else {
-            node.setOrd(nodeRepository.findByParentNodeIsNullOrderByOrd().size());
+            node.setOrd(nodeRepository.findByParentNodeIdOrderByOrd(null).size());
             nodeRepository.save(node);
         }
         return DtoConverter.toDto(nodeRepository.findById(node.getId()).get(), 0);

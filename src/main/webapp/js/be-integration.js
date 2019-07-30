@@ -28,6 +28,10 @@ function patchNode(request,onSuccess) {
     doPatch("/be/node", request, onSuccess)
 }
 
+function reorderNode(nodeId,direction,onSuccess) {
+    doPatch("/be/reorderNode/" + nodeId + "/" + direction, {}, onSuccess)
+}
+
 function createChildNode(currNode,onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
@@ -75,4 +79,20 @@ function updateImageNodeImage(nodeId,newImageId,onSuccess) {
     request[NODE.id] = nodeId
     request[NODE.imgId] = newImageId
     patchNode(request, onSuccess)
+}
+
+function moveNodeToStart(nodeId,onSuccess) {
+    reorderNode(nodeId, 1, onSuccess)
+}
+
+function moveNodeUp(nodeId,onSuccess) {
+    reorderNode(nodeId, 2, onSuccess)
+}
+
+function moveNodeDown(nodeId,onSuccess) {
+    reorderNode(nodeId, 3, onSuccess)
+}
+
+function moveNodeToEnd(nodeId,onSuccess) {
+    reorderNode(nodeId, 4, onSuccess)
 }

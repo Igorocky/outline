@@ -8,6 +8,11 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
+    //todo use everywhere
+    function reloadCurrNode() {
+        getNodeById(curNode[NODE.id], resp => setCurNode(resp))
+    }
+
     useEffect(() => {
         getNodeById(props.nodeIdToLoad, resp => setCurNode(resp))
     }, [props.nodeIdToLoad])
@@ -71,7 +76,11 @@ const NodeView = props => {
                                     onSaved()
                                     getNodeById(curNode[NODE.id], resp => setCurNode(resp))
                                 }
-                            )
+                            ),
+                            onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
+                            onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
+                            onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
+                            onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
                         }
                     ))
                 )
@@ -79,7 +88,13 @@ const NodeView = props => {
         } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
             return re(ListItem,{key:node[NODE.id]},
                 re(ListItemText,{},
-                    paper(re(ImageNodeComponent, {imgId: node[NODE.imgId]}))
+                    paper(re(ImageNodeComponent, {
+                        imgId: node[NODE.imgId],
+                        onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
+                        onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
+                        onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
+                        onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+                    }))
                 )
             )
         } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {

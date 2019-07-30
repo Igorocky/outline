@@ -39,6 +39,11 @@ public class BeController {
     }
 
     // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed
+
+    @PatchMapping("/reorderNode/{id}/{direction}")
+    public void reorderNode(@PathVariable UUID id, @PathVariable int direction) {
+        nodeManager.reorderNode(id, direction);
+    }
     @PatchMapping("/node")
     public NodeDto patchNode(@RequestBody NodeDto request) {
         return nodeManager.patchNode(request);

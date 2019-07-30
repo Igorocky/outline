@@ -54,7 +54,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthEq1_RootNodeWithEmptyChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -76,7 +76,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -95,7 +95,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test
     public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIsNullOrderByOrd().forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -331,7 +331,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     public void patchNode_createsNewRootNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
@@ -344,7 +344,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("createChildNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
@@ -355,7 +355,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     public void patchNode_createsNewRootTextNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 10, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
@@ -368,7 +368,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("createChildTextNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
@@ -379,7 +379,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     public void patchNode_createsNewRootImageNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
@@ -392,7 +392,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("createChildImageNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIsNullOrderByOrd().stream()
+        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
