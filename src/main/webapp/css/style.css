@@ -13,7 +13,3 @@
 .pointer-on-hover:hover {
     cursor: pointer;
 }
-
-.child-grey-background-on-hover > .grey-background-on-hover-mark:hover {
-    background-color: #f2f2f2;
-}

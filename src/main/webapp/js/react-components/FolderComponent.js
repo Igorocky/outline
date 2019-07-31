@@ -1,6 +1,7 @@
 
 const FolderComponent = props => {
     const [anchorEl, setAnchorEl] = useState(null);
+    const [iconIsHovered, setIconIsHovered] = useState(false);
 
     function performMove(moveFunction) {
         return () => {
@@ -24,15 +25,19 @@ const FolderComponent = props => {
     }
 
     return [
-        re(ListItem,{key:props.id, button: true,
+        re(ListItem,{key:props.id, button: !iconIsHovered, dense:true,
                 style:{backgroundColor: anchorEl?"#f2f2f2":""},
-                ContainerProps:{className:"grey-background-on-hover-mark"},
-                onClick: props.onClick},
-            re(ListItemIcon,{key:"lii"}, re(Icon, {style: {fontSize: "24px"}}, "folder")),
-            re(ListItemText,{key:"lit"},props.name),
-            re(ListItemSecondaryAction,{key:"lisa"},
+                onClick: iconIsHovered?onClick:props.onClick},
+            re(ListItemIcon,{key:"lii", onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
                 re(IconButton, {edge: "start", color: "inherit", onClick: onClick},
-                    re(Icon, {style: {fontSize: "24px"}}, "more_vert")
+                    iconIsHovered
+                        ?re(Icon, {style: {fontSize: "24px"}}, "more_vert")
+                        :re(Icon, {style: {fontSize: "24px"}}, "folder")
+                )
+            ),
+            re(ListItemText,{key:"lit"},
+                re(Typography, {variant:"body1"},
+                    props.name
                 )
             )
         ),
@@ -40,7 +45,7 @@ const FolderComponent = props => {
             ? clickAwayListener({
                 key: "Popper",
                 onClickAway: () => setAnchorEl(null),
-                children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-end'},
+                children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
                     paper(viewModeButtons())
                 )
             })
