@@ -22,23 +22,24 @@ const FolderComponent = props => {
 
     function onClick(e) {
         setAnchorEl(e.currentTarget)
+        e.stopPropagation()
     }
 
     return [
-        re(ListItem,{key:props.id, button: !iconIsHovered, dense:true,
-                style:{backgroundColor: anchorEl?"#f2f2f2":""},
-                onClick: iconIsHovered?onClick:props.onClick},
-            re(ListItemIcon,{key:"lii", onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
-                re(IconButton, {edge: "start", color: "inherit", onClick: onClick},
-                    iconIsHovered
-                        ?re(Icon, {style: {fontSize: "24px"}}, "more_vert")
-                        :re(Icon, {style: {fontSize: "24px"}}, "folder")
-                )
+        re(Grid,{container:true, direction:"row", justify:"flex-start", alignItems:"center",
+                className:"grey-background-on-hover pointer-on-hover",
+                style:{backgroundColor: anchorEl?"rgb(185, 185, 185)":""},
+                onClick: props.onClick
+            },
+            re(IconButton, {edge: "start", color: "inherit", onClick: onClick,
+                    style:{marginLeft: "15px"},
+                    onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
+                iconIsHovered
+                    ?re(Icon, {style: {fontSize: "24px"}}, "more_vert")
+                    :re(Icon, {style: {fontSize: "24px"}}, "folder")
             ),
-            re(ListItemText,{key:"lit"},
-                re(Typography, {variant:"body1"},
-                    props.name
-                )
+            re(Typography, {variant:"body1"},
+                props.name
             )
         ),
         anchorEl

@@ -68,38 +68,30 @@ const NodeView = props => {
 
     function renderNode(node) {
         if (node[NODE.objectClass] === OBJECT_CLASS.text) {
-            return re(ListItem,{key:node[NODE.id]},
-                re(ListItemText,{},
-                    paper(re(TextNodeEditable,
-                        {
-                            value:node[NODE.text],
-                            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
-                            onSave: ({newValue, onSaved}) => updateTextNodeText(node[NODE.id], newValue,
-                                response => {
-                                    onSaved()
-                                    reloadCurrNode()
-                                }
-                            ),
-                            onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
-                            onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
-                            onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
-                            onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+            return paper(re(TextNodeEditable,
+                {
+                    value:node[NODE.text],
+                    textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                    onSave: ({newValue, onSaved}) => updateTextNodeText(node[NODE.id], newValue,
+                        response => {
+                            onSaved()
+                            reloadCurrNode()
                         }
-                    ))
-                )
-            )
+                    ),
+                    onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
+                    onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
+                    onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
+                    onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+                }
+            ))
         } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
-            return re(ListItem,{key:node[NODE.id]},
-                re(ListItemText,{},
-                    paper(re(ImageNodeComponent, {
-                        imgId: node[NODE.imgId],
-                        onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
-                        onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
-                        onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
-                        onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
-                    }))
-                )
-            )
+            return paper(re(ImageNodeComponent, {
+                imgId: node[NODE.imgId],
+                onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
+                onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
+                onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
+                onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+            }))
         } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {
             return re(FolderComponent,{key:node[NODE.id], id:node[NODE.id], name:node[NODE.name],
                 onClick: () => setRedirect(PATH.createNodeWithIdPath(node[NODE.id])),
@@ -121,8 +113,14 @@ const NodeView = props => {
         : [
             renderPathToCurrNode(),
             renderCurrNodeName(),
-            re(List, {key:"List"+getCurrNodeId(),component:"nav", className:"child-grey-background-on-hover"},
-                curNode[NODE.childNodes].map(ch => renderNode(ch))
+            re(List, {key:"List"+getCurrNodeId(),component:"nav", dense:true},
+                curNode[NODE.childNodes].map(ch =>
+                    re(ListItem,{key:ch[NODE.id]},
+                        re(ListItemText,{},
+                            renderNode(ch)
+                        )
+                    )
+                )
             )
         ],
         re(Portal, {key:"Portal"+getCurrNodeId(),container: props.actionsContainerRef.current},
