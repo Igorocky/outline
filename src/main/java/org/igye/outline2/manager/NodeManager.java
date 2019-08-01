@@ -1,6 +1,7 @@
 package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
@@ -11,8 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.OutlineUtils.mapToSet;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 @Component
@@ -35,7 +40,7 @@ public class NodeManager {
             result = nodeRepository.findById(id).get();
         }
         NodeDto resultDto = DtoConverter.toDto(result, depth);
-        resultDto.setPath(DtoConverter.buildPathTo(result));
+        resultDto.setPath(map(result.getPath(), DtoConverter::toPathElem));
         return resultDto;
     }
 
@@ -46,6 +51,14 @@ public class NodeManager {
         } else {
             return patchExistingNode(node);
         }
+    }
+
+    @Transactional
+    public void moveNodes(List<UUID> ids, UUID to) {
+        List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
+        validateMove(nodesToMove, to);
+        nodesToMove.forEach(this::detachNodeFromParent);
+        attachNodesToParent(to, nodesToMove);
     }
 
     @Transactional
@@ -78,6 +91,17 @@ public class NodeManager {
         }
         nodes.add(idx, node);
         updateOrder(nodes);
+    }
+
+    private void validateMove(List<Node> nodesToMove, UUID to) {
+        if (to != null) {
+            Set<UUID> parentPath = mapToSet(nodeRepository.getOne(to).getPath(), Node::getId);
+            for (Node nodeToMove : nodesToMove) {
+                if (parentPath.contains(nodeToMove.getId())) {
+                    throw new OutlineException("Invalid move request.");
+                }
+            }
+        }
     }
 
     private void updateOrder(List<Node> nodes) {
@@ -143,6 +167,34 @@ public class NodeManager {
             } else if (nodeDto.getText().isPresent()) {
                 text.setText(nodeDto.getText().get());
             }
+        }
+    }
+
+    private void detachNodeFromParent(Node child) {
+        if (child.getParentNode() != null) {
+            child.getParentNode().detachChild(child);
+        } else {
+            List<Node> rootNodes = nodeRepository.findByParentNodeIdOrderByOrd(null);
+            int idx = 0;
+            for (Node rootNode : rootNodes) {
+                if (!rootNode.getId().equals(child.getId())) {
+                    rootNode.setOrd(idx);
+                    idx++;
+                }
+            }
+        }
+    }
+
+    private void attachNodesToParent(UUID parentId, List<Node> children) {
+        if (parentId != null) {
+            Node parent = nodeRepository.getOne(parentId);
+            children.forEach(parent::addChild);
+        } else {
+            List<Node> rootNodes = nodeRepository.findByParentNodeIdOrderByOrd(null);
+            int idx = rootNodes.size();
+            for (Node child : children) {
+                child.setOrd(idx);
+                idx++;            }
         }
     }
 }

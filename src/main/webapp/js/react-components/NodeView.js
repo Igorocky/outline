@@ -113,9 +113,9 @@ const NodeView = props => {
         : [
             renderPathToCurrNode(),
             renderCurrNodeName(),
-            re(List, {key:"List"+getCurrNodeId(),component:"nav", dense:true},
+            re(List, {key:"List"+getCurrNodeId()},
                 curNode[NODE.childNodes].map(ch =>
-                    re(ListItem,{key:ch[NODE.id]},
+                    re(ListItem,{key:ch[NODE.id], dense:true},
                         re(ListItemText,{},
                             renderNode(ch)
                         )

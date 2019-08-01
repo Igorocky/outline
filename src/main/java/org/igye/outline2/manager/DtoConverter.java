@@ -9,10 +9,8 @@ import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import static org.igye.outline2.OutlineUtils.map;
@@ -55,7 +53,7 @@ public class DtoConverter {
             nodeDto.setObjectClass(Optional.of(IMAGE_NODE));
             ImageRef imageRef = (ImageRef) node;
             nodeDto.setImgId(imageRef.getImage() == null ? null : Optional.of(imageRef.getImage().getId()));
-        } else if (isRootNode(node)) {
+        } else if (node.isRootNode()) {
             // TODO: 22.07.2019 tc: for root node objectClass == "..."
             nodeDto.setObjectClass(Optional.of(ROOT_NODE));
         } else {
@@ -66,26 +64,13 @@ public class DtoConverter {
         return nodeDto;
     }
 
+    public static PathElem toPathElem(Node node) {
+        return PathElem.builder().id(node.getId()).name(node.getName()).build();
+    }
+
     public static ImageDto toDto(Image image) {
         ImageDto imageDto = new ImageDto();
         imageDto.setId(image.getId());
         return imageDto;
-    }
-
-    public static List<PathElem> buildPathTo(Node node) {
-        List<PathElem> path = new ArrayList<>();
-        Node curNode = node;
-        while (curNode != null && !isRootNode(node)) {
-            path.add(
-                    PathElem.builder().id(curNode.getId()).name(curNode.getName()).build()
-            );
-            curNode = curNode.getParentNode();
-        }
-        Collections.reverse(path);
-        return path;
-    }
-
-    private static boolean isRootNode(Node node) {
-        return node.getId() == null;
     }
 }
