@@ -1,6 +1,7 @@
 package org.igye.outline2.controllers;
 
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.pm.Image;
@@ -28,6 +29,7 @@ import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabase;
+import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatabase;
 import static org.igye.outline2.controllers.Randoms.randomNode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -681,6 +683,198 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
+    @Test
+    public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
+        ObjectHolder<Node> prevParent = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMoveTo = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(prevParent)
+                        .children(b2 -> b2
+                                .node(randomNode).storeNode(nodeToMove1)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove2)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove3)
+                        )
+                        .node(randomNode).storeNode(nodeToMoveTo)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'",
+                "'" + nodeToMove3.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction("pasteNodesFromClipboard", concatToArray("'" + nodeToMoveTo.get().getId() + "'"));
+
+        //then
+        prevParent.get().getChildNodes().removeIf(node ->
+                nodeToMove1.get().getId().equals(node.getId())
+                || nodeToMove2.get().getId().equals(node.getId())
+                || nodeToMove3.get().getId().equals(node.getId())
+        );
+        for (int i = 0; i < prevParent.get().getChildNodes().size(); i++) {
+            prevParent.get().getChildNodes().get(i).setOrd(i);
+        }
+        nodeToMoveTo.get().getChildNodes().add(nodeToMove1.get());
+        nodeToMoveTo.get().getChildNodes().add(nodeToMove2.get());
+        nodeToMoveTo.get().getChildNodes().add(nodeToMove3.get());
+        for (int i = 0; i < nodeToMoveTo.get().getChildNodes().size(); i++) {
+            Node node = nodeToMoveTo.get().getChildNodes().get(i);
+            node.setParentNode(nodeToMoveTo.get());
+            node.setOrd(i);
+        }
+
+        rootNodes.get().forEach(rootNode -> assertNodeInDatabase(jdbcTemplate, rootNode));
+    }
+    @Test
+    public void moveNodesToAnotherParent_movesNonRootNodesToTop() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
+        ObjectHolder<Node> prevParent = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode, n->n.setName("root0"))
+                .children(b1->b1
+                        .node(randomNode, n->n.setName("prevParent")).storeNode(prevParent)
+                        .children(b2 -> b2
+                                .node(randomNode, n->n.setName("nodeToMove1")).storeNode(nodeToMove1)
+                                .node(randomNode)
+                                .node(randomNode, n->n.setName("nodeToMove2")).storeNode(nodeToMove2)
+                                .node(randomNode)
+                                .node(randomNode, n->n.setName("nodeToMove3")).storeNode(nodeToMove3)
+                        )
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode, n->n.setName("root1"))
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'",
+                "'" + nodeToMove3.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction("pasteNodesFromClipboard", concatToArray("null"));
+
+        //then
+        prevParent.get().getChildNodes().removeIf(node ->
+                nodeToMove1.get().getId().equals(node.getId())
+                || nodeToMove2.get().getId().equals(node.getId())
+                || nodeToMove3.get().getId().equals(node.getId())
+        );
+        for (int i = 0; i < prevParent.get().getChildNodes().size(); i++) {
+            prevParent.get().getChildNodes().get(i).setOrd(i);
+        }
+        rootNodes.get().add(nodeToMove1.get());
+        rootNodes.get().add(nodeToMove2.get());
+        rootNodes.get().add(nodeToMove3.get());
+        for (int i = 0; i < rootNodes.get().size(); i++) {
+            Node node = rootNodes.get().get(i);
+            node.setParentNode(null);
+            node.setOrd(i);
+        }
+
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test
+    public void moveNodesToAnotherParent_movesRootNodesToNonTopParent() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
+        ObjectHolder<Node> newParent = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode, n->n.setName("root0"))
+                .children(b1->b1
+                        .node(randomNode)
+                        .children(b2 -> b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode, n->n.setName("newParent")).storeNode(newParent)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode, n->n.setName("nodeToMove1")).storeNode(nodeToMove1)
+                .node(randomNode, n->n.setName("nodeToMove2")).storeNode(nodeToMove2)
+                .node(randomNode, n->n.setName("nodeToMove3")).storeNode(nodeToMove3)
+                .node(randomNode, n->n.setName("root1"))
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'",
+                "'" + nodeToMove3.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction("pasteNodesFromClipboard", concatToArray("'" + newParent.get().getId() + "'"));
+
+        //then
+        rootNodes.get().removeIf(node ->
+                nodeToMove1.get().getId().equals(node.getId())
+                || nodeToMove2.get().getId().equals(node.getId())
+                || nodeToMove3.get().getId().equals(node.getId())
+        );
+        for (int i = 0; i < rootNodes.get().size(); i++) {
+            rootNodes.get().get(i).setOrd(i);
+        }
+        newParent.get().getChildNodes().add(nodeToMove1.get());
+        newParent.get().getChildNodes().add(nodeToMove2.get());
+        newParent.get().getChildNodes().add(nodeToMove3.get());
+        for (int i = 0; i < newParent.get().getChildNodes().size(); i++) {
+            Node node = newParent.get().getChildNodes().get(i);
+            node.setParentNode(newParent.get());
+            node.setOrd(i);
+        }
+
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
 
     public static void doPatch(String url, String requestBody) throws Exception {
         mvc.perform(
@@ -723,5 +917,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
     private Object invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {
         return jsAdapter.invokeFunction("doTestCall", functionName, arrOfArguments);
+    }
+
+    private String concatToArray(Object... elems) {
+        return "[" + StringUtils.join(elems, ",") + "]";
     }
 }

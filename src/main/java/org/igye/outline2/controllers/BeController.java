@@ -2,6 +2,7 @@ package org.igye.outline2.controllers;
 
 import org.igye.outline2.dto.ImageDto;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.manager.Clipboard;
 import org.igye.outline2.manager.ImageManager;
 import org.igye.outline2.manager.NodeManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -27,6 +29,8 @@ public class BeController {
     private NodeManager nodeManager;
     @Autowired
     private ImageManager imageManager;
+    @Autowired
+    private Clipboard clipboard;
 
     @GetMapping("/node")
     public NodeDto getNode(@RequestParam(required = false, defaultValue = "0") Integer depth) {
@@ -54,6 +58,14 @@ public class BeController {
     @PatchMapping("/node")
     public NodeDto patchNode(@RequestBody NodeDto request) {
         return nodeManager.patchNode(request);
+    }
+    @PatchMapping("/putNodeIdsToClipboard")
+    public void putNodeIdsToClipboard(@RequestBody List<UUID> ids) {
+        clipboard.setNodeIds(ids);
+    }
+    @PatchMapping("/pasteNodesFromClipboard/{to}")
+    public void pasteNodesFromClipboard(@PathVariable String to) {
+        nodeManager.moveNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));
     }
 
     @PostMapping("/uploadImage")

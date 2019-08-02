@@ -35,7 +35,7 @@ public class NodeTreeBuilder {
     }
 
     public NodeTreeBuilder node(Consumer<Node> ...setters) {
-        return node(() -> new Node());
+        return node(() -> new Node(), setters);
     }
 
     public NodeTreeBuilder node(Supplier<Node> initialNode, Consumer<Node> ...setters) {
@@ -44,6 +44,7 @@ public class NodeTreeBuilder {
         for (Consumer<Node> setter : setters) {
             setter.accept(node);
         }
+        node.setOrd(collectedNodes.size());
         collectedNodes.add(node);
         return this;
     }

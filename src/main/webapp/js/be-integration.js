@@ -96,3 +96,11 @@ function moveNodeDown(nodeId,onSuccess) {
 function moveNodeToEnd(nodeId,onSuccess) {
     reorderNode(nodeId, 4, onSuccess)
 }
+
+function putNodeIdsToClipboard(nodeIds,onSuccess) {
+    doPatch("/be/putNodeIdsToClipboard", nodeIds, onSuccess)
+}
+
+function pasteNodesFromClipboard(to,onSuccess) {
+    doPatch("/be/pasteNodesFromClipboard/" + to, onSuccess)
+}

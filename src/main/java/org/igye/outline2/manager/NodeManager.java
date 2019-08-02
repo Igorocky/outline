@@ -11,11 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.igye.outline2.OutlineUtils.filter;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapToSet;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
@@ -57,8 +59,13 @@ public class NodeManager {
     public void moveNodes(List<UUID> ids, UUID to) {
         List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
         validateMove(nodesToMove, to);
+        boolean reorderOfRootNodesIsNeeded = nodesToMove.stream()
+                .filter(n -> n.getParentNode() == null).findFirst().isPresent();
         nodesToMove.forEach(this::detachNodeFromParent);
         attachNodesToParent(to, nodesToMove);
+        if (reorderOfRootNodesIsNeeded) {
+            updateOrder(nodeRepository.findByParentNodeIdOrderByOrd(null));
+        }
     }
 
     @Transactional
@@ -173,15 +180,6 @@ public class NodeManager {
     private void detachNodeFromParent(Node child) {
         if (child.getParentNode() != null) {
             child.getParentNode().detachChild(child);
-        } else {
-            List<Node> rootNodes = nodeRepository.findByParentNodeIdOrderByOrd(null);
-            int idx = 0;
-            for (Node rootNode : rootNodes) {
-                if (!rootNode.getId().equals(child.getId())) {
-                    rootNode.setOrd(idx);
-                    idx++;
-                }
-            }
         }
     }
 
@@ -191,10 +189,13 @@ public class NodeManager {
             children.forEach(parent::addChild);
         } else {
             List<Node> rootNodes = nodeRepository.findByParentNodeIdOrderByOrd(null);
-            int idx = rootNodes.size();
+            HashSet<UUID> nodeIdsToMove = new HashSet<>(map(children, Node::getId));
+            List<Node> nodesNotMoved = filter(rootNodes, n -> !nodeIdsToMove.contains(n.getId()));
+            int idx = nodesNotMoved.size();
             for (Node child : children) {
                 child.setOrd(idx);
-                idx++;            }
+                idx++;
+            }
         }
     }
 }

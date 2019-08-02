@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
 import org.igye.outline2.App;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.DtoConverter;
 import org.igye.outline2.manager.ImageRepository;
 import org.igye.outline2.manager.NodeManager;
@@ -24,10 +25,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.igye.outline2.OutlineUtils.getCurrentSession;
+import static org.igye.outline2.OutlineUtils.map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)
@@ -63,8 +66,20 @@ public class ComponentTestBase {
         doInTransactionV(session -> OutlineTestUtils.exploreDB(entityManager));
     }
 
-    protected void printNode(Node node) throws JsonProcessingException {
-        System.out.println(objectMapper.writeValueAsString(DtoConverter.toDto(node, Integer.MAX_VALUE)));
+    protected void printNode(Node node) {
+        try {
+            System.out.println(objectMapper.writeValueAsString(DtoConverter.toDto(node, Integer.MAX_VALUE)));
+        } catch (JsonProcessingException e) {
+            throw new OutlineException(e);
+        }
+    }
+
+    protected void printNodes(ObjectHolder<List<Node>> nodes) {
+        try {
+            System.out.println(objectMapper.writeValueAsString(map(nodes.get(), n -> DtoConverter.toDto(n,Integer.MAX_VALUE))));
+        } catch (JsonProcessingException e) {
+            throw new OutlineException(e);
+        }
     }
 
     protected <T> T doInTransaction(Function<Session, T> function) {
