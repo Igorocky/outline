@@ -53,8 +53,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         jsAdapter = (Invocable) engine;
     }
 
-    @Test
-    public void getNode_databaseIsEmptyAndDepthEq1_RootNodeWithEmptyChildrenListIsReturned() throws Exception {
+    @Test public void getNode_databaseIsEmptyAndDepthEq1_RootNodeWithEmptyChildrenListIsReturned() throws Exception {
         //given
         nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
@@ -75,8 +74,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 parseAsMap(res).keySet()
         );
     }
-    @Test
-    public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
+    @Test public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
         nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
@@ -94,8 +92,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
-    @Test
-    public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
+    @Test public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
         nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
@@ -113,8 +110,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
-    @Test
-    public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
+    @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -165,8 +161,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         );
         childNodes.forEach(c -> assertFalse(c.getChildNodes().isPresent()));
     }
-    @Test
-    public void getNode_nodeHas2LevelsOfChildrenAndDepth0Requested_noChildNodesAttributeReturned() throws Exception {
+    @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth0Requested_noChildNodesAttributeReturned() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -212,8 +207,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertFalse(nodeDto.getChildNodes().isPresent());
     }
-    @Test
-    public void getNode_nodeHas2LevelsOfChildrenAndDepthIsNotRequested_noChildNodesAttributeReturned() throws Exception {
+    @Test public void getNode_nodeHas2LevelsOfChildrenAndDepthIsNotRequested_noChildNodesAttributeReturned() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -259,8 +253,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertFalse(nodeDto.getChildNodes().isPresent());
     }
-    @Test
-    public void getNode_returnsNullForIdAndParentIdOfARootNode() throws Exception {
+    @Test public void getNode_returnsNullForIdAndParentIdOfARootNode() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -282,8 +275,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertTrue(nodeDto.containsKey("parentId"));
         assertNull(nodeDto.get("parentId"));
     }
-    @Test
-    public void getNode_returnsAllRequiredAttributesForTheFakeTopNode() throws Exception {
+    @Test public void getNode_returnsAllRequiredAttributesForTheFakeTopNode() throws Exception {
         //given
 
         //when
@@ -296,8 +288,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertNull(nodeDto.get("id"));
         assertEquals(setOf("parentId", "id", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
-    @Test
-    public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
         //given
         actualGetUrl = Randoms.string(10,20);
 
@@ -307,8 +298,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertEquals("/be/node?depth=1", actualGetUrl);
     }
-    @Test
-    public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
         //given
         actualGetUrl = Randoms.string(10,20);
 
@@ -318,8 +308,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertEquals("/be/node?depth=1", actualGetUrl);
     }
-    @Test
-    public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
         //given
         actualGetUrl = Randoms.string(10,20);
 
@@ -329,8 +318,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertEquals("/be/node/bbd97a77-87dc-4f3d-83e1-49a2659e76a0?depth=1", actualGetUrl);
     }
-    @Test
-    public void patchNode_createsNewRootNode() throws Exception {
+    @Test public void patchNode_createsNewRootNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
@@ -353,8 +341,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setId(newNodeId);
         assertNodeInDatabase(jdbcTemplate, expectedNode);
     }
-    @Test
-    public void patchNode_createsNewRootTextNode() throws Exception {
+    @Test public void patchNode_createsNewRootTextNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 10, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
@@ -377,8 +364,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setId(newNodeId);
         assertNodeInDatabase(jdbcTemplate, expectedNode);
     }
-    @Test
-    public void patchNode_createsNewRootImageNode() throws Exception {
+    @Test public void patchNode_createsNewRootImageNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
@@ -401,8 +387,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setId(newNodeId);
         assertNodeInDatabase(jdbcTemplate, expectedNode);
     }
-    @Test
-    public void patchNode_createsNewInnerNode() throws Exception {
+    @Test public void patchNode_createsNewInnerNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
         List<Image> images = Randoms.list(3, Randoms::image);
@@ -447,8 +432,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         currNode.get().addChild(expectedNode);
         assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
-    @Test
-    public void patchNode_createsNewInnerTextNode() throws Exception {
+    @Test public void patchNode_createsNewInnerTextNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
         List<Image> images = Randoms.list(3, Randoms::image);
@@ -493,8 +477,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         currNode.get().addChild(expectedNode);
         assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
-    @Test
-    public void patchNode_createsNewInnerImageNode() throws Exception {
+    @Test public void patchNode_createsNewInnerImageNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
         List<Image> images = Randoms.list(3, Randoms::image);
@@ -538,8 +521,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         currNode.get().addChild(expectedNode);
         assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
-    @Test
-    public void patchNode_modifiesNameAttrFromNullToSomeStr() throws Exception {
+    @Test public void patchNode_modifiesNameAttrFromNullToSomeStr() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName(null));
         Node rootNode = existingNodes.getLeft();
@@ -553,8 +535,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesNameAttrFromSomeStrToNull() throws Exception {
+    @Test public void patchNode_modifiesNameAttrFromSomeStrToNull() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName("okjhhfafadfd"));
         Node rootNode = existingNodes.getLeft();
@@ -572,8 +553,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         printNode(rootNode);
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesIconAttrFromNullToSomeUuid() throws Exception {
+    @Test public void patchNode_modifiesIconAttrFromNullToSomeUuid() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setIcon(null));
         Node rootNode = existingNodes.getLeft();
@@ -591,8 +571,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesIconAttrFromSomeUuidToNull() throws Exception {
+    @Test public void patchNode_modifiesIconAttrFromSomeUuidToNull() throws Exception {
         //given
         Image existingIcon = Randoms.image();
         imageRepository.save(existingIcon);
@@ -611,8 +590,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesTextAttrFromNullToSomeStr() throws Exception {
+    @Test public void patchNode_modifiesTextAttrFromNullToSomeStr() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText(null));
         Node rootNode = existingNodes.getLeft();
@@ -626,8 +604,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesTextAttrFromSomeStrToNull() throws Exception {
+    @Test public void patchNode_modifiesTextAttrFromSomeStrToNull() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText("plkjj"));
         Node rootNode = existingNodes.getLeft();
@@ -641,8 +618,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesImgAttrFromNullToSomeUuid() throws Exception {
+    @Test public void patchNode_modifiesImgAttrFromNullToSomeUuid() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new ImageRef(), image -> ((ImageRef)image).setImage(null));
         Node rootNode = existingNodes.getLeft();
@@ -660,8 +636,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void patchNode_modifiesImgAttrFromSomeUuidToNull() throws Exception {
+    @Test public void patchNode_modifiesImgAttrFromSomeUuidToNull() throws Exception {
         //given
         final Image existingImage = Randoms.image();
         imageRepository.save(existingImage);
@@ -683,8 +658,463 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test
-    public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
+    @Test public void reorderNode_movesStartNodeUp() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesMiddleNodeUp() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(2);
+        parent.getChildNodes().add(1, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesEndNodeUp() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(4);
+        parent.getChildNodes().add(3, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesStartNodeDown() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(0);
+        parent.getChildNodes().add(1, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesMiddleNodeDown() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(2);
+        parent.getChildNodes().add(3, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesEndNodeDown() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesStartNodeToStart() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesMiddleNodeToStart() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(2);
+        parent.getChildNodes().add(0, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesEndNodeToStart() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(4);
+        parent.getChildNodes().add(0, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesStartNodeToEnd() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(0);
+        parent.getChildNodes().add(4, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesMiddleNodeToEnd() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                        .node(randomNode)
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        Node parent = nodeToMove.get().getParentNode();
+        parent.getChildNodes().remove(2);
+        parent.getChildNodes().add(4, nodeToMove.get());
+        for (int i = 0; i < parent.getChildNodes().size(); i++) {
+            parent.getChildNodes().get(i).setOrd(i);
+        }
+
+        //when
+        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesEndNodeToEnd() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode)
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesSingleNodeUp() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesSingleNodeDown() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesSingleNodeToStart() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void reorderNode_movesSingleNodeToEnd() throws Exception {
+        //given
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+
+        //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -747,8 +1177,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         rootNodes.get().forEach(rootNode -> assertNodeInDatabase(jdbcTemplate, rootNode));
     }
-    @Test
-    public void moveNodesToAnotherParent_movesNonRootNodesToTop() throws Exception {
+    @Test public void moveNodesToAnotherParent_movesNonRootNodesToTop() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
@@ -811,8 +1240,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         assertNodeInDatabase(jdbcTemplate, rootNodes);
     }
-    @Test
-    public void moveNodesToAnotherParent_movesRootNodesToNonTopParent() throws Exception {
+    @Test public void moveNodesToAnotherParent_movesRootNodesToNonTopParent() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
         images.forEach(imageRepository::save);
