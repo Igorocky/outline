@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.envers.Audited;
 
@@ -14,6 +15,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,9 +46,8 @@ public class Node {
 
     private String name;
 
-    private int ord;
-
     @OneToMany(mappedBy = "parentNode")
+    @OrderColumn(name = "ord")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
     private List<Node> childNodes = new ArrayList<>();
 
@@ -56,17 +57,15 @@ public class Node {
     private Instant createdWhen = Instant.now();
 
     public void addChild(Node child) {
+        Hibernate.initialize(childNodes);
         child.setParentNode(this);
         childNodes.add(child);
-        child.setOrd(childNodes.size()-1);
     }
 
     public void detachChild(Node child) {
+        Hibernate.initialize(childNodes);
         child.setParentNode(null);
         childNodes.removeIf(c -> c.getId().equals(child.getId()));
-        for (int i = 0; i < childNodes.size(); i++) {
-            childNodes.get(i).setOrd(i);
-        }
     }
 
     public boolean isRootNode() {

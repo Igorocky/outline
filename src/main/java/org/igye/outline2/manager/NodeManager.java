@@ -1,5 +1,6 @@
 package org.igye.outline2.manager;
 
+import org.hibernate.Session;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.ImageRef;
@@ -9,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,10 +22,11 @@ import java.util.stream.Collectors;
 import static org.igye.outline2.OutlineUtils.filter;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapToSet;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 @Component
 public class NodeManager {
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
@@ -37,7 +40,7 @@ public class NodeManager {
         if (id == null) {
             result = new Node();
             result.setId(null);
-            result.setChildNodes(nodeRepository.findByParentNodeIdOrderByOrd(null));
+            result.setChildNodes(nodeRepository.findByParentNodeId(null));
         } else {
             result = nodeRepository.findById(id).get();
         }
@@ -59,45 +62,46 @@ public class NodeManager {
     public void moveNodes(List<UUID> ids, UUID to) {
         List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
         validateMove(nodesToMove, to);
-        boolean reorderOfRootNodesIsNeeded = nodesToMove.stream()
-                .filter(n -> n.getParentNode() == null).findFirst().isPresent();
         nodesToMove.forEach(this::detachNodeFromParent);
         attachNodesToParent(to, nodesToMove);
-        if (reorderOfRootNodesIsNeeded) {
-            updateOrder(nodeRepository.findByParentNodeIdOrderByOrd(null));
-        }
     }
 
     @Transactional
     public void reorderNode(UUID id, int direction) {
         Node node = nodeRepository.getOne(id);
-        List<Node> nodes = new ArrayList<>(nodeRepository.findByParentNodeIdOrderByOrd(
-                nullSafeGetter(node.getParentNode(), p->p.getId())
-        ));
-        int idx = 0;
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i).getId().equals(node.getId())) {
-                idx = i;
-                break;
+        Node parentNode = node.getParentNode();
+        if (parentNode != null) {
+            int oldIdx = -1;
+            for (int i = 0; i < parentNode.getChildNodes().size(); i++) {
+                Node child = parentNode.getChildNodes().get(i);
+                if (child.getId().equals(node.getId())) {
+                    oldIdx = i;
+                    break;
+                }
+            }
+            if (oldIdx < 0) {
+                throw new OutlineException("oldIdx < 0");
+            }
+            int newIdx = oldIdx;
+            if (direction == 1) {
+                newIdx = 0;
+            } else if (direction == 2) {
+                newIdx = oldIdx - 1;
+            } else if (direction == 3) {
+                newIdx = oldIdx + 1;
+            } else if (direction == 4) {
+                newIdx = parentNode.getChildNodes().size()-1;
+            }
+            if (newIdx < 0) {
+                newIdx = 0;
+            } else if (newIdx >= parentNode.getChildNodes().size()) {
+                newIdx = parentNode.getChildNodes().size()-1;
+            }
+            if (oldIdx != newIdx) {
+                parentNode.getChildNodes().remove(oldIdx);
+                parentNode.getChildNodes().add(newIdx, node);
             }
         }
-        nodes.remove(idx);
-        if (direction == 1) {
-            idx = 0;
-        } else if (direction == 2) {
-            idx--;
-        } else if (direction == 3) {
-            idx++;
-        } else if (direction == 4) {
-            idx = nodes.size();
-        }
-        if (idx < 0) {
-            idx = 0;
-        } else if (idx > nodes.size()) {
-            idx = nodes.size();
-        }
-        nodes.add(idx, node);
-        updateOrder(nodes);
     }
 
     private void validateMove(List<Node> nodesToMove, UUID to) {
@@ -108,12 +112,6 @@ public class NodeManager {
                     throw new OutlineException("Invalid move request.");
                 }
             }
-        }
-    }
-
-    private void updateOrder(List<Node> nodes) {
-        for (int i = 0; i < nodes.size(); i++) {
-            nodes.get(i).setOrd(i);
         }
     }
 
@@ -135,13 +133,12 @@ public class NodeManager {
         updateNode(nodeDto, node);
         node.setCreatedWhen(clock.instant());
         if (nodeDto.getParentId() != null) {
-            Node parent = nodeRepository.findById(nodeDto.getParentId().get()).get();
+            Node parent = nodeRepository.getOne(nodeDto.getParentId().get());
             parent.addChild(node);
-            nodeRepository.save(parent);
         } else {
-            node.setOrd(nodeRepository.findByParentNodeIdOrderByOrd(null).size());
             nodeRepository.save(node);
         }
+        entityManager.unwrap(Session.class).flush();
         return DtoConverter.toDto(nodeRepository.findById(node.getId()).get(), 0);
     }
 
@@ -187,15 +184,6 @@ public class NodeManager {
         if (parentId != null) {
             Node parent = nodeRepository.getOne(parentId);
             children.forEach(parent::addChild);
-        } else {
-            List<Node> rootNodes = nodeRepository.findByParentNodeIdOrderByOrd(null);
-            HashSet<UUID> nodeIdsToMove = new HashSet<>(map(children, Node::getId));
-            List<Node> nodesNotMoved = filter(rootNodes, n -> !nodeIdsToMove.contains(n.getId()));
-            int idx = nodesNotMoved.size();
-            for (Node child : children) {
-                child.setOrd(idx);
-                idx++;
-            }
         }
     }
 }

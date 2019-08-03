@@ -36,7 +36,7 @@ public class OutlineTestUtils {
     public static final Calendar UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
     public static void saveNodeTreeToDatabase(NodeRepository nodeRepository, ObjectHolder<List<Node>> rootNodes) {
-        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
         rootNodes.get().forEach(nodeRepository::save);
     }
 
@@ -45,6 +45,9 @@ public class OutlineTestUtils {
     }
 
     public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node) {
+        assertNodeInDatabase(jdbcTemplate, node, 0);
+    }
+    public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node, int ord) {
         String message = "node.getId() = " + node.getId();
         assertEquals(
                 message,
@@ -56,11 +59,13 @@ public class OutlineTestUtils {
                 node.getName(),
                 getStringFromNodeTable(jdbcTemplate, node.getId(), NAME)
         );
-        assertEquals(
-                message,
-                Integer.valueOf(node.getOrd()),
-                getIntFromNodeTable(jdbcTemplate, node.getId(), ORD)
-        );
+        if (node.getParentNode()!=null) {
+            assertEquals(
+                    message,
+                    Integer.valueOf(ord),
+                    getIntFromNodeTable(jdbcTemplate, node.getId(), ORD)
+            );
+        }
         assertEquals(
                 message,
                 nullSafeGetter(node.getIcon(), i -> i.getId()),
@@ -117,7 +122,10 @@ public class OutlineTestUtils {
                                     - countRowsByParentIdInTextTable
                                     - countRowsByParentIdInImageTable
             );
-            node.getChildNodes().forEach(n -> assertNodeInDatabase(jdbcTemplate, n));
+            List<Node> childNodes = node.getChildNodes();
+            for (int i = 0; i < childNodes.size(); i++) {
+                assertNodeInDatabase(jdbcTemplate, childNodes.get(i), i);
+            }
         }
     }
 

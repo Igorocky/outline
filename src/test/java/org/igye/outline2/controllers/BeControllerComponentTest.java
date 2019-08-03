@@ -55,7 +55,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
     @Test public void getNode_databaseIsEmptyAndDepthEq1_RootNodeWithEmptyChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -76,7 +76,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNode_databaseIsEmptyAndDepthEq0_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -94,7 +94,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
-        nodeRepository.findByParentNodeIdOrderByOrd(null).forEach(nodeRepository::delete);
+        nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
@@ -321,20 +321,19 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewRootNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Node expectedNode = new Node();
-        expectedNode.setOrd(existingNodes.size());
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
         invokeJsFunction("createChildNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
@@ -344,20 +343,19 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewRootTextNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 10, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Text expectedNode = new Text();
-        expectedNode.setOrd(existingNodes.size());
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
         invokeJsFunction("createChildTextNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
@@ -367,20 +365,19 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewRootImageNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
-        Set<UUID> existingNodes = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         ImageRef expectedNode = new ImageRef();
-        expectedNode.setOrd(existingNodes.size());
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
         invokeJsFunction("createChildImageNode", "[" + topFakeNode + "]");
 
         //then
-        UUID newNodeId = nodeRepository.findByParentNodeIdOrderByOrd(null).stream()
+        UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId)
                 .filter(id -> !existingNodes.contains(id))
                 .findFirst().get();
@@ -416,9 +413,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         Node expectedNode = new Node();
-        expectedNode.setOrd(3);
         expectedNode.setCreatedWhen(testClock.instant());
-
 
         //when
         invokeJsFunction("createChildNode", "[" + currNodeStr + "]");
@@ -461,9 +456,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         Node expectedNode = new Text();
-        expectedNode.setOrd(3);
         expectedNode.setCreatedWhen(testClock.instant());
-
 
         //when
         invokeJsFunction("createChildTextNode", "[" + currNodeStr + "]");
@@ -500,13 +493,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 )
                 .node(randomNode)
         ;
-        rootNodes.get().forEach(nodeRepository::save);
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
         String currNodeStr = mvc.perform(
                 get("/be/node/" + currNode.get().getId())
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         Node expectedNode = new ImageRef();
-        expectedNode.setOrd(3);
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -707,9 +700,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(2);
         parent.getChildNodes().add(1, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -740,9 +730,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(4);
         parent.getChildNodes().add(3, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -773,9 +760,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(0);
         parent.getChildNodes().add(1, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -806,9 +790,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(2);
         parent.getChildNodes().add(3, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -891,9 +872,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(2);
         parent.getChildNodes().add(0, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -924,9 +902,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(4);
         parent.getChildNodes().add(0, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -957,9 +932,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(0);
         parent.getChildNodes().add(4, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -990,9 +962,6 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node parent = nodeToMove.get().getParentNode();
         parent.getChildNodes().remove(2);
         parent.getChildNodes().add(4, nodeToMove.get());
-        for (int i = 0; i < parent.getChildNodes().size(); i++) {
-            parent.getChildNodes().get(i).setOrd(i);
-        }
 
         //when
         invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
@@ -1163,16 +1132,12 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 || nodeToMove2.get().getId().equals(node.getId())
                 || nodeToMove3.get().getId().equals(node.getId())
         );
-        for (int i = 0; i < prevParent.get().getChildNodes().size(); i++) {
-            prevParent.get().getChildNodes().get(i).setOrd(i);
-        }
         nodeToMoveTo.get().getChildNodes().add(nodeToMove1.get());
         nodeToMoveTo.get().getChildNodes().add(nodeToMove2.get());
         nodeToMoveTo.get().getChildNodes().add(nodeToMove3.get());
         for (int i = 0; i < nodeToMoveTo.get().getChildNodes().size(); i++) {
             Node node = nodeToMoveTo.get().getChildNodes().get(i);
             node.setParentNode(nodeToMoveTo.get());
-            node.setOrd(i);
         }
 
         rootNodes.get().forEach(rootNode -> assertNodeInDatabase(jdbcTemplate, rootNode));
@@ -1226,16 +1191,12 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 || nodeToMove2.get().getId().equals(node.getId())
                 || nodeToMove3.get().getId().equals(node.getId())
         );
-        for (int i = 0; i < prevParent.get().getChildNodes().size(); i++) {
-            prevParent.get().getChildNodes().get(i).setOrd(i);
-        }
         rootNodes.get().add(nodeToMove1.get());
         rootNodes.get().add(nodeToMove2.get());
         rootNodes.get().add(nodeToMove3.get());
         for (int i = 0; i < rootNodes.get().size(); i++) {
             Node node = rootNodes.get().get(i);
             node.setParentNode(null);
-            node.setOrd(i);
         }
 
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -1289,16 +1250,12 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 || nodeToMove2.get().getId().equals(node.getId())
                 || nodeToMove3.get().getId().equals(node.getId())
         );
-        for (int i = 0; i < rootNodes.get().size(); i++) {
-            rootNodes.get().get(i).setOrd(i);
-        }
         newParent.get().getChildNodes().add(nodeToMove1.get());
         newParent.get().getChildNodes().add(nodeToMove2.get());
         newParent.get().getChildNodes().add(nodeToMove3.get());
         for (int i = 0; i < newParent.get().getChildNodes().size(); i++) {
             Node node = newParent.get().getChildNodes().get(i);
             node.setParentNode(newParent.get());
-            node.setOrd(i);
         }
 
         assertNodeInDatabase(jdbcTemplate, rootNodes);

@@ -35,13 +35,8 @@ public class DtoConverter {
             } else {
                 nodeDto.setChildNodes(Optional.of(Collections.emptyList()));
             }
-            nodeDto.getChildNodes().map(nodes -> {
-                Collections.sort(nodes, Comparator.comparing(NodeDto::getOrd));
-                return nodes;
-            });
         }
         nodeDto.setIcon(node.getIcon() == null ? null : Optional.of(node.getIcon().getId()));
-        nodeDto.setOrd(node.getOrd());
 
         if (node instanceof Text) {
             // TODO: 22.07.2019 tc: for texts objectClass == "..."

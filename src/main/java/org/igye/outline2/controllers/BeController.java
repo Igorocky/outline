@@ -55,14 +55,17 @@ public class BeController {
     public void reorderNode(@PathVariable UUID id, @PathVariable int direction) {
         nodeManager.reorderNode(id, direction);
     }
+
     @PatchMapping("/node")
     public NodeDto patchNode(@RequestBody NodeDto request) {
         return nodeManager.patchNode(request);
     }
+
     @PatchMapping("/putNodeIdsToClipboard")
     public void putNodeIdsToClipboard(@RequestBody List<UUID> ids) {
         clipboard.setNodeIds(ids);
     }
+
     @PatchMapping("/pasteNodesFromClipboard/{to}")
     public void pasteNodesFromClipboard(@PathVariable String to) {
         nodeManager.moveNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));

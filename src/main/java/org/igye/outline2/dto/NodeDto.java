@@ -43,9 +43,6 @@ public class NodeDto {
     @JsonDeserialize(using = DeserializerOfOptionalUuid.class)
     private Optional<UUID> icon = Optional.empty();
 
-    @JsonIgnore
-    private int ord;
-
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptionExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptionalUuid.class)
     private Optional<UUID> imgId = Optional.empty();

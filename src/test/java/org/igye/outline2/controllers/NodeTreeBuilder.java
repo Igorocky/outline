@@ -44,7 +44,6 @@ public class NodeTreeBuilder {
         for (Consumer<Node> setter : setters) {
             setter.accept(node);
         }
-        node.setOrd(collectedNodes.size());
         collectedNodes.add(node);
         return this;
     }

@@ -9,7 +9,7 @@ create table NODE
 	ID uuid not null primary key,
 	NAME VARCHAR,
 	CREATED_WHEN TIMESTAMP not null,
-	ORD INTEGER not null,
+	ORD INTEGER,
 	ICON_ID uuid,
 	PARENT_NODE_ID uuid,
 	constraint NODE_FK_PARENT_NODE_ID foreign key (PARENT_NODE_ID) references NODE,
