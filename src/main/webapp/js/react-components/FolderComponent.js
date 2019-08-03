@@ -26,25 +26,25 @@ const FolderComponent = props => {
     }
 
     return [
-        re(Grid,{container:true, direction:"row", justify:"flex-start", alignItems:"center",
+        re(Grid,{key:"folder-grid", container:true, direction:"row", justify:"flex-start", alignItems:"center",
                 className:"grey-background-on-hover pointer-on-hover",
                 style:{backgroundColor: anchorEl?"rgb(185, 185, 185)":""},
                 onClick: props.onClick
             },
-            re(IconButton, {edge: "start", color: "inherit", onClick: onClick,
+            re(IconButton, {key:"folder-button", edge: "start", color: "inherit", onClick: onClick,
                     style:{marginLeft: "15px"},
                     onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
                 iconIsHovered
                     ?re(Icon, {style: {fontSize: "24px"}}, "more_vert")
                     :re(Icon, {style: {fontSize: "24px"}}, "folder")
             ),
-            re(Typography, {variant:"body1"},
+            re(Typography, {key:"folder-name", variant:"body1"},
                 props.name
             )
         ),
         anchorEl
             ? clickAwayListener({
-                key: "Popper",
+                key: "folder-Popper",
                 onClickAway: () => setAnchorEl(null),
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
                     paper(viewModeButtons())
