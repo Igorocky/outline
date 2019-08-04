@@ -445,6 +445,12 @@ public class NodeController {
         nodeDao.backup();
     }
 
+    @PostMapping("export/{paragraphId}")
+    @ResponseBody
+    public void exportParagraph(@PathVariable UUID paragraphId) throws IOException {
+        nodeDao.export(paragraphId);
+    }
+
     @GetMapping("version")
     @ResponseBody
     public String version() {

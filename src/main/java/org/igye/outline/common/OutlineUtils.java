@@ -300,4 +300,8 @@ public class OutlineUtils {
         resp.put(k1, v1);
         return resp;
     }
+
+    public static <A,B> B nullSafeGetter(A obj, Function<A,B> getter) {
+        return obj == null ? null : getter.apply(obj);
+    }
 }

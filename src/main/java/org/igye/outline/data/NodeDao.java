@@ -1,7 +1,9 @@
 package org.igye.outline.data;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import fj.F2;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.Hibernate;
 import org.igye.outline.common.OutlineUtils;
 import org.igye.outline.data.repository.ContentRepository;
@@ -11,6 +13,7 @@ import org.igye.outline.data.repository.NodeRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
 import org.igye.outline.data.repository.TopicRepository;
 import org.igye.outline.data.repository.UserRepository;
+import org.igye.outline.dto.NodeDto;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
@@ -18,7 +21,6 @@ import org.igye.outline.htmlforms.EditTopicForm;
 import org.igye.outline.htmlforms.ReorderNodeChildren;
 import org.igye.outline.htmlforms.SessionData;
 import org.igye.outline.model.Content;
-import org.igye.outline.model.EngText;
 import org.igye.outline.model.Icon;
 import org.igye.outline.model.Image;
 import org.igye.outline.model.Node;
@@ -38,19 +40,33 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.mapToSet;
+import static org.igye.outline.common.OutlineUtils.nullSafeGetter;
 import static org.igye.outline.common.OutlineUtils.toMap;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.IMAGE;
 import static org.igye.outline.htmlforms.ContentForForm.ContentTypeForForm.TEXT;
 
 @Component
 public class NodeDao {
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private SessionData sessionData;
     @Autowired
@@ -75,6 +91,10 @@ public class NodeDao {
     private String h2Version;
     @Value("${backup.dir}")
     private String backupDirPath;
+    @Value("${export.dir}")
+    private String exportDirPath;
+    @Value("${topic.images.location}")
+    private String imagesLocation;
 
     @Transactional
     public List<Node> getRootNodes() {
@@ -333,6 +353,113 @@ public class NodeDao {
                     )
                     .executeUpdate();
         });
+    }
+
+    @Transactional
+    public void export(UUID paragraphId) throws IOException {
+        Paragraph root = paragraphRepository.findById(paragraphId).get();
+        String exportName = root.getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        String time = ZonedDateTime.now().format(formatter);
+        File exportDir = new File(exportDirPath + "/" + exportName + "--" + time);
+        exportDir.mkdirs();
+        Set<UUID> images = new HashSet<>();
+        FileUtils.writeStringToFile(
+                new File(exportDir, "nodes.json"),
+                objectMapper.writeValueAsString(convertToDto(root, images)),
+                StandardCharsets.UTF_8
+        );
+
+        File srcImagesLocationFile = new File(imagesLocation);
+        File dstImagesLocationFile = new File(exportDir, "images");
+        images.forEach(imgId -> copyImage(srcImagesLocationFile, dstImagesLocationFile, imgId));
+    }
+
+    private void copyImage(File srcDir, File dstDir, UUID imageId) {
+        File srcImgFile = getImgFile(srcDir.getAbsolutePath(), imageId);
+        File dstImgFile = getImgFile(dstDir.getAbsolutePath(), imageId);
+        try {
+            FileUtils.copyFile(srcImgFile, dstImgFile);
+        } catch (IOException e) {
+            throw new OutlineException(e);
+        }
+    }
+
+    private NodeDto convertToDto(Object node, Set<UUID> images) {
+        NodeDto nodeDto = new NodeDto();
+        nodeDto.setId(getId(node));
+        nodeDto.setObjectClass(getObjectClass(node));
+        nodeDto.setName((node instanceof Node)? ((Node) node).getName() : null);
+        nodeDto.setIcon(getIcon(node));
+        nodeDto.setImgId(getImgId(node));
+        nodeDto.setText(getText(node));
+
+        if (nodeDto.getIcon() != null) {
+            images.add(nodeDto.getIcon());
+        }
+        if (nodeDto.getImgId() != null) {
+            images.add(nodeDto.getImgId());
+        }
+
+        nodeDto.setChildNodes(getChildren(node, images));
+        return nodeDto;
+    }
+
+    private List<NodeDto> getChildren(Object node, Set<UUID> images) {
+        List<NodeDto> result = new ArrayList<>();
+        if (node instanceof Paragraph) {
+            for (Node childNode : ((Paragraph) node).getChildNodes()) {
+                result.add(convertToDto(childNode, images));
+            }
+        } else if (node instanceof Topic) {
+            for (Content childNode : ((Topic) node).getContents()) {
+                result.add(convertToDto(childNode, images));
+            }
+        }
+        return result;
+    }
+
+    private String getText(Object node) {
+        if (node instanceof Text) {
+            return ((Text) node).getText();
+        }
+        return null;
+    }
+
+    private UUID getImgId(Object node) {
+        if (node instanceof Image) {
+            return ((Image) node).getId();
+        }
+        return null;
+    }
+
+    private UUID getIcon(Object node) {
+        if (node instanceof Paragraph) {
+            return nullSafeGetter(((Paragraph) node).getIcon(), i->i.getId());
+        } else if (node instanceof Topic) {
+            return nullSafeGetter(((Topic) node).getIcon(), i->i.getId());
+        }
+        return null;
+    }
+
+    private String getObjectClass(Object node) {
+        if (node instanceof Paragraph || node instanceof Topic) {
+            return "NODE";
+        } else if (node instanceof Image) {
+            return "IMAGE";
+        } else if (node instanceof Text) {
+            return "TEXT";
+        }
+        return "UNKNOWN";
+    }
+
+    private UUID getId(Object node) {
+        if (node instanceof Node) {
+            return ((Node) node).getId();
+        } else if (node instanceof Content) {
+            return ((Content) node).getId();
+        }
+        return null;
     }
 
     @Transactional
