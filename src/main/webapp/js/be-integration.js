@@ -101,6 +101,10 @@ function putNodeIdsToClipboard(nodeIds,onSuccess) {
     doPatch("/be/putNodeIdsToClipboard", nodeIds, onSuccess)
 }
 
-function pasteNodesFromClipboard(to,onSuccess) {
-    doPatch("/be/pasteNodesFromClipboard/" + to, onSuccess)
+function canPasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
+    doGet("/be/canPasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, onSuccess)
+}
+
+function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
+    doPatch("/be/pasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, onSuccess)
 }

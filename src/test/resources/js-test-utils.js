@@ -16,7 +16,8 @@ const MvcAdapter = Java.type('org.igye.outline2.controllers.BeControllerComponen
 
 function doGet(url, onSuccess) {
     print("js-test-utils.doGet: url = " + url)
-    MvcAdapter.doGet(url)
+    const result = MvcAdapter.doGet(url)
+    onSuccess?onSuccess(result):null
 }
 
 function doPatch(url, data, onSuccess) {

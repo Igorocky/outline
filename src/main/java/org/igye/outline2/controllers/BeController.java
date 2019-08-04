@@ -66,6 +66,11 @@ public class BeController {
         clipboard.setNodeIds(ids);
     }
 
+    @GetMapping("/canPasteNodesFromClipboard/{to}")
+    public boolean canPasteNodesFromClipboard(@PathVariable String to) {
+        return nodeManager.validateMoveOfNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));
+    }
+
     @PatchMapping("/pasteNodesFromClipboard/{to}")
     public void pasteNodesFromClipboard(@PathVariable String to) {
         nodeManager.moveNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));

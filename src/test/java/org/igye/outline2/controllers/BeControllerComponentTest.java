@@ -4,12 +4,14 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.manager.Clipboard;
 import org.igye.outline2.pm.Image;
 import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Text;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.script.Invocable;
@@ -41,8 +43,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class BeControllerComponentTest extends ControllerComponentTestBase {
-    private Invocable jsAdapter;
+    private static final String ON_SUCCESS_CALLBACK = "function(response){Java.type('org.igye.outline2.controllers.BeControllerComponentTest').onSuccess(response)}";
     private static String actualGetUrl;
+    private static String onSuccessResponse;
+
+    private Invocable jsAdapter;
+    @Autowired
+    private Clipboard clipboard;
 
     @Before
     public void beControllerComponentTestBefore() throws FileNotFoundException, ScriptException {
@@ -311,12 +318,14 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
         //given
         actualGetUrl = Randoms.string(10,20);
+        Node node = new Node();
+        nodeRepository.save(node);
 
         //when
-        invokeJsFunction("getNodeById", "['bbd97a77-87dc-4f3d-83e1-49a2659e76a0']");
+        invokeJsFunction("getNodeById", "['" + node.getId() + "']");
 
         //then
-        assertEquals("/be/node/bbd97a77-87dc-4f3d-83e1-49a2659e76a0?depth=1", actualGetUrl);
+        assertEquals("/be/node/" + node.getId() + "?depth=1", actualGetUrl);
     }
     @Test public void patchNode_createsNewRootNode() throws Exception {
         //given
@@ -1083,6 +1092,238 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
     }
+    @Test public void canPasteNodesFromClipboard_returnsFalseWhenClipboardIsEmpty() throws Exception {
+        //given
+        onSuccessResponse = null;
+        clipboard.setNodeIds(null);
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMoveTo = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMoveTo)
+                        .children(b2 -> b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        //when
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray(
+                        "'" + nodeToMoveTo.get().getId() + "'",
+                        ON_SUCCESS_CALLBACK
+                )
+        );
+
+        //then
+        assertEquals("false", onSuccessResponse);
+    }
+    @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoOneOfNodesBeingMoved() throws Exception {
+        //given
+        onSuccessResponse = null;
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .children(b2 -> b2
+                                .node(randomNode).storeNode(nodeToMove1)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove2)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove3)
+                        )
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'",
+                "'" + nodeToMove3.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray(
+                        "'" + nodeToMove2.get().getId() + "'",
+                        ON_SUCCESS_CALLBACK
+                )
+        );
+
+        //then
+        assertEquals("false", onSuccessResponse);
+    }
+    @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoChildNode() throws Exception {
+        //given
+        onSuccessResponse = null;
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMoveTo = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode).storeNode(nodeToMove1)
+                        .children(b2 -> b2
+                                .node(randomNode)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMoveTo)
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode).storeNode(nodeToMove2)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray(
+                        "'" + nodeToMoveTo.get().getId() + "'",
+                        ON_SUCCESS_CALLBACK
+                )
+        );
+
+        //then
+        assertEquals("false", onSuccessResponse);
+    }
+    @Test public void canPasteNodesFromClipboard_returnsFalseAfterPasteWasDone() throws Exception {
+        //given
+        onSuccessResponse = null;
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMoveTo = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .children(b2 -> b2
+                                .node(randomNode).storeNode(nodeToMove1)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove2)
+                        )
+                        .node(randomNode).storeNode(nodeToMoveTo)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'"
+        );
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray("'" + nodeToMoveTo.get().getId() + "'", ON_SUCCESS_CALLBACK)
+        );
+        assertEquals("true", onSuccessResponse);
+        onSuccessResponse = null;
+        invokeJsFunction("pasteNodesFromClipboard", concatToArray("'" + nodeToMoveTo.get().getId() + "'"));
+
+        //when
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray("'" + nodeToMoveTo.get().getId() + "'", ON_SUCCESS_CALLBACK)
+        );
+
+        //then
+        assertEquals("false", onSuccessResponse);
+    }
+    @Test public void canPasteNodesFromClipboard_returnsTrueForCorrectPaste() throws Exception {
+        //given
+        onSuccessResponse = null;
+        List<Image> images = Randoms.list(3, Randoms::image);
+        images.forEach(imageRepository::save);
+        Consumer<Node> randomNode = randomNode(images);
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
+        ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode)
+                .children(b1->b1
+                        .node(randomNode)
+                        .children(b2 -> b2
+                                .node(randomNode).storeNode(nodeToMove1)
+                                .node(randomNode)
+                                .node(randomNode).storeNode(nodeToMove2)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                        .children(b2->b2
+                                .node(randomNode)
+                                .node(randomNode)
+                        )
+                        .node(randomNode)
+                )
+                .node(randomNode)
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+
+        String arrayOfIds = concatToArray(
+                "'" + nodeToMove1.get().getId() + "'",
+                "'" + nodeToMove2.get().getId() + "'"
+        );
+
+        //when
+        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
+        invokeJsFunction(
+                "canPasteNodesFromClipboard",
+                concatToArray("null", ON_SUCCESS_CALLBACK)
+        );
+
+        //then
+        assertEquals("true", onSuccessResponse);
+    }
     @Test public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
         //given
         List<Image> images = Randoms.list(3, Randoms::image);
@@ -1270,8 +1511,17 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .andExpect(status().isOk());
     }
 
-    public static void doGet(String url) {
+    public static String doGet(String url) throws Exception {
         actualGetUrl = url;
+        return mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+    }
+
+    public static void onSuccess(String response) throws Exception {
+        onSuccessResponse = response;
     }
 
     private Pair<Node, Node> createAndSaveInnerNode(Supplier<Node> initialNode, Consumer<Node> nodeModifier) {
@@ -1300,8 +1550,8 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         return Pair.of(rootNode.get(), innerNode.get());
     }
 
-    private Object invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {
-        return jsAdapter.invokeFunction("doTestCall", functionName, arrOfArguments);
+    private void invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {
+        jsAdapter.invokeFunction("doTestCall", functionName, arrOfArguments);
     }
 
     private String concatToArray(Object... elems) {

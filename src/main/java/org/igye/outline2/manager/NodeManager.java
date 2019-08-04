@@ -9,17 +9,16 @@ import org.igye.outline2.pm.Text;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.Clock;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.OutlineUtils.filter;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapToSet;
 
@@ -33,6 +32,8 @@ public class NodeManager {
     private ImageRepository imageRepository;
     @Autowired(required = false)
     private Clock clock = Clock.systemUTC();
+    @Autowired
+    private Clipboard clipboard;
 
     @Transactional
     public NodeDto getNode(UUID id, Integer depth) {
@@ -60,10 +61,22 @@ public class NodeManager {
 
     @Transactional
     public void moveNodes(List<UUID> ids, UUID to) {
+        if (!validateMoveOfNodes(ids, to)) {
+            throw new OutlineException("Invalid move request.");
+        }
         List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
-        validateMove(nodesToMove, to);
         nodesToMove.forEach(this::detachNodeFromParent);
         attachNodesToParent(to, nodesToMove);
+        clipboard.setNodeIds(null);
+    }
+
+    @Transactional
+    public boolean validateMoveOfNodes(List<UUID> ids, UUID to) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return false;
+        }
+        List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
+        return validateMove(nodesToMove, to);
     }
 
     @Transactional
@@ -104,15 +117,16 @@ public class NodeManager {
         }
     }
 
-    private void validateMove(List<Node> nodesToMove, UUID to) {
+    private boolean validateMove(List<Node> nodesToMove, UUID to) {
         if (to != null) {
             Set<UUID> parentPath = mapToSet(nodeRepository.getOne(to).getPath(), Node::getId);
             for (Node nodeToMove : nodesToMove) {
                 if (parentPath.contains(nodeToMove.getId())) {
-                    throw new OutlineException("Invalid move request.");
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     private NodeDto patchExistingNode(NodeDto nodeDto) {
