@@ -1,12 +1,9 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
-const currNodeNameStyle = {
-    paddingLeft: "10px"
-}
-
 const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [checkedNodes, setCheckedNodes] = useState(null)
+    const [importDialogOpened, setImportDialogOpened] = useState(false)
     const [redirect, setRedirect] = useRedirect()
 
     function getCurrNodeId() {
@@ -144,14 +141,18 @@ const NodeView = props => {
                 )
             )
         ],
-        re(Portal, {key:"Portal"+getCurrNodeId(),container: props.actionsContainerRef.current},
-            re(Button,{key:"New node", style:actionButtonsStyle, variant:"contained",
-                        onClick: curNode?()=>createChildNode(
-                            curNode,
-                                resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
-                        ):()=>{}}, "New node"
-            ),
-            re(NewTextInput, {key:"NewTextInput", onSave: curNode?({newValue, onSaved}) => createChildTextNode(
+        re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
+            re(NodeViewActions,{key:"NodeViewActions",
+                onNewNode: curNode?()=>createChildNode(
+                    curNode,
+                    resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
+                ):()=>null,
+                onNewSiblingNode: () => null,
+                onSelect: () => setCheckedNodes([]),
+                onImport: () => setImportDialogOpened(true),
+                onExport: () => null
+            }),
+            re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: curNode?({newValue, onSaved}) => createChildTextNode(
                     curNode,
                     resp => updateTextNodeText(resp[NODE.id], newValue,
                                         resp => {
@@ -161,13 +162,11 @@ const NodeView = props => {
                             )
                 ):()=>{}
             }),
-            !checkedNodes
-                ?re(Button,{key:"Select-btn", style:actionButtonsStyle, variant:"contained",
-                    onClick: () => setCheckedNodes([])}, "Select"
-                )
-                :(checkedNodes.length > 0 ?re(Button,{key:"Cut-btn", style:actionButtonsStyle, variant:"contained",
+            checkedNodes
+                ?(checkedNodes.length > 0 ?re(Button,{key:"Cut-btn", style:actionButtonsStyle, variant:"contained",
                     onClick: () => putNodeIdsToClipboard(checkedNodes, () => setCheckedNodes(null))}, "Cut"
                 ):null)
+                :null
             ,
             (curNode && curNode[NODE.canPaste])
                 ?re(Button,{key:"Paste-btn", style:actionButtonsStyle, variant:"contained",
@@ -175,6 +174,12 @@ const NodeView = props => {
                 )
                 :null
         ),
+        importDialogOpened
+            ?re(ImportDialog, {key:"Import dialog", parentId:getCurrNodeId(),
+                onCancel: () => setImportDialogOpened(false),
+                onImported: response => setRedirect(PATH.createNodeWithIdPath(response[NODE.id]))}
+            )
+            :null,
         redirectTo(redirect)
     ]
 }

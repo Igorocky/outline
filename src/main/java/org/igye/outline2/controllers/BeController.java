@@ -3,6 +3,7 @@ package org.igye.outline2.controllers;
 import org.igye.outline2.dto.ImageDto;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.manager.Clipboard;
+import org.igye.outline2.manager.ExportImportManager;
 import org.igye.outline2.manager.ImageManager;
 import org.igye.outline2.manager.NodeManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,8 @@ public class BeController {
     private NodeManager nodeManager;
     @Autowired
     private ImageManager imageManager;
+    @Autowired
+    private ExportImportManager exportImportManager;
     @Autowired
     private Clipboard clipboard;
 
@@ -90,5 +93,12 @@ public class BeController {
         return imageManager.getImgFileById(id);
     }
 
+    @PostMapping("/importFromFile/{parentId}")
+    @ResponseBody
+    public NodeDto importFromFile(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable String parentId) throws IOException {
+        return exportImportManager.importFromFile(file, "null".equals(parentId)?null:UUID.fromString(parentId));
+    }
 
 }

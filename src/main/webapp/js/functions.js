@@ -74,16 +74,23 @@ function extractFileFromEvent(event) {
 }
 
 function uploadImage({file, onSuccess}) {
+    uploadFile({url: "/be/uploadImage", file, onSuccess})
+}
+
+function uploadImportFile({file, parentId, onSuccess}) {
+    uploadFile({url: "/be/importFromFile/" + parentId, file, onSuccess})
+}
+
+function uploadFile({url, file, onSuccess}) {
     let fd = new FormData();
     if (file) {
         fd.append("file", file);
         $.ajax({
             type: "POST",
-            url: "/be/uploadImage",
+            url: url,
             data: fd,
             contentType: false,
             cache: false,
-            dataType: 'json',
             processData: false,
             success: function (data) {
                 onSuccess(data);

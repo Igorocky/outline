@@ -25,6 +25,16 @@ public class OutlineUtils {
         return obj == null ? null : getter.apply(obj);
     }
 
+    public static <A,B,C> C nullSafeGetter(A obj, Function<A,B> getter1, Function<B,C> getter2) {
+        return nullSafeGetter(
+                obj,
+                a -> nullSafeGetter(
+                        getter1.apply(a),
+                        b -> getter2.apply(b)
+                )
+        );
+    }
+
     public static void assertNotNull(Object obj) {
         if (obj == null) {
             throw new OutlineException("obj == null");

@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.UUID;
 
+import static org.igye.outline2.OutlineUtils.getImgFile;
+
 @Component
 public class ImageManager {
     @Autowired
@@ -28,9 +30,7 @@ public class ImageManager {
 
     @Transactional
     public ImageDto createImage(MultipartFile file) throws IOException {
-        Image image = new Image();
-        image.setCreatedWhen(clock.instant());
-        imageRepository.save(image);
+        Image image = createNewImage();
 
         File imgFile = getImgFile(imagesLocation, image.getId());
         File parentDir = imgFile.getParentFile();
@@ -42,16 +42,19 @@ public class ImageManager {
         return DtoConverter.toDto(image);
     }
 
+    @Transactional
+    public Image createNewImage() {
+        Image image = new Image();
+        image.setCreatedWhen(clock.instant());
+        imageRepository.save(image);
+        return image;
+    }
+
     public byte[] getImgFileById(UUID id) {
         try {
             return FileUtils.readFileToByteArray(getImgFile(imagesLocation, id).getAbsoluteFile());
         } catch (IOException e) {
             throw new OutlineException(e);
         }
-    }
-
-    private File getImgFile(String imagesLocation, UUID imgId) {
-        String idStr = imgId.toString();
-        return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
     }
 }

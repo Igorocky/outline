@@ -56,7 +56,8 @@ public class NodeManager {
     @Transactional
     public NodeDto patchNode(NodeDto node) {
         if (node.getId() == null) {
-            return createNewNode(node);
+            UUID id = createNewNode(node);
+            return DtoConverter.toDto(nodeRepository.findById(id).get(), 0);
         } else {
             return patchExistingNode(node);
         }
@@ -140,7 +141,8 @@ public class NodeManager {
         return DtoConverter.toDto(node, 0);
     }
 
-    private NodeDto createNewNode(NodeDto nodeDto) {
+    @Transactional
+    public UUID createNewNode(NodeDto nodeDto) {
         Node node = null;
         if (DtoConverter.NODE.equals(nodeDto.getObjectClass().get())) {
             node = new Node();
@@ -158,7 +160,7 @@ public class NodeManager {
             nodeRepository.save(node);
         }
         entityManager.unwrap(Session.class).flush();
-        return DtoConverter.toDto(nodeRepository.findById(node.getId()).get(), 0);
+        return node.getId();
     }
 
     private void updateNode(NodeDto nodeDto, Node node) {
