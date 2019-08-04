@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 
 public class DtoConverter {
 
@@ -54,6 +55,17 @@ public class DtoConverter {
         } else {
             // TODO: 22.07.2019 tc: for nodes objectClass == "..."
             nodeDto.setObjectClass(Optional.of(NODE));
+        }
+
+        if (node.isRootNode()) {
+            if (nodeDto.getChildNodes() != null && nodeDto.getChildNodes().isPresent()) {
+                Collections.sort(
+                        nodeDto.getChildNodes().get(),
+                        Comparator.comparing(n ->
+                                nullSafeGetterWithDefault(n.getName(), opt -> opt.orElse(""), "")
+                        )
+                );
+            }
         }
 
         return nodeDto;

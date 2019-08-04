@@ -81,6 +81,10 @@ function uploadImportFile({file, parentId, onSuccess}) {
     uploadFile({url: "/be/importFromFile/" + parentId, file, onSuccess})
 }
 
+function exportToFile({nodeId,onSuccess}) {
+    doPost({url:"/be/exportToFile/" + nodeId, data:{}, onSuccess: onSuccess})
+}
+
 function uploadFile({url, file, onSuccess}) {
     let fd = new FormData();
     if (file) {

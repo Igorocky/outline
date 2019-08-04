@@ -4,6 +4,7 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [checkedNodes, setCheckedNodes] = useState(null)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
+    const [exportingDialogOpened, setExportingDialogOpened] = useState(false)
     const [redirect, setRedirect] = useRedirect()
 
     function getCurrNodeId() {
@@ -150,7 +151,7 @@ const NodeView = props => {
                 onNewSiblingNode: () => null,
                 onSelect: () => setCheckedNodes([]),
                 onImport: () => setImportDialogOpened(true),
-                onExport: () => null
+                onExport: () => setExportingDialogOpened(true)
             }),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: curNode?({newValue, onSaved}) => createChildTextNode(
                     curNode,
@@ -179,6 +180,12 @@ const NodeView = props => {
                 onCancel: () => setImportDialogOpened(false),
                 onImported: response => setRedirect(PATH.createNodeWithIdPath(response[NODE.id]))}
             )
+            :null,
+        exportingDialogOpened
+            ?re(ExportDialog, {key:"ExportDialog", nodeId:getCurrNodeId(),
+                onCancel: () => setExportingDialogOpened(false),
+                onExported: () => setExportingDialogOpened(false)
+            })
             :null,
         redirectTo(redirect)
     ]

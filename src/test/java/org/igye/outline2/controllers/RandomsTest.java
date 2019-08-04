@@ -40,7 +40,7 @@ public class RandomsTest {
 
         //then
         assertEquals(OutlineUtils.setOf(10L,11L,12L,13L,14L,15L,16L,17L,18L), distribution.keySet());
-        distribution.forEach((k,v)-> assertTrue(80 < v));
+        distribution.forEach((k,v)-> assertTrue(70 < v));
     }
 
 }

@@ -101,4 +101,10 @@ public class BeController {
         return exportImportManager.importFromFile(file, "null".equals(parentId)?null:UUID.fromString(parentId));
     }
 
+    @PostMapping("/exportToFile/{parentId}")
+    @ResponseBody
+    public void exportToFile(@PathVariable String parentId) throws IOException {
+        exportImportManager.exportToFile("null".equals(parentId)?null:UUID.fromString(parentId));
+    }
+
 }

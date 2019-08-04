@@ -3,6 +3,7 @@ package org.igye.outline2.manager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Image;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,12 +13,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +30,7 @@ import java.util.zip.ZipFile;
 
 import static org.igye.outline2.OutlineUtils.getImgFile;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 
 @Component
 public class ExportImportManager {
@@ -42,6 +47,8 @@ public class ExportImportManager {
     private String tmpDir;
     @Value("${images.location}")
     private String imagesLocation;
+    @Value("${export.dir}")
+    private String exportDirPath;
 
     @Transactional
     public NodeDto importFromFile(MultipartFile file, UUID parentId) throws IOException {
@@ -52,21 +59,70 @@ public class ExportImportManager {
         return nodeManager.getNode(newNodeId, 0, false);
     }
 
+    @Transactional
+    public void exportToFile(UUID nodeId) throws IOException {
+        NodeDto root = nodeManager.getNode(nodeId, Integer.MAX_VALUE, false);
+        root.setPath(null);
+        String nodeName = nullSafeGetterWithDefault(
+                root.getName(), opt -> opt.orElse(null), "Node without name"
+        );
+        String exportName = nodeName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        String time = ZonedDateTime.now().format(formatter);
+        File exportDir = new File(exportDirPath + "/" + exportName + "--" + time);
+        exportDir.mkdirs();
+        Set<UUID> images = new HashSet<>();
+        FileUtils.writeStringToFile(
+                new File(exportDir, "nodes.json"),
+                objectMapper.writeValueAsString(root),
+                StandardCharsets.UTF_8
+        );
+
+        File srcImagesLocationFile = new File(imagesLocation);
+        File dstImagesLocationFile = new File(exportDir, "images");
+        collectImages(root, images);
+        images.forEach(imgId -> copyImage(srcImagesLocationFile, dstImagesLocationFile, imgId));
+    }
+
+    private void copyImage(File srcDir, File dstDir, UUID imageId) {
+        File srcImgFile = getImgFile(srcDir.getAbsolutePath(), imageId);
+        File dstImgFile = getImgFile(dstDir.getAbsolutePath(), imageId);
+        try {
+            FileUtils.copyFile(srcImgFile, dstImgFile);
+        } catch (IOException e) {
+            throw new OutlineException(e);
+        }
+    }
+
+    private void collectImages(NodeDto nodeDto, Set<UUID> images) {
+        nullSafeGetter(nodeDto.getImgId(), opt -> opt.orElse(null), id -> images.add(id));
+        nullSafeGetter(nodeDto.getIcon(), opt -> opt.orElse(null), id -> images.add(id));
+        nullSafeGetter(nodeDto.getChildNodes(), opt -> opt.orElse(null), children -> {
+            children.forEach(ch -> collectImages(ch, images));
+            return null;
+        });
+
+    }
+
     private UUID importNodes(File dataFile, UUID parentId, Map<UUID, UUID> imageIdsMap) throws IOException {
         return saveNodeToDatabase(extractNodes(dataFile), parentId, imageIdsMap);
     }
 
     private UUID saveNodeToDatabase(NodeDto node, UUID parentId, Map<UUID, UUID> imageIdsMap) {
-        node.setParentId(nullSafeGetter(parentId, id -> Optional.of(id)));
-        node.setId(null);
-        node.setIcon(nullSafeGetter(node.getIcon(), opt -> opt.map(imageIdsMap::get)));
-        node.setImgId(nullSafeGetter(node.getImgId(), opt -> opt.map(imageIdsMap::get)));
-        UUID newNodeId = nodeManager.createNewNode(node);
+        UUID newNodeId = null;
+        if (!DtoConverter.ROOT_NODE.equals(node.getObjectClass().get())) {
+            node.setParentId(nullSafeGetter(parentId, id -> Optional.of(id)));
+            node.setId(null);
+            node.setIcon(nullSafeGetter(node.getIcon(), opt -> opt.map(imageIdsMap::get)));
+            node.setImgId(nullSafeGetter(node.getImgId(), opt -> opt.map(imageIdsMap::get)));
+            newNodeId = nodeManager.createNewNode(node);
+        }
+        UUID finalNewNodeId = newNodeId;
         nullSafeGetter(
                 node.getChildNodes(),
                 opt -> opt.get(),
                 children -> {
-                    children.forEach(ch -> saveNodeToDatabase(ch, newNodeId, imageIdsMap));
+                    children.forEach(ch -> saveNodeToDatabase(ch, finalNewNodeId, imageIdsMap));
                     return null;
                 }
         );

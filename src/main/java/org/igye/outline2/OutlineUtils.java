@@ -21,6 +21,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class OutlineUtils {
+    public static <A,B> B nullSafeGetterWithDefault(A obj, Function<A,B> getter, B defaultValue) {
+        B result = nullSafeGetter(obj, getter);
+        return result != null ? result : defaultValue;
+    }
     public static <A,B> B nullSafeGetter(A obj, Function<A,B> getter) {
         return obj == null ? null : getter.apply(obj);
     }
