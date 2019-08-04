@@ -35,23 +35,18 @@ public class BeController {
     @Autowired
     private Clipboard clipboard;
 
-    @GetMapping("/node")
-    public NodeDto getNode(@RequestParam(required = false, defaultValue = "0") Integer depth,
-                           @RequestParam(required = false, defaultValue = "false") Boolean includeCanPaste) {
-        // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
-        // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes
-        // TODO: 22.07.2019 tc: by default depth == 0
-        return nodeManager.getNode(null, depth, includeCanPaste);
-    }
-
-    @GetMapping("/node/{id}")
-    public NodeDto getNode(@PathVariable UUID id,
+    @GetMapping(value = {"/node/{id}", "/node"})
+    public NodeDto getNode(@PathVariable(required = false) String id,
                            @RequestParam(required = false, defaultValue = "0") Integer depth,
                            @RequestParam(required = false, defaultValue = "false") Boolean includeCanPaste) {
         // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
         // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes
         // TODO: 22.07.2019 tc: by default depth == 0
-        return nodeManager.getNode(id, depth, includeCanPaste);
+        UUID nodeId = null;
+        if (id != null && !"null".equals(id)) {
+            nodeId = UUID.fromString(id);
+        }
+        return nodeManager.getNode(nodeId, depth, includeCanPaste);
     }
 
     // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed

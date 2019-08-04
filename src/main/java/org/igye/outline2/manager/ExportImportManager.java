@@ -116,6 +116,8 @@ public class ExportImportManager {
             node.setIcon(nullSafeGetter(node.getIcon(), opt -> opt.map(imageIdsMap::get)));
             node.setImgId(nullSafeGetter(node.getImgId(), opt -> opt.map(imageIdsMap::get)));
             newNodeId = nodeManager.createNewNode(node);
+        } else {
+            newNodeId = parentId;
         }
         UUID finalNewNodeId = newNodeId;
         nullSafeGetter(
