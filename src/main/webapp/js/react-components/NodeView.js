@@ -165,9 +165,9 @@ const NodeView = props => {
                 ?re(Button,{key:"Select-btn", style:actionButtonsStyle, variant:"contained",
                     onClick: () => setCheckedNodes([])}, "Select"
                 )
-                :re(Button,{key:"Cut-btn", style:actionButtonsStyle, variant:"contained",
+                :(checkedNodes.length > 0 ?re(Button,{key:"Cut-btn", style:actionButtonsStyle, variant:"contained",
                     onClick: () => putNodeIdsToClipboard(checkedNodes, () => setCheckedNodes(null))}, "Cut"
-                )
+                ):null)
             ,
             (curNode && curNode[NODE.canPaste])
                 ?re(Button,{key:"Paste-btn", style:actionButtonsStyle, variant:"contained",

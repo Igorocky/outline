@@ -5,7 +5,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -50,8 +50,7 @@ public class RegexReplace {
     }
 
     public void replace(String srcFile, Pattern pattern, Function<Matcher, String> replacement, String dstFile) throws IOException {
-        Charset encoding = Charset.forName("UTF-8");
-        String content = FileUtils.readFileToString(new File(srcFile), encoding);
+        String content = FileUtils.readFileToString(new File(srcFile), StandardCharsets.UTF_8);
         Matcher matcher = pattern.matcher(content);
         StringBuilder newContent = new StringBuilder();
         int prevEnd = 0;
@@ -63,6 +62,6 @@ public class RegexReplace {
         newContent.append(content, prevEnd, content.length());
         File dstFileF = new File(dstFile);
         dstFileF.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(dstFileF, newContent.toString(), encoding);
+        FileUtils.writeStringToFile(dstFileF, newContent.toString(), StandardCharsets.UTF_8);
     }
 }
