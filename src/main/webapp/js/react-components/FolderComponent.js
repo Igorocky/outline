@@ -28,7 +28,7 @@ const FolderComponent = props => {
     return [
         re(Grid,{key:"folder-grid", container:true, direction:"row", justify:"flex-start", alignItems:"center",
                 className:"grey-background-on-hover pointer-on-hover",
-                style:{backgroundColor: anchorEl?"rgb(185, 185, 185)":""},
+                style:{backgroundColor: anchorEl?"rgb(215, 215, 215)":""},
                 onClick: props.onClick
             },
             re(IconButton, {key:"folder-button", edge: "start", color: "inherit", onClick: onClick,

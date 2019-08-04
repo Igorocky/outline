@@ -38,6 +38,7 @@ const {
     ClickAwayListener,
     LinearProgress,
     Portal,
+    Checkbox,
     withStyles,
 } = window['MaterialUI']
 

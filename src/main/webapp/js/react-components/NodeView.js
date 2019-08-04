@@ -6,6 +6,7 @@ const currNodeNameStyle = {
 
 const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
+    const [checkedNodes, setCheckedNodes] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
     function getCurrNodeId() {
@@ -48,7 +49,7 @@ const NodeView = props => {
     }
     
     function renderCurrNodeName() {
-        if (!curNode || !curNode[NODE.id]) {
+        if (!curNode || !getCurrNodeId()) {
             return null
         }
         return re(NodeNameEditable,
@@ -56,7 +57,7 @@ const NodeView = props => {
                 key:"NodeNameEditable" + getCurrNodeId(),
                 value:curNode[NODE.name],
                 style: {width:"1000px", margin:"0px 0px 10px 10px"},
-                onSave: ({newValue, onSaved}) => updateNodeName(curNode[NODE.id], newValue,
+                onSave: ({newValue, onSaved}) => updateNodeName(getCurrNodeId(), newValue,
                     response => {
                         onSaved()
                         reloadCurrNode()
@@ -107,6 +108,20 @@ const NodeView = props => {
         }
     }
 
+    function isNodeChecked(node) {
+        return checkedNodes.includes(node[NODE.id]);
+    }
+
+    function checkNode(node) {
+        return () => {
+            if (isNodeChecked(node)) {
+                setCheckedNodes(old => _.reject(old, id => id==node[NODE.id]))
+            } else {
+                setCheckedNodes(old => [...old, node[NODE.id]])
+            }
+        }
+    }
+
     return [
         !curNode
         ? re(LinearProgress, {key:"LinearProgress",color:"secondary"})
@@ -116,6 +131,12 @@ const NodeView = props => {
             re(List, {key:"List"+getCurrNodeId()},
                 curNode[NODE.childNodes].map(ch =>
                     re(ListItem,{key:ch[NODE.id], dense:true},
+                        checkedNodes?re(ListItemIcon,{},
+                            re(Checkbox,{edge:"start", 
+                                checked:isNodeChecked(ch),
+                                onClick: checkNode(ch),
+                                tabIndex:-1, disableRipple:true})
+                        ):null,
                         re(ListItemText,{},
                             renderNode(ch)
                         )
@@ -139,7 +160,20 @@ const NodeView = props => {
                                         }
                             )
                 ):()=>{}
-            })
+            }),
+            !checkedNodes
+                ?re(Button,{key:"Select-btn", style:actionButtonsStyle, variant:"contained",
+                    onClick: () => setCheckedNodes([])}, "Select"
+                )
+                :re(Button,{key:"Cut-btn", style:actionButtonsStyle, variant:"contained",
+                    onClick: () => putNodeIdsToClipboard(checkedNodes, () => setCheckedNodes(null))}, "Cut"
+                )
+            ,
+            (curNode && curNode[NODE.canPaste])
+                ?re(Button,{key:"Paste-btn", style:actionButtonsStyle, variant:"contained",
+                    onClick: () => pasteNodesFromClipboard(getCurrNodeId(), () => reloadCurrNode())}, "Paste"
+                )
+                :null
         ),
         redirectTo(redirect)
     ]

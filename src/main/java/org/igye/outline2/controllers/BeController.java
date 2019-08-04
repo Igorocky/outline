@@ -33,20 +33,22 @@ public class BeController {
     private Clipboard clipboard;
 
     @GetMapping("/node")
-    public NodeDto getNode(@RequestParam(required = false, defaultValue = "0") Integer depth) {
+    public NodeDto getNode(@RequestParam(required = false, defaultValue = "0") Integer depth,
+                           @RequestParam(required = false, defaultValue = "false") Boolean includeCanPaste) {
         // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
         // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes
         // TODO: 22.07.2019 tc: by default depth == 0
-        return nodeManager.getNode(null, depth);
+        return nodeManager.getNode(null, depth, includeCanPaste);
     }
 
     @GetMapping("/node/{id}")
     public NodeDto getNode(@PathVariable UUID id,
-                           @RequestParam(required = false, defaultValue = "0") Integer depth) {
+                           @RequestParam(required = false, defaultValue = "0") Integer depth,
+                           @RequestParam(required = false, defaultValue = "false") Boolean includeCanPaste) {
         // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
         // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes
         // TODO: 22.07.2019 tc: by default depth == 0
-        return nodeManager.getNode(id, depth);
+        return nodeManager.getNode(id, depth, includeCanPaste);
     }
 
     // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed
@@ -68,12 +70,12 @@ public class BeController {
 
     @GetMapping("/canPasteNodesFromClipboard/{to}")
     public boolean canPasteNodesFromClipboard(@PathVariable String to) {
-        return nodeManager.validateMoveOfNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));
+        return nodeManager.validateMoveOfNodesFromClipboard("null".equals(to)?null:UUID.fromString(to));
     }
 
     @PatchMapping("/pasteNodesFromClipboard/{to}")
     public void pasteNodesFromClipboard(@PathVariable String to) {
-        nodeManager.moveNodes(clipboard.getNodeIds(), "null".equals(to)?null:UUID.fromString(to));
+        nodeManager.moveNodesFromClipboard("null".equals(to)?null:UUID.fromString(to));
     }
 
     @PostMapping("/uploadImage")

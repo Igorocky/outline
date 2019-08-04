@@ -303,7 +303,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("getNodeById", "[null]");
 
         //then
-        assertEquals("/be/node?depth=1", actualGetUrl);
+        assertEquals("/be/node?depth=1&includeCanPaste=true", actualGetUrl);
     }
     @Test public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
         //given
@@ -313,7 +313,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("getNodeById", "[undefined]");
 
         //then
-        assertEquals("/be/node?depth=1", actualGetUrl);
+        assertEquals("/be/node?depth=1&includeCanPaste=true", actualGetUrl);
     }
     @Test public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
         //given
@@ -325,7 +325,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsFunction("getNodeById", "['" + node.getId() + "']");
 
         //then
-        assertEquals("/be/node/" + node.getId() + "?depth=1", actualGetUrl);
+        assertEquals("/be/node/" + node.getId() + "?depth=1&includeCanPaste=true", actualGetUrl);
     }
     @Test public void patchNode_createsNewRootNode() throws Exception {
         //given
@@ -730,7 +730,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         .node(randomNode)
                         .node(randomNode)
                         .node(randomNode)
-                        .node(randomNode).storeNode(nodeToMove)
+                        .node(() -> new Text(), randomNode).storeNode(nodeToMove)
                 )
                 .node(randomNode)
         ;
@@ -756,7 +756,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         new NodeTreeBuilder().storeTree(rootNodes)
                 .node(randomNode)
                 .children(b1->b1
-                        .node(randomNode).storeNode(nodeToMove)
+                        .node(() -> new ImageRef(), randomNode).storeNode(nodeToMove)
                         .node(randomNode)
                         .node(randomNode)
                         .node(randomNode)
@@ -1342,9 +1342,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         .children(b2 -> b2
                                 .node(randomNode).storeNode(nodeToMove1)
                                 .node(randomNode)
-                                .node(randomNode).storeNode(nodeToMove2)
+                                .node(() -> new Text(), randomNode).storeNode(nodeToMove2)
                                 .node(randomNode)
-                                .node(randomNode).storeNode(nodeToMove3)
+                                .node(() -> new ImageRef(), randomNode).storeNode(nodeToMove3)
                         )
                         .node(randomNode).storeNode(nodeToMoveTo)
                         .children(b2->b2

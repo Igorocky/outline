@@ -36,7 +36,7 @@ public class NodeManager {
     private Clipboard clipboard;
 
     @Transactional
-    public NodeDto getNode(UUID id, Integer depth) {
+    public NodeDto getNode(UUID id, Integer depth, Boolean includeCanPaste) {
         Node result;
         if (id == null) {
             result = new Node();
@@ -47,6 +47,9 @@ public class NodeManager {
         }
         NodeDto resultDto = DtoConverter.toDto(result, depth);
         resultDto.setPath(map(result.getPath(), DtoConverter::toPathElem));
+        if (includeCanPaste) {
+            resultDto.setCanPaste(validateMoveOfNodesFromClipboard(resultDto.getId()));
+        }
         return resultDto;
     }
 
@@ -60,8 +63,9 @@ public class NodeManager {
     }
 
     @Transactional
-    public void moveNodes(List<UUID> ids, UUID to) {
-        if (!validateMoveOfNodes(ids, to)) {
+    public void moveNodesFromClipboard(UUID to) {
+        List<UUID> ids = clipboard.getNodeIds();
+        if (!validateMoveOfNodesFromClipboard(to)) {
             throw new OutlineException("Invalid move request.");
         }
         List<Node> nodesToMove = ids.stream().map(nodeRepository::getOne).collect(Collectors.toList());
@@ -71,7 +75,8 @@ public class NodeManager {
     }
 
     @Transactional
-    public boolean validateMoveOfNodes(List<UUID> ids, UUID to) {
+    public boolean validateMoveOfNodesFromClipboard(UUID to) {
+        List<UUID> ids = clipboard.getNodeIds();
         if (CollectionUtils.isEmpty(ids)) {
             return false;
         }
@@ -81,7 +86,7 @@ public class NodeManager {
 
     @Transactional
     public void reorderNode(UUID id, int direction) {
-        Node node = nodeRepository.getOne(id);
+        Node node = nodeRepository.findById(id).get();
         Node parentNode = node.getParentNode();
         if (parentNode != null) {
             int oldIdx = -1;

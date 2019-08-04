@@ -50,4 +50,7 @@ public class NodeDto {
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptionExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptionalString.class)
     private Optional<String> text = Optional.empty();
+
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    private Boolean canPaste;
 }

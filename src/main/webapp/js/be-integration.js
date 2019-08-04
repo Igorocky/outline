@@ -9,7 +9,8 @@ const NODE = {
     path: "path",
     icon: "icon",
     imgId: "imgId",
-    text: "text"
+    text: "text",
+    canPaste: "canPaste"
 }
 
 const OBJECT_CLASS = {
@@ -20,7 +21,7 @@ const OBJECT_CLASS = {
 }
 
 function getNodeById(id, responseHandler) {
-    const url = (id?("/be/node/" + id):"/be/node") + "?depth=1"
+    const url = (id?("/be/node/" + id):"/be/node") + "?depth=1&includeCanPaste=true"
     doGet(url, responseHandler)
 }
 
@@ -106,5 +107,5 @@ function canPasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
 }
 
 function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
-    doPatch("/be/pasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, onSuccess)
+    doPatch("/be/pasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, {}, onSuccess)
 }
