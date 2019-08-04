@@ -68,14 +68,14 @@ public class Node {
         childNodes.removeIf(c -> c.getId().equals(child.getId()));
     }
 
-    public boolean isRootNode() {
+    public boolean isTopNode() {
         return getId() == null;
     }
 
     public List<Node> getPath() {
         List<Node> path = new ArrayList<>();
         Node curNode = this;
-        while (curNode != null && !curNode.isRootNode()) {
+        while (curNode != null && !curNode.isTopNode()) {
             path.add(curNode);
             curNode = curNode.getParentNode();
         }

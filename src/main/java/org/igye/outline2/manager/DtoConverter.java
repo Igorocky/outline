@@ -49,7 +49,7 @@ public class DtoConverter {
             nodeDto.setObjectClass(Optional.of(IMAGE_NODE));
             ImageRef imageRef = (ImageRef) node;
             nodeDto.setImgId(imageRef.getImage() == null ? null : Optional.of(imageRef.getImage().getId()));
-        } else if (node.isRootNode()) {
+        } else if (node.isTopNode()) {
             // TODO: 22.07.2019 tc: for root node objectClass == "..."
             nodeDto.setObjectClass(Optional.of(ROOT_NODE));
         } else {
@@ -57,7 +57,7 @@ public class DtoConverter {
             nodeDto.setObjectClass(Optional.of(NODE));
         }
 
-        if (node.isRootNode()) {
+        if (node.isTopNode()) {
             if (nodeDto.getChildNodes() != null && nodeDto.getChildNodes().isPresent()) {
                 Collections.sort(
                         nodeDto.getChildNodes().get(),
