@@ -8,11 +8,12 @@ import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.envers.Audited;
+import org.igye.outline2.OutlineUtils;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
@@ -35,26 +36,23 @@ import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 @AllArgsConstructor
 @Builder
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 @Audited
 public class Node {
     @Id
     private UUID id = UUID.randomUUID();
+    private Instant createdWhen;
 
     @ManyToOne
     private Node parentNode;
 
-    private String name;
+    @ElementCollection
+    @CollectionTable(name = "tag")
+    private List<Tag> tags = new ArrayList<>();
 
     @OneToMany(mappedBy = "parentNode")
     @OrderColumn(name = "ord")
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
     private List<Node> childNodes = new ArrayList<>();
-
-    @ManyToOne
-    private Image icon;
-
-    private Instant createdWhen = Instant.now();
 
     public void addChild(Node child) {
         Hibernate.initialize(childNodes);
@@ -66,6 +64,41 @@ public class Node {
         Hibernate.initialize(childNodes);
         child.setParentNode(null);
         childNodes.removeIf(c -> c.getId().equals(child.getId()));
+    }
+
+    public void setTagValues(UUID tagId, List<String> tagValues) {
+        removeTagValues(tagId);
+        tagValues.forEach(value -> tags.add(Tag.builder().tagId(tagId).value(value).build()));
+    }
+
+    public void addTagValue(UUID tagId, String value) {
+        Hibernate.initialize(tags);
+        tags.add(Tag.builder().tagId(tagId).value(value).build());
+    }
+
+    public List<String> getTagValues(UUID tagId) {
+        Hibernate.initialize(tags);
+        List<String> result = new ArrayList<>();
+        for (Tag tag : tags) {
+            if (tagId.equals(tag.getTagId())) {
+                result.add(tag.getValue());
+            }
+        }
+        return result;
+    }
+
+    public String getTagSingleValue(UUID tagId) {
+        return OutlineUtils.getSingleValue(getTagValues(tagId));
+    }
+
+    public void setTagSingleValue(UUID tagId, String value) {
+        removeTagValues(tagId);
+        tags.add(Tag.builder().tagId(tagId).value(value).build());
+    }
+
+    public void removeTagValues(UUID tagId) {
+        Hibernate.initialize(tags);
+        tags.removeIf(tag -> tag.getTagId().equals(tagId));
     }
 
     public boolean isTopNode() {

@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,20 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class OutlineUtils {
+    public static <T> T getSingleValue(List<T> values) {
+        if (values.size() > 1) {
+            throw new OutlineException("values.size() > 1");
+        } else if (values.isEmpty()) {
+            return null;
+        } else {
+            return values.get(0);
+        }
+    }
+
+    public static <A> A nullSafeGetterWithDefault(A obj, A defaultValue) {
+        return obj != null ? obj : defaultValue;
+    }
+
     public static <A,B> B nullSafeGetterWithDefault(A obj, Function<A,B> getter, B defaultValue) {
         B result = nullSafeGetter(obj, getter);
         return result != null ? result : defaultValue;
@@ -79,12 +94,22 @@ public class OutlineUtils {
         return entityManager.unwrap(Session.class);
     }
 
-    public static <A,B> Set<B> map(Set<A> collection, Function<A,B> mapper) {
-        return collection.stream().map(mapper).collect(Collectors.toSet());
+    public static <A,B> Set<B> map(Set<A> set, Function<A,B> mapper) {
+        Set<B> result = new HashSet<>();
+        for (A a : set) {
+            B b = mapper.apply(a);
+            result.add(b);
+        }
+        return result;
     }
 
-    public static <A,B> List<B> map(List<A> collection, Function<A,B> mapper) {
-        return collection.stream().map(mapper).collect(Collectors.toList());
+    public static <A,B> List<B> map(List<A> list, Function<A,B> mapper) {
+        List<B> result = new ArrayList<>();
+        for (A a : list) {
+            B b = mapper.apply(a);
+            result.add(b);
+        }
+        return result;
     }
 
     public static <A,B> List<B> map(A[] array, Function<A,B> mapper) {
@@ -95,16 +120,33 @@ public class OutlineUtils {
         return res;
     }
 
-    public static <A,B> Set<B> mapToSet(List<A> collection, Function<A,B> mapper) {
-        return collection.stream().map(mapper).collect(Collectors.toSet());
+    public static <A,B> Set<B> mapToSet(List<A> list, Function<A,B> mapper) {
+        Set<B> set = new HashSet<>();
+        for (A a : list) {
+            B b = mapper.apply(a);
+            set.add(b);
+        }
+        return set;
     }
 
-    public static <T> Set<T> filter(Set<T> collection, Predicate<T> predicate) {
-        return collection.stream().filter(predicate).collect(Collectors.toSet());
+    public static <T> Set<T> filter(Set<T> set, Predicate<T> predicate) {
+        Set<T> result = new HashSet<>();
+        for (T t : result) {
+            if (predicate.test(t)) {
+                result.add(t);
+            }
+        }
+        return result;
     }
 
-    public static <T> List<T> filter(List<T> collection, Predicate<T> predicate) {
-        return collection.stream().filter(predicate).collect(Collectors.toList());
+    public static <T> List<T> filter(List<T> list, Predicate<T> predicate) {
+        List<T> result = new ArrayList<>();
+        for (T elem : list) {
+            if (predicate.test(elem)) {
+                result.add(elem);
+            }
+        }
+        return result;
     }
 
     public static <T> Set<T> filterToSet(List<T> collection, Predicate<T> predicate) {
