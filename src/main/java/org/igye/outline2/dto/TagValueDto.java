@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class TagDto {
-    private UUID tagId;
+public class TagValueDto {
+    private UUID ref;
     private String value;
 }

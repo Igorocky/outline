@@ -78,7 +78,7 @@ public class BeController {
 
     @PostMapping("/uploadImage")
     @ResponseBody
-    public ImageDto uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+    public NodeDto uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
         return imageManager.createImage(file);
     }
 

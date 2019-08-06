@@ -2,11 +2,13 @@ package org.igye.outline2.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.TagValueDto;
 import org.igye.outline2.exceptions.OutlineException;
-import org.igye.outline2.pm.Image;
-import org.igye.outline2.pm.NodeClasses;
-import org.igye.outline2.pm.NodeTags;
+import org.igye.outline2.pm.Node;
+import org.igye.outline2.pm.NodeClass;
+import org.igye.outline2.pm.TagId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,9 +20,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -67,7 +71,9 @@ public class ExportImportManager {
         NodeDto root = nodeManager.getNode(nodeId, Integer.MAX_VALUE, false);
         root.setPath(null);
         String nodeName = nullSafeGetterWithDefault(
-                root.getTagSingleValue(NodeTags.NAME), "Node without name"
+                root.getTagSingleValue(TagId.NAME),
+                tagValue -> tagValue.getValue(),
+                "Node without name"
         );
         String exportName = nodeName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
@@ -83,7 +89,7 @@ public class ExportImportManager {
 
         File srcImagesLocationFile = new File(imagesLocation);
         File dstImagesLocationFile = new File(exportDir, "images");
-        collectImages(root, setOf(NodeTags.IMAGE_ID, NodeTags.ICON), images);
+        collectImages(root, setOf(TagId.ICON), images);
         images.forEach(imgId -> copyImage(srcImagesLocationFile, dstImagesLocationFile, imgId));
     }
 
@@ -97,17 +103,21 @@ public class ExportImportManager {
         }
     }
 
-    private void collectImages(NodeDto nodeDto, Set<UUID> imageTags, Set<UUID> images) {
-        imageTags.forEach(tagId ->
-                nullSafeGetter(
-                        nodeDto.getTagSingleValue(tagId),
-                        id -> UUID.fromString(id),
-                        id -> images.add(id)
-                )
+    private void collectImages(NodeDto nodeDto, Set<TagId> imageTagIds, Set<UUID> images) {
+        imageTagIds.forEach(tagId ->
+                {
+                    List<TagValueDto> tagValues = OutlineUtils.<List<TagValueDto>>nullSafeGetterWithDefault(
+                            nodeDto.getTagValues(tagId),
+                            Collections.emptyList()
+                    );
+                    tagValues.forEach(
+                            tagValue -> nullSafeGetter(tagValue.getValue(), val->images.add(UUID.fromString(val)))
+                    );
+                }
         );
 
         nullSafeGetter(nodeDto.getChildNodes(), opt -> opt.orElse(null), children -> {
-            children.forEach(ch -> collectImages(ch, imageTags, images));
+            children.forEach(ch -> collectImages(ch, imageTagIds, images));
             return null;
         });
     }
@@ -118,7 +128,7 @@ public class ExportImportManager {
 
     private UUID saveNodeToDatabase(NodeDto node, UUID parentId, Map<UUID, UUID> imageIdsMap) {
         UUID newNodeId = null;
-        if (!NodeClasses.TOP_CONTAINER.equals(node.getTagSingleValue(NodeTags.CLASS))) {
+        if (!node.getClazz().equals(NodeClass.TOP_CONTAINER)) {
             node.setId(null);
             node.setParentId(nullSafeGetter(parentId, id -> Optional.of(id)));
             newNodeId = nodeManager.patchNode(node).getId();
@@ -145,7 +155,7 @@ public class ExportImportManager {
                 ZipEntry entry = entries.nextElement();
                 UUID imgId = getImageId(entry);
                 if (imgId != null) {
-                    Image image = imageManager.createNewImage();
+                    Node image = imageManager.createNewImage();
                     imageIdsMap.put(imgId, image.getId());
 
                     File imgFile = getImgFile(imagesLocation, image.getId());

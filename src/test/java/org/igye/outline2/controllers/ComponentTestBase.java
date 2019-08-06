@@ -6,7 +6,6 @@ import org.hibernate.Session;
 import org.igye.outline2.App;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.DtoConverter;
-import org.igye.outline2.manager.ImageRepository;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
 import org.igye.outline2.pm.Node;
@@ -51,8 +50,6 @@ public class ComponentTestBase {
     protected NodeManager nodeManager;
     @Autowired
     protected NodeRepository nodeRepository;
-    @Autowired
-    protected ImageRepository imageRepository;
 
     protected TransactionTemplate transactionTemplate;
 

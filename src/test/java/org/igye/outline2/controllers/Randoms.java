@@ -1,18 +1,21 @@
 package org.igye.outline2.controllers;
 
-import org.igye.outline2.pm.Image;
 import org.igye.outline2.pm.Node;
+import org.igye.outline2.pm.NodeClass;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Randoms {
+    public static final Consumer<Node> NODE_RANDOMIZER = node -> {
+        node.setClazz(NodeClass.CONTAINER);
+        node.setCreatedWhen(instant());
+    };
     private static Random rnd = new Random();
     private static String[] symbols = new String[]{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q",
             "R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q",
@@ -68,18 +71,14 @@ public class Randoms {
         return integer(1,100) <= prob ? left : right;
     }
 
-    public static Consumer<Node> randomNode(List<Image> images) {
-        return node -> {
-            node.setName(either(10, null, string(70,120)));
-            node.setIcon(either(10, null, element(images)));
-            node.setCreatedWhen(instant());
-        };
+    public static Consumer<Node> randomNode() {
+        return NODE_RANDOMIZER;
     }
 
-    public static Image image() {
-        Image image = new Image();
-        image.setId(UUID.randomUUID());
-        image.setCreatedWhen(instant());
-        return image;
+    public static Node randomNode(Consumer<Node> nodeConsumer) {
+        Node node = new Node();
+        NODE_RANDOMIZER.accept(node);
+        nodeConsumer.accept(node);
+        return node;
     }
 }

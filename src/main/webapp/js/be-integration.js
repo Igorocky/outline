@@ -1,23 +1,32 @@
 'use strict';
 
 const NODE = {
-    childNodes: "childNodes",
-    objectClass: "objectClass",
-    parentId: "parentId",
     id: "id",
-    name: "name",
+    objectClass: "clazz",
+    tags: "tags",
+    parentId: "parentId",
+    childNodes: "childNodes",
     path: "path",
-    icon: "icon",
-    imgId: "imgId",
-    text: "text",
     canPaste: "canPaste"
 }
 
 const OBJECT_CLASS = {
-    rootNode: "ROOT_NODE",
-    node: "NODE",
+    rootNode: "TOP_CONTAINER",
+    node: "CONTAINER",
     text: "TEXT",
     image: "IMAGE"
+}
+
+const TAG = {
+    tagId: "tagId",
+    ref: "ref",
+    value: "value"
+}
+
+const TAG_ID = {
+    name: "name",
+    icon: "icon",
+    text: "text"
 }
 
 function getNodeById(id, responseHandler) {
@@ -71,7 +80,9 @@ function updateNodeIcon(nodeId,newIconId,onSuccess) {
 function updateTextNodeText(nodeId,newText,onSuccess) {
     const request = {}
     request[NODE.id] = nodeId
-    request[NODE.text] = newText
+    request[NODE.tags] = {}
+    request[NODE.tags][TAG_ID.text] = [{}]
+    request[NODE.tags][TAG_ID.text][0][TAG.value] = newText
     patchNode(request, onSuccess)
 }
 

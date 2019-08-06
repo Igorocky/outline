@@ -5,10 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.manager.Clipboard;
-import org.igye.outline2.pm.Image;
-import org.igye.outline2.pm.ImageRef;
 import org.igye.outline2.pm.Node;
-import org.igye.outline2.pm.Text;
+import org.igye.outline2.pm.NodeClass;
+import org.igye.outline2.pm.TagId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
@@ -74,7 +72,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
-        assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
+        assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertTrue(nodeDto.getChildNodes().get().isEmpty());
         assertEquals(
                 setOf("id", "parentId", "objectClass", "name", "icon", "childNodes", "path"),
@@ -95,7 +93,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
-        assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
+        assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
@@ -113,15 +111,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
-        assertEquals("ROOT_NODE", nodeDto.getObjectClass().get());
+        assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertFalse(nodeDto.getChildNodes().isPresent());
         assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
     }
     @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<UUID> node1Id = new ObjectHolder<>();
@@ -170,9 +166,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth0Requested_noChildNodesAttributeReturned() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<UUID> node1Id = new ObjectHolder<>();
@@ -216,9 +210,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNode_nodeHas2LevelsOfChildrenAndDepthIsNotRequested_noChildNodesAttributeReturned() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<UUID> node1Id = new ObjectHolder<>();
@@ -262,9 +254,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNode_returnsNullForIdAndParentIdOfARootNode() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<UUID> nodeId = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -357,7 +347,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        Text expectedNode = new Text();
+        Node expectedNode = new Node();
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -379,7 +369,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         String topFakeNode = mvc.perform(
                 get("/be/node")
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        ImageRef expectedNode = new ImageRef();
+        Node expectedNode = new Node();
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -396,9 +386,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewInnerNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 9, 8, 11);
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<Node> currNode = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -439,9 +427,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewInnerTextNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<Node> currNode = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -464,7 +450,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 get("/be/node/" + currNode.get().getId())
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
-        Node expectedNode = new Text();
+        Node expectedNode = new Node();
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -482,9 +468,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_createsNewInnerImageNode() throws Exception {
         //given
         testClock.setFixedTime(2019, 7, 9, 12, 8, 11);
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<Node> currNode = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -508,7 +492,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 get("/be/node/" + currNode.get().getId())
         ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
-        Node expectedNode = new ImageRef();
+        Node expectedNode = new Node();
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -523,13 +507,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         currNode.get().addChild(expectedNode);
         assertNodeInDatabase(jdbcTemplate, currNode.get());
     }
-    @Test public void patchNode_modifiesNameAttrFromNullToSomeStr() throws Exception {
+    @Test public void patchNode_modifiesNameTagFromNullToSomeStr() throws Exception {
         //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName(null));
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(node -> node.removeTags(TagId.NAME));
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
         final String expectedName = "adfdf asdf asdf asdf asdf";
-        innerNode.setName(expectedName);
+        innerNode.setTagSingleValue(TagId.NAME, expectedName);
 
         //when
         invokeJsFunction("updateNodeName", "['" + innerNode.getId() + "','" + expectedName + "']");
@@ -537,32 +521,33 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test public void patchNode_modifiesNameAttrFromSomeStrToNull() throws Exception {
+    @Test public void patchNode_modifiesNameTagFromSomeStrToNull() throws Exception {
         //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setName("okjhhfafadfd"));
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(
+                node -> node.setTagSingleValue(TagId.NAME, "okjhhfafadfd")
+        );
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
         System.out.println("Before:");
         printNode(rootNode);
-        final String expectedName = null;
-        innerNode.setName(expectedName);
+        innerNode.removeTags(TagId.NAME);
 
         //when
-        invokeJsFunction("updateNodeName", "['" + innerNode.getId() + "'," + expectedName + "]");
+        invokeJsFunction("updateNodeName", "['" + innerNode.getId() + "', null]");
 
         //then
         System.out.println("After:");
         printNode(rootNode);
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test public void patchNode_modifiesIconAttrFromNullToSomeUuid() throws Exception {
+    @Test public void patchNode_modifiesIconTagFromNullToSomeUuid() throws Exception {
         //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setIcon(null));
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(node -> node.removeTags(TagId.ICON));
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
-        Image expectedIcon = Randoms.image();
-        imageRepository.save(expectedIcon);
-        innerNode.setIcon(expectedIcon);
+        Node expectedIcon = Randoms.randomNode(n->n.setClazz(NodeClass.IMAGE));
+        nodeRepository.save(expectedIcon);
+        innerNode.setTagSingleValue(TagId.ICON, expectedIcon);
 
         //when
         invokeJsFunction(
@@ -573,32 +558,33 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test public void patchNode_modifiesIconAttrFromSomeUuidToNull() throws Exception {
+    @Test public void patchNode_modifiesIconTagFromSomeUuidToNull() throws Exception {
         //given
-        Image existingIcon = Randoms.image();
-        imageRepository.save(existingIcon);
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Node(), node -> node.setIcon(existingIcon));
+        Node existingIcon = Randoms.randomNode(n->n.setClazz(NodeClass.IMAGE));
+        nodeRepository.save(existingIcon);
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(
+                node -> node.setTagSingleValue(TagId.ICON, existingIcon)
+        );
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
-        Image expectedIcon = null;
-        innerNode.setIcon(expectedIcon);
+        innerNode.removeTags(TagId.ICON);
 
         //when
         invokeJsFunction(
                 "updateNodeIcon",
-                "['" + innerNode.getId() + "'," + expectedIcon + "]"
+                "['" + innerNode.getId() + "', null]"
         );
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test public void patchNode_modifiesTextAttrFromNullToSomeStr() throws Exception {
+    @Test public void patchNode_modifiesTextTagFromNullToSomeStr() throws Exception {
         //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText(null));
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(n -> n.removeTags(TagId.TEXT));
         Node rootNode = existingNodes.getLeft();
-        Text innerNode = (Text) existingNodes.getRight();
+        Node innerNode = existingNodes.getRight();
         final String expectedText = "pldfnsxnbc agfsd f";
-        innerNode.setText(expectedText);
+        innerNode.setTagSingleValue(TagId.TEXT, expectedText);
 
         //when
         invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "','" + expectedText + "']");
@@ -606,65 +592,22 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
-    @Test public void patchNode_modifiesTextAttrFromSomeStrToNull() throws Exception {
+    @Test public void patchNode_modifiesTextTagFromSomeStrToNull() throws Exception {
         //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new Text(), text -> ((Text)text).setText("plkjj"));
+        Pair<Node, Node> existingNodes = createAndSaveInnerNode(n -> n.setTagSingleValue(TagId.TEXT, "plkjj"));
         Node rootNode = existingNodes.getLeft();
-        Text innerNode = (Text) existingNodes.getRight();
-        final String expectedText = null;
-        innerNode.setText(expectedText);
+        Node innerNode = existingNodes.getRight();
+        innerNode.removeTags(TagId.TEXT);
 
         //when
-        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "'," + expectedText + "]");
-
-        //then
-        assertNodeInDatabase(jdbcTemplate, rootNode);
-    }
-    @Test public void patchNode_modifiesImgAttrFromNullToSomeUuid() throws Exception {
-        //given
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(()->new ImageRef(), image -> ((ImageRef)image).setImage(null));
-        Node rootNode = existingNodes.getLeft();
-        ImageRef innerNode = (ImageRef) existingNodes.getRight();
-        final Image expectedImage = Randoms.image();
-        imageRepository.save(expectedImage);
-        innerNode.setImage(expectedImage);
-
-        //when
-        invokeJsFunction(
-                "updateImageNodeImage",
-                "['" + innerNode.getId() + "','" + expectedImage.getId() + "']"
-        );
-
-        //then
-        assertNodeInDatabase(jdbcTemplate, rootNode);
-    }
-    @Test public void patchNode_modifiesImgAttrFromSomeUuidToNull() throws Exception {
-        //given
-        final Image existingImage = Randoms.image();
-        imageRepository.save(existingImage);
-        Pair<Node, Node> existingNodes = createAndSaveInnerNode(
-                ()->new ImageRef(),
-                image -> ((ImageRef)image).setImage(existingImage)
-        );
-        Node rootNode = existingNodes.getLeft();
-        ImageRef innerNode = (ImageRef) existingNodes.getRight();
-        final Image expectedImage = null;
-        innerNode.setImage(expectedImage);
-
-        //when
-        invokeJsFunction(
-                "updateImageNodeImage",
-                "['" + innerNode.getId() + "'," + expectedImage + "]"
-        );
+        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "', null]");
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
     @Test public void reorderNode_movesStartNodeUp() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -688,9 +631,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesMiddleNodeUp() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -718,9 +659,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesEndNodeUp() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -730,7 +669,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         .node(randomNode)
                         .node(randomNode)
                         .node(randomNode)
-                        .node(() -> new Text(), randomNode).storeNode(nodeToMove)
+                        .node(randomNode).storeNode(nodeToMove)
                 )
                 .node(randomNode)
         ;
@@ -748,15 +687,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesStartNodeDown() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
                 .node(randomNode)
                 .children(b1->b1
-                        .node(() -> new ImageRef(), randomNode).storeNode(nodeToMove)
+                        .node(randomNode).storeNode(nodeToMove)
                         .node(randomNode)
                         .node(randomNode)
                         .node(randomNode)
@@ -778,9 +715,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesMiddleNodeDown() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -808,9 +743,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesEndNodeDown() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -834,9 +767,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesStartNodeToStart() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -860,9 +791,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesMiddleNodeToStart() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -890,9 +819,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesEndNodeToStart() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -920,9 +847,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesStartNodeToEnd() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -950,9 +875,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesMiddleNodeToEnd() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -980,9 +903,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesEndNodeToEnd() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1006,9 +927,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesSingleNodeUp() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1028,9 +947,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesSingleNodeDown() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1050,9 +967,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesSingleNodeToStart() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1072,9 +987,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void reorderNode_movesSingleNodeToEnd() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1096,9 +1009,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //given
         onSuccessResponse = null;
         clipboard.setNodeIds(null);
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMoveTo = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
@@ -1129,9 +1040,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoOneOfNodesBeingMoved() throws Exception {
         //given
         onSuccessResponse = null;
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
@@ -1180,9 +1089,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoChildNode() throws Exception {
         //given
         onSuccessResponse = null;
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
@@ -1230,9 +1137,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void canPasteNodesFromClipboard_returnsFalseAfterPasteWasDone() throws Exception {
         //given
         onSuccessResponse = null;
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
@@ -1282,9 +1187,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void canPasteNodesFromClipboard_returnsTrueForCorrectPaste() throws Exception {
         //given
         onSuccessResponse = null;
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
@@ -1326,9 +1229,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
@@ -1342,9 +1243,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         .children(b2 -> b2
                                 .node(randomNode).storeNode(nodeToMove1)
                                 .node(randomNode)
-                                .node(() -> new Text(), randomNode).storeNode(nodeToMove2)
+                                .node(randomNode).storeNode(nodeToMove2)
                                 .node(randomNode)
-                                .node(() -> new ImageRef(), randomNode).storeNode(nodeToMove3)
+                                .node(randomNode).storeNode(nodeToMove3)
                         )
                         .node(randomNode).storeNode(nodeToMoveTo)
                         .children(b2->b2
@@ -1385,24 +1286,22 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void moveNodesToAnotherParent_movesNonRootNodesToTop() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
         ObjectHolder<Node> prevParent = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
-                .node(randomNode, n->n.setName("root0"))
+                .node(randomNode)
                 .children(b1->b1
-                        .node(randomNode, n->n.setName("prevParent")).storeNode(prevParent)
+                        .node(randomNode).storeNode(prevParent)
                         .children(b2 -> b2
-                                .node(randomNode, n->n.setName("nodeToMove1")).storeNode(nodeToMove1)
+                                .node(randomNode).storeNode(nodeToMove1)
                                 .node(randomNode)
-                                .node(randomNode, n->n.setName("nodeToMove2")).storeNode(nodeToMove2)
+                                .node(randomNode).storeNode(nodeToMove2)
                                 .node(randomNode)
-                                .node(randomNode, n->n.setName("nodeToMove3")).storeNode(nodeToMove3)
+                                .node(randomNode).storeNode(nodeToMove3)
                         )
                         .node(randomNode)
                         .children(b2->b2
@@ -1411,7 +1310,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                         )
                         .node(randomNode)
                 )
-                .node(randomNode, n->n.setName("root1"))
+                .node(randomNode)
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -1444,33 +1343,31 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void moveNodesToAnotherParent_movesRootNodesToNonTopParent() throws Exception {
         //given
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove1 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove2 = new ObjectHolder<>();
         ObjectHolder<Node> nodeToMove3 = new ObjectHolder<>();
         ObjectHolder<Node> newParent = new ObjectHolder<>();
         new NodeTreeBuilder().storeTree(rootNodes)
-                .node(randomNode, n->n.setName("root0"))
+                .node(randomNode)
                 .children(b1->b1
                         .node(randomNode)
                         .children(b2 -> b2
                                 .node(randomNode)
                                 .node(randomNode)
                         )
-                        .node(randomNode, n->n.setName("newParent")).storeNode(newParent)
+                        .node(randomNode).storeNode(newParent)
                         .children(b2->b2
                                 .node(randomNode)
                                 .node(randomNode)
                         )
                         .node(randomNode)
                 )
-                .node(randomNode, n->n.setName("nodeToMove1")).storeNode(nodeToMove1)
-                .node(randomNode, n->n.setName("nodeToMove2")).storeNode(nodeToMove2)
-                .node(randomNode, n->n.setName("nodeToMove3")).storeNode(nodeToMove3)
-                .node(randomNode, n->n.setName("root1"))
+                .node(randomNode).storeNode(nodeToMove1)
+                .node(randomNode).storeNode(nodeToMove2)
+                .node(randomNode).storeNode(nodeToMove3)
+                .node(randomNode)
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -1524,10 +1421,8 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         onSuccessResponse = response;
     }
 
-    private Pair<Node, Node> createAndSaveInnerNode(Supplier<Node> initialNode, Consumer<Node> nodeModifier) {
-        List<Image> images = Randoms.list(3, Randoms::image);
-        images.forEach(imageRepository::save);
-        Consumer<Node> randomNode = randomNode(images);
+    private Pair<Node, Node> createAndSaveInnerNode(Consumer<Node> nodeModifier) {
+        Consumer<Node> randomNode = randomNode();
         ObjectHolder<Node> rootNode = new ObjectHolder<>();
         ObjectHolder<Node> innerNode = new ObjectHolder<>();
         ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
@@ -1536,7 +1431,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .node(randomNode).storeNode(rootNode)
                 .children(b1->b1
                         .node(randomNode)
-                        .node(initialNode, randomNode.andThen(nodeModifier)).storeNode(innerNode)
+                        .node(randomNode, nodeModifier).storeNode(innerNode)
                         .children(b2->b2
                                 .node(randomNode)
                                 .node(randomNode)

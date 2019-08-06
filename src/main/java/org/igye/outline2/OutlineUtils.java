@@ -129,6 +129,19 @@ public class OutlineUtils {
         return set;
     }
 
+    public static <E,K,V> Map<K,List<V>> mapToMap(Collection<E> collection,
+                                                  Function<E,K> keyExtractor, Function<E,V> valueExtractor) {
+        Map<K,List<V>> result = new HashMap<>();
+        for (E elem : collection) {
+            K key = keyExtractor.apply(elem);
+            if (!result.containsKey(key)) {
+                result.put(key, new ArrayList<>());
+            }
+            result.get(key).add(valueExtractor.apply(elem));
+        }
+        return result;
+    }
+
     public static <T> Set<T> filter(Set<T> set, Predicate<T> predicate) {
         Set<T> result = new HashSet<>();
         for (T t : result) {
