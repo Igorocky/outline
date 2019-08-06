@@ -144,23 +144,19 @@ public class NodeManager {
 
     private void updateTags(NodeDto nodeDto, Node node) {
         nodeDto.getTags().get().forEach((tagId, tagValueDtos) -> {
-            if (tagValueDtos == null) {
-                node.removeTags(tagId);
-            } else {
-                node.setTags(
-                        tagId,
-                        map(
-                                tagValueDtos,
-                                tagValueDto -> Tag.builder()
-                                        .ref(nullSafeGetter(
-                                                tagValueDto.getRef(),
-                                                id -> nodeRepository.getOne(id)
-                                        ))
-                                        .value(tagValueDto.getValue())
-                                        .build()
-                        )
-                );
-            }
+            node.setTags(
+                    tagId,
+                    map(
+                            tagValueDtos,
+                            tagValueDto -> Tag.builder()
+                                    .ref(nullSafeGetter(
+                                            tagValueDto.getRef(),
+                                            id -> nodeRepository.getOne(id)
+                                    ))
+                                    .value(tagValueDto.getValue())
+                                    .build()
+                    )
+            );
         });
     }
 

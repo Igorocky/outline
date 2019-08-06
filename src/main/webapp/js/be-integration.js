@@ -81,8 +81,12 @@ function updateTextNodeText(nodeId,newText,onSuccess) {
     const request = {}
     request[NODE.id] = nodeId
     request[NODE.tags] = {}
-    request[NODE.tags][TAG_ID.text] = [{}]
-    request[NODE.tags][TAG_ID.text][0][TAG.value] = newText
+    if (newText) {
+        request[NODE.tags][TAG_ID.text] = [{}];
+        request[NODE.tags][TAG_ID.text][0][TAG.value] = newText
+    } else {
+        request[NODE.tags][TAG_ID.text] = [];
+    }
     patchNode(request, onSuccess)
 }
 
