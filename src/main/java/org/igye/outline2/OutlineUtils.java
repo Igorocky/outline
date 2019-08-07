@@ -120,6 +120,15 @@ public class OutlineUtils {
         return res;
     }
 
+    public static <A,B> Set<B> mapToSet(A[] array, Function<A,B> mapper) {
+        Set<B> set = new HashSet<>();
+        for (A a : array) {
+            B b = mapper.apply(a);
+            set.add(b);
+        }
+        return set;
+    }
+
     public static <A,B> Set<B> mapToSet(List<A> list, Function<A,B> mapper) {
         Set<B> set = new HashSet<>();
         for (A a : list) {

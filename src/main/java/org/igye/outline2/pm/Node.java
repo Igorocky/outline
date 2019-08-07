@@ -43,7 +43,7 @@ public class Node {
     @Id
     private UUID id = UUID.randomUUID();
     @Enumerated(EnumType.STRING)
-    private NodeClass clazz;
+    private NodeClass clazz = NodeClass.CONTAINER;
     private Instant createdWhen;
 
     @ElementCollection

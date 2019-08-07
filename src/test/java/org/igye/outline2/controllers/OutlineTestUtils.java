@@ -1,6 +1,9 @@
 package org.igye.outline2.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeRepository;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
@@ -9,10 +12,10 @@ import org.igye.outline2.pm.TagId;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.EntityManager;
-import java.time.Instant;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -129,5 +132,20 @@ public class OutlineTestUtils {
 
     private static Session getCurrentSession(EntityManager entityManager) {
         return entityManager.unwrap(Session.class);
+    }
+
+    public static String writeValueAsString(ObjectMapper objectMapper, Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new OutlineException(e);
+        }
+    }
+
+    public static void assertMapsEqual(Map<String, Object> map1, Map<String, Object> map2) {
+        assertEquals(map1.keySet(), map2.keySet());
+        for (String key : map1.keySet()) {
+            assertEquals(map1.get(key), map2.get(key));
+        }
     }
 }

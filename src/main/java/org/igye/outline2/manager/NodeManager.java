@@ -39,7 +39,9 @@ public class NodeManager {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
+            node.setClazz(nodeDto.getClazz());
             node.setCreatedWhen(clock.instant());
+            nodeRepository.save(node);
         } else {
             node = nodeRepository.findById(nodeDto.getId()).get();
         }
@@ -131,7 +133,7 @@ public class NodeManager {
     }
 
     private void patchNode(NodeDto nodeDto, Node node) {
-        if (nodeDto.getParentId().isPresent() || nodeDto.getParentId() == null) {
+        if (nodeDto.getParentId() == null || nodeDto.getParentId().isPresent()) {
             moveNodeToAnotherParent(
                     nullSafeGetter(nodeDto.getParentId(), opt->opt.get()),
                     node

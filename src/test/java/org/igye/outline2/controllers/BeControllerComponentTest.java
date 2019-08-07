@@ -27,7 +27,9 @@ import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.OutlineUtils.mapOf;
 import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.controllers.OutlineTestUtils.assertMapsEqual;
 import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabase;
 import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatabase;
 import static org.igye.outline2.controllers.Randoms.randomNode;
@@ -42,7 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BeControllerComponentTest extends ControllerComponentTestBase {
     private static final String ON_SUCCESS_CALLBACK = "function(response){Java.type('org.igye.outline2.controllers.BeControllerComponentTest').onSuccess(response)}";
-    private static String actualGetUrl;
+    private static String actualPatchUrl;
+    private static String actualPatchBody;
     private static String onSuccessResponse;
 
     private Invocable jsAdapter;
@@ -85,17 +88,15 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertTrue(nodeRepository.findAll().isEmpty());
 
         //when
-        MvcResult res = mvc.perform(
-                get("/be/node?depth=0")
-        )
-                .andExpect(status().isOk())
-                .andReturn();
+        String res = invokeJsFunctionWithOnSuccessCallback("getNode", mapOf(
+                "depth", 0
+        ));
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertFalse(nodeDto.getChildNodes().isPresent());
-        assertEquals(setOf("id", "parentId", "objectClass", "name", "icon", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "createdWhen", "tags", "parentId", "path"), parseAsMap(res).keySet());
     }
     @Test public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
@@ -287,35 +288,50 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     }
     @Test public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
         //given
-        actualGetUrl = Randoms.string(10,20);
+        actualPatchUrl = null;
+        actualPatchBody = null;
 
         //when
-        invokeJsFunction("getNodeById", "[null]");
+        invokeJsFunctionWithOnSuccessCallback("getNodeById", null);
 
         //then
-        assertEquals("/be/node?depth=1&includeCanPaste=true", actualGetUrl);
+        assertEquals("/be/rpc/getNode", actualPatchUrl);
+        assertMapsEqual(
+                mapOf("id", null, "depth", 1, "includeCanPaste", true),
+                parseAsMap(actualPatchBody)
+        );
     }
     @Test public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
         //given
-        actualGetUrl = Randoms.string(10,20);
+        actualPatchUrl = null;
+        actualPatchBody = null;
 
         //when
         invokeJsFunction("getNodeById", "[undefined]");
 
         //then
-        assertEquals("/be/node?depth=1&includeCanPaste=true", actualGetUrl);
+        assertEquals("/be/rpc/getNode", actualPatchUrl);
+        assertMapsEqual(
+                mapOf("depth", 1, "includeCanPaste", true),
+                parseAsMap(actualPatchBody)
+        );
     }
     @Test public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
         //given
-        actualGetUrl = Randoms.string(10,20);
+        actualPatchUrl = null;
+        actualPatchBody = null;
         Node node = new Node();
         nodeRepository.save(node);
 
         //when
-        invokeJsFunction("getNodeById", "['" + node.getId() + "']");
+        invokeJsFunctionWithOnSuccessCallback("getNodeById", node.getId());
 
         //then
-        assertEquals("/be/node/" + node.getId() + "?depth=1&includeCanPaste=true", actualGetUrl);
+        assertEquals("/be/rpc/getNode", actualPatchUrl);
+        assertMapsEqual(
+                mapOf("id", node.getId().toString(), "depth", 1, "includeCanPaste", true),
+                parseAsMap(actualPatchBody)
+        );
     }
     @Test public void patchNode_createsNewRootNode() throws Exception {
         //given
@@ -366,10 +382,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
-        String topFakeNode = mvc.perform(
-                get("/be/node")
-        ).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String topFakeNode = invokeJsFunctionWithOnSuccessCallback("getNodeById", null);
         Node expectedNode = new Node();
+        expectedNode.setClazz(NodeClass.IMAGE);
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
@@ -1399,17 +1414,18 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertNodeInDatabase(jdbcTemplate, rootNodes);
     }
 
-    public static void doPatch(String url, String requestBody) throws Exception {
-        mvc.perform(
+    public static String doPatch(String url, String requestBody) throws Exception {
+        actualPatchUrl = url;
+        actualPatchBody = requestBody;
+        return mvc.perform(
                 patch(url)
                         .contentType(APPLICATION_JSON_UTF8)
                         .content(requestBody)
         )
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
     }
 
     public static String doGet(String url) throws Exception {
-        actualGetUrl = url;
         return mvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -1417,7 +1433,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .getContentAsString();
     }
 
-    public static void onSuccess(String response) throws Exception {
+    public static void onSuccess(String response) {
         onSuccessResponse = response;
     }
 
@@ -1444,6 +1460,21 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
         return Pair.of(rootNode.get(), innerNode.get());
+    }
+
+    private String invokeJsFunctionWithOnSuccessCallback(String functionName, Object... args) throws ScriptException, NoSuchMethodException {
+        onSuccessResponse = null;
+        if (args == null) {
+            args = new Object[]{null};
+        }
+        invokeJsFunction(
+                functionName,
+                "[" + StringUtils.join(
+                        map(args, arg -> OutlineTestUtils.writeValueAsString(objectMapper, arg)),
+                        ","
+                ) + ", " + ON_SUCCESS_CALLBACK + "]"
+        );
+        return onSuccessResponse;
     }
 
     private void invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {

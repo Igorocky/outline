@@ -29,9 +29,16 @@ const TAG_ID = {
     text: "text"
 }
 
+function doRpcCall(methodName, params, onSuccess) {
+    doPatch("/be/rpc/" + methodName, params, onSuccess)
+}
+
+function getNode(params, onSuccess) {
+    doRpcCall("getNode", params, onSuccess)
+}
+
 function getNodeById(id, responseHandler) {
-    const url = (id?("/be/node/" + id):"/be/node") + "?depth=1&includeCanPaste=true"
-    doGet(url, responseHandler)
+    getNode({id:id, depth: 1, includeCanPaste: true}, responseHandler)
 }
 
 function patchNode(request,onSuccess) {

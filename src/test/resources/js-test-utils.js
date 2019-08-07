@@ -22,6 +22,8 @@ function doGet(url, onSuccess) {
 
 function doPatch(url, data, onSuccess) {
     const dataStr = JSON.stringify(data)
-    print("js-test-utils.doPatch: url = " + url + " , data = " + dataStr)
-    MvcAdapter.doPatch(url, dataStr)
+    print("js-test-utils.doPatch: url = " + url + " , body = " + dataStr)
+    const result = MvcAdapter.doPatch(url, dataStr)
+    print("js-test-utils.doPatch: result = " + result)
+    onSuccess?onSuccess(result):null
 }

@@ -1,11 +1,13 @@
 package org.igye.outline2.controllers;
 
-import org.igye.outline2.dto.ImageDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.manager.Clipboard;
 import org.igye.outline2.manager.ExportImportManager;
 import org.igye.outline2.manager.ImageManager;
 import org.igye.outline2.manager.NodeManager;
+import org.igye.outline2.rpc.RpcDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,22 +37,13 @@ public class BeController {
     private ExportImportManager exportImportManager;
     @Autowired
     private Clipboard clipboard;
+    @Autowired
+    private RpcDispatcher rpcDispatcher;
 
-    @GetMapping(value = {"/node/{id}", "/node"})
-    public NodeDto getNode(@PathVariable(required = false) String id,
-                           @RequestParam(required = false, defaultValue = "0") Integer depth,
-                           @RequestParam(required = false, defaultValue = "false") Boolean includeCanPaste) {
-        // TODO: 22.07.2019 tc: if depth != 0 but the node doesn't have children then return empty array
-        // TODO: 22.07.2019 tc: if depth == 0 - don't return childNodes attr at all disregarding presence of child nodes
-        // TODO: 22.07.2019 tc: by default depth == 0
-        UUID nodeId = null;
-        if (id != null && !"null".equals(id)) {
-            nodeId = UUID.fromString(id);
-        }
-        return nodeManager.getNode(nodeId, depth, includeCanPaste);
+    @PatchMapping("/rpc/{methodName}")
+    public Object rpcEntry(@PathVariable String methodName, @RequestBody JsonNode passedParams) throws JsonProcessingException, InvocationTargetException, IllegalAccessException {
+        return rpcDispatcher.dispatchRpcCall(methodName, passedParams);
     }
-
-    // TODO: 22.07.2019 tc: in PATCH method, absent attributes are not changed
 
     @PatchMapping("/reorderNode/{id}/{direction}")
     public void reorderNode(@PathVariable UUID id, @PathVariable int direction) {

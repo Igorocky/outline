@@ -1,6 +1,5 @@
 package org.igye.outline2.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.igye.outline2.dto.NodeDto;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,15 @@ public class ControllerComponentTestBase extends ComponentTestBase {
         return objectMapper.readValue(res.getResponse().getContentAsString(), NodeDto.class);
     }
 
+    protected NodeDto parseNodeDto(String res) throws IOException {
+        return objectMapper.readValue(res, NodeDto.class);
+    }
+
     protected Map<String, Object> parseAsMap(MvcResult res) throws IOException {
         return objectMapper.readValue(res.getResponse().getContentAsString(), Map.class);
+    }
+
+    protected Map<String, Object> parseAsMap(String res) throws IOException {
+        return objectMapper.readValue(res, Map.class);
     }
 }
