@@ -12,6 +12,6 @@ public class TagIdConverter implements AttributeConverter<TagId, String> {
 
     @Override
     public TagId convertToEntityAttribute(String dbData) {
-        return TagId.valueOf(dbData);
+        return TagId.fromString(dbData);
     }
 }

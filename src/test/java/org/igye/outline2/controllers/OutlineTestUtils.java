@@ -40,44 +40,30 @@ public class OutlineTestUtils {
     public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node) {
         assertNodeInDatabase(jdbcTemplate, node, 0);
     }
-    public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node node, int ord) {
-        String message = "node.getId() = " + node.getId();
+    public static void assertNodeInDatabase(JdbcTemplate jdbcTemplate, Node expectedNode, int ord) {
+        String message = "node.getId() = " + expectedNode.getId();
+        Node nodeInDatabase = loadNodeFromDb(jdbcTemplate, expectedNode.getId());
+        assertEquals(message, expectedNode.getClazz(), nodeInDatabase.getClazz());
+        assertEquals(message, expectedNode.getCreatedWhen(), nodeInDatabase.getCreatedWhen());
+
+        List<Tag> tagsOfNode = expectedNode.getTags();
+        assertEquals(message, tagsOfNode.size(), nodeInDatabase.getTags().size());
+        assertEquals(message, new HashSet<>(tagsOfNode), new HashSet<>(nodeInDatabase.getTags()));
+
         assertEquals(
                 message,
-                nullSafeGetter(node.getParentNode(), p->p.getId()),
-                getUuidFromNodeTable(jdbcTemplate, node.getId(), PARENT_NODE_ID)
+                (UUID)nullSafeGetter(expectedNode.getParentNode(), p->p.getId()),
+                nullSafeGetter(nodeInDatabase.getParentNode(), p->p.getId())
         );
-        assertEquals(
-                message,
-                node.getClazz(),
-                getNodeClassFromNodeTable(jdbcTemplate, node.getId(), CLAZZ)
-        );
-        assertEquals(
-                message,
-                node.getCreatedWhen(),
-                getInstantFromNodeTable(jdbcTemplate, node.getId(), CREATED_WHEN)
-        );
-
-
-        List<Tag> tagsOfNodeInDatabase = getTagsOfNode(jdbcTemplate, node.getId());
-        if (node.getTags()!=null) {
-            List<Tag> tagsOfNode = node.getTags();
-            assertEquals(message, tagsOfNode.size(), tagsOfNodeInDatabase.size());
-            assertEquals(message, new HashSet<>(tagsOfNode), new HashSet<>(tagsOfNodeInDatabase));
-        } else {
-            assertEquals(message, 0, tagsOfNodeInDatabase.size());
-        }
-
-        if (node.getParentNode()!=null) {
+        if (expectedNode.getParentNode()!=null) {
             assertEquals(
                     message,
                     Integer.valueOf(ord),
-                    getIntFromNodeTable(jdbcTemplate, node.getId(), ORD)
+                    getIntFromNodeTable(jdbcTemplate, expectedNode.getId(), ORD)
             );
         }
-
-        List<Node> childNodes = node.getChildNodes();
-        assertEquals(message,childNodes.size(), countRowsByParentIdInNodeTable(jdbcTemplate, node.getId()));
+        List<Node> childNodes = expectedNode.getChildNodes();
+        assertEquals(message, childNodes.size(), countRowsByParentIdInNodeTable(jdbcTemplate, expectedNode.getId()));
         for (int i = 0; i < childNodes.size(); i++) {
             assertNodeInDatabase(jdbcTemplate, childNodes.get(i), i);
         }
@@ -87,40 +73,20 @@ public class OutlineTestUtils {
         return jdbcTemplate.queryForObject("select " + colName + " from " + tableName + " where id = ?", new Object[]{id}, clazz);
     }
 
-    public static Instant getInstantFromTable(JdbcTemplate jdbcTemplate, String tableName, UUID id, String colName) {
-        return jdbcTemplate.queryForObject(
-                "select " + colName + " from " + tableName + " where id = ?",
-                new Object[]{id},
-                (resultSet, i) -> resultSet.getTimestamp(colName, UTC_CALENDAR).toInstant()
-        );
-    }
-
     public static <T> T getValueFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName, Class<T> clazz) {
         return getValueFromTable(jdbcTemplate, NODE, id, colName, clazz);
-    }
-
-    public static String getStringFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
-        return getValueFromNodeTable(jdbcTemplate, id, colName, String.class);
-    }
-
-    public static NodeClass getNodeClassFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
-        return getValueFromNodeTable(jdbcTemplate, id, colName, NodeClass.class);
     }
 
     public static Integer getIntFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
         return getValueFromNodeTable(jdbcTemplate, id, colName, Integer.class);
     }
 
-    public static UUID getUuidFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
-        return getValueFromNodeTable(jdbcTemplate, id, colName, UUID.class);
-    }
-
-    public static Instant getInstantFromNodeTable(JdbcTemplate jdbcTemplate, UUID id, String colName) {
-        return getInstantFromTable(jdbcTemplate, NODE, id, colName);
-    }
-
     public static int countRowsByParentIdInNodeTable(JdbcTemplate jdbcTemplate, UUID parentId) {
-        return jdbcTemplate.queryForObject("select count(1) from NODE n where n.PARENT_NODE_ID = ?", new Object[]{parentId}, Integer.class);
+        return jdbcTemplate.queryForObject(
+                "select count(1) from NODE n where n.PARENT_NODE_ID = ?",
+                new Object[]{parentId},
+                Integer.class
+        );
     }
 
     public static List<Tag> getTagsOfNode(JdbcTemplate jdbcTemplate, UUID nodeId) {
@@ -135,6 +101,23 @@ public class OutlineTestUtils {
                                 id -> Node.builder().id(id).build()
                         ))
                         .value(rs.getString("VALUE"))
+                        .build()
+        );
+    }
+
+    public static Node loadNodeFromDb(JdbcTemplate jdbcTemplate, UUID nodeId) {
+        return jdbcTemplate.queryForObject(
+                "select * from NODE where ID = ?",
+                new Object[]{nodeId},
+                (rs, idx) -> Node.builder()
+                        .id((UUID) rs.getObject("ID"))
+                        .clazz(NodeClass.valueOf(rs.getString(CLAZZ)))
+                        .createdWhen(rs.getTimestamp(CREATED_WHEN, UTC_CALENDAR).toInstant())
+                        .tags(getTagsOfNode(jdbcTemplate, nodeId))
+                        .parentNode(nullSafeGetter(
+                                (UUID) rs.getObject(PARENT_NODE_ID),
+                                parentId -> Node.builder().id(parentId).build()
+                        ))
                         .build()
         );
     }

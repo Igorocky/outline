@@ -1441,7 +1441,8 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 )
                 .node(randomNode)
         ;
-        rootNodes.get().forEach(nodeRepository::save);
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
         return Pair.of(rootNode.get(), innerNode.get());
     }
 
