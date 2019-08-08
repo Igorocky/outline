@@ -3,6 +3,7 @@ package org.igye.outline2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.hibernate.Session;
+import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -207,5 +209,13 @@ public class OutlineUtils {
         Map<K, V> resp = mapOf(k2,v2,k3,v3);
         resp.put(k1, v1);
         return resp;
+    }
+
+    public static <T> void ifPresent(OptVal<T> optVal, Consumer<T> consumer) {
+        if (optVal == null) {
+            consumer.accept(null);
+        } else {
+            optVal.ifPresent(consumer);
+        }
     }
 }

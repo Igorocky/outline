@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.igye.outline2.OutlineUtils.ifPresent;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapToMap;
 import static org.igye.outline2.OutlineUtils.mapToSet;
@@ -139,7 +140,7 @@ public class NodeManager {
     }
 
     private void patchNode(NodeDto nodeDto, Node node) {
-        nodeDto.getParentId().ifPresent(parId-> moveNodeToAnotherParent(parId, node));
+        ifPresent(nodeDto.getParentId(), parId-> moveNodeToAnotherParent(parId, node));
         if (nodeDto.getTags() != null) {
             updateTags(nodeDto.getTags(), node);
         }

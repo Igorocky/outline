@@ -77,7 +77,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertTrue(nodeDto.getChildNodes().isEmpty());
         assertEquals(
-                setOf("clazz", "tags", "parentId", "childNodes", "path"),
+                setOf("id", "clazz", "tags", "parentId", "childNodes", "path"),
                 parseAsMap(res).keySet()
         );
     }
@@ -93,7 +93,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertNull(nodeDto.getChildNodes());
-        assertEquals(setOf("clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
     }
     @Test public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
@@ -107,7 +107,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals(NodeClass.TOP_CONTAINER, nodeDto.getClazz());
         assertNull(nodeDto.getChildNodes());
-        assertEquals(setOf("clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
     }
     @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
@@ -360,13 +360,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
-        String topFakeNode = invokeJsRpcFunction("getNodeById", null);
+        String topNode = invokeJsRpcFunction("getNodeById", null);
         Node expectedNode = new Node();
         expectedNode.setClazz(NodeClass.IMAGE);
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
-        invokeJsRpcFunction("createChildImageNode", doNotSerialize(topFakeNode));
+        invokeJsRpcFunction("createChildImageNode", doNotSerialize(topNode));
 
         //then
         UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
