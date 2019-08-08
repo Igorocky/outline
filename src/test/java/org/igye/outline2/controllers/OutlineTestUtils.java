@@ -148,4 +148,20 @@ public class OutlineTestUtils {
             assertEquals(map1.get(key), map2.get(key));
         }
     }
+
+    public static DoNotSerialize doNotSerialize(Object value) {
+        return new DoNotSerialize(value);
+    }
+
+    public static class DoNotSerialize {
+        private Object value;
+
+        public DoNotSerialize(Object value) {
+            this.value = value;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+    }
 }

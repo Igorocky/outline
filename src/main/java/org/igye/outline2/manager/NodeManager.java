@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.OutlineUtils.mapToMap;
 import static org.igye.outline2.OutlineUtils.mapToSet;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
@@ -44,9 +45,9 @@ public class NodeManager {
             node = new Node();
             node.setClazz(nodeDto.getClazz());
             node.setCreatedWhen(clock.instant());
-            nodeRepository.save(node);
+            entityManager.persist(node);
         } else {
-            node = nodeRepository.findById(nodeDto.getId()).get();
+            node = nodeRepository.getOne(nodeDto.getId());
         }
         patchNode(nodeDto, node);
         entityManager.unwrap(Session.class).flush();
@@ -92,8 +93,10 @@ public class NodeManager {
         if (CollectionUtils.isEmpty(ids)) {
             throw new OutlineException("Invalid move request.");
         }
-        List<Node> nodesToMove = nodeRepository.findAllById(ids);
-        nodesToMove.forEach(n -> moveNodeToAnotherParent(to, n));
+        Map<UUID, List<Node>> nodesToMove = mapToMap(nodeRepository.findAllById(ids),n->n.getId(),n->n);
+        for (UUID idOfNodeToMove : ids) {
+            moveNodeToAnotherParent(to, nodesToMove.get(idOfNodeToMove).get(0));
+        }
         clipboard.setNodeIds(null);
     }
 
@@ -180,7 +183,7 @@ public class NodeManager {
     private boolean validateMoveToAnotherParent(UUID newParentId, Node nodeToMove) {
         if (newParentId != null) {
             Set<UUID> parentPath = mapToSet(nodeRepository.getOne(newParentId).getPath(), Node::getId);
-            return parentPath.contains(nodeToMove.getId());
+            return !parentPath.contains(nodeToMove.getId());
         }
         return true;
     }

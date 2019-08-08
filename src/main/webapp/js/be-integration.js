@@ -37,6 +37,32 @@ function getNode(params, onSuccess) {
     doRpcCall("rpcGetNode", params, onSuccess)
 }
 
+function setSingleTagForNode(nodeId,tagId,tagValue,tagRef,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.tags] = {}
+    request[NODE.tags][tagId] = [{}]
+    request[NODE.tags][tagId][0][TAG.value] = tagValue
+    request[NODE.tags][tagId][0][TAG.ref] = tagRef
+    patchNode(request, onSuccess)
+}
+
+function removeTagFromNode(nodeId,tagId,onSuccess) {
+    const request = {}
+    request[NODE.id] = nodeId
+    request[NODE.tags] = {}
+    request[NODE.tags][tagId] = []
+    patchNode(request, onSuccess)
+}
+
+function setSingleTagValueForNode(nodeId,tagId,tagValue,onSuccess) {
+    setSingleTagForNode(nodeId,tagId,tagValue,null, onSuccess)
+}
+
+function setSingleTagRefForNode(nodeId,tagId,tagRef,onSuccess) {
+    setSingleTagForNode(nodeId,tagId,null, tagRef, onSuccess)
+}
+
 function getNodeById(id, responseHandler) {
     getNode({id:id, depth: 1, includeCanPaste: true}, responseHandler)
 }
@@ -71,17 +97,19 @@ function createChildImageNode(currNode,onSuccess) {
 }
 
 function updateNodeName(nodeId,newName,onSuccess) {
-    const request = {}
-    request[NODE.id] = nodeId
-    request[NODE.name] = newName
-    patchNode(request, onSuccess)
+    if (newName) {
+        setSingleTagValueForNode(nodeId, TAG_ID.name, newName, onSuccess)
+    } else {
+        removeTagFromNode(nodeId, TAG_ID.name, onSuccess)
+    }
 }
 
 function updateNodeIcon(nodeId,newIconId,onSuccess) {
-    const request = {}
-    request[NODE.id] = nodeId
-    request[NODE.icon] = newIconId
-    patchNode(request, onSuccess)
+    if (newIconId) {
+        setSingleTagRefForNode(nodeId, TAG_ID.icon, newIconId, onSuccess)
+    } else {
+        removeTagFromNode(nodeId, TAG_ID.icon, onSuccess)
+    }
 }
 
 function updateTextNodeText(nodeId,newText,onSuccess) {

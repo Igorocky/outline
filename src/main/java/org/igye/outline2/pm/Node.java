@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.hibernate.annotations.CascadeType.DELETE;
@@ -117,11 +118,7 @@ public class Node {
     public void setTagSingleValue(TagId tagId, Node ref) {
         removeTags(tagId);
         if (ref != null) {
-            tags.add(Tag.builder()
-                    .tagId(tagId)
-                    .ref(ref)
-                    .build()
-            );
+            tags.add(Tag.builder().tagId(tagId).ref(ref).build());
         }
     }
 
@@ -143,5 +140,18 @@ public class Node {
         }
         Collections.reverse(path);
         return path;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return id.equals(node.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

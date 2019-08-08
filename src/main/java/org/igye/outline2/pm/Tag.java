@@ -5,14 +5,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 import org.igye.outline2.OutlineUtils;
 
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.util.Objects;
-import java.util.UUID;
+
+import static org.hibernate.annotations.CascadeType.DELETE;
+import static org.hibernate.annotations.CascadeType.MERGE;
+import static org.hibernate.annotations.CascadeType.PERSIST;
+import static org.hibernate.annotations.CascadeType.REFRESH;
+import static org.hibernate.annotations.CascadeType.REMOVE;
+import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 
 @Getter
 @Setter
@@ -22,10 +28,11 @@ import java.util.UUID;
 @Embeddable
 public class Tag {
     private TagId tagId;
+    private String value;
     @ManyToOne
     @JoinColumn(name = "ref")
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
     private Node ref;
-    private String value;
 
     @Override
     public String toString() {

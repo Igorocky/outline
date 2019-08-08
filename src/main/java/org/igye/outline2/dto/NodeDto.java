@@ -1,7 +1,9 @@
 package org.igye.outline2.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,14 +28,17 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class NodeDto {
     // TODO: 22.07.2019 tc: fails on unknown attr
+    @JsonInclude(value = JsonInclude.Include.ALWAYS)
     private UUID id;
     private NodeClass clazz;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant createdWhen;
 
     private Map<TagId, List<TagValueDto>> tags;
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptUuid.class)
+    @JsonSerialize(using = SerializerOfOptUuid.class)
     private OptVal<UUID> parentId = new OptVal<>();
     private List<NodeDto> childNodes;
 
