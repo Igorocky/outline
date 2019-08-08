@@ -41,7 +41,7 @@ public class BeController {
     private RpcDispatcher rpcDispatcher;
 
     @PatchMapping("/rpc/{methodName}")
-    public Object rpcEntry(@PathVariable String methodName, @RequestBody JsonNode passedParams) throws JsonProcessingException, InvocationTargetException, IllegalAccessException {
+    public Object rpcEntry(@PathVariable String methodName, @RequestBody JsonNode passedParams) throws IOException, InvocationTargetException, IllegalAccessException {
         return rpcDispatcher.dispatchRpcCall(methodName, passedParams);
     }
 

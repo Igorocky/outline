@@ -1,13 +1,13 @@
 package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagValueDto;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Tag;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapToMap;
@@ -22,23 +22,20 @@ public class DtoConverter {
         nodeDto.setCreatedWhen(node.getCreatedWhen());
         nodeDto.setParentId(nullSafeGetter(
                 node.getParentNode(),
-                parentNode -> parentNode.getId(),
-                id -> Optional.of(id)
+                parentNode -> new OptVal<>(parentNode.getId())
         ));
-        nodeDto.setTags(Optional.of(mapToMap(
+        nodeDto.setTags(mapToMap(
                 node.getTags(),
                 tag -> tag.getTagId(),
                 tag -> toTagValueDto(tag)
-        )));
+        ));
 
 
         if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
-                nodeDto.setChildNodes(Optional.of(
-                        map(node.getChildNodes(), n -> toDto(n,depth-1))
-                ));
+                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1)));
             } else {
-                nodeDto.setChildNodes(Optional.of(Collections.emptyList()));
+                nodeDto.setChildNodes(Collections.emptyList());
             }
         }
 

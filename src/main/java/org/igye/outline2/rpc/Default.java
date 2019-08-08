@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface RpcMethod {
+@Target(ElementType.PARAMETER)
+public @interface Default {
+    String value() default "";
 }

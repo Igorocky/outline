@@ -2,10 +2,12 @@ package org.igye.outline2.manager;
 
 import org.hibernate.Session;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.TagValueDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
 import org.igye.outline2.pm.Tag;
+import org.igye.outline2.pm.TagId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -133,33 +136,26 @@ public class NodeManager {
     }
 
     private void patchNode(NodeDto nodeDto, Node node) {
-        if (nodeDto.getParentId() == null || nodeDto.getParentId().isPresent()) {
-            moveNodeToAnotherParent(
-                    nullSafeGetter(nodeDto.getParentId(), opt->opt.get()),
-                    node
-            );
-        }
-        if (nodeDto.getTags().isPresent()) {
-            updateTags(nodeDto, node);
+        nodeDto.getParentId().ifPresent(parId-> moveNodeToAnotherParent(parId, node));
+        if (nodeDto.getTags() != null) {
+            updateTags(nodeDto.getTags(), node);
         }
     }
 
-    private void updateTags(NodeDto nodeDto, Node node) {
-        nodeDto.getTags().get().forEach((tagId, tagValueDtos) -> {
-            node.setTags(
-                    tagId,
-                    map(
-                            tagValueDtos,
-                            tagValueDto -> Tag.builder()
-                                    .ref(nullSafeGetter(
-                                            tagValueDto.getRef(),
-                                            id -> nodeRepository.getOne(id)
-                                    ))
-                                    .value(tagValueDto.getValue())
-                                    .build()
-                    )
-            );
-        });
+    private void updateTags(Map<TagId, List<TagValueDto>> tags, Node node) {
+        tags.forEach((tagId, tagValueDtos) -> node.setTags(
+                tagId,
+                map(
+                        tagValueDtos,
+                        tagValueDto -> Tag.builder()
+                                .ref(nullSafeGetter(
+                                        tagValueDto.getRef(),
+                                        id -> nodeRepository.getOne(id)
+                                ))
+                                .value(tagValueDto.getValue())
+                                .build()
+                )
+        ));
     }
 
     private void moveNodeToAnotherParent(UUID newParentId, Node node) {

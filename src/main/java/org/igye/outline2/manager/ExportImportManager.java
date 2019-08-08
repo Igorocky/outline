@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagValueDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
@@ -116,7 +117,7 @@ public class ExportImportManager {
                 }
         );
 
-        nullSafeGetter(nodeDto.getChildNodes(), opt -> opt.orElse(null), children -> {
+        nullSafeGetter(nodeDto.getChildNodes(), children -> {
             children.forEach(ch -> collectImages(ch, imageTagIds, images));
             return null;
         });
@@ -126,19 +127,18 @@ public class ExportImportManager {
         return saveNodeToDatabase(extractNodes(dataFile), parentId, imageIdsMap);
     }
 
-    private UUID saveNodeToDatabase(NodeDto node, UUID parentId, Map<UUID, UUID> imageIdsMap) {
+    private UUID saveNodeToDatabase(NodeDto nodeDto, UUID parentId, Map<UUID, UUID> imageIdsMap) {
         UUID newNodeId = null;
-        if (!node.getClazz().equals(NodeClass.TOP_CONTAINER)) {
-            node.setId(null);
-            node.setParentId(nullSafeGetter(parentId, id -> Optional.of(id)));
-            newNodeId = nodeManager.patchNode(node).getId();
+        if (!nodeDto.getClazz().equals(NodeClass.TOP_CONTAINER)) {
+            nodeDto.setId(null);
+            nodeDto.setParentId(new OptVal<>(parentId));
+            newNodeId = nodeManager.patchNode(nodeDto).getId();
         } else {
             newNodeId = parentId;
         }
         UUID finalNewNodeId = newNodeId;
         nullSafeGetter(
-                node.getChildNodes(),
-                opt -> opt.get(),
+                nodeDto.getChildNodes(),
                 children -> {
                     children.forEach(ch -> saveNodeToDatabase(ch, finalNewNodeId, imageIdsMap));
                     return null;

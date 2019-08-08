@@ -34,7 +34,7 @@ function doRpcCall(methodName, params, onSuccess) {
 }
 
 function getNode(params, onSuccess) {
-    doRpcCall("getNode", params, onSuccess)
+    doRpcCall("rpcGetNode", params, onSuccess)
 }
 
 function getNodeById(id, responseHandler) {

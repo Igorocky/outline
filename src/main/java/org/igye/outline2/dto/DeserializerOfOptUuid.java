@@ -6,17 +6,16 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
-public class DeserializerOfOptionalUuid extends JsonDeserializer<Optional<UUID>> {
+public class DeserializerOfOptUuid extends JsonDeserializer<OptVal<UUID>> {
     @Override
-    public Optional<UUID> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public OptVal<UUID> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         String uuidStr = jsonParser.getText();
         if (uuidStr == null) {
-            return null;
+            return new OptVal<>(null);
         } else {
-            return Optional.of(UUID.fromString(uuidStr));
+            return new OptVal<>(UUID.fromString(uuidStr));
         }
     }
 }
