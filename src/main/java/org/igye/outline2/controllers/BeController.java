@@ -39,8 +39,9 @@ public class BeController {
 
     @PostMapping("/uploadImage")
     @ResponseBody
-    public NodeDto uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
-        return imageManager.createImage(file);
+    public NodeDto uploadImage(@RequestParam("file") MultipartFile file,
+                               @RequestParam("parentId") String parentId) throws IOException {
+        return imageManager.createImage("null".equals(parentId)?null:UUID.fromString(parentId), file);
     }
 
     @GetMapping("/image/{id}")

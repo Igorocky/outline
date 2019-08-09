@@ -29,8 +29,8 @@ public class ImageManager {
     private String imagesLocation;
 
     @Transactional
-    public NodeDto createImage(MultipartFile file) throws IOException {
-        Node image = createNewImage();
+    public NodeDto createImage(UUID parentId, MultipartFile file) throws IOException {
+        Node image = createNewImage(parentId);
 
         File imgFile = getImgFile(imagesLocation, image.getId());
         File parentDir = imgFile.getParentFile();
@@ -43,11 +43,15 @@ public class ImageManager {
     }
 
     @Transactional
-    public Node createNewImage() {
+    public Node createNewImage(UUID parentId) {
         Node image = new Node();
         image.setClazz(NodeClass.IMAGE);
         image.setCreatedWhen(clock.instant());
-        nodeRepository.save(image);
+        if (parentId != null) {
+            nodeRepository.getOne(parentId).addChild(image);
+        } else {
+            nodeRepository.save(image);
+        }
         return image;
     }
 

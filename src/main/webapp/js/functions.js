@@ -73,8 +73,8 @@ function extractFileFromEvent(event) {
     return blob;
 }
 
-function uploadImage({file, onSuccess}) {
-    uploadFile({url: "/be/uploadImage", file, onSuccess})
+function uploadImage({file, parentId, onSuccess}) {
+    uploadFile({url: "/be/uploadImage", file, params:{parentId:parentId?parentId:null}, onSuccess})
 }
 
 function uploadImportFile({file, parentId, onSuccess}) {
@@ -85,10 +85,13 @@ function exportToFile({nodeId,onSuccess}) {
     doPost({url:"/be/exportToFile/" + nodeId, data:{}, onSuccess: onSuccess})
 }
 
-function uploadFile({url, file, onSuccess}) {
+function uploadFile({url, file, params, onSuccess}) {
     let fd = new FormData();
     if (file) {
         fd.append("file", file);
+        if (params) {
+            _.each(_.pairs(params), ([val, key]) => fd.append(val, key))
+        }
         $.ajax({
             type: "POST",
             url: url,

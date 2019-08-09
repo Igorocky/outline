@@ -155,11 +155,11 @@ public class ExportImportManager {
                 ZipEntry entry = entries.nextElement();
                 UUID imgId = getImageId(entry);
                 if (imgId != null) {
-                    Node image = imageManager.createNewImage();
-                    imageIdsMap.put(imgId, image.getId());
+//                    Node image = imageManager.createNewImage();
+//                    imageIdsMap.put(imgId, image.getId());
 
-                    File imgFile = getImgFile(imagesLocation, image.getId());
-                    FileUtils.copyInputStreamToFile(zipFile.getInputStream(entry), imgFile);
+//                    File imgFile = getImgFile(imagesLocation, image.getId());
+//                    FileUtils.copyInputStreamToFile(zipFile.getInputStream(entry), imgFile);
                 }
             }
         }

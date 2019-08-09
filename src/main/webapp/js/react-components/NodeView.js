@@ -12,17 +12,11 @@ const NodeView = props => {
     }, [props.nodeIdToLoad])
 
     useEffect(() => {
-        document.onpaste = event => uploadImage({
+        document.onpaste = event => curNode?uploadImage({
             file: extractFileFromEvent(event),
-            onSuccess: imgDto => createChildImageNode(
-                curNode,
-                imgNode => updateImageNodeImage(
-                    imgNode[NODE.id],
-                    imgDto[NODE.id],
-                    reloadCurrNode
-                )
-            )
-        })
+            parentId:getCurrNodeId(),
+            onSuccess: reloadCurrNode
+        }):null
         return () => document.onpaste = null
     }, [curNode])
 
@@ -219,6 +213,18 @@ const NodeView = props => {
         }
     }
 
+    function renderCancelSelectionBtnIfNecessary() {
+        if (checkedNodes) {
+            return re(Button, {
+                    key: "cancel-selection-btn", style: actionButtonsStyle, variant: "contained",
+                    onClick: () => setCheckedNodes(null)
+                }, "Cancel selection"
+            )
+        } else {
+            return null
+        }
+    }
+
     function renderPasteBtnIfNecessary() {
         if (curNode && curNode[NODE.canPaste]) {
             return re(Button,{key:"Paste-btn", style:actionButtonsStyle, variant:"contained",
@@ -236,6 +242,7 @@ const NodeView = props => {
                 onSelect: unselectAllItems, onImport: openImportDialog, onExport: openExportDialog
             }),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
+            renderCancelSelectionBtnIfNecessary(),
             renderCutBtnIfNecessary(),
             renderPasteBtnIfNecessary()
         ]
