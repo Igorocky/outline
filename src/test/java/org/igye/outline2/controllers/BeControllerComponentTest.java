@@ -38,6 +38,7 @@ import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatab
 import static org.igye.outline2.controllers.OutlineTestUtils.writeValueAsString;
 import static org.igye.outline2.controllers.Randoms.randomNode;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -1005,10 +1006,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
+        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
 
         //then
-        assertEquals("false", onSuccessResponse);
+        NodeDto nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getCanPaste());
     }
     @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoOneOfNodesBeingMoved() throws Exception {
         //given
@@ -1046,10 +1048,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 nodeToMove2.get().getId(),
                 nodeToMove3.get().getId()
         ));
-        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMove2.get().getId());
+        String res = invokeJsRpcFunction("getNodeById", nodeToMove2.get().getId());
 
         //then
-        assertEquals("false", onSuccessResponse);
+        NodeDto nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getCanPaste());
     }
     @Test public void canPasteNodesFromClipboard_returnsFalseForPastingIntoChildNode() throws Exception {
         //given
@@ -1085,10 +1088,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
+        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
 
         //then
-        assertEquals("false", onSuccessResponse);
+        NodeDto nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getCanPaste());
     }
     @Test public void canPasteNodesFromClipboard_returnsFalseAfterPasteWasDone() throws Exception {
         //given
@@ -1122,16 +1126,19 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 "putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
-        assertEquals("true", onSuccessResponse);
+        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
+        NodeDto nodeDto = parseNodeDto(res);
+        assertTrue(nodeDto.getCanPaste());
         onSuccessResponse = null;
+
         invokeJsRpcFunction("pasteNodesFromClipboard", nodeToMoveTo.get().getId());
 
         //when
-        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
+        res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
 
         //then
-        assertEquals("false", onSuccessResponse);
+        nodeDto = parseNodeDto(res);
+        assertFalse(nodeDto.getCanPaste());
     }
     @Test public void canPasteNodesFromClipboard_returnsTrueForCorrectPaste() throws Exception {
         //given
@@ -1165,10 +1172,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        invokeJsRpcFunction("canPasteNodesFromClipboard", null);
+        String res = invokeJsRpcFunction("getNodeById", null);
 
         //then
-        assertEquals("true", onSuccessResponse);
+        NodeDto nodeDto = parseNodeDto(res);
+        assertTrue(nodeDto.getCanPaste());
     }
     @Test public void moveNodesToAnotherParent_movesNonRootNodesToNonTopParent() throws Exception {
         //given

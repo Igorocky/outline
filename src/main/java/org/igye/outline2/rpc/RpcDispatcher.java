@@ -1,6 +1,8 @@
 package org.igye.outline2.rpc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -20,13 +22,14 @@ import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.igye.outline2.dto.OptVal.ABSENT_OPT_VAL;
 
 @Service
 public class RpcDispatcher {
+    private JavaType listOfUuidsJavaType;
     @Autowired
     protected ObjectMapper objectMapper;
 
@@ -37,6 +40,7 @@ public class RpcDispatcher {
 
     @PostConstruct
     public void init() {
+        listOfUuidsJavaType = objectMapper.getTypeFactory().constructType(new TypeReference<List<UUID>>() {});
         for (RpcMethodsCollection rpcMethodsCollection : rpcMethodsCollections) {
             for (Method method : rpcMethodsCollection.getClass().getMethods()) {
                 if (method.getAnnotation(RpcMethod.class) != null) {
@@ -89,14 +93,10 @@ public class RpcDispatcher {
                 } else if (passedParam.isNull()) {
                     arguments[i] = new OptVal<>(null);
                 } else {
-                    ParameterizedType parameterizedType = (ParameterizedType) declaredParam.getParameterizedType();
-                    arguments[i] = new OptVal<>(objectMapper.treeToValue(
-                            passedParam,
-                            (Class) parameterizedType.getActualTypeArguments()[0]
-                    ));
+                    arguments[i] = parseParam(methodName, declaredParam, passedParam);
                 }
             } else if (passedParam != null) {
-                arguments[i] = objectMapper.treeToValue(passedParam, paramType);
+                arguments[i] = parseParam(methodName, declaredParam, passedParam);
             } else {
                 Default defaultAnnotation = declaredParam.getAnnotation(Default.class);
                 if (defaultAnnotation!=null) {
@@ -108,5 +108,34 @@ public class RpcDispatcher {
             }
         }
         return arguments;
+    }
+
+    private Object parseParam(String methodName, Parameter declaredParam, JsonNode passedParam) throws IOException {
+        if (passedParam.isNull()) {
+            return null;
+        }
+        Class<?> declaredParamType = declaredParam.getType();
+        if (declaredParamType.equals(List.class)) {
+            Class typeArgument = getTypeArgument(declaredParam);
+            if (typeArgument.equals(UUID.class)) {
+                return readValue(passedParam, listOfUuidsJavaType);
+            } else {
+                throw new OutlineException("Cannot deserialize value for " + declaredParam.getName()
+                        + " rpc method parameter in " + methodName + " method.");
+            }
+        } else if (declaredParamType.equals(OptVal.class)) {
+            return objectMapper.treeToValue(passedParam, getTypeArgument(declaredParam));
+        } else {
+            return objectMapper.treeToValue(passedParam, declaredParamType);
+        }
+    }
+
+    private Class getTypeArgument(Parameter declaredParam) {
+        ParameterizedType parameterizedType = (ParameterizedType) declaredParam.getParameterizedType();
+        return (Class) parameterizedType.getActualTypeArguments()[0];
+    }
+
+    private Object readValue(JsonNode passedParam, JavaType javaType) throws IOException {
+        return objectMapper.readValue(objectMapper.treeAsTokens(passedParam), javaType);
     }
 }

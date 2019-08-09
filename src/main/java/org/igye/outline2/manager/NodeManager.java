@@ -76,8 +76,7 @@ public class NodeManager {
         return resultDto;
     }
 
-    @Transactional
-    public boolean validateMoveOfNodesFromClipboard(UUID to) {
+    private boolean validateMoveOfNodesFromClipboard(UUID to) {
         List<UUID> ids = clipboard.getNodeIds();
         if (CollectionUtils.isEmpty(ids)) {
             return false;

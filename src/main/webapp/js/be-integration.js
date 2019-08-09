@@ -37,6 +37,10 @@ function getNode(params, onSuccess) {
     doRpcCall("rpcGetNode", params, onSuccess)
 }
 
+function patchNode(request,onSuccess) {
+    doRpcCall("rpcPatchNode", {request:request}, onSuccess)
+}
+
 function setSingleTagForNode(nodeId,tagId,tagValue,tagRef,onSuccess) {
     const request = {}
     request[NODE.id] = nodeId
@@ -67,12 +71,8 @@ function getNodeById(id, responseHandler) {
     getNode({id:id, depth: 1, includeCanPaste: true}, responseHandler)
 }
 
-function patchNode(request,onSuccess) {
-    doPatch("/be/node", request, onSuccess)
-}
-
 function reorderNode(nodeId,direction,onSuccess) {
-    doPatch("/be/reorderNode/" + nodeId + "/" + direction, {}, onSuccess)
+    doRpcCall("rpcReorderNode", {nodeId:nodeId, direction:direction}, onSuccess)
 }
 
 function createChildNode(currNode,onSuccess) {
@@ -113,23 +113,11 @@ function updateNodeIcon(nodeId,newIconId,onSuccess) {
 }
 
 function updateTextNodeText(nodeId,newText,onSuccess) {
-    const request = {}
-    request[NODE.id] = nodeId
-    request[NODE.tags] = {}
     if (newText) {
-        request[NODE.tags][TAG_ID.text] = [{}];
-        request[NODE.tags][TAG_ID.text][0][TAG.value] = newText
+        setSingleTagValueForNode(nodeId, TAG_ID.text, newText, onSuccess)
     } else {
-        request[NODE.tags][TAG_ID.text] = [];
+        removeTagFromNode(nodeId, TAG_ID.text, onSuccess)
     }
-    patchNode(request, onSuccess)
-}
-
-function updateImageNodeImage(nodeId,newImageId,onSuccess) {
-    const request = {}
-    request[NODE.id] = nodeId
-    request[NODE.imgId] = newImageId
-    patchNode(request, onSuccess)
 }
 
 function moveNodeToStart(nodeId,onSuccess) {
@@ -149,13 +137,9 @@ function moveNodeToEnd(nodeId,onSuccess) {
 }
 
 function putNodeIdsToClipboard(nodeIds,onSuccess) {
-    doPatch("/be/putNodeIdsToClipboard", nodeIds, onSuccess)
-}
-
-function canPasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
-    doGet("/be/canPasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, onSuccess)
+    doRpcCall("rpcPutNodeIdsToClipboard", {ids:nodeIds}, onSuccess)
 }
 
 function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
-    doPatch("/be/pasteNodesFromClipboard/" + idOfNodeToPasteToOrNull, {}, onSuccess)
+    doRpcCall("rpcPasteNodesFromClipboard", {to:idOfNodeToPasteToOrNull}, onSuccess)
 }
