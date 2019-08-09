@@ -89,7 +89,7 @@ public class Node {
         tags.add(Tag.builder().tagId(tagId).value(tagValue).build());
     }
 
-    public List<Tag> getTagValues(UUID tagId) {
+    public List<Tag> getTagValues(TagId tagId) {
         Hibernate.initialize(tags);
         List<Tag> result = new ArrayList<>();
         for (Tag tag : tags) {
@@ -100,8 +100,12 @@ public class Node {
         return result;
     }
 
-    public String getTagSingleValue(UUID tagId) {
+    public String getTagSingleValue(TagId tagId) {
         return OutlineUtils.getSingleValue(getTagValues(tagId)).getValue();
+    }
+
+    public UUID getTagSingleRef(TagId tagId) {
+        return OutlineUtils.getSingleValue(getTagValues(tagId)).getRef();
     }
 
     public void setTagSingleValue(TagId tagId, String value) {

@@ -5,6 +5,7 @@ import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
+import org.igye.outline2.pm.TagId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ public class ImageManager {
     public NodeDto createImage(UUID parentId, MultipartFile file) throws IOException {
         Node image = createNewImage(parentId);
 
-        File imgFile = getImgFile(imagesLocation, image.getId());
+        File imgFile = getImgFile(imagesLocation, image.getTagSingleRef(TagId.IMG_ID));
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
@@ -47,6 +48,7 @@ public class ImageManager {
         Node image = new Node();
         image.setClazz(NodeClass.IMAGE);
         image.setCreatedWhen(clock.instant());
+        image.setTagSingleValue(TagId.IMG_ID, UUID.randomUUID());
         if (parentId != null) {
             nodeRepository.getOne(parentId).addChild(image);
         } else {

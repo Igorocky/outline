@@ -26,7 +26,8 @@ const TAG = {
 const TAG_ID = {
     name: "name",
     icon: "icon",
-    text: "text"
+    text: "text",
+    imgId: "imgId",
 }
 
 function doRpcCall(methodName, params, onSuccess) {

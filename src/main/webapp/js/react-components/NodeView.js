@@ -89,7 +89,7 @@ const NodeView = props => {
 
     function renderImageNode(node) {
         return paper(re(ImageNodeComponent, {
-            imgId: node[NODE.id],
+            imgId: getTagSingleRef(node, TAG_ID.imgId),
             onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
             onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
             onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),

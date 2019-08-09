@@ -9,6 +9,7 @@ import java.util.Map;
 public enum TagId {
     NAME("name"),
     ICON("icon"),
+    IMG_ID("imgId"),
     TEXT("text");
 
     private static Map<String, TagId> valuesMap = new HashMap<>();
