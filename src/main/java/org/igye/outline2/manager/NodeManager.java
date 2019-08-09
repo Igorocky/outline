@@ -151,10 +151,7 @@ public class NodeManager {
                 map(
                         tagValueDtos,
                         tagValueDto -> Tag.builder()
-                                .ref(nullSafeGetter(
-                                        tagValueDto.getRef(),
-                                        id -> nodeRepository.getOne(id)
-                                ))
+                                .ref(tagValueDto.getRef())
                                 .value(tagValueDto.getValue())
                                 .build()
                 )

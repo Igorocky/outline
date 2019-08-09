@@ -98,11 +98,7 @@ public class OutlineTestUtils {
                 new Object[]{nodeId},
                 (rs, idx) -> Tag.builder()
                         .tagId(TagId.fromString(rs.getString("TAG_ID")))
-                        .ref(nullSafeGetter(
-                                rs.getString("REF"),
-                                str -> UUID.fromString(str),
-                                id -> Node.builder().id(id).build()
-                        ))
+                        .ref((UUID) rs.getObject("REF"))
                         .value(rs.getString("VALUE"))
                         .build()
         );

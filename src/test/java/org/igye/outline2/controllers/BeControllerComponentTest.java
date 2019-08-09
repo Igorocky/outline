@@ -531,22 +531,19 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(node -> node.removeTags(TagId.ICON));
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
-        Node expectedIcon = Randoms.randomNode(n->n.setClazz(NodeClass.IMAGE));
-        nodeRepository.save(expectedIcon);
+        UUID expectedIcon = UUID.randomUUID();
         innerNode.setTagSingleValue(TagId.ICON, expectedIcon);
 
         //when
-        invokeJsRpcFunction("updateNodeIcon", innerNode.getId(), expectedIcon.getId());
+        invokeJsRpcFunction("updateNodeIcon", innerNode.getId(), expectedIcon);
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
     }
     @Test public void patchNode_modifiesIconTagFromSomeUuidToNull() throws Exception {
         //given
-        Node existingIcon = Randoms.randomNode(n->n.setClazz(NodeClass.IMAGE));
-        nodeRepository.save(existingIcon);
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(
-                node -> node.setTagSingleValue(TagId.ICON, existingIcon)
+                node -> node.setTagSingleValue(TagId.ICON, UUID.randomUUID())
         );
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();

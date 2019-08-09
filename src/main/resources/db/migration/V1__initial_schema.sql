@@ -33,7 +33,6 @@ create table TAG
 	TAG_ID VARCHAR,
 	REF uuid,
 	VALUE VARCHAR,
-	constraint TAG_FK_REF foreign key (REF) references NODE,
 	constraint TAG_FK_NODE foreign key (NODE_ID) references NODE
 );
 

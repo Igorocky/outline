@@ -47,7 +47,7 @@ public class DtoConverter {
             return null;
         }
         TagValueDto tagValueDto = new TagValueDto();
-        tagValueDto.setRef(nullSafeGetter(tagValue.getRef(), node->node.getId()));
+        tagValueDto.setRef(tagValue.getRef());
         tagValueDto.setValue(tagValue.getValue());
         return tagValueDto;
     }

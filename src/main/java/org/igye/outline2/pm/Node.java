@@ -115,7 +115,7 @@ public class Node {
         }
     }
 
-    public void setTagSingleValue(TagId tagId, Node ref) {
+    public void setTagSingleValue(TagId tagId, UUID ref) {
         removeTags(tagId);
         if (ref != null) {
             tags.add(Tag.builder().tagId(tagId).ref(ref).build());
