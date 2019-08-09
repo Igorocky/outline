@@ -13,7 +13,10 @@ import org.igye.outline.data.repository.NodeRepository;
 import org.igye.outline.data.repository.ParagraphRepository;
 import org.igye.outline.data.repository.TopicRepository;
 import org.igye.outline.data.repository.UserRepository;
+import org.igye.outline.dto.NodeClass;
 import org.igye.outline.dto.NodeDto;
+import org.igye.outline.dto.TagId;
+import org.igye.outline.dto.TagValueDto;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
@@ -46,6 +49,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -388,17 +392,28 @@ public class NodeDao {
     private NodeDto convertToDto(Object node, Set<UUID> images) {
         NodeDto nodeDto = new NodeDto();
         nodeDto.setId(getId(node));
-        nodeDto.setObjectClass(getObjectClass(node));
-        nodeDto.setName((node instanceof Node)? ((Node) node).getName() : null);
-        nodeDto.setIcon(getIcon(node));
-        nodeDto.setImgId(getImgId(node));
-        nodeDto.setText(getText(node));
-
-        if (nodeDto.getIcon() != null) {
-            images.add(nodeDto.getIcon());
-        }
-        if (nodeDto.getImgId() != null) {
-            images.add(nodeDto.getImgId());
+        nodeDto.setClazz(getObjectClass(node));
+        if (nodeDto.getClazz().equals(NodeClass.CONTAINER)) {
+            nodeDto.getTags().put(TagId.NAME, Arrays.asList(
+                    TagValueDto.builder().value(((Node) node).getName()).build()
+            ));
+            final UUID icon = getIcon(node);
+            if (icon!=null) {
+                nodeDto.getTags().put(TagId.ICON, Arrays.asList(
+                        TagValueDto.builder().ref(icon).build()
+                ));
+                images.add(icon);
+            }
+        } else if (nodeDto.getClazz().equals(NodeClass.IMAGE)) {
+            final UUID imgId = ((Image) node).getId();
+            nodeDto.getTags().put(TagId.IMG_ID, Arrays.asList(
+                    TagValueDto.builder().ref(imgId).build()
+            ));
+            images.add(imgId);
+        } else if (nodeDto.getClazz().equals(NodeClass.TEXT)) {
+            nodeDto.getTags().put(TagId.TEXT, Arrays.asList(
+                    TagValueDto.builder().value(((Text) node).getText()).build()
+            ));
         }
 
         nodeDto.setChildNodes(getChildren(node, images));
@@ -419,20 +434,6 @@ public class NodeDao {
         return result;
     }
 
-    private String getText(Object node) {
-        if (node instanceof Text) {
-            return ((Text) node).getText();
-        }
-        return null;
-    }
-
-    private UUID getImgId(Object node) {
-        if (node instanceof Image) {
-            return ((Image) node).getId();
-        }
-        return null;
-    }
-
     private UUID getIcon(Object node) {
         if (node instanceof Paragraph) {
             return nullSafeGetter(((Paragraph) node).getIcon(), i->i.getId());
@@ -442,15 +443,15 @@ public class NodeDao {
         return null;
     }
 
-    private String getObjectClass(Object node) {
+    private NodeClass getObjectClass(Object node) {
         if (node instanceof Paragraph || node instanceof Topic) {
-            return "NODE";
+            return NodeClass.CONTAINER;
         } else if (node instanceof Image) {
-            return "IMAGE";
+            return NodeClass.IMAGE;
         } else if (node instanceof Text) {
-            return "TEXT";
+            return NodeClass.TEXT;
         }
-        return "UNKNOWN";
+        throw new OutlineException("Can't determine object class.");
     }
 
     private UUID getId(Object node) {
@@ -459,7 +460,7 @@ public class NodeDao {
         } else if (node instanceof Content) {
             return ((Content) node).getId();
         }
-        return null;
+        throw new OutlineException("Cant determine id.");
     }
 
     @Transactional
