@@ -288,7 +288,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         actualPatchBody = null;
 
         //when
-        invokeJsFunction("getNodeById", "[undefined]");
+        invokeJsRpcFunction("getNodeById", doNotSerialize("undefined"));
 
         //then
         assertEquals("/be/rpc/rpcGetNode", actualPatchUrl);
@@ -566,7 +566,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         innerNode.setTagSingleValue(TagId.TEXT, expectedText);
 
         //when
-        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "','" + expectedText + "']");
+        invokeJsRpcFunction("updateTextNodeText", innerNode.getId(), expectedText);
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
@@ -579,7 +579,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         innerNode.removeTags(TagId.TEXT);
 
         //when
-        invokeJsFunction("updateTextNodeText", "['" + innerNode.getId() + "', null]");
+        invokeJsRpcFunction("updateTextNodeText", innerNode.getId(), null);
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNode);
@@ -603,7 +603,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeUp", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -631,7 +631,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(1, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeUp", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -659,7 +659,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(3, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeUp", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -687,7 +687,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(1, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeDown", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -715,7 +715,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(3, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeDown", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -739,7 +739,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeDown", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -763,7 +763,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToStart", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -791,7 +791,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(0, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToStart", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -819,7 +819,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(0, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToStart", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -847,7 +847,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(4, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToEnd", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -875,7 +875,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         parent.getChildNodes().add(4, nodeToMove.get());
 
         //when
-        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToEnd", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -899,7 +899,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToEnd", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -919,7 +919,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeUp", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeUp", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -939,7 +939,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeDown", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeDown", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -959,7 +959,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeToStart", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToStart", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -979,7 +979,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction("moveNodeToEnd", concatToArray("'" + nodeToMove.get().getId() + "'"));
+        invokeJsRpcFunction("moveNodeToEnd", nodeToMove.get().getId());
 
         //then
         assertNodeInDatabase(jdbcTemplate, rootNodes);
@@ -1005,13 +1005,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        invokeJsFunction(
-                "canPasteNodesFromClipboard",
-                concatToArray(
-                        "'" + nodeToMoveTo.get().getId() + "'",
-                        ON_SUCCESS_CALLBACK
-                )
-        );
+        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
 
         //then
         assertEquals("false", onSuccessResponse);
@@ -1046,21 +1040,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
-        String arrayOfIds = concatToArray(
-                "'" + nodeToMove1.get().getId() + "'",
-                "'" + nodeToMove2.get().getId() + "'",
-                "'" + nodeToMove3.get().getId() + "'"
-        );
-
         //when
-        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
-        invokeJsFunction(
-                "canPasteNodesFromClipboard",
-                concatToArray(
-                        "'" + nodeToMove2.get().getId() + "'",
-                        ON_SUCCESS_CALLBACK
-                )
-        );
+        invokeJsRpcFunction("putNodeIdsToClipboard", Arrays.asList(
+                nodeToMove1.get().getId(),
+                nodeToMove2.get().getId(),
+                nodeToMove3.get().getId()
+        ));
+        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMove2.get().getId());
 
         //then
         assertEquals("false", onSuccessResponse);
@@ -1095,20 +1081,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
-        String arrayOfIds = concatToArray(
-                "'" + nodeToMove1.get().getId() + "'",
-                "'" + nodeToMove2.get().getId() + "'"
-        );
-
         //when
-        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
-        invokeJsFunction(
-                "canPasteNodesFromClipboard",
-                concatToArray(
-                        "'" + nodeToMoveTo.get().getId() + "'",
-                        ON_SUCCESS_CALLBACK
-                )
+        invokeJsRpcFunction("putNodeIdsToClipboard",
+                Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
+        invokeJsRpcFunction("canPasteNodesFromClipboard", nodeToMoveTo.get().getId());
 
         //then
         assertEquals("false", onSuccessResponse);
@@ -1184,17 +1161,11 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
-        String arrayOfIds = concatToArray(
-                "'" + nodeToMove1.get().getId() + "'",
-                "'" + nodeToMove2.get().getId() + "'"
-        );
-
         //when
-        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
-        invokeJsFunction(
-                "canPasteNodesFromClipboard",
-                concatToArray("null", ON_SUCCESS_CALLBACK)
+        invokeJsRpcFunction("putNodeIdsToClipboard",
+                Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
+        invokeJsRpcFunction("canPasteNodesFromClipboard", null);
 
         //then
         assertEquals("true", onSuccessResponse);
@@ -1284,15 +1255,13 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
 
-        String arrayOfIds = concatToArray(
-                "'" + nodeToMove1.get().getId() + "'",
-                "'" + nodeToMove2.get().getId() + "'",
-                "'" + nodeToMove3.get().getId() + "'"
-        );
-
         //when
-        invokeJsFunction("putNodeIdsToClipboard", concatToArray(arrayOfIds));
-        invokeJsFunction("pasteNodesFromClipboard", concatToArray("null"));
+        invokeJsRpcFunction("putNodeIdsToClipboard", Arrays.asList(
+                nodeToMove1.get().getId(),
+                nodeToMove2.get().getId(),
+                nodeToMove3.get().getId()
+        ));
+        invokeJsRpcFunction("pasteNodesFromClipboard", null);
 
         //then
         prevParent.get().getChildNodes().removeIf(node ->
@@ -1418,7 +1387,8 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
             args = new Object[]{null};
         }
 
-        invokeJsFunction(
+        jsAdapter.invokeFunction(
+                "doTestCall",
                 functionName,
                 "["
                         + StringUtils.join(map(args, this::serializeArgument), ",")
@@ -1435,13 +1405,5 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                     ?((DoNotSerialize)arg).getValue().toString()
                     :writeValueAsString(objectMapper, arg);
         }
-    }
-
-    private void invokeJsFunction(String functionName, String arrOfArguments) throws ScriptException, NoSuchMethodException {
-        jsAdapter.invokeFunction("doTestCall", functionName, arrOfArguments);
-    }
-
-    private String concatToArray(Object... elems) {
-        return "[" + StringUtils.join(elems, ",") + "]";
     }
 }
