@@ -102,3 +102,13 @@ function uploadFile({url, file, onSuccess}) {
         });
     }
 }
+
+function getByPath(obj, path, defaultValue) {
+    if (_.size(path) == 0) {
+        return obj
+    } else if(!obj) {
+        return defaultValue
+    } else {
+        return getByPath(obj[_.first(path)], _.tail(path), defaultValue)
+    }
+}
