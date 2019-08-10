@@ -15,8 +15,8 @@ import org.igye.outline.data.repository.TopicRepository;
 import org.igye.outline.data.repository.UserRepository;
 import org.igye.outline.dto.NodeClass;
 import org.igye.outline.dto.NodeDto;
+import org.igye.outline.dto.TagDto;
 import org.igye.outline.dto.TagId;
-import org.igye.outline.dto.TagValueDto;
 import org.igye.outline.exceptions.OutlineException;
 import org.igye.outline.htmlforms.ContentForForm;
 import org.igye.outline.htmlforms.EditParagraphForm;
@@ -50,7 +50,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -402,26 +401,42 @@ public class NodeDao {
         nodeDto.setId(getId(node));
         nodeDto.setClazz(getObjectClass(node));
         if (nodeDto.getClazz().equals(NodeClass.CONTAINER)) {
-            nodeDto.getTags().put(TagId.NAME, Arrays.asList(
-                    TagValueDto.builder().value(((Node) node).getName()).build()
-            ));
+            nodeDto.getTags().add(
+                    TagDto.builder()
+                            .node(nodeDto.getId())
+                            .tagId(TagId.NAME)
+                            .value(((Node) node).getName())
+                            .build()
+            );
             final UUID icon = getIcon(node);
             if (icon!=null) {
-                nodeDto.getTags().put(TagId.ICON, Arrays.asList(
-                        TagValueDto.builder().ref(icon).build()
-                ));
+                nodeDto.getTags().add(
+                        TagDto.builder()
+                                .node(nodeDto.getId())
+                                .tagId(TagId.ICON)
+                                .value(icon.toString())
+                                .build()
+                );
                 images.add(icon);
             }
         } else if (nodeDto.getClazz().equals(NodeClass.IMAGE)) {
             final UUID imgId = ((Image) node).getId();
-            nodeDto.getTags().put(TagId.IMG_ID, Arrays.asList(
-                    TagValueDto.builder().ref(imgId).build()
-            ));
+            nodeDto.getTags().add(
+                    TagDto.builder()
+                            .node(nodeDto.getId())
+                            .tagId(TagId.IMG_ID)
+                            .value(imgId.toString())
+                            .build()
+            );
             images.add(imgId);
         } else if (nodeDto.getClazz().equals(NodeClass.TEXT)) {
-            nodeDto.getTags().put(TagId.TEXT, Arrays.asList(
-                    TagValueDto.builder().value(((Text) node).getText()).build()
-            ));
+            nodeDto.getTags().add(
+                    TagDto.builder()
+                            .node(nodeDto.getId())
+                            .tagId(TagId.TEXT)
+                            .value(((Text) node).getText())
+                            .build()
+            );
         }
 
         nodeDto.setChildNodes(getChildren(node, images));

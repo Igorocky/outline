@@ -8,9 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -24,7 +23,7 @@ public class NodeDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant createdWhen;
 
-    private Map<TagId, List<TagValueDto>> tags = new HashMap<>();
+    private List<TagDto> tags = new ArrayList<>();
 
     private UUID parentId;
     private List<NodeDto> childNodes;
