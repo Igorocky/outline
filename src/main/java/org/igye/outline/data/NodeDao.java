@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -59,6 +60,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.igye.outline.common.OutlineUtils.getImgFile;
 import static org.igye.outline.common.OutlineUtils.mapToSet;
@@ -365,25 +368,30 @@ public class NodeDao {
         String exportName = root.getName().replaceAll("[^a-zA-Z0-9-_\\.]", "_");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         String time = ZonedDateTime.now().format(formatter);
-        File exportDir = new File(exportDirPath + "/" + exportName + "--" + time);
-        exportDir.mkdirs();
+        File exportZipFile = new File(exportDirPath + "/" + exportName + "--" + time + ".zip");
+        exportZipFile.getParentFile().mkdirs();
         Set<UUID> images = new HashSet<>();
-        FileUtils.writeStringToFile(
-                new File(exportDir, "nodes.json"),
-                objectMapper.writeValueAsString(convertToDto(root, images)),
-                StandardCharsets.UTF_8
-        );
 
-        File srcImagesLocationFile = new File(imagesLocation);
-        File dstImagesLocationFile = new File(exportDir, "images");
-        images.forEach(imgId -> copyImage(srcImagesLocationFile, dstImagesLocationFile, imgId));
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(exportZipFile))) {
+            ZipEntry nodesEntry = new ZipEntry("nodes.json");
+            zos.putNextEntry(nodesEntry);
+            byte[] nodesBytes = objectMapper.writeValueAsString(convertToDto(root, images)).getBytes(StandardCharsets.UTF_8);
+            zos.write(nodesBytes, 0, nodesBytes.length);
+            zos.closeEntry();
+
+            File srcImagesLocationFile = new File(imagesLocation);
+            images.forEach(imgId -> copyImage(srcImagesLocationFile, zos, imgId));
+        }
     }
 
-    private void copyImage(File srcDir, File dstDir, UUID imageId) {
-        File srcImgFile = getImgFile(srcDir.getAbsolutePath(), imageId);
-        File dstImgFile = getImgFile(dstDir.getAbsolutePath(), imageId);
+    private void copyImage(File srcDir, ZipOutputStream zos, UUID imageId) {
         try {
-            FileUtils.copyFile(srcImgFile, dstImgFile);
+            File srcImgFile = getImgFile(srcDir.getAbsolutePath(), imageId);
+            ZipEntry imageEntry = new ZipEntry("images/" + imageId.toString().substring(0,2) + "/" + imageId);
+            zos.putNextEntry(imageEntry);
+            byte[] imageBytes = FileUtils.readFileToByteArray(srcImgFile);
+            zos.write(imageBytes, 0, imageBytes.length);
+            zos.closeEntry();
         } catch (IOException e) {
             throw new OutlineException(e);
         }
