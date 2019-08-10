@@ -54,17 +54,19 @@ public class NodeManager {
         return node.getId();
     }
 
-    @Transactional
-    public UUID patchTag(TagDto tagDto) {
+    private void patchTag(Node node, TagDto tagDto) {
         Tag tag;
         if (tagDto.getId() == null) {
             tag = new Tag();
-            tag = tagRepository.save(tag);
-            nodeRepository.getOne(tagDto.getNode()).addTag(tag);
+            tag.setId(UUID.randomUUID());
             tag.setTagId(tagDto.getTagId().getVal());
             tag.setValue(tagDto.getValue().getVal());
+            node.addTag(tag);
         } else {
             tag = tagRepository.getOne(tagDto.getId());
+            if (!tag.getNode().getId().equals(node.getId())) {
+                throw new OutlineException("!tag.getNode().getId().equals(node.getId())");
+            }
             Tag finalTag = tag;
             ifPresent(tagDto.getTagId(), tagId -> finalTag.setTagId(tagId));
             ifPresent(tagDto.getValue(), value -> {
@@ -75,7 +77,6 @@ public class NodeManager {
                 }
             });
         }
-        return tag.getId();
     }
 
     @Transactional
@@ -176,7 +177,7 @@ public class NodeManager {
 
         final List<TagDto> tags = nodeDto.getTags();
         if (tags != null) {
-            tags.forEach(this::patchTag);
+            tags.forEach(tagDto -> patchTag(node, tagDto));
         }
     }
 

@@ -123,6 +123,7 @@ public class ExportImportManager {
             nodeDto.setId(null);
             nodeDto.setParentId(new OptVal<>(parentId));
             updateImageRefs(nodeDto, IMAGE_TAG_IDS, imageIdsMap);
+            updateTagIds(nodeDto);
             newNodeId = nodeManager.patchNode(nodeDto);
             if (nodeDto.getCreatedWhen() != null) {
                 nodeRepository.getOne(newNodeId).setCreatedWhen(nodeDto.getCreatedWhen());
@@ -144,12 +145,18 @@ public class ExportImportManager {
     private void updateImageRefs(NodeDto nodeDto, Set<TagId> imageTagIds, Map<UUID, UUID> imageIdsMap) {
         for (TagId imageTagId : imageTagIds) {
             for (TagDto imageTag : nodeDto.getTags(imageTagId)) {
-                String newImgId = imageIdsMap.get(imageTag.getValue()).toString();
+                String newImgId = imageIdsMap.get(UUID.fromString(imageTag.getValue().getVal())).toString();
                 if (newImgId == null) {
                     throw new OutlineException("newImgId == null");
                 }
                 imageTag.setValue(OptVal.of(newImgId));
             }
+        }
+    }
+
+    private void updateTagIds(NodeDto nodeDto) {
+        for (TagDto tag : nodeDto.getTags()) {
+            tag.setNode(nodeDto.getId());
         }
     }
 
