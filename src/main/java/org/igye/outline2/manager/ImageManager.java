@@ -33,7 +33,7 @@ public class ImageManager {
     public NodeDto createImage(UUID parentId, MultipartFile file) throws IOException {
         Node image = createNewImage(parentId);
 
-        File imgFile = getImgFile(imagesLocation, image.getTagSingleRef(TagId.IMG_ID));
+        File imgFile = getImgFile(imagesLocation, UUID.fromString(image.getTagSingleValue(TagId.IMG_ID)));
         File parentDir = imgFile.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
@@ -48,7 +48,7 @@ public class ImageManager {
         Node image = new Node();
         image.setClazz(NodeClass.IMAGE);
         image.setCreatedWhen(clock.instant());
-        image.setTagSingleValue(TagId.IMG_ID, UUID.randomUUID());
+        image.setTagSingleValue(TagId.IMG_ID, UUID.randomUUID().toString());
         if (parentId != null) {
             nodeRepository.getOne(parentId).addChild(image);
         } else {

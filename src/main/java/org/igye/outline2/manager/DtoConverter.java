@@ -2,7 +2,7 @@ package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.OptVal;
-import org.igye.outline2.dto.TagValueDto;
+import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.Tag;
 import org.springframework.util.CollectionUtils;
@@ -10,7 +10,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 
 import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.mapToMap;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 public class DtoConverter {
@@ -24,11 +23,7 @@ public class DtoConverter {
                 node.getParentNode(),
                 parentNode -> new OptVal<>(parentNode.getId())
         ));
-        nodeDto.setTags(mapToMap(
-                node.getTags(),
-                tag -> tag.getTagId(),
-                tag -> toTagValueDto(tag)
-        ));
+        nodeDto.setTags(map(node.getTags(), DtoConverter::toDto));
 
 
         if (depth > 0) {
@@ -42,13 +37,12 @@ public class DtoConverter {
         return nodeDto;
     }
 
-    public static TagValueDto toTagValueDto(Tag tagValue) {
-        if (tagValue == null) {
-            return null;
-        }
-        TagValueDto tagValueDto = new TagValueDto();
-        tagValueDto.setRef(tagValue.getRef());
-        tagValueDto.setValue(tagValue.getValue());
-        return tagValueDto;
+    public static TagDto toDto(Tag tag) {
+        return TagDto.builder()
+                .id(tag.getId())
+                .node(tag.getNode().getId())
+                .tagId(new OptVal<>(tag.getTagId()))
+                .value(new OptVal<>(tag.getValue()))
+                .build();
     }
 }

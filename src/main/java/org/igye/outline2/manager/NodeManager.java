@@ -2,7 +2,7 @@ package org.igye.outline2.manager;
 
 import org.hibernate.Session;
 import org.igye.outline2.dto.NodeDto;
-import org.igye.outline2.dto.TagValueDto;
+import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
@@ -30,29 +30,52 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 @Component
 public class NodeManager {
-    @PersistenceContext
-    private EntityManager entityManager;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private TagRepository tagRepository;
     @Autowired(required = false)
     private Clock clock = Clock.systemUTC();
     @Autowired
     private Clipboard clipboard;
 
     @Transactional
-    public NodeDto patchNode(NodeDto nodeDto) {
+    public UUID patchNode(NodeDto nodeDto) {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
             node.setClazz(nodeDto.getClazz());
             node.setCreatedWhen(clock.instant());
-            entityManager.persist(node);
+            node = nodeRepository.save(node);
         } else {
             node = nodeRepository.getOne(nodeDto.getId());
         }
         patchNode(nodeDto, node);
-        entityManager.unwrap(Session.class).flush();
-        return DtoConverter.toDto(node, 0);
+        return node.getId();
+    }
+
+    @Transactional
+    public UUID patchTag(TagDto tagDto) {
+        Tag tag;
+        if (tagDto.getId() == null) {
+            tag = new Tag();
+            tag = tagRepository.save(tag);
+            nodeRepository.getOne(tagDto.getNode()).addTag(tag);
+            tag.setTagId(tagDto.getTagId().getVal());
+            tag.setValue(tagDto.getValue().getVal());
+        } else {
+            tag = tagRepository.getOne(tagDto.getId());
+            Tag finalTag = tag;
+            ifPresent(tagDto.getTagId(), tagId -> finalTag.setTagId(tagId));
+            ifPresent(tagDto.getValue(), value -> {
+                if (value != null) {
+                    finalTag.setValue(value);
+                } else {
+                    finalTag.delete();
+                }
+            });
+        }
+        return tag.getId();
     }
 
     @Transactional
@@ -138,24 +161,23 @@ public class NodeManager {
         }
     }
 
-    private void patchNode(NodeDto nodeDto, Node node) {
-        ifPresent(nodeDto.getParentId(), parId-> moveNodeToAnotherParent(parId, node));
-        if (nodeDto.getTags() != null) {
-            updateTags(nodeDto.getTags(), node);
-        }
+    @Transactional
+    public void setSingleTagForNode(UUID nodeId, TagId tagId, String value) {
+        nodeRepository.getOne(nodeId).setTagSingleValue(tagId, value);
     }
 
-    private void updateTags(Map<TagId, List<TagValueDto>> tags, Node node) {
-        tags.forEach((tagId, tagValueDtos) -> node.setTags(
-                tagId,
-                map(
-                        tagValueDtos,
-                        tagValueDto -> Tag.builder()
-                                .ref(tagValueDto.getRef())
-                                .value(tagValueDto.getValue())
-                                .build()
-                )
-        ));
+    @Transactional
+    public void removeTagsFromNode(UUID nodeId, TagId tagId) {
+        nodeRepository.getOne(nodeId).removeTags(tagId);
+    }
+
+    private void patchNode(NodeDto nodeDto, Node node) {
+        ifPresent(nodeDto.getParentId(), parId-> moveNodeToAnotherParent(parId, node));
+
+        final List<TagDto> tags = nodeDto.getTags();
+        if (tags != null) {
+            tags.forEach(this::patchTag);
+        }
     }
 
     private void moveNodeToAnotherParent(UUID newParentId, Node node) {

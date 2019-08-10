@@ -29,22 +29,22 @@ create table NODE_AUD
 
 create table TAG
 (
-	NODE_ID uuid not null,
-	TAG_ID VARCHAR,
-	REF uuid,
-	VALUE VARCHAR,
-	constraint TAG_FK_NODE foreign key (NODE_ID) references NODE
+	ID uuid not null primary key,
+	NODE_ID uuid,
+	TAG_ID VARCHAR not null,
+	VALUE VARCHAR not null,
+	constraint TAG_FK foreign key (NODE_ID) references NODE
 );
 
 create table TAG_AUD
 (
+	ID uuid not null,
 	REV INTEGER not null,
-	REVTYPE TINYINT not null,
-	NODE_ID uuid not null,
+	REVTYPE TINYINT,
+	NODE_ID uuid,
 	TAG_ID VARCHAR,
 	VALUE VARCHAR,
-	REF uuid,
-	primary key (REV, REVTYPE, NODE_ID),
+	primary key (ID, REV),
 	constraint TAG_AUD_FK foreign key (REV) references REVINFO
 );
 

@@ -532,7 +532,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();
         UUID expectedIcon = UUID.randomUUID();
-        innerNode.setTagSingleValue(TagId.ICON, expectedIcon);
+        innerNode.setTagSingleValue(TagId.ICON, expectedIcon.toString());
 
         //when
         invokeJsRpcFunction("updateNodeIcon", innerNode.getId(), expectedIcon);
@@ -543,7 +543,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
     @Test public void patchNode_modifiesIconTagFromSomeUuidToNull() throws Exception {
         //given
         Pair<Node, Node> existingNodes = createAndSaveInnerNode(
-                node -> node.setTagSingleValue(TagId.ICON, UUID.randomUUID())
+                node -> node.setTagSingleValue(TagId.ICON, UUID.randomUUID().toString())
         );
         Node rootNode = existingNodes.getLeft();
         Node innerNode = existingNodes.getRight();

@@ -7,6 +7,9 @@ import javax.persistence.Converter;
 public class TagIdConverter implements AttributeConverter<TagId, String> {
     @Override
     public String convertToDatabaseColumn(TagId tagId) {
+        if (tagId == null) {
+            return null;
+        }
         return tagId.getTagId();
     }
 

@@ -12,6 +12,10 @@ public class OptVal<T> {
     private boolean isPresent = false;
     private T val;
 
+    public static <T> OptVal<T> of(T val) {
+        return new OptVal<>(val);
+    }
+
     public OptVal() {
     }
 

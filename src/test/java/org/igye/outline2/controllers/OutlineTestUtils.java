@@ -10,17 +10,19 @@ import org.igye.outline2.pm.NodeClass;
 import org.igye.outline2.pm.Tag;
 import org.igye.outline2.pm.TagId;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class OutlineTestUtils {
 
@@ -49,9 +51,9 @@ public class OutlineTestUtils {
         assertEquals(message, expectedNode.getClazz(), nodeInDatabase.getClazz());
         assertEquals(message, expectedNode.getCreatedWhen(), nodeInDatabase.getCreatedWhen());
 
-        List<Tag> tagsOfNode = expectedNode.getTags();
-        assertEquals(message, tagsOfNode.size(), nodeInDatabase.getTags().size());
-        assertEquals(message, new HashSet<>(tagsOfNode), new HashSet<>(nodeInDatabase.getTags()));
+        List<Tag> expectedTags = expectedNode.getTags();
+        assertEquals(message, expectedTags.size(), nodeInDatabase.getTags().size());
+        compareTags(message, expectedTags, nodeInDatabase.getTags());
 
         assertEquals(
                 message,
@@ -97,8 +99,9 @@ public class OutlineTestUtils {
                 "select * from TAG where NODE_ID = ?",
                 new Object[]{nodeId},
                 (rs, idx) -> Tag.builder()
+                        .id((UUID) rs.getObject("ID"))
+                        .node(Node.builder().id((UUID) rs.getObject("NODE_ID")).build())
                         .tagId(TagId.fromString(rs.getString("TAG_ID")))
-                        .ref((UUID) rs.getObject("REF"))
                         .value(rs.getString("VALUE"))
                         .build()
         );
@@ -159,5 +162,26 @@ public class OutlineTestUtils {
         public Object getValue() {
             return value;
         }
+    }
+
+    private static void compareTags(String message, List<Tag> expectedTags, List<Tag> actualTags) {
+        assertEquals(message, expectedTags.size(), actualTags.size());
+        if (!CollectionUtils.isEmpty(expectedTags)) {
+            expectedTags.forEach(expectedTag -> assertTrue(message, findCorrespondingTag(actualTags, expectedTag)));
+            actualTags.forEach(actualTag -> assertTrue(message, findCorrespondingTag(expectedTags, actualTag)));
+        }
+    }
+
+    private static boolean findCorrespondingTag(List<Tag> tags, Tag tag) {
+        for (Tag tag1 : tags) {
+            if (
+                    Objects.equals(tag1.getNode().getId(), tag.getNode().getId())
+                            && Objects.equals(tag1.getTagId(), tag.getTagId())
+                            && Objects.equals(tag1.getValue(), tag.getValue())
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

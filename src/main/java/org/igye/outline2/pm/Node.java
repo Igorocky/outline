@@ -8,10 +8,7 @@ import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.envers.Audited;
-import org.igye.outline2.OutlineUtils;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -40,15 +37,15 @@ import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 @Builder
 @Entity
 @Audited
-public class Node {
+public class Node implements HasTags {
     @Id
     private UUID id = UUID.randomUUID();
     @Enumerated(EnumType.STRING)
     private NodeClass clazz = NodeClass.CONTAINER;
     private Instant createdWhen;
 
-    @ElementCollection
-    @CollectionTable(name = "tag")
+    @OneToMany(mappedBy = "node", orphanRemoval = true)
+    @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
     private List<Tag> tags = new ArrayList<>();
 
     @ManyToOne
@@ -71,64 +68,16 @@ public class Node {
         childNodes.removeIf(c -> c.getId().equals(child.getId()));
     }
 
-    public void setValueTags(TagId tagId, List<String> tagValues) {
-        removeTags(tagId);
-        tagValues.forEach(tagValue -> this.tags.add(Tag.builder().tagId(tagId).value(tagValue).build()));
-    }
-
-    public void setTags(TagId tagId, List<Tag> tagValues) {
-        removeTags(tagId);
-        tagValues.forEach(tagValue -> {
-            tagValue.setTagId(tagId);
-            this.tags.add(tagValue);
-        });
-    }
-
-    public void addTag(TagId tagId, String tagValue) {
+    public void addTag(Tag tag) {
         Hibernate.initialize(tags);
-        tags.add(Tag.builder().tagId(tagId).value(tagValue).build());
+        tag.setNode(this);
+        tags.add(tag);
     }
 
-    public List<Tag> getTagValues(TagId tagId) {
+    public void detachTag(Tag tag) {
         Hibernate.initialize(tags);
-        List<Tag> result = new ArrayList<>();
-        for (Tag tag : tags) {
-            if (tagId.equals(tag.getTagId())) {
-                result.add(tag);
-            }
-        }
-        return result;
-    }
-
-    public String getTagSingleValue(TagId tagId) {
-        return OutlineUtils.getSingleValue(getTagValues(tagId)).getValue();
-    }
-
-    public UUID getTagSingleRef(TagId tagId) {
-        return OutlineUtils.getSingleValue(getTagValues(tagId)).getRef();
-    }
-
-    public void setTagSingleValue(TagId tagId, String value) {
-        removeTags(tagId);
-        if (value != null) {
-            tags.add(Tag.builder()
-                    .tagId(tagId)
-                    .value(value)
-                    .build()
-            );
-        }
-    }
-
-    public void setTagSingleValue(TagId tagId, UUID ref) {
-        removeTags(tagId);
-        if (ref != null) {
-            tags.add(Tag.builder().tagId(tagId).ref(ref).build());
-        }
-    }
-
-    public void removeTags(TagId tagId) {
-        Hibernate.initialize(tags);
-        tags.removeIf(tag -> tag.getTagId().equals(tagId));
+        tag.setNode(null);
+        tags.removeIf(c -> c.getId().equals(tag.getId()));
     }
 
     public boolean isTopNode() {

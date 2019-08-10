@@ -3,6 +3,7 @@ package org.igye.outline2.controllers;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.manager.Clipboard;
 import org.igye.outline2.manager.NodeManager;
+import org.igye.outline2.pm.TagId;
 import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -28,7 +29,8 @@ public class NodeMethods implements RpcMethodsCollection {
 
     @RpcMethod
     public NodeDto rpcPatchNode(NodeDto request) {
-        return nodeManager.patchNode(request);
+        UUID id = nodeManager.patchNode(request);
+        return nodeManager.getNode(id, 0, false);
     }
 
     @RpcMethod
@@ -44,5 +46,15 @@ public class NodeMethods implements RpcMethodsCollection {
     @RpcMethod
     public void rpcPasteNodesFromClipboard(UUID to) {
         nodeManager.moveNodesFromClipboard(to);
+    }
+
+    @RpcMethod
+    public void rpcSetSingleTagForNode(UUID nodeId, TagId tagId, String value) {
+        nodeManager.setSingleTagForNode(nodeId, tagId, value);
+    }
+
+    @RpcMethod
+    public void rpcRemoveTagsFromNode(UUID nodeId, TagId tagId) {
+        nodeManager.removeTagsFromNode(nodeId, tagId);
     }
 }

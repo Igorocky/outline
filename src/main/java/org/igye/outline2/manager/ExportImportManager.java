@@ -2,12 +2,10 @@ package org.igye.outline2.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.OptVal;
-import org.igye.outline2.dto.TagValueDto;
+import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.exceptions.OutlineException;
-import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
 import org.igye.outline2.pm.TagId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +19,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -36,6 +31,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.igye.outline2.OutlineUtils.getImgFile;
+import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.OutlineUtils.setOf;
@@ -45,12 +41,15 @@ public class ExportImportManager {
     private static final Pattern IMAGE_ENTRY_PATTERN = Pattern.compile(
             "^.*images/[a-zA-Z0-9]{2}/([a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12})$");
     private static final Pattern NODES_ENTRY_PATTERN = Pattern.compile("^.*nodes\\.json$");
+    private static final Set<TagId> IMAGE_TAG_IDS = setOf(TagId.IMG_ID, TagId.ICON);
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
     private ImageManager imageManager;
     @Autowired
     private NodeManager nodeManager;
+    @Autowired
+    private NodeRepository nodeRepository;
     @Value("${tmp.dir}")
     private String tmpDir;
     @Value("${images.location}")
@@ -73,7 +72,6 @@ public class ExportImportManager {
         root.setPath(null);
         String nodeName = nullSafeGetterWithDefault(
                 root.getTagSingleValue(TagId.NAME),
-                tagValue -> tagValue.getValue(),
                 "Node without name"
         );
         String exportName = nodeName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
@@ -106,15 +104,7 @@ public class ExportImportManager {
 
     private void collectImages(NodeDto nodeDto, Set<TagId> imageTagIds, Set<UUID> images) {
         imageTagIds.forEach(tagId ->
-                {
-                    List<TagValueDto> tagValues = OutlineUtils.<List<TagValueDto>>nullSafeGetterWithDefault(
-                            nodeDto.getTagValues(tagId),
-                            Collections.emptyList()
-                    );
-                    tagValues.forEach(
-                            tagValue -> nullSafeGetter(tagValue.getValue(), val->images.add(UUID.fromString(val)))
-                    );
-                }
+                images.addAll(map(nodeDto.getTagsValues(tagId), UUID::fromString))
         );
 
         nullSafeGetter(nodeDto.getChildNodes(), children -> {
@@ -132,7 +122,11 @@ public class ExportImportManager {
         if (!nodeDto.getClazz().equals(NodeClass.TOP_CONTAINER)) {
             nodeDto.setId(null);
             nodeDto.setParentId(new OptVal<>(parentId));
-            newNodeId = nodeManager.patchNode(nodeDto).getId();
+            updateImageRefs(nodeDto, IMAGE_TAG_IDS, imageIdsMap);
+            newNodeId = nodeManager.patchNode(nodeDto);
+            if (nodeDto.getCreatedWhen() != null) {
+                nodeRepository.getOne(newNodeId).setCreatedWhen(nodeDto.getCreatedWhen());
+            }
         } else {
             newNodeId = parentId;
         }
@@ -147,6 +141,18 @@ public class ExportImportManager {
         return newNodeId;
     }
 
+    private void updateImageRefs(NodeDto nodeDto, Set<TagId> imageTagIds, Map<UUID, UUID> imageIdsMap) {
+        for (TagId imageTagId : imageTagIds) {
+            for (TagDto imageTag : nodeDto.getTags(imageTagId)) {
+                String newImgId = imageIdsMap.get(imageTag.getValue()).toString();
+                if (newImgId == null) {
+                    throw new OutlineException("newImgId == null");
+                }
+                imageTag.setValue(OptVal.of(newImgId));
+            }
+        }
+    }
+
     private void importImages(File dataFile, Map<UUID, UUID> imageIdsMap) throws IOException {
         try (ZipFile zipFile = new ZipFile(dataFile)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -155,11 +161,10 @@ public class ExportImportManager {
                 ZipEntry entry = entries.nextElement();
                 UUID imgId = getImageId(entry);
                 if (imgId != null) {
-//                    Node image = imageManager.createNewImage();
-//                    imageIdsMap.put(imgId, image.getId());
-
-//                    File imgFile = getImgFile(imagesLocation, image.getId());
-//                    FileUtils.copyInputStreamToFile(zipFile.getInputStream(entry), imgFile);
+                    UUID newImgId = UUID.randomUUID();
+                    imageIdsMap.put(imgId, newImgId);
+                    File imgFile = getImgFile(imagesLocation, newImgId);
+                    FileUtils.copyInputStreamToFile(zipFile.getInputStream(entry), imgFile);
                 }
             }
         }

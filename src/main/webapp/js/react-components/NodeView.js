@@ -25,11 +25,12 @@ const NodeView = props => {
     }
 
     function getTagSingleValue(node, tagId, defaultValue) {
-        return getByPath(node, [NODE.tags, tagId, 0, TAG.value], defaultValue)
-    }
-
-    function getTagSingleRef(node, tagId, defaultValue) {
-        return getByPath(node, [NODE.tags, tagId, 0, TAG.ref], defaultValue)
+        const tag = _.find(node[NODE.tags], tag => tag[TAG.tagId] == tagId)
+        if (tag) {
+            return tag[TAG.value]
+        } else {
+            return defaultValue
+        }
     }
 
     function reloadCurrNode() {
@@ -89,7 +90,7 @@ const NodeView = props => {
 
     function renderImageNode(node) {
         return paper(re(ImageNodeComponent, {
-            imgId: getTagSingleRef(node, TAG_ID.imgId),
+            imgId: getTagSingleValue(node, TAG_ID.imgId),
             onMoveToStart: () => moveNodeToStart(node[NODE.id],reloadCurrNode),
             onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
             onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),

@@ -10,15 +10,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.igye.outline2.pm.NodeClass;
-import org.igye.outline2.pm.TagId;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-
-import static org.igye.outline2.OutlineUtils.getSingleValue;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
 @Getter
 @Setter
@@ -26,7 +21,7 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 @AllArgsConstructor
 @Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class NodeDto {
+public class NodeDto implements HasTagDtos {
     // TODO: 22.07.2019 tc: fails on unknown attr
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
     private UUID id;
@@ -34,7 +29,7 @@ public class NodeDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant createdWhen;
 
-    private Map<TagId, List<TagValueDto>> tags;
+    private List<TagDto> tags;
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptUuid.class)
@@ -44,18 +39,4 @@ public class NodeDto {
 
     private List<NodeDto> path;
     private Boolean canPaste;
-
-    public List<TagValueDto> getTagValues(TagId tagId) {
-        return nullSafeGetter(
-                tags,
-                map->map.get(tagId)
-        );
-    }
-
-    public TagValueDto getTagSingleValue(TagId tagId) {
-        return nullSafeGetter(
-                tags,
-                map-> getSingleValue(map.get(tagId))
-        );
-    }
 }
