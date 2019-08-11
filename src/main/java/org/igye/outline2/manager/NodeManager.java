@@ -1,6 +1,5 @@
 package org.igye.outline2.manager;
 
-import org.hibernate.Session;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.exceptions.OutlineException;
@@ -8,13 +7,14 @@ import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
 import org.igye.outline2.pm.Tag;
 import org.igye.outline2.pm.TagId;
+import org.igye.outline2.rpc.Default;
+import org.igye.outline2.rpc.RpcMethod;
+import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,7 @@ import static org.igye.outline2.OutlineUtils.mapToMap;
 import static org.igye.outline2.OutlineUtils.mapToSet;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 
+@RpcMethodsCollection
 @Component
 public class NodeManager {
     @Autowired
@@ -39,8 +40,9 @@ public class NodeManager {
     @Autowired
     private Clipboard clipboard;
 
+    @RpcMethod
     @Transactional
-    public UUID patchNode(NodeDto nodeDto) {
+    public UUID rpcPatchNode(NodeDto nodeDto) {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
@@ -54,33 +56,11 @@ public class NodeManager {
         return node.getId();
     }
 
-    private void patchTag(Node node, TagDto tagDto) {
-        Tag tag;
-        if (tagDto.getId() == null) {
-            tag = new Tag();
-            tag.setId(UUID.randomUUID());
-            tag.setTagId(tagDto.getTagId().getVal());
-            tag.setValue(tagDto.getValue().getVal());
-            node.addTag(tag);
-        } else {
-            tag = tagRepository.getOne(tagDto.getId());
-            if (!tag.getNode().getId().equals(node.getId())) {
-                throw new OutlineException("!tag.getNode().getId().equals(node.getId())");
-            }
-            Tag finalTag = tag;
-            ifPresent(tagDto.getTagId(), tagId -> finalTag.setTagId(tagId));
-            ifPresent(tagDto.getValue(), value -> {
-                if (value != null) {
-                    finalTag.setValue(value);
-                } else {
-                    finalTag.delete();
-                }
-            });
-        }
-    }
-
+    @RpcMethod
     @Transactional
-    public NodeDto getNode(UUID id, Integer depth, Boolean includeCanPaste) {
+    public NodeDto rpcGetNode(@Default("null") UUID id,
+                           @Default("0") Integer depth,
+                           @Default("false") Boolean includeCanPaste) {
         Node result;
         if (id == null) {
             result = new Node();
@@ -100,19 +80,15 @@ public class NodeManager {
         return resultDto;
     }
 
-    private boolean validateMoveOfNodesFromClipboard(UUID to) {
-        List<UUID> ids = clipboard.getNodeIds();
-        if (CollectionUtils.isEmpty(ids)) {
-            return false;
-        }
-        return !nodeRepository.findAllById(ids).stream()
-                .filter(nodeToMove -> !validateMoveToAnotherParent(to, nodeToMove))
-                .findFirst()
-                .isPresent();
+    @RpcMethod
+    @Transactional
+    public void rpcPutNodeIdsToClipboard(List<UUID> ids) {
+        clipboard.setNodeIds(ids);
     }
 
+    @RpcMethod
     @Transactional
-    public void moveNodesFromClipboard(UUID to) {
+    public void rpcMoveNodesFromClipboard(UUID to) {
         List<UUID> ids = clipboard.getNodeIds();
         if (CollectionUtils.isEmpty(ids)) {
             throw new OutlineException("Invalid move request.");
@@ -124,9 +100,10 @@ public class NodeManager {
         clipboard.setNodeIds(null);
     }
 
+    @RpcMethod
     @Transactional
-    public void reorderNode(UUID id, int direction) {
-        Node node = nodeRepository.getOne(id);
+    public void rpcReorderNode(UUID nodeId, int direction) {
+        Node node = nodeRepository.getOne(nodeId);
         Node parentNode = node.getParentNode();
         if (parentNode != null) {
             int oldIdx = -1;
@@ -162,14 +139,52 @@ public class NodeManager {
         }
     }
 
+    @RpcMethod
     @Transactional
-    public void setSingleTagForNode(UUID nodeId, TagId tagId, String value) {
+    public void rpcSetSingleTagForNode(UUID nodeId, TagId tagId, String value) {
         nodeRepository.getOne(nodeId).setTagSingleValue(tagId, value);
     }
 
+    @RpcMethod
     @Transactional
-    public void removeTagsFromNode(UUID nodeId, TagId tagId) {
+    public void rpcRemoveTagsFromNode(UUID nodeId, TagId tagId) {
         nodeRepository.getOne(nodeId).removeTags(tagId);
+    }
+
+    private void patchTag(Node node, TagDto tagDto) {
+        Tag tag;
+        if (tagDto.getId() == null) {
+            tag = new Tag();
+            tag.setId(UUID.randomUUID());
+            tag.setTagId(tagDto.getTagId().getVal());
+            tag.setValue(tagDto.getValue().getVal());
+            node.addTag(tag);
+        } else {
+            tag = tagRepository.getOne(tagDto.getId());
+            if (!tag.getNode().getId().equals(node.getId())) {
+                throw new OutlineException("!tag.getNode().getId().equals(node.getId())");
+            }
+            Tag finalTag = tag;
+            ifPresent(tagDto.getTagId(), tagId -> finalTag.setTagId(tagId));
+            ifPresent(tagDto.getValue(), value -> {
+                if (value != null) {
+                    finalTag.setValue(value);
+                } else {
+                    finalTag.delete();
+                }
+            });
+        }
+    }
+
+    private boolean validateMoveOfNodesFromClipboard(UUID to) {
+        List<UUID> ids = clipboard.getNodeIds();
+        if (CollectionUtils.isEmpty(ids)) {
+            return false;
+        }
+        return !nodeRepository.findAllById(ids).stream()
+                .filter(nodeToMove -> !validateMoveToAnotherParent(to, nodeToMove))
+                .findFirst()
+                .isPresent();
     }
 
     private void patchNode(NodeDto nodeDto, Node node) {

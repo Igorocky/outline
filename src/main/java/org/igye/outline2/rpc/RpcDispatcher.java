@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.exceptions.OutlineException;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +35,16 @@ public class RpcDispatcher {
     protected ObjectMapper objectMapper;
 
     @Autowired
-    private List<RpcMethodsCollection> rpcMethodsCollections;
+    @RpcMethodsCollection
+    private List<Object> rpcMethodsCollections;
 
     private Map<String, Pair<Object, Method>> methodMap = new HashMap<>();
 
     @PostConstruct
     public void init() {
         listOfUuidsJavaType = objectMapper.getTypeFactory().constructType(new TypeReference<List<UUID>>() {});
-        for (RpcMethodsCollection rpcMethodsCollection : rpcMethodsCollections) {
-            for (Method method : rpcMethodsCollection.getClass().getMethods()) {
+        for (Object rpcMethodsCollection : rpcMethodsCollections) {
+            for (Method method : AopUtils.getTargetClass(rpcMethodsCollection).getMethods()) {
                 if (method.getAnnotation(RpcMethod.class) != null) {
                     String methodName = method.getName();
                     if (methodMap.containsKey(methodName)) {
@@ -56,23 +58,24 @@ public class RpcDispatcher {
 
     public Object dispatchRpcCall(String methodName, JsonNode passedParams) throws IOException, InvocationTargetException, IllegalAccessException {
         Pair<Object, Method> objectMethodPair = methodMap.get(methodName);
+        if (objectMethodPair == null) {
+            throw new OutlineException("Could not find RPC method with name " + methodName);
+        }
         Method method = objectMethodPair.getRight();
         Parameter[] methodParameters = method.getParameters();
-        validatePassedParams(methodParameters, passedParams);
+        validatePassedParams(methodName, methodParameters, passedParams);
         return method.invoke(
                 objectMethodPair.getLeft(),
                 prepareArguments(methodName, methodParameters, passedParams)
         );
     }
 
-    private void validatePassedParams(Parameter[] declaredParams, JsonNode passedParams) throws JsonProcessingException {
+    private void validatePassedParams(String methodName, Parameter[] declaredParams, JsonNode passedParams) throws JsonProcessingException {
         Set<String> allParamNames = OutlineUtils.mapToSet(declaredParams, Parameter::getName);
         passedParams.fieldNames().forEachRemaining(passedParamName -> {
             if (!allParamNames.contains(passedParamName)) {
                 throw new OutlineException(
-                        "!allParamNames.contains(passedParamName): " +
-                        "passedParamName is '" + passedParamName + "'," +
-                                " allParamNames are [" + StringUtils.join(allParamNames, ",") + "]"
+                        "Unknown parameter name '" + passedParamName + "' in " + methodName + ", expected are [" + StringUtils.join(allParamNames, ",") + "]"
                 );
             }
         });

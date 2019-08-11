@@ -174,7 +174,7 @@ const NodeView = props => {
         if (curNode) {
             createChildNode(
                 curNode,
-                resp => setRedirect(PATH.createNodeWithIdPath(resp[NODE.id]))
+                newNodeId => setRedirect(PATH.createNodeWithIdPath(newNodeId))
             )
         }
     }

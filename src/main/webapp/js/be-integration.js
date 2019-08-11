@@ -38,8 +38,8 @@ function getNode(params, onSuccess) {
     doRpcCall("rpcGetNode", params, onSuccess)
 }
 
-function patchNode(request,onSuccess) {
-    doRpcCall("rpcPatchNode", {request:request}, onSuccess)
+function patchNode(nodeDto,onSuccess) {
+    doRpcCall("rpcPatchNode", {nodeDto:nodeDto}, onSuccess)
 }
 
 function setSingleTagForNode(nodeId,tagId,value,onSuccess) {
@@ -124,5 +124,5 @@ function putNodeIdsToClipboard(nodeIds,onSuccess) {
 }
 
 function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
-    doRpcCall("rpcPasteNodesFromClipboard", {to:idOfNodeToPasteToOrNull}, onSuccess)
+    doRpcCall("rpcMoveNodesFromClipboard", {to:idOfNodeToPasteToOrNull}, onSuccess)
 }
