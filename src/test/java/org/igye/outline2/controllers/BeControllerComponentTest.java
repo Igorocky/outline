@@ -341,12 +341,14 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
         String topFakeNode = invokeJsRpcFunction("getNode", Collections.emptyMap());
+        final String expectedText = "some-text-qgfwfg";
         Node expectedNode = new Node();
         expectedNode.setClazz(NodeClass.TEXT);
         expectedNode.setCreatedWhen(testClock.instant());
+        expectedNode.setTagSingleValue(TagId.TEXT, expectedText);
 
         //when
-        invokeJsRpcFunction("createChildTextNode", doNotSerialize(topFakeNode));
+        invokeJsRpcFunction("createChildTextNode", doNotSerialize(topFakeNode), expectedText);
 
         //then
         UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
@@ -440,12 +442,14 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         rootNodes.get().forEach(nodeRepository::save);
         String currNodeStr = invokeJsRpcFunction("getNodeById", currNode.get().getId());
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
+        final String expectedText = "some-text-qgfwfg";
         Node expectedNode = new Node();
         expectedNode.setClazz(NodeClass.TEXT);
         expectedNode.setCreatedWhen(testClock.instant());
+        expectedNode.setTagSingleValue(TagId.TEXT, expectedText);
 
         //when
-        invokeJsRpcFunction("createChildTextNode", doNotSerialize(currNodeStr));
+        invokeJsRpcFunction("createChildTextNode", doNotSerialize(currNodeStr), expectedText);
 
         //then
         UUID newNodeId = nodeRepository.findAll().stream()

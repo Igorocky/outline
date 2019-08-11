@@ -4,7 +4,7 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [checkedNodes, setCheckedNodes] = useState(null)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
-    const [exportingDialogOpened, setExportingDialogOpened] = useState(false)
+    const [confirmActionDialogData, setConfirmActionDialogData] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
     useEffect(() => {
@@ -69,6 +69,20 @@ const NodeView = props => {
         )
     }
 
+    function deleteNode(nodeId) {
+        setConfirmActionDialogData({
+            pTitle:"Confirm deletion",
+            pConfirmText: "Delete?",
+            pOnCancel: () => setConfirmActionDialogData(null),
+            pStartActionBtnText: "Delete",
+            pStartAction: ({onDone}) => beRemoveNode(nodeId, () => {
+                setConfirmActionDialogData(null)
+                reloadCurrNode()
+            }),
+            pActionInProgressText: "Deleting..."
+        })
+    }
+
     function renderTextNode(node) {
         return paper(re(TextNodeEditable,
             {
@@ -84,6 +98,7 @@ const NodeView = props => {
                 onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
                 onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
                 onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+                onDelete: () => deleteNode(node[NODE.id]),
             }
         ))
     }
@@ -95,6 +110,7 @@ const NodeView = props => {
             onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
             onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
             onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+            onDelete: () => deleteNode(node[NODE.id]),
         }))
     }
 
@@ -105,6 +121,7 @@ const NodeView = props => {
             onMoveUp: () => moveNodeUp(node[NODE.id],reloadCurrNode),
             onMoveDown: () => moveNodeDown(node[NODE.id],reloadCurrNode),
             onMoveToEnd: () => moveNodeToEnd(node[NODE.id],reloadCurrNode),
+            onDelete: () => deleteNode(node[NODE.id]),
         })
     }
 
@@ -187,18 +204,27 @@ const NodeView = props => {
         setImportDialogOpened(true)
     }
 
-    function openExportDialog() {
-        setExportingDialogOpened(true)
+    function openExportDialog(nodeId) {
+        setConfirmActionDialogData({
+            pTitle:"Export",
+            pConfirmText: "Start export?",
+            pOnCancel: () => setConfirmActionDialogData(null),
+            pStartActionBtnText: "Export",
+            pStartAction: ({onDone}) => exportToFile({nodeId:nodeId, onSuccess: onDone}),
+            pActionInProgressText: "Exporting...",
+            pActionDoneText: "Export finished.",
+            pActionDoneBtnText: "OK",
+            pOnActionDoneBtnClick: () => setConfirmActionDialogData(null),
+        })
     }
 
     function appendTextNode({newValue, onSaved}) {
         if (curNode) {
-            createChildTextNode(curNode, resp => updateTextNodeText(resp[NODE.id], newValue,
-                    resp => {
-                        onSaved()
-                        reloadCurrNode()
-                    }
-            ))
+            createChildTextNode(curNode, newValue, () => {
+                    onSaved()
+                    reloadCurrNode()
+                }
+            )
         }
     }
 
@@ -240,7 +266,7 @@ const NodeView = props => {
         return [
             re(NodeViewActions,{key:"NodeViewActions",
                 onNewNode: createChildNodeIfPossible, onNewSiblingNode: () => null,
-                onSelect: unselectAllItems, onImport: openImportDialog, onExport: openExportDialog
+                onSelect: unselectAllItems, onImport: openImportDialog, onExport: ()=>openExportDialog(getCurrNodeId())
             }),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
             renderCancelSelectionBtnIfNecessary(),
@@ -260,12 +286,9 @@ const NodeView = props => {
         }
     }
 
-    function renderExportDialogIfNecessary() {
-        if (exportingDialogOpened) {
-            return re(ExportDialog, {key:"ExportDialog", nodeId:getCurrNodeId(),
-                onCancel: () => setExportingDialogOpened(false),
-                onExported: () => setExportingDialogOpened(false)
-            })
+    function renderConfirmActionDialogIfNecessary() {
+        if (confirmActionDialogData) {
+            return re(ConfirmActionDialog, {key:"ConfirmActionDialog", ...confirmActionDialogData})
         } else {
             return null;
         }
@@ -273,11 +296,9 @@ const NodeView = props => {
 
     return [
         renderPageContent(),
-        re(Portal, {key:"Portal",container: props.actionsContainerRef.current},
-            renderActions()
-        ),
+        re(Portal, {key:"Portal",container: props.actionsContainerRef.current}, renderActions()),
         renderImportDialogIfNecessary(),
-        renderExportDialogIfNecessary(),
+        renderConfirmActionDialogIfNecessary(),
         redirectTo(redirect)
     ]
 }

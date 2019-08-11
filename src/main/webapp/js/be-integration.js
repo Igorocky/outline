@@ -18,8 +18,9 @@ const OBJECT_CLASS = {
 }
 
 const TAG = {
+    id: "id",
+    node: "node",
     tagId: "tagId",
-    ref: "ref",
     value: "value"
 }
 
@@ -65,10 +66,13 @@ function createChildNode(currNode,onSuccess) {
     patchNode(request, onSuccess)
 }
 
-function createChildTextNode(currNode,onSuccess) {
+function createChildTextNode(currNode, text, onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
     request[NODE.objectClass] = OBJECT_CLASS.text
+    request[NODE.tags] = [{}]
+    request[NODE.tags][0][TAG.tagId] = TAG_ID.text
+    request[NODE.tags][0][TAG.value] = text
     patchNode(request, onSuccess)
 }
 
@@ -125,4 +129,8 @@ function putNodeIdsToClipboard(nodeIds,onSuccess) {
 
 function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
     doRpcCall("rpcMoveNodesFromClipboard", {to:idOfNodeToPasteToOrNull}, onSuccess)
+}
+
+function beRemoveNode(nodeId,onSuccess) {
+    doRpcCall("rpcRemoveNode", {nodeId:nodeId}, onSuccess)
 }

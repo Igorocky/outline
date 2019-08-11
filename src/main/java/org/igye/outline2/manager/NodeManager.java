@@ -151,6 +151,16 @@ public class NodeManager {
         nodeRepository.getOne(nodeId).removeTags(tagId);
     }
 
+    @RpcMethod
+    @Transactional
+    public void rpcRemoveNode(UUID nodeId) {
+        Node node = nodeRepository.getOne(nodeId);
+        if (node.getParentNode() != null) {
+            node.getParentNode().detachChild(node);
+        }
+        nodeRepository.deleteById(nodeId);
+    }
+
     private void patchTag(Node node, TagDto tagDto) {
         Tag tag;
         if (tagDto.getId() == null) {
