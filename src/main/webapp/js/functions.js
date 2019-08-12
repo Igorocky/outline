@@ -6,7 +6,7 @@ const PATH = {
     node: CONTEXT_PATH + "/node",
     nodeWithId: CONTEXT_PATH + "/node/:id",
     createNodeWithIdPath: id => CONTEXT_PATH + "/node/" + id,
-    view1: CONTEXT_PATH + "/view1",
+    chessboard: CONTEXT_PATH + "/chessboard",
     view2: CONTEXT_PATH + "/view2",
 }
 

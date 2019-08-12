@@ -1,6 +1,6 @@
 const VIEWS = [
     {name:"NodeView", component: NodeView, path: PATH.node},
-    {name:"View2", component: View2, path: PATH.view1},
+    {name:"Chessboard", component: ChessBoardComponent, path: PATH.chessboard},
     {name:"View3", component: View3, path: PATH.view2},
 ]
 
