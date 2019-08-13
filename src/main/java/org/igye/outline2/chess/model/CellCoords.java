@@ -17,6 +17,14 @@ public class CellCoords {
     private int x;
     private int y;
 
+    public CellCoords plusX(int dx) {
+        return CellCoords.builder().x(x+dx).y(y).build();
+    }
+
+    public CellCoords plusY(int dy) {
+        return CellCoords.builder().x(x).y(y+dy).build();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
