@@ -24,7 +24,9 @@ import static org.igye.outline2.chess.model.Piece.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.Piece.WHITE_ROOK;
 
 public class PositionBuilder implements ChessComponentStateManager {
-    public static final int RECYCLE_BIN_CODE = 128465;
+    public static final int RECYCLE_BIN_CODE = 10007;
+    private static final String SELECTED_CELL_BACKGROUND_COLOR = "yellow";
+    private static final String NOT_SELECTED_CELL_BACKGROUND_COLOR = "white";
     private ChessBoard chessBoard = new ChessBoard();
 
     private List<List<ChessBoardCellDto>> availablePieces;
@@ -33,10 +35,10 @@ public class PositionBuilder implements ChessComponentStateManager {
     public PositionBuilder() {
         initAvailablePieces();
         unhighlightAvailablePieces();
-        availablePieces.get(6).set(1, createCell(6,1, RECYCLE_BIN_CODE));
+        availablePieces.get(6).set(0, createCell(6,0, RECYCLE_BIN_CODE));
 
         ChessBoardCellDto selectedPiece = availablePieces.get(0).get(1);
-        selectedPiece.setHighlighted(true);
+        selectedPiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
         selectedCode = selectedPiece.getCode();
     }
 
@@ -51,10 +53,14 @@ public class PositionBuilder implements ChessComponentStateManager {
     @Override
     public ChessComponentDto cellLeftClicked(CellCoords coords) {
         if (coords.getX() >= 10) {
-            unhighlightAvailablePieces();
             ChessBoardCellDto availablePiece = findAvailablePiece(coords);
-            availablePiece.setHighlighted(true);
-            selectedCode = availablePiece.getCode();
+            if (availablePiece.getCode() > 0) {
+                unhighlightAvailablePieces();
+                availablePiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
+                selectedCode = availablePiece.getCode();
+            }
+        } else if (selectedCode == RECYCLE_BIN_CODE) {
+            chessBoard.placePiece(coords, null);
         } else {
             chessBoard.placePiece(coords, Piece.fromCode(selectedCode));
         }
@@ -63,29 +69,17 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     private void initAvailablePieces() {
         Piece[][] availablePieces = new Piece[][]{
-                {WHITE_PAWN, BLACK_PAWN},
-                {WHITE_KNIGHT, BLACK_KNIGHT},
-                {WHITE_BISHOP, BLACK_BISHOP},
-                {WHITE_ROOK, BLACK_ROOK},
-                {WHITE_QUEEN, BLACK_QUEEN},
-                {WHITE_KING, BLACK_KING},
+                {BLACK_PAWN, WHITE_PAWN},
+                {BLACK_KNIGHT, WHITE_KNIGHT},
+                {BLACK_BISHOP, WHITE_BISHOP},
+                {BLACK_ROOK, WHITE_ROOK},
+                {BLACK_QUEEN, WHITE_QUEEN},
+                {BLACK_KING, WHITE_KING},
                 {null, null},
         };
         this.availablePieces = ChessUtils.emptyBoard(7, 2, (x,y)->
                 createCell(x, y, availablePieces[x][y])
         );
-    }
-
-    private ChessBoardCellDto findCellByCoords(List<List<ChessBoardCellDto>> cells, CellCoords coords) {
-        final ChessBoardCellDto[] result = {null};
-        traverseCells(cells, cell -> {
-            if (cell!=null) {
-                if (cell.getCoords().equals(coords)) {
-                    result[0] = cell;
-                }
-            }
-        });
-        return result[0];
     }
 
     private void traverseCells(List<List<ChessBoardCellDto>> cells, Consumer<ChessBoardCellDto> consumer) {
@@ -98,7 +92,7 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     private ChessBoardCellDto createCell(int x, int y, int code) {
         return ChessBoardCellDto.builder()
-                .backgroundColor("white")
+                .backgroundColor(NOT_SELECTED_CELL_BACKGROUND_COLOR)
                 .code(code)
                 .coords(new CellCoords(x + 10, y))
                 .build();
@@ -111,7 +105,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     private void unhighlightAvailablePieces() {
         traverseCells(availablePieces, cell -> {
             if (cell!=null) {
-                cell.setHighlighted(false);
+                cell.setBackgroundColor(NOT_SELECTED_CELL_BACKGROUND_COLOR);
             }
         });
     }
