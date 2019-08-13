@@ -15,7 +15,6 @@ import java.util.List;
 @Builder
 public class ChessComponentDto {
     private ChessBoardDto chessBoard;
+    private AvailablePiecesListDto availablePiecesList;
 
-    //PositionBuilder
-    private List<List<ChessBoardCellDto>> availablePieces;
 }

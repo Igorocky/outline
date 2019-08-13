@@ -1,5 +1,6 @@
 package org.igye.outline2.chess.manager;
 
+import org.igye.outline2.chess.dto.AvailablePiecesListDto;
 import org.igye.outline2.chess.dto.ChessBoardCellDto;
 import org.igye.outline2.chess.dto.ChessComponentDto;
 import org.igye.outline2.chess.dto.ChessDtoConverter;
@@ -46,7 +47,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     public ChessComponentDto toDto() {
         ChessComponentDto result = new ChessComponentDto();
         result.setChessBoard(ChessDtoConverter.toDto(chessBoard));
-        result.setAvailablePieces(availablePieces);
+        result.setAvailablePiecesList(AvailablePiecesListDto.builder().availablePieces(availablePieces).build());
         return result;
     }
 
