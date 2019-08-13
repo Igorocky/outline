@@ -6,14 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CellDto {
-    int x;
-    int y;
-    String backgroundColor;
-    boolean highlighted;
+public class ChessComponentDto {
+    private ChessBoardDto chessBoard;
+
+    //PositionBuilder
+    private List<List<ChessBoardCellDto>> availablePieces;
 }

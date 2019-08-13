@@ -6,19 +6,17 @@ const chessBoardTdStyle = {
 
 const chessBoardTableStyle = {
     ...chessBoardTdStyle,
-    marginTop:"10px",
-    marginLeft:"10px",
 }
 
-const ChessBoard = ({setComponentState, cells}) => {
+const ChessBoard = ({setRootComponentState, cells}) => {
 
     return re('table', {style:{...chessBoardTableStyle}},
         re('tbody',{},
-            _.range(0, 7).map(y =>
+            _.range(7, -1, -1).map(y =>
                 re('tr',{key:y},
-                    _.range(0, 7).map(x =>
+                    _.range(0, 8).map(x =>
                         re('td',{key:x, style:{...chessBoardTdStyle}},
-                            re(ChessBoardCell,{setComponentState:setComponentState, ...cells[x][y]})
+                            re(ChessBoardCell,{setRootComponentState:setRootComponentState, ...cells[x][y]})
                         )
                     )
                 )

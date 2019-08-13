@@ -66,3 +66,45 @@ function iconButton({onClick, iconName}) {
 function clickAwayListener({onClickAway, children, key}) {
     return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
 }
+
+const DIRECTION = {
+    row: "row",
+    column: "column",
+}
+
+const JUSTIFY = {
+    flexStart: "flex-start",
+    center: "center",
+    flexEnd: "flex-end",
+    spaceBetween: "space-between",
+    spaceAround: "space-around",
+}
+
+const ALIGN_ITEMS = {
+    flexStart: "flex-start",
+    center: "center",
+    flexEnd: "flex-end",
+    stretch: "stretch",
+    spaceAround: "baseline",
+}
+
+function containerFactory(direction, justify, alignItems) {
+    return props => re(Grid, {container:true, direction:direction,
+            justify:justify, alignItems:alignItems, style:props.style},
+        React.Children.map(props.children, child => {
+            return re(Grid, {item:true, style:props.childStyle}, child)
+        })
+    )
+}
+
+const Container = {
+    row: {
+        left: {
+            top: containerFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
+        }
+    },
+    col: {
+
+    }
+}
+

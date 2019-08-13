@@ -14,5 +14,5 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ChessBoardDto {
-    private List<List<CellDto>> cells;
+    private List<List<ChessBoardCellDto>> cells;
 }

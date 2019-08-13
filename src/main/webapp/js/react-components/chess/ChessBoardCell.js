@@ -1,4 +1,4 @@
-const cellSize = 75;
+const cellSize = 65;
 const cellStyle = {
     width: cellSize + "px",
     height: cellSize + "px",
@@ -6,15 +6,33 @@ const cellStyle = {
     lineHeight: cellSize*1.08 + "px",
 }
 
-const ChessBoardCell = ({setComponentState, x,y,backgroundColor,highlighted}) => {
+const ChessBoardCell = ({setRootComponentState, coords,backgroundColor,highlighted,code}) => {
 
     function clicked() {
-        doRpcCall("cellClicked",{x:x,y:y}, resp => setComponentState(resp))
+        doRpcCall("cellLeftClicked", {coords:coords}, setRootComponentState)
     }
 
-    return re('div', {key:x+":"+y,
-                style: {...cellStyle, backgroundColor:backgroundColor, onClick: clicked},
-            },
-            String.fromCharCode(9816)
+    function getCursorType() {
+        if (code == 0) {
+            return "default"
+        } else {
+            return "pointer"
+        }
+    }
+
+    function codeToStr(code) {
+        if (code == 0) {
+            return ""
+        } else {
+            return String.fromCharCode(code)
+        }
+    }
+
+    return re('div', {style: {
+                ...cellStyle,
+                backgroundColor:backgroundColor,
+                cursor:getCursorType()},
+            onClick: clicked},
+            codeToStr(code)
     )
 }
