@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChessBoard {
-    private static final Character EMPTY_CELL_SYMBOL = '.';
     private List<List<Chessman>> board;
 
     public ChessBoard() {
@@ -18,19 +17,7 @@ public class ChessBoard {
     public ChessBoard(String str) {
         clear();
         if (!StringUtils.isEmpty(str)) {
-            char[] chars = str.toCharArray();
-            int idx = -1;
-            final int height = board.get(0).size();
-            final int width = board.size();
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    idx++;
-                    char symbol = chars[idx];
-                    if (!EMPTY_CELL_SYMBOL.equals(symbol)) {
-                        board.get(x).set(y, new Chessman(ChessmanType.fromSymbol(symbol)));
-                    }
-                }
-            }
+            decode(str);
         }
     }
 
@@ -38,16 +25,20 @@ public class ChessBoard {
         return board;
     }
 
-    private void clear() {
-        board = ChessUtils.emptyBoard(8,8, (x,y)->null);
+    public void placePiece(CellCoords coords, Chessman chessman) {
+        placePiece(coords.getX(), coords.getY(), chessman);
     }
 
-    public void placePiece(CellCoords coords, Chessman chessman) {
-        board.get(coords.getX()).set(coords.getY(), chessman);
+    public void placePiece(int x, int y, Chessman chessman) {
+        board.get(x).set(y, chessman);
     }
 
     public Chessman getPieceAt(CellCoords coords) {
-        return board.get(coords.getX()).get(coords.getY());
+        return getPieceAt(coords.getX(), coords.getY());
+    }
+
+    public Chessman getPieceAt(int x, int y) {
+        return board.get(x).get(y);
     }
 
     public Set<CellCoords> getPossibleMoves(CellCoords from) {
@@ -71,18 +62,72 @@ public class ChessBoard {
         StringBuilder sb = new StringBuilder();
         final int height = board.get(0).size();
         final int width = board.size();
-        for (int y = 0; y < height; y++) {
+        int emptyCellCnt = 0;
+        for (int y = height-1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
-                sb.append(chessmanToString(board.get(x).get(y)));
+                Chessman piece = getPieceAt(x, y);
+                if (piece == null) {
+                    emptyCellCnt++;
+                } else {
+                    writeEmptyCellCnt(sb, emptyCellCnt);
+                    emptyCellCnt = 0;
+                    sb.append(chessmanToString(board.get(x).get(y)));
+                }
             }
+        }
+        if (emptyCellCnt > 0) {
+            writeEmptyCellCnt(sb, emptyCellCnt);
         }
         return sb.toString();
     }
 
+    private void decode(String encodedPosition) {
+        char[] chars = encodedPosition.toCharArray();
+        int cellPointer = 0;
+        int charPointer = 0;
+        while (cellPointer < 64) {
+            cellPointer = processNextChar(chars[charPointer], cellPointer);
+            charPointer++;
+        }
+    }
+
+    private int processNextChar(char ch, int cellPointer) {
+        if (isPiece(ch)) {
+            int x = cellPointer%8;
+            int y = 7-cellPointer/8;
+            placePiece(x,y,new Chessman(ChessmanType.fromSymbol(ch)));
+            return cellPointer + 1;
+        } else {
+            return cellPointer + ch - 48;
+        }
+    }
+
+    private boolean isPiece(char ch) {
+        return 'p' == ch || 'P' == ch || 'r' == ch || 'n' == ch || 'b' == ch || 'q' == ch || 'k' == ch
+                || 'R' == ch || 'N' == ch || 'B' == ch || 'Q' == ch || 'K' == ch;
+    }
+
+    private void clear() {
+        board = ChessUtils.emptyBoard(8,8, (x,y)->null);
+    }
+
+    private void writeEmptyCellCnt(StringBuilder sb, int cnt) {
+        if (cnt == 0) {
+            return;
+        }
+        int cnt9 = cnt / 9;
+        int rem = cnt%9;
+        while (cnt9 > 0) {
+            sb.append("9");
+            cnt9--;
+        }
+        if (rem > 0) {
+            sb.append(rem + "");
+        }
+    }
+
     private String chessmanToString(Chessman chessman) {
-        if (chessman == null) {
-            return EMPTY_CELL_SYMBOL.toString();
-        } else if (chessman.getType().getPieceColor().equals(ChessmanColor.WHITE)) {
+        if (chessman.getType().getPieceColor().equals(ChessmanColor.WHITE)) {
             return chessman.getType().getPieceShape().getSymbol().toString().toUpperCase();
         } else {
             return chessman.getType().getPieceShape().getSymbol().toString();

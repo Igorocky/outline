@@ -1,5 +1,8 @@
 package org.igye.outline2.controllers;
 
+import org.igye.outline2.chess.model.ChessBoard;
+import org.igye.outline2.chess.model.Chessman;
+import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
 
@@ -71,6 +74,10 @@ public class Randoms {
         return integer(1,100) <= prob ? left : right;
     }
 
+    public static <T> T either(int prob, T left, Supplier<T> right) {
+        return integer(1,100) <= prob ? left : right.get();
+    }
+
     public static Consumer<Node> randomNode() {
         return NODE_RANDOMIZER;
     }
@@ -80,5 +87,18 @@ public class Randoms {
         NODE_RANDOMIZER.accept(node);
         nodeConsumer.accept(node);
         return node;
+    }
+
+    public static ChessBoard randomChessBoard(int emptyCellProb) {
+        ChessBoard chessBoard = new ChessBoard();
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                chessBoard.placePiece(
+                        x,y,
+                        either(emptyCellProb, null, () -> new Chessman(element(ChessmanType.values())))
+                );
+            }
+        }
+        return chessBoard;
     }
 }
