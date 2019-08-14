@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class InitialPositionDto {
-    private List<List<ChessBoardCellDto>> availableChessmanTypes;
+public class InitialPositionView {
+    private List<List<ChessBoardCellView>> availableChessmanTypes;
     private ChessmanColor nextMove;
 }

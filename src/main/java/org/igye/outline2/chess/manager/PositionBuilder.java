@@ -1,9 +1,9 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.InitialPositionDto;
-import org.igye.outline2.chess.dto.ChessBoardCellDto;
-import org.igye.outline2.chess.dto.ChessComponentDto;
-import org.igye.outline2.chess.dto.ChessDtoConverter;
+import org.igye.outline2.chess.dto.InitialPositionView;
+import org.igye.outline2.chess.dto.ChessBoardCellView;
+import org.igye.outline2.chess.dto.ChessComponentView;
+import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.Chessman;
@@ -34,7 +34,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     private ChessBoard chessBoard;
     private ChessmanColor nextMoveColor = ChessmanColor.WHITE;
 
-    private List<List<ChessBoardCellDto>> availablePieces;
+    private List<List<ChessBoardCellView>> availablePieces;
     private int selectedCode;
 
     public PositionBuilder(String initialPosition) {
@@ -43,17 +43,17 @@ public class PositionBuilder implements ChessComponentStateManager {
         unhighlightAvailablePieces();
         availablePieces.get(6).set(0, createCell(6,0, RECYCLE_BIN_CODE));
 
-        ChessBoardCellDto selectedPiece = availablePieces.get(0).get(1);
+        ChessBoardCellView selectedPiece = availablePieces.get(0).get(1);
         selectedPiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
         selectedCode = selectedPiece.getCode();
     }
 
     @Override
-    public ChessComponentDto toDto() {
-        ChessComponentDto result = new ChessComponentDto();
-        result.setChessBoard(ChessDtoConverter.toDto(chessBoard));
+    public ChessComponentView toView() {
+        ChessComponentView result = new ChessComponentView();
+        result.setChessBoard(ChessViewConverter.toDto(chessBoard));
         result.setTab(ChessComponentStage.INITIAL_POSITION);
-        result.setAvailableChessmanTypes(InitialPositionDto.builder()
+        result.setAvailableChessmanTypes(InitialPositionView.builder()
                 .availableChessmanTypes(availablePieces)
                 .nextMove(nextMoveColor)
                 .build()
@@ -62,9 +62,9 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentDto cellLeftClicked(CellCoords coords) {
+    public ChessComponentView cellLeftClicked(CellCoords coords) {
         if (coords.getX() >= 10) {
-            ChessBoardCellDto availablePiece = findAvailablePiece(coords);
+            ChessBoardCellView availablePiece = findAvailablePiece(coords);
             if (availablePiece.getCode() > 0) {
                 unhighlightAvailablePieces();
                 availablePiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
@@ -75,7 +75,7 @@ public class PositionBuilder implements ChessComponentStateManager {
         } else {
             chessBoard.placePiece(coords, new Chessman(ChessmanType.fromCode(selectedCode)));
         }
-        return toDto();
+        return toView();
     }
 
     public String getPosition() {
@@ -101,23 +101,23 @@ public class PositionBuilder implements ChessComponentStateManager {
         );
     }
 
-    private void traverseCells(List<List<ChessBoardCellDto>> cells, Consumer<ChessBoardCellDto> consumer) {
-        for (List<ChessBoardCellDto> row : cells) {
-            for (ChessBoardCellDto cell : row) {
+    private void traverseCells(List<List<ChessBoardCellView>> cells, Consumer<ChessBoardCellView> consumer) {
+        for (List<ChessBoardCellView> row : cells) {
+            for (ChessBoardCellView cell : row) {
                 consumer.accept(cell);
             }
         }
     }
 
-    private ChessBoardCellDto createCell(int x, int y, int code) {
-        return ChessBoardCellDto.builder()
+    private ChessBoardCellView createCell(int x, int y, int code) {
+        return ChessBoardCellView.builder()
                 .backgroundColor(NOT_SELECTED_CELL_BACKGROUND_COLOR)
                 .code(code)
                 .coords(new CellCoords(x + 10, y))
                 .build();
     }
 
-    private ChessBoardCellDto createCell(int x, int y, ChessmanType chessmanType) {
+    private ChessBoardCellView createCell(int x, int y, ChessmanType chessmanType) {
         return createCell(x, y, chessmanType ==null?0: chessmanType.getCode());
     }
 
@@ -129,8 +129,8 @@ public class PositionBuilder implements ChessComponentStateManager {
         });
     }
 
-    private ChessBoardCellDto findAvailablePiece(CellCoords coords) {
-        final ChessBoardCellDto[] result = new ChessBoardCellDto[1];
+    private ChessBoardCellView findAvailablePiece(CellCoords coords) {
+        final ChessBoardCellView[] result = new ChessBoardCellView[1];
         traverseCells(availablePieces, cell -> {
             if (cell!=null && cell.getCoords().equals(coords)) {
                 result[0] = cell;

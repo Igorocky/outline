@@ -6,14 +6,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class HistoryDto {
-    private List<MoveDto> moves = new ArrayList<>();
+public class MoveView {
+    private int feMoveNumber;
+
+    private String whitesMove;
+    private boolean whitesMoveSelected;
+
+    private String blacksMove;
+    private boolean blacksMoveSelected;
 }

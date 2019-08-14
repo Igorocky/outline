@@ -12,10 +12,10 @@ import org.igye.outline2.chess.manager.ChessComponentStage;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChessComponentDto {
-    private ChessBoardDto chessBoard;
+public class ChessComponentView {
+    private ChessBoardView chessBoard;
     private ChessComponentStage tab;
-    private InitialPositionDto availableChessmanTypes;
-    private HistoryDto history;
+    private InitialPositionView availableChessmanTypes;
+    private HistoryView history;
 
 }

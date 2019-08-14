@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChessBoardDto {
-    private List<List<ChessBoardCellDto>> cells;
+public class ChessBoardView {
+    private List<List<ChessBoardCellView>> cells;
 }

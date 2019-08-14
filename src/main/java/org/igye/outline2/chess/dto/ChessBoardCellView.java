@@ -12,7 +12,7 @@ import org.igye.outline2.chess.model.CellCoords;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChessBoardCellDto {
+public class ChessBoardCellView {
     private CellCoords coords;
     private String backgroundColor;
     private String borderColor;
