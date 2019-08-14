@@ -16,9 +16,9 @@ const ChessComponent = () => {
     }
 
     function renderAvailablePieces() {
-        const props = chessComponentState.availablePiecesList
+        const props = chessComponentState.availableChessmanTypes
         if (props) {
-            return re(AvailablePiecesList,{key:"AvailablePiecesList", setRootComponentState:setRootComponentState,
+            return re(AvailableChessmanTypes,{key:"AvailableChessmanTypes", setRootComponentState:setRootComponentState,
                 ...props})
         } else {
             return null

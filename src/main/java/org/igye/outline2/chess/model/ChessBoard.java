@@ -2,22 +2,18 @@ package org.igye.outline2.chess.model;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.chess.manager.ChessUtils;
-import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.chess.model.PieceColor.BLACK;
-import static org.igye.outline2.chess.model.PieceColor.WHITE;
-
 public class ChessBoard {
-    private List<List<Piece>> board;
+    private List<List<ChessmanType>> board;
 
     public ChessBoard() {
         clear();
     }
 
-    public List<List<Piece>> getBoard() {
+    public List<List<ChessmanType>> getBoard() {
         return board;
     }
 
@@ -25,26 +21,26 @@ public class ChessBoard {
         board = ChessUtils.emptyBoard(8,8, (x,y)->null);
     }
 
-    public void placePiece(CellCoords coords, Piece piece) {
-        board.get(coords.getX()).set(coords.getY(), piece);
+    public void placePiece(CellCoords coords, ChessmanType chessmanType) {
+        board.get(coords.getX()).set(coords.getY(), chessmanType);
     }
 
-    public Piece getPieceAt(CellCoords coords) {
+    public ChessmanType getPieceAt(CellCoords coords) {
         return board.get(coords.getX()).get(coords.getY());
     }
 
     public Set<CellCoords> getPossibleMoves(CellCoords from) {
-        Piece piece = getPieceAt(from);
-        if (piece.getPieceShape() == PieceShape.KNIGHT) {
-            return getPossibleTargetCellsForKnight(piece.getPieceColor(), from);
-        } else if (piece.getPieceShape() == PieceShape.BISHOP) {
-            return getPossibleTargetCellsForBishop(piece.getPieceColor(), from);
-        } else if (piece.getPieceShape() == PieceShape.ROOK) {
-            return getPossibleTargetCellsForRook(piece.getPieceColor(), from);
-        } else if (piece.getPieceShape() == PieceShape.QUEEN) {
-            return getPossibleTargetCellsForQueen(piece.getPieceColor(), from);
-        } else if (piece.getPieceShape() == PieceShape.KING) {
-            return getPossibleTargetCellsForKing(piece.getPieceColor(), from);
+        ChessmanType chessmanType = getPieceAt(from);
+        if (chessmanType.getPieceShape() == PieceShape.KNIGHT) {
+            return getPossibleTargetCellsForKnight(chessmanType.getPieceColor(), from);
+        } else if (chessmanType.getPieceShape() == PieceShape.BISHOP) {
+            return getPossibleTargetCellsForBishop(chessmanType.getPieceColor(), from);
+        } else if (chessmanType.getPieceShape() == PieceShape.ROOK) {
+            return getPossibleTargetCellsForRook(chessmanType.getPieceColor(), from);
+        } else if (chessmanType.getPieceShape() == PieceShape.QUEEN) {
+            return getPossibleTargetCellsForQueen(chessmanType.getPieceColor(), from);
+        } else if (chessmanType.getPieceShape() == PieceShape.KING) {
+            return getPossibleTargetCellsForKing(chessmanType.getPieceColor(), from);
         } else {
             return Collections.emptySet();
         }
@@ -124,19 +120,19 @@ public class ChessBoard {
         if (to.getX() < 0 || to.getX() > 7 || to.getY() < 0 || to.getY() > 7) {
             return false;
         }
-        Piece pieceAtDestination = getPieceAt(to);
-        if (pieceAtDestination == null) {
+        ChessmanType chessmanTypeAtDestination = getPieceAt(to);
+        if (chessmanTypeAtDestination == null) {
             return true;
         }
-        if (!pieceAtDestination.getPieceColor().equals(color)) {
+        if (!chessmanTypeAtDestination.getPieceColor().equals(color)) {
             return true;
         }
         return false;
     }
 
     private boolean isEnemy(PieceColor color, CellCoords at) {
-        Piece pieceAtDestination = getPieceAt(at);
-        return pieceAtDestination != null && !pieceAtDestination.getPieceColor().equals(color);
+        ChessmanType chessmanTypeAtDestination = getPieceAt(at);
+        return chessmanTypeAtDestination != null && !chessmanTypeAtDestination.getPieceColor().equals(color);
     }
 
     private void leaveAvailableCells(PieceColor color, Set<CellCoords> cells) {

@@ -1,28 +1,28 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.AvailablePiecesListDto;
+import org.igye.outline2.chess.dto.AvailableChessmanTypesDto;
 import org.igye.outline2.chess.dto.ChessBoardCellDto;
 import org.igye.outline2.chess.dto.ChessComponentDto;
 import org.igye.outline2.chess.dto.ChessDtoConverter;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
-import org.igye.outline2.chess.model.Piece;
+import org.igye.outline2.chess.model.ChessmanType;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.igye.outline2.chess.model.Piece.BLACK_BISHOP;
-import static org.igye.outline2.chess.model.Piece.BLACK_KING;
-import static org.igye.outline2.chess.model.Piece.BLACK_KNIGHT;
-import static org.igye.outline2.chess.model.Piece.BLACK_PAWN;
-import static org.igye.outline2.chess.model.Piece.BLACK_QUEEN;
-import static org.igye.outline2.chess.model.Piece.BLACK_ROOK;
-import static org.igye.outline2.chess.model.Piece.WHITE_BISHOP;
-import static org.igye.outline2.chess.model.Piece.WHITE_KING;
-import static org.igye.outline2.chess.model.Piece.WHITE_KNIGHT;
-import static org.igye.outline2.chess.model.Piece.WHITE_PAWN;
-import static org.igye.outline2.chess.model.Piece.WHITE_QUEEN;
-import static org.igye.outline2.chess.model.Piece.WHITE_ROOK;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_PAWN;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_ROOK;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KING;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
 
 public class PositionBuilder implements ChessComponentStateManager {
     public static final int RECYCLE_BIN_CODE = 10007;
@@ -47,7 +47,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     public ChessComponentDto toDto() {
         ChessComponentDto result = new ChessComponentDto();
         result.setChessBoard(ChessDtoConverter.toDto(chessBoard));
-        result.setAvailablePiecesList(AvailablePiecesListDto.builder().availablePieces(availablePieces).build());
+        result.setAvailableChessmanTypes(AvailableChessmanTypesDto.builder().availableChessmanTypes(availablePieces).build());
         return result;
     }
 
@@ -63,13 +63,13 @@ public class PositionBuilder implements ChessComponentStateManager {
         } else if (selectedCode == RECYCLE_BIN_CODE) {
             chessBoard.placePiece(coords, null);
         } else {
-            chessBoard.placePiece(coords, Piece.fromCode(selectedCode));
+            chessBoard.placePiece(coords, ChessmanType.fromCode(selectedCode));
         }
         return toDto();
     }
 
     private void initAvailablePieces() {
-        Piece[][] availablePieces = new Piece[][]{
+        ChessmanType[][] availableChessmen = new ChessmanType[][]{
                 {BLACK_PAWN, WHITE_PAWN},
                 {BLACK_KNIGHT, WHITE_KNIGHT},
                 {BLACK_BISHOP, WHITE_BISHOP},
@@ -79,7 +79,7 @@ public class PositionBuilder implements ChessComponentStateManager {
                 {null, null},
         };
         this.availablePieces = ChessUtils.emptyBoard(7, 2, (x,y)->
-                createCell(x, y, availablePieces[x][y])
+                createCell(x, y, availableChessmen[x][y])
         );
     }
 
@@ -99,8 +99,8 @@ public class PositionBuilder implements ChessComponentStateManager {
                 .build();
     }
 
-    private ChessBoardCellDto createCell(int x, int y, Piece piece) {
-        return createCell(x, y, piece==null?0:piece.getCode());
+    private ChessBoardCellDto createCell(int x, int y, ChessmanType chessmanType) {
+        return createCell(x, y, chessmanType ==null?0: chessmanType.getCode());
     }
 
     private void unhighlightAvailablePieces() {

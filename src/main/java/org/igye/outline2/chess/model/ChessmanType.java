@@ -13,7 +13,7 @@ import static org.igye.outline2.chess.model.PieceShape.QUEEN;
 import static org.igye.outline2.chess.model.PieceShape.ROOK;
 
 @Getter
-public enum Piece {
+public enum ChessmanType {
     WHITE_PAWN(WHITE, PAWN, 9817),
     WHITE_KNIGHT(WHITE, KNIGHT, 9816),
     WHITE_BISHOP(WHITE, BISHOP, 9815),
@@ -31,16 +31,16 @@ public enum Piece {
     private PieceShape pieceShape;
     private int code;
 
-    Piece(PieceColor pieceColor, PieceShape pieceShape, int code) {
+    ChessmanType(PieceColor pieceColor, PieceShape pieceShape, int code) {
         this.pieceColor = pieceColor;
         this.pieceShape = pieceShape;
         this.code = code;
     }
 
-    public static Piece fromCode(int code) {
-        for (Piece piece : values()) {
-            if (piece.getCode()==code) {
-                return piece;
+    public static ChessmanType fromCode(int code) {
+        for (ChessmanType chessmanType : values()) {
+            if (chessmanType.getCode()==code) {
+                return chessmanType;
             }
         }
         throw new OutlineException("Cannot find any piece with code " + code + ".");

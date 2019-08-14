@@ -9,6 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AvailablePiecesListDto {
-    private List<List<ChessBoardCellDto>> availablePieces;
+public class AvailableChessmanTypesDto {
+    private List<List<ChessBoardCellDto>> availableChessmanTypes;
 }
