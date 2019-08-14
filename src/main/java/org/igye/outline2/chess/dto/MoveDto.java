@@ -5,16 +5,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.igye.outline2.chess.model.CellCoords;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChessBoardCellDto {
-    private CellCoords coords;
-    private String backgroundColor;
-    private String borderColor;
-    private int code;
+public class MoveDto {
+    private int feMoveNumber;
+
+    private String whitesMove;
+    private boolean whitesMoveSelected;
+
+    private String blacksMove;
+    private boolean blacksMoveSelected;
 }

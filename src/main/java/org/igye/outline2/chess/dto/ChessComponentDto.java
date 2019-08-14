@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.igye.outline2.chess.manager.ChessComponentStage;
 
 @Getter
 @Setter
@@ -13,6 +14,8 @@ import lombok.Setter;
 @Builder
 public class ChessComponentDto {
     private ChessBoardDto chessBoard;
-    private AvailableChessmanTypesDto availableChessmanTypes;
+    private ChessComponentStage tab;
+    private InitialPositionDto availableChessmanTypes;
+    private HistoryDto history;
 
 }

@@ -5,16 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.igye.outline2.chess.model.CellCoords;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChessBoardCellDto {
-    private CellCoords coords;
-    private String backgroundColor;
-    private String borderColor;
-    private int code;
+public class HistoryDto {
+    private List<MoveDto> moves = new ArrayList<>();
 }

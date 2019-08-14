@@ -3,8 +3,8 @@ package org.igye.outline2.chess.model;
 import lombok.Getter;
 import org.igye.outline2.exceptions.OutlineException;
 
-import static org.igye.outline2.chess.model.PieceColor.BLACK;
-import static org.igye.outline2.chess.model.PieceColor.WHITE;
+import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
+import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.chess.model.PieceShape.BISHOP;
 import static org.igye.outline2.chess.model.PieceShape.KING;
 import static org.igye.outline2.chess.model.PieceShape.KNIGHT;
@@ -27,11 +27,11 @@ public enum ChessmanType {
     BLACK_QUEEN(BLACK, QUEEN, 9819),
     BLACK_KING(BLACK, KING, 9818),
     ;
-    private PieceColor pieceColor;
+    private ChessmanColor pieceColor;
     private PieceShape pieceShape;
     private int code;
 
-    ChessmanType(PieceColor pieceColor, PieceShape pieceShape, int code) {
+    ChessmanType(ChessmanColor pieceColor, PieceShape pieceShape, int code) {
         this.pieceColor = pieceColor;
         this.pieceShape = pieceShape;
         this.code = code;
@@ -43,6 +43,22 @@ public enum ChessmanType {
                 return chessmanType;
             }
         }
-        throw new OutlineException("Cannot find any piece with code " + code + ".");
+        throw new OutlineException("Cannot find any chessman with code " + code + ".");
+    }
+
+    public static ChessmanType fromSymbol(Character symbol) {
+        Character lowerCaseSymbol = symbol.toString().toLowerCase().charAt(0);
+        PieceShape shape = PieceShape.fromSymbol(lowerCaseSymbol);
+        ChessmanColor color = symbol.equals(lowerCaseSymbol) ? BLACK : WHITE;
+        return getByColorAndShape(color, shape);
+    }
+
+    private static ChessmanType getByColorAndShape(ChessmanColor color, PieceShape shape) {
+        for (ChessmanType value : values()) {
+            if (value.getPieceColor().equals(color) && value.getPieceShape().equals(shape)) {
+                return value;
+            }
+        }
+        throw new OutlineException("getByColorAndShape");
     }
 }

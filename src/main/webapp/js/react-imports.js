@@ -8,6 +8,8 @@ const Fragment = React.Fragment
 const {
     Button,
     ButtonGroup,
+    Tabs,
+    Tab,
     MenuList,
     MenuItem,
     Paper,
@@ -104,7 +106,9 @@ const Container = {
         }
     },
     col: {
-
+        top: {
+            left: containerFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
+        }
     }
 }
 

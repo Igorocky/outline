@@ -1,11 +1,13 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.AvailableChessmanTypesDto;
+import org.igye.outline2.chess.dto.InitialPositionDto;
 import org.igye.outline2.chess.dto.ChessBoardCellDto;
 import org.igye.outline2.chess.dto.ChessComponentDto;
 import org.igye.outline2.chess.dto.ChessDtoConverter;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
+import org.igye.outline2.chess.model.Chessman;
+import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 
 import java.util.List;
@@ -28,12 +30,15 @@ public class PositionBuilder implements ChessComponentStateManager {
     public static final int RECYCLE_BIN_CODE = 10007;
     private static final String SELECTED_CELL_BACKGROUND_COLOR = "yellow";
     private static final String NOT_SELECTED_CELL_BACKGROUND_COLOR = "white";
-    private ChessBoard chessBoard = new ChessBoard();
+
+    private ChessBoard chessBoard;
+    private ChessmanColor nextMoveColor = ChessmanColor.WHITE;
 
     private List<List<ChessBoardCellDto>> availablePieces;
     private int selectedCode;
 
-    public PositionBuilder() {
+    public PositionBuilder(String initialPosition) {
+        chessBoard = new ChessBoard(initialPosition);
         initAvailablePieces();
         unhighlightAvailablePieces();
         availablePieces.get(6).set(0, createCell(6,0, RECYCLE_BIN_CODE));
@@ -47,7 +52,12 @@ public class PositionBuilder implements ChessComponentStateManager {
     public ChessComponentDto toDto() {
         ChessComponentDto result = new ChessComponentDto();
         result.setChessBoard(ChessDtoConverter.toDto(chessBoard));
-        result.setAvailableChessmanTypes(AvailableChessmanTypesDto.builder().availableChessmanTypes(availablePieces).build());
+        result.setTab(ChessComponentStage.INITIAL_POSITION);
+        result.setAvailableChessmanTypes(InitialPositionDto.builder()
+                .availableChessmanTypes(availablePieces)
+                .nextMove(nextMoveColor)
+                .build()
+        );
         return result;
     }
 
@@ -63,9 +73,17 @@ public class PositionBuilder implements ChessComponentStateManager {
         } else if (selectedCode == RECYCLE_BIN_CODE) {
             chessBoard.placePiece(coords, null);
         } else {
-            chessBoard.placePiece(coords, ChessmanType.fromCode(selectedCode));
+            chessBoard.placePiece(coords, new Chessman(ChessmanType.fromCode(selectedCode)));
         }
         return toDto();
+    }
+
+    public String getPosition() {
+        return chessBoard.encode();
+    }
+
+    public ChessmanColor getNextMoveColor() {
+        return nextMoveColor;
     }
 
     private void initAvailablePieces() {

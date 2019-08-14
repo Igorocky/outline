@@ -8,7 +8,7 @@ const availablePiecesListTableStyle = {
     ...availablePiecesTdStyle,
 }
 
-const AvailableChessmanTypes = ({setRootComponentState, availableChessmanTypes}) => {
+const InitialPosition = ({setRootComponentState, availableChessmanTypes}) => {
 
     return re('table', {style:{...availablePiecesListTableStyle}},
         re('tbody',{},

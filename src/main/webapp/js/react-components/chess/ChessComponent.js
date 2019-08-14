@@ -1,6 +1,12 @@
+const CHESS_COMPONENT_STAGE = {
+    initialPosition: "INITIAL_POSITION",
+    moves: "MOVES",
+    exercise: "EXERCISE",
+}
+
 const ChessComponent = () => {
 
-    const [chessComponentState, setChessComponentState] = useState(null)
+    const [state, setChessComponentState] = useState(null)
 
     function setRootComponentState(newState) {
         setChessComponentState(newState)
@@ -12,26 +18,46 @@ const ChessComponent = () => {
 
     function renderChessBoard() {
         return re(ChessBoard,{key:"ChessBoard", setRootComponentState:setRootComponentState,
-            ...chessComponentState.chessBoard})
+            ...state.chessBoard})
     }
 
-    function renderAvailablePieces() {
-        const props = chessComponentState.availableChessmanTypes
-        if (props) {
-            return re(AvailableChessmanTypes,{key:"AvailableChessmanTypes", setRootComponentState:setRootComponentState,
-                ...props})
+    function renderCurrentTabContent() {
+        if (state.availableChessmanTypes) {
+            return re(InitialPosition,{key:"InitialPosition", setRootComponentState:setRootComponentState,
+                ...state.availableChessmanTypes})
+        } else if (state.history) {
+            return re(History,{key:"History", setRootComponentState:setRootComponentState,
+                ...state.history})
         } else {
-            return null
+            return null;
         }
     }
 
+    function handleTabChange(event, newValue) {
+        doRpcCall("chessTabSelected", {tab:newValue}, setRootComponentState)
+    }
+
+    function renderRightPanel() {
+        return re(Container.col.top.left, {childStyle:{marginBottom:"5px"}},
+            re(Paper, {square:true},
+                re(Tabs,{value:state.tab,
+                        indicatorColor:"primary",
+                        textColor:"primary",
+                        onChange:handleTabChange},
+                    re(Tab,{label:"Initial position", value:CHESS_COMPONENT_STAGE.initialPosition}),
+                    re(Tab,{label:"Moves", value:CHESS_COMPONENT_STAGE.moves}),
+                    re(Tab,{label:"Practice", value:CHESS_COMPONENT_STAGE.exercise}),
+                )
+            ),
+            renderCurrentTabContent()
+        )
+    }
+
     function renderPageContent() {
-        if (chessComponentState) {
-            return re(Container.row.left.top, {
-                    childStyle:{marginLeft:"5px",marginTop:"5px"}
-                },
+        if (state) {
+            return re(Container.row.left.top, {childStyle:{marginLeft:"5px",marginTop:"5px"}},
                 renderChessBoard(),
-                renderAvailablePieces()
+                renderRightPanel()
             )
         } else {
             return re(LinearProgress, {key:"LinearProgress",color:"secondary"})
