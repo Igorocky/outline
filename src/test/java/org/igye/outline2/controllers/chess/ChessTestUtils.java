@@ -5,9 +5,11 @@ import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
+import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function3;
 import org.junit.Assert;
 
@@ -16,21 +18,25 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.OutlineUtils.setOf;
 
 public class ChessTestUtils {
+    public static final String PREPARED_TO_MOVE_COLOR = "yellow";
     private static final Predicate<ChessBoardCellView> CELL_PREPARED_TO_MOVE =
-            cell -> "yellow".equals(cell.getBorderColor());
+            cell -> PREPARED_TO_MOVE_COLOR.equals(cell.getBorderColor());
+    public static final String AVAILABLE_TO_MOVE_TO_COLOR = "green";
     private static final Predicate<ChessBoardCellView> CELL_AVAILABLE_TO_MOVE_TO =
-            cell -> "green".equals(cell.getBorderColor());
+            cell -> AVAILABLE_TO_MOVE_TO_COLOR.equals(cell.getBorderColor());
 
     public static void assertCellPreparedToMove(ChessComponentView view, CellCoords expectedCellCoords) {
-        Assert.assertEquals(
-                map(findAll(view, CELL_PREPARED_TO_MOVE), ChessBoardCellView::getCoords),
-                setOf(expectedCellCoords)
+        assertSetsEqual(
+                setOf(expectedCellCoords),
+                map(findAll(view, CELL_PREPARED_TO_MOVE), ChessBoardCellView::getCoords)
         );
     }
 
@@ -39,10 +45,22 @@ public class ChessTestUtils {
     }
 
     public static void assertCellsAvailableToMoveTo(ChessComponentView view, Set<CellCoords> expectedCellCoords) {
-        Assert.assertEquals(
-                map(findAll(view, CELL_AVAILABLE_TO_MOVE_TO), ChessBoardCellView::getCoords),
-                expectedCellCoords
+        assertSetsEqual(
+                expectedCellCoords,
+                map(findAll(view, CELL_AVAILABLE_TO_MOVE_TO), ChessBoardCellView::getCoords)
         );
+    }
+
+    public static <T> void assertSetsEqual(Set<T> expected, Set<T> actual) {
+        if (!Objects.equals(expected, actual)) {
+            HashSet missing = new HashSet(expected);
+            missing.removeAll(actual);
+            HashSet redundant = new HashSet(actual);
+            redundant.removeAll(expected);
+            String msg = "\nMissing  : " + missing
+                       + "\nRedundant: " + redundant;
+            Assert.fail(msg);
+        }
     }
 
     public static void assertNoCellsAvailableToMoveTo(ChessComponentView view) {
@@ -62,6 +80,12 @@ public class ChessTestUtils {
 
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {
         final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
+        chessBoardBuilderConsumer.accept(chessBoardBuilder);
+        return chessBoardBuilder.build();
+    }
+
+    public static ChessBoardView chessBoardView(Consumer<ChessBoardViewBuilder> chessBoardBuilderConsumer) {
+        final ChessBoardViewBuilder chessBoardBuilder = new ChessBoardViewBuilder();
         chessBoardBuilderConsumer.accept(chessBoardBuilder);
         return chessBoardBuilder.build();
     }
@@ -114,20 +138,88 @@ public class ChessTestUtils {
     public static void assertEqualsByChessmenTypes(ChessBoard expected, ChessComponentView actual) {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                String msg = "Comparing: x = " + x + " y = " + y
-                        + " expected=" + expected.encode() + " actual=...";
                 final ChessBoardView actualChessBoard = actual.getChessBoard();
-                Assert.assertTrue(
-                        msg,
-                        Objects.equals(
-                                nullSafeGetter(expected.getPieceAt(x,y), p->p.getType()),
-                                nullSafeGetter(
-                                        actualChessBoard.getCell(x,y),
-                                        p->p.getCode()==0 ? null : ChessmanType.fromCode(p.getCode())
-                                )
+                if (!Objects.equals(
+                        nullSafeGetter(expected.getPieceAt(x, y), p -> p.getType()),
+                        nullSafeGetter(
+                                actualChessBoard.getCell(x, y),
+                                p -> p.getCode() == 0 ? null : ChessmanType.fromCode(p.getCode())
                         )
-                );
+                )) {
+                    int finalY = y;
+                    String expectedLine = Stream.iterate(0, i -> i + 1).limit(8)
+                            .map(xi -> expected.getPieceAt(xi, finalY))
+                            .map(ChessTestUtils::chessmenToString)
+                            .reduce("", (a, b) -> a + b);
+
+                    String actualLine = Stream.iterate(0, i -> i + 1).limit(8)
+                            .map(xi -> actual.getChessBoard().getCell(xi, finalY))
+                            .map(ChessTestUtils::cellToString)
+                            .reduce("", (a, b) -> a + b);
+
+                    String msg = "\nExpected " + (y+1) + ": " + expectedLine
+                               + "\nActual   " + (y+1) + ": " + actualLine;
+                    Assert.fail(msg);
+                }
             }
         }
+    }
+
+    public static boolean equals(ChessBoardCellView expected, ChessBoardCellView actual) {
+        return Objects.equals(expected.getCoords(), actual.getCoords())
+        && Objects.equals(expected.getBorderColor(), actual.getBorderColor())
+        && expected.getCode() == actual.getCode();
+    }
+
+    public static void assertEquals(ChessBoardView expected, ChessBoardView actual) {
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                if (!equals(expected.getCell(x, y), actual.getCell(x, y))) {
+                    int finalY = y;
+                    String expectedLine = Stream.iterate(0, i -> i + 1).limit(8)
+                            .map(xi -> expected.getCell(xi, finalY))
+                            .map(ChessTestUtils::cellToString)
+                            .reduce("", (a, b) -> a + b);
+
+                    String actualLine = Stream.iterate(0, i -> i + 1).limit(8)
+                            .map(xi -> actual.getCell(xi, finalY))
+                            .map(ChessTestUtils::cellToString)
+                            .reduce("", (a, b) -> a + b);
+
+                    String msg = "\nExpected " + (y+1) + ": " + expectedLine
+                               + "\nActual   " + (y+1) + ": " + actualLine;
+                    Assert.fail(msg);
+                }
+            }
+        }
+    }
+
+    private static String chessmenToString(Chessman chessman) {
+        return nullSafeGetterWithDefault(
+                chessman,
+                Chessman::getType,
+                ChessmanType::getPieceShape,
+                PieceShape::getSymbol,
+                '.'
+        ).toString();
+    }
+
+    private static String cellToString(ChessBoardCellView cell) {
+        String type = nullSafeGetterWithDefault(
+                cell,
+                ChessBoardCellView::getCode,
+                code -> code == 0 ? null : code,
+                ChessmanType::fromCode,
+                ChessmanType::getSymbol,
+                '.'
+        ).toString();
+
+        String borderColor = nullSafeGetterWithDefault(
+                cell,
+                ChessBoardCellView::getBorderColor,
+                "u"
+        ).substring(0,1);
+
+        return " " + borderColor + type;
     }
 }

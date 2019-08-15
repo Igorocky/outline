@@ -61,4 +61,12 @@ public enum ChessmanType {
         }
         throw new OutlineException("getByColorAndShape");
     }
+
+    public Character getSymbol() {
+        if (pieceColor == BLACK) {
+            return pieceShape.getSymbol();
+        } else {
+            return pieceShape.getSymbol().toString().toUpperCase().charAt(0);
+        }
+    }
 }

@@ -40,8 +40,47 @@ public class OutlineUtils {
 
     public static <A,B> B nullSafeGetterWithDefault(A obj, Function<A,B> getter, B defaultValue) {
         B result = nullSafeGetter(obj, getter);
-        return result != null ? result : defaultValue;
+        return nullSafeGetterWithDefault(result, defaultValue);
     }
+
+    public static <A,B,C> C nullSafeGetterWithDefault(A obj,
+                                                      Function<A,B> getter1,
+                                                      Function<B,C> getter2,
+                                                      C defaultValue) {
+        C result = nullSafeGetter(obj, getter1, getter2);
+        return nullSafeGetterWithDefault(result, defaultValue);
+    }
+
+    public static <A,B,C,D> D nullSafeGetterWithDefault(A obj,
+                                                        Function<A,B> getter1,
+                                                        Function<B,C> getter2,
+                                                        Function<C,D> getter3,
+                                                        D defaultValue) {
+        D result = nullSafeGetter(obj, getter1, getter2, getter3);
+        return nullSafeGetterWithDefault(result, defaultValue);
+    }
+
+    public static <A,B,C,D,E> E nullSafeGetterWithDefault(A obj,
+                                                        Function<A,B> getter1,
+                                                        Function<B,C> getter2,
+                                                        Function<C,D> getter3,
+                                                        Function<D,E> getter4,
+                                                        E defaultValue) {
+        E result = nullSafeGetter(obj, getter1, getter2, getter3, getter4);
+        return nullSafeGetterWithDefault(result, defaultValue);
+    }
+
+    public static <A,B,C,D,E,F> F nullSafeGetterWithDefault(A obj,
+                                                        Function<A,B> getter1,
+                                                        Function<B,C> getter2,
+                                                        Function<C,D> getter3,
+                                                        Function<D,E> getter4,
+                                                        Function<E,F> getter5,
+                                                        F defaultValue) {
+        F result = nullSafeGetter(obj, getter1, getter2, getter3, getter4, getter5);
+        return nullSafeGetterWithDefault(result, defaultValue);
+    }
+
     public static <A,B> B nullSafeGetter(A obj, Function<A,B> getter) {
         return obj == null ? null : getter.apply(obj);
     }
@@ -52,6 +91,51 @@ public class OutlineUtils {
                 a -> nullSafeGetter(
                         getter1.apply(a),
                         b -> getter2.apply(b)
+                )
+        );
+    }
+
+    public static <A,B,C,D> D nullSafeGetter(A obj, Function<A,B> getter1, Function<B,C> getter2, Function<C,D> getter3) {
+        return nullSafeGetter(
+                obj,
+                a -> getter1.apply(a),
+                b -> nullSafeGetter(
+                        getter2.apply(b),
+                        c -> getter3.apply(c)
+                )
+        );
+    }
+
+    public static <A,B,C,D,E> E nullSafeGetter(A obj,
+                                               Function<A,B> getter1,
+                                               Function<B,C> getter2,
+                                               Function<C,D> getter3,
+                                               Function<D,E> getter4) {
+        return nullSafeGetter(
+                obj,
+                a -> getter1.apply(a),
+                b -> nullSafeGetter(
+                        getter2.apply(b),
+                        c -> getter3.apply(c),
+                        d -> getter4.apply(d)
+                )
+        );
+    }
+
+    public static <A,B,C,D,E,F> F nullSafeGetter(A obj,
+                                               Function<A,B> getter1,
+                                               Function<B,C> getter2,
+                                               Function<C,D> getter3,
+                                               Function<D,E> getter4,
+                                               Function<E,F> getter5) {
+        return nullSafeGetter(
+                obj,
+                a -> getter1.apply(a),
+                b -> nullSafeGetter(
+                        getter2.apply(b),
+                        c -> getter3.apply(c),
+                        d -> getter4.apply(d),
+                        e -> getter5.apply(e)
                 )
         );
     }

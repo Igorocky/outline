@@ -17,13 +17,13 @@ public class Move {
     private CellCoords to;
     private ChessBoard resultPosition;
     @Builder.Default
-    private boolean whiteKingCastle = true;
+    private boolean whiteKingCastleAvailable = true;
     @Builder.Default
-    private boolean whiteQueenCastle = true;
+    private boolean whiteQueenCastleAvailable = true;
     @Builder.Default
-    private boolean blackKingCastle = true;
+    private boolean blackKingCastleAvailable = true;
     @Builder.Default
-    private boolean blackQueenCastle = true;
+    private boolean blackQueenCastleAvailable = true;
     @Builder.Default
     private List<Move> nextMoves = new ArrayList<>();
 

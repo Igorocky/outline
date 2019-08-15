@@ -207,7 +207,7 @@ public class ChessBoard {
         return Arrays.asList(
                 Pair.of(-1, 1),
                 Pair.of(-1, 0),
-                Pair.of(-1, 1),
+                Pair.of(-1, -1),
                 Pair.of(0, 1),
                 Pair.of(0, -1),
                 Pair.of(1, 1),
