@@ -22,6 +22,10 @@ public class ChessBoardView {
     }
 
     public ChessBoardCellView getCell(CellCoords coords) {
-        return cells.get(coords.getX()).get(coords.getY());
+        return getCell(coords.getX(), coords.getY());
+    }
+
+    public ChessBoardCellView getCell(int x, int y) {
+        return cells.get(x).get(y);
     }
 }

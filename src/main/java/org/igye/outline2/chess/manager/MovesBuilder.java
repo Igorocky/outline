@@ -50,6 +50,8 @@ public class MovesBuilder implements ChessComponentStateManager {
             if (!possibleMoves.isEmpty()) {
                 state.setPreparedMoveFrom(coords);
             }
+        } else if (coords.equals(preparedMoveFrom)) {
+            state.setPreparedMoveFrom(null);
         } else {
             Set<CellCoords> possibleMoves = getPossibleMoves(preparedMoveFrom);
             if (possibleMoves.contains(coords)) {
@@ -61,6 +63,8 @@ public class MovesBuilder implements ChessComponentStateManager {
                         .build();
                 currMove.getNextMoves().add(newMove);
                 state.setCurrMove(newMove);
+                state.setPreparedMoveFrom(null);
+            } else {
                 state.setPreparedMoveFrom(null);
             }
         }

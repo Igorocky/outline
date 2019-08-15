@@ -6,6 +6,7 @@ import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
+import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.common.Function3;
 import org.junit.Assert;
@@ -59,6 +60,12 @@ public class ChessTestUtils {
                 .build();
     }
 
+    public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {
+        final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
+        chessBoardBuilderConsumer.accept(chessBoardBuilder);
+        return chessBoardBuilder.build();
+    }
+
     public static Set<ChessBoardCellView> findAll(ChessComponentView chessComponentView,
                                                   Predicate<ChessBoardCellView> predicate) {
         Set<ChessBoardCellView> result = new HashSet<>();
@@ -87,19 +94,40 @@ public class ChessTestUtils {
         return new ChessBoardBuilder();
     }
 
-    public static void assertEqualsByChessmenTypes(ChessBoard b1, ChessBoard b2) {
+    public static void assertEqualsByChessmenTypes(ChessBoard expected, ChessBoard actual) {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                String msg = "Comparing: x = " + x + " y = " + y + " b1=" + b1.encode() + " b2=" + b2.encode();
+                String msg = "Comparing: x = " + x + " y = " + y
+                        + " expected=" + expected.encode() + " actual=" + actual.encode();
                 Assert.assertTrue(
                         msg,
                         Objects.equals(
-                                nullSafeGetter(b1.getPieceAt(x,y), p->p.getType()),
-                                nullSafeGetter(b2.getPieceAt(x,y), p->p.getType())
+                                nullSafeGetter(expected.getPieceAt(x,y), p->p.getType()),
+                                nullSafeGetter(actual.getPieceAt(x,y), p->p.getType())
                         )
                 );
             }
         }
 
+    }
+
+    public static void assertEqualsByChessmenTypes(ChessBoard expected, ChessComponentView actual) {
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                String msg = "Comparing: x = " + x + " y = " + y
+                        + " expected=" + expected.encode() + " actual=...";
+                final ChessBoardView actualChessBoard = actual.getChessBoard();
+                Assert.assertTrue(
+                        msg,
+                        Objects.equals(
+                                nullSafeGetter(expected.getPieceAt(x,y), p->p.getType()),
+                                nullSafeGetter(
+                                        actualChessBoard.getCell(x,y),
+                                        p->p.getCode()==0 ? null : ChessmanType.fromCode(p.getCode())
+                                )
+                        )
+                );
+            }
+        }
     }
 }
