@@ -1,6 +1,5 @@
 package org.igye.outline2.chess.manager;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.dto.HistoryView;
@@ -9,22 +8,23 @@ import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanColor;
-import org.igye.outline2.chess.model.History;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import static org.igye.outline2.chess.manager.ChessUtils.moveToString;
+
 public class MovesBuilder implements ChessComponentStateManager {
-    private static final String X_NAMES = "abcdefgh";
+    private MovesBuilderState state;
 
-    private History history;
-    private int currMoveNumber;
-    private Move preparedMove;
-
-    public MovesBuilder(ChessmanColor lastMovedColor, String initialPosition) {
-        history = new History(lastMovedColor, new ChessBoard(initialPosition));
+    public MovesBuilder(Move initialPosition) {
+        state = MovesBuilderState.builder()
+                .initialPosition(initialPosition)
+                .currMove(initialPosition)
+                .build();
     }
 
     @Override
@@ -32,56 +32,43 @@ public class MovesBuilder implements ChessComponentStateManager {
         ChessComponentView result = new ChessComponentView();
         result.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
         result.setTab(ChessComponentStage.MOVES);
-        if (preparedMove != null) {
-            Set<Pair<Integer, Integer>> cellsToSelect = new HashSet<>();
-            cellsToSelect.add(Pair.of(preparedMove.getFrom().getX(), preparedMove.getFrom().getY()));
-            getPossibleMoves(preparedMove.getFrom()).forEach(coords ->
-                    cellsToSelect.add(Pair.of(coords.getX(), coords.getY()))
-            );
-            cellsToSelect.forEach(coords->
-                    result.getChessBoard().getCells()
-                            .get(coords.getLeft())
-                            .get(coords.getRight())
-                            .setBackgroundColor("green")
+        if (state.getPreparedMoveFrom() != null) {
+            result.getChessBoard().setBorderColor(state.getPreparedMoveFrom(), "yellow");
+            getPossibleMoves(state.getPreparedMoveFrom()).forEach(coords ->
+                    result.getChessBoard().setBorderColor(coords, "green")
             );
         }
-        result.setHistory(toDto(history, currMoveNumber));
+        result.setHistory(toDto(state.getInitialPosition(), state.getCurrMove()));
         return result;
     }
 
     @Override
     public ChessComponentView cellLeftClicked(CellCoords coords) {
-        final Move lastMove = getLastMove();
-        if (preparedMove == null) {
+        final CellCoords preparedMoveFrom = state.getPreparedMoveFrom();
+        if (preparedMoveFrom == null) {
             Set<CellCoords> possibleMoves = getPossibleMoves(coords);
             if (!possibleMoves.isEmpty()) {
-                preparedMove = Move.builder()
-                        .color(lastMove.getColor().inverse())
-                        .from(coords)
-                        .build();
+                state.setPreparedMoveFrom(coords);
             }
         } else {
-            Set<CellCoords> possibleMoves = getPossibleMoves(preparedMove.getFrom());
+            Set<CellCoords> possibleMoves = getPossibleMoves(preparedMoveFrom);
             if (possibleMoves.contains(coords)) {
-                preparedMove.setTo(coords);
-                preparedMove.setResultPosition(makeMove(
-                        lastMove.getResultPosition().encode(),
-                        preparedMove.getFrom(),
-                        preparedMove.getTo()
-                ));
-                history.getMoves().add(preparedMove);
-                currMoveNumber++;
-                preparedMove = null;
-            } else {
-                preparedMove = null;
-                cellLeftClicked(coords);
+                final Move currMove = state.getCurrMove();
+                Move newMove = Move.builder()
+                        .from(preparedMoveFrom)
+                        .to(coords)
+                        .resultPosition(makeMove(currMove.getResultPosition().encode(), preparedMoveFrom, coords))
+                        .build();
+                currMove.getNextMoves().add(newMove);
+                state.setCurrMove(newMove);
+                state.setPreparedMoveFrom(null);
             }
         }
         return toView();
     }
 
     public String getInitialPosition() {
-        return history.getMoves().get(0).getResultPosition().encode();
+        return state.getInitialPosition().getResultPosition().encode();
     }
 
     private ChessBoard makeMove(String initialPosition, CellCoords from, CellCoords to) {
@@ -92,15 +79,15 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private Set<CellCoords> getPossibleMoves(CellCoords from) {
-        if (currMoveNumber != history.getMoves().size()-1) {
+        final Move lastMove = state.getCurrMove();
+        if (!lastMove.getNextMoves().isEmpty()) {
             return Collections.emptySet();
         }
-        Move lastMove = getLastMove();
         Chessman selectedChessman = lastMove.getResultPosition().getPieceAt(from);
         if (selectedChessman == null) {
             return Collections.emptySet();
         }
-        ChessmanColor colorToMove = lastMove.getColor().inverse();
+        ChessmanColor colorToMove = lastMove.getColorOfWhoMadeMove().inverse();
         if (!selectedChessman.getType().getPieceColor().equals(colorToMove)) {
             return Collections.emptySet();
         }
@@ -108,32 +95,29 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private ChessBoard getCurrentPosition() {
-        return history.getMoves().get(currMoveNumber).getResultPosition();
+        return state.getCurrMove().getResultPosition();
     }
 
-    private Move getLastMove() {
-        return history.getMoves().get(history.getMoves().size()-1);
-    }
-
-    private HistoryView toDto(History history, int currMoveNumber) {
+    private HistoryView toDto(Move initialPosition, final Move selectedMove) {
         HistoryView historyView = new HistoryView();
         int feMoveNumber = 1;
         MoveView moveView = new MoveView();
         moveView.setFeMoveNumber(feMoveNumber);
-        for (int i = 1; i < history.getMoves().size(); i++) {
-            Move move = history.getMoves().get(i);
-            if (move.getColor().equals(ChessmanColor.WHITE)) {
-                moveView.setWhitesMove(moveToString(move));
-                moveView.setWhitesMoveSelected(currMoveNumber == i);
+        Move currMove = getNextOnlyMove(initialPosition);
+        while (currMove != null) {
+            if (currMove.getColorOfWhoMadeMove().equals(ChessmanColor.WHITE)) {
+                moveView.setWhitesMove(moveToString(currMove));
+                moveView.setWhitesMoveSelected(selectedMove == currMove);
             } else {
-                moveView.setBlacksMove(moveToString(move));
-                moveView.setBlacksMoveSelected(currMoveNumber == i);
-                historyView.getMoves().add(moveView);
+                moveView.setBlacksMove(moveToString(currMove));
+                moveView.setBlacksMoveSelected(selectedMove == currMove);
 
+                historyView.getMoves().add(moveView);
                 feMoveNumber++;
                 moveView = new MoveView();
                 moveView.setFeMoveNumber(feMoveNumber);
             }
+            currMove = getNextOnlyMove(currMove);
         }
         if (moveView.getWhitesMove() != null) {
             historyView.getMoves().add(moveView);
@@ -141,11 +125,16 @@ public class MovesBuilder implements ChessComponentStateManager {
         return historyView;
     }
 
-    private String moveToString(Move move) {
-        return coordsToString(move.getFrom()) + "-" + coordsToString(move.getTo());
-    }
-
-    private String coordsToString(CellCoords coords) {
-        return String.valueOf(X_NAMES.charAt(coords.getX())) + (coords.getY()+1);
+    private Move getNextOnlyMove(Move move) {
+        List<Move> nextMoves = move.getNextMoves();
+        if (!nextMoves.isEmpty()) {
+            if (nextMoves.size() == 1) {
+                return nextMoves.get(0);
+            } else {
+                throw new OutlineException("Exception in getNextOnlyMove()");
+            }
+        } else {
+            return null;
+        }
     }
 }

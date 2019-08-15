@@ -3,8 +3,14 @@ package org.igye.outline2.chess.model;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.chess.manager.ChessUtils;
+import org.igye.outline2.common.Function3;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ChessBoard {
@@ -81,12 +87,34 @@ public class ChessBoard {
         return sb.toString();
     }
 
+    public CellCoords findFirstCoords(Predicate<Chessman> predicate) {
+        final CellCoords[] result = {null};
+        traverse((x,y,chessman) -> {
+            if (predicate.test(chessman)) {
+                result[0] = new CellCoords(x,y);
+                return false;
+            }
+            return true;
+        });
+        return result[0];
+    }
+
+    public void traverse(Function3<Integer, Integer, Chessman, Boolean> consumer) {
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                final Chessman chessman = getPieceAt(x, y);
+                if (chessman != null && !consumer.apply(x, y, chessman)) {
+                    break;
+                }
+            }
+        }
+    }
+
     private void decode(String encodedPosition) {
-        char[] chars = encodedPosition.toCharArray();
         int cellPointer = 0;
         int charPointer = 0;
         while (cellPointer < 64) {
-            cellPointer = processNextChar(chars[charPointer], cellPointer);
+            cellPointer = processNextChar(encodedPosition.charAt(charPointer), cellPointer);
             charPointer++;
         }
     }

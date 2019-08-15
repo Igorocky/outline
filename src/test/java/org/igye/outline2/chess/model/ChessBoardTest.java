@@ -3,6 +3,7 @@ package org.igye.outline2.chess.model;
 import org.igye.outline2.controllers.Randoms;
 import org.junit.Test;
 
+import static org.igye.outline2.controllers.chess.CellCoordsConstants.*;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.assertEqualsByChessmenTypes;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardBuilder;
 import static org.junit.Assert.assertEquals;
@@ -16,64 +17,22 @@ public class ChessBoardTest {
         );
         assertEquals(
                 "9999P999",
-                chessBoardBuilder().e4().whitePawn().build().encode()
+                chessBoardBuilder().P(e4).build().encode()
         );
         assertEquals(
                 "rnbqkbnrpppppppp9995PPPPPPPPRNBQKBNR",
                 chessBoardBuilder()
-                        .a1().whiteRook()
-                        .b1().whiteKnight()
-                        .c1().whiteBishop()
-                        .d1().whiteQueen()
-                        .e1().whiteKing()
-                        .f1().whiteBishop()
-                        .g1().whiteKnight()
-                        .h1().whiteRook()
-                        .a2().whitePawn()
-                        .b2().whitePawn()
-                        .c2().whitePawn()
-                        .d2().whitePawn()
-                        .e2().whitePawn()
-                        .f2().whitePawn()
-                        .g2().whitePawn()
-                        .h2().whitePawn()
-                        .a8().blackRook()
-                        .b8().blackKnight()
-                        .c8().blackBishop()
-                        .d8().blackQueen()
-                        .e8().blackKing()
-                        .f8().blackBishop()
-                        .g8().blackKnight()
-                        .h8().blackRook()
-                        .a7().blackPawn()
-                        .b7().blackPawn()
-                        .c7().blackPawn()
-                        .d7().blackPawn()
-                        .e7().blackPawn()
-                        .f7().blackPawn()
-                        .g7().blackPawn()
-                        .h7().blackPawn()
+                        .r(a8).n(b8).b(c8).q(d8).k(e8).b(f8).n(g8).r(h8)
+                        .p(a7).p(b7).p(c7).p(d7).p(e7).p(f7).p(g7).p(h7)
+                        .P(a2).P(b2).P(c2).P(d2).P(e2).P(f2).P(g2).P(h2)
+                        .R(a1).N(b1).B(c1).Q(d1).K(e1).B(f1).N(g1).R(h1)
                         .build().encode()
         );
         assertEquals(
                 "r6R1n4N3b2B5qK6Qk5B2b3N4n1R6r",
                 chessBoardBuilder()
-                        .a1().whiteRook()
-                        .b2().whiteKnight()
-                        .c3().whiteBishop()
-                        .d4().whiteQueen()
-                        .e5().whiteKing()
-                        .f6().whiteBishop()
-                        .g7().whiteKnight()
-                        .h8().whiteRook()
-                        .a8().blackRook()
-                        .b7().blackKnight()
-                        .c6().blackBishop()
-                        .d5().blackQueen()
-                        .e4().blackKing()
-                        .f3().blackBishop()
-                        .g2().blackKnight()
-                        .h1().blackRook()
+                        .R(a1).N(b2).B(c3).Q(d4).K(e5).B(f6).N(g7).R(h8)
+                        .r(a8).n(b7).b(c6).q(d5).k(e4).b(f3).n(g2).r(h1)
                         .build().encode()
         );
     }

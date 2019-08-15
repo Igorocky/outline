@@ -1,28 +1,28 @@
 package org.igye.outline2.chess.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.igye.outline2.chess.manager.ChessUtils;
 
 import java.util.Objects;
 
 @Getter
-@Setter
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class CellCoords {
-    private int x;
-    private int y;
+public final class CellCoords {
+    private final int x;
+    private final int y;
 
     public CellCoords plusX(int dx) {
-        return CellCoords.builder().x(x+dx).y(y).build();
+        return new CellCoords(x+dx, y);
     }
 
     public CellCoords plusY(int dy) {
-        return CellCoords.builder().x(x).y(y+dy).build();
+        return new CellCoords(x, y+dy);
+    }
+
+    @Override
+    public String toString() {
+        return ChessUtils.coordsToString(this);
     }
 
     @Override

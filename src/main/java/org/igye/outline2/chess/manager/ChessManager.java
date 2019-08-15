@@ -3,6 +3,9 @@ package org.igye.outline2.chess.manager;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
+import org.igye.outline2.chess.model.ChessBoard;
+import org.igye.outline2.chess.model.ChessmanColor;
+import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.stereotype.Component;
@@ -29,7 +32,15 @@ public class ChessManager implements ChessComponentStateManager {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
-                stateManager = new MovesBuilder(positionBuilder.getNextMoveColor(), positionBuilder.getPosition());
+                ChessmanColor colorOfWhoMadePreviousMove = positionBuilder.getNextMoveColor().inverse();
+                ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
+                Move initialMove = Move.builder()
+                        .to(initialPosition.findFirstCoords(
+                                cm->cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove))
+                        )
+                        .resultPosition(initialPosition)
+                        .build();
+                stateManager = new MovesBuilder(initialMove);
             }
         } else if (stateManager instanceof MovesBuilder) {
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {
