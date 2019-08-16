@@ -1,7 +1,9 @@
 package org.igye.outline2.chess.manager;
 
+import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
+import org.igye.outline2.chess.dto.ChoseChessmanTypeDialogView;
 import org.igye.outline2.chess.dto.HistoryView;
 import org.igye.outline2.chess.dto.MoveView;
 import org.igye.outline2.chess.model.CellCoords;
@@ -10,6 +12,7 @@ import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.Collections;
@@ -49,56 +52,154 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     @Override
     public ChessComponentView toView() {
-        ChessComponentView result = new ChessComponentView();
-        result.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
-        result.setTab(ChessComponentStage.MOVES);
+        ChessComponentView chessComponentView = new ChessComponentView();
+        chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
+        chessComponentView.setTab(ChessComponentStage.MOVES);
         final Move currMove = state.getCurrMove();
         if (state.getPreparedMoveFrom() != null) {
-            result.getChessBoard().setBorderColor(state.getPreparedMoveFrom(), PREPARED_TO_MOVE_COLOR);
+            chessComponentView.getChessBoard().setBorderColor(state.getPreparedMoveFrom(), PREPARED_TO_MOVE_COLOR);
             getPossibleMoves(state.getPreparedMoveFrom()).forEach(coords ->
-                    result.getChessBoard().setBorderColor(coords, AVAILABLE_TO_MOVE_TO_COLOR)
+                    chessComponentView.getChessBoard().setBorderColor(coords, AVAILABLE_TO_MOVE_TO_COLOR)
             );
         } else {
             if (currMove.getFrom() != null) {
-                result.getChessBoard().setBorderColor(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
+                chessComponentView.getChessBoard().setBorderColor(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
             }
             if (currMove.getTo() != null) {
-                result.getChessBoard().setBorderColor(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
+                chessComponentView.getChessBoard().setBorderColor(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
             }
         }
-        result.setHistory(toDto(state.getInitialPosition(), currMove));
-        return result;
+        chessComponentView.setHistory(toDto(state.getInitialPosition(), currMove));
+        createChoseChessmanTypeDialogViewIfNecessary(chessComponentView);
+        return chessComponentView;
+    }
+
+    private void createChoseChessmanTypeDialogViewIfNecessary(ChessComponentView chessComponentView) {
+        if (state.isChoseChessmanTypeDialogOpenedForWhite()) {
+            chessComponentView.setChoseChessmanTypeDialogView(
+                    createChoseChessmanTypeDialogView(ChessmanColor.WHITE)
+            );
+        } else if (state.isChoseChessmanTypeDialogOpenedForBlack()) {
+            chessComponentView.setChoseChessmanTypeDialogView(
+                    createChoseChessmanTypeDialogView(ChessmanColor.BLACK)
+            );
+        }
     }
 
     @Override
-    public ChessComponentView cellLeftClicked(CellCoords coords) {
-        final CellCoords preparedMoveFrom = state.getPreparedMoveFrom();
-        if (preparedMoveFrom == null) {
-            Set<CellCoords> possibleMoves = getPossibleMoves(coords);
-            if (!possibleMoves.isEmpty()) {
-                state.setPreparedMoveFrom(coords);
-            }
-        } else if (coords.equals(preparedMoveFrom)) {
-            state.setPreparedMoveFrom(null);
+    public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
+        if (coordsClicked.getX() >= 20) {
+            processPawnOnLastLine(coordsClicked);
+            state.setChoseChessmanTypeDialogOpenedForWhite(false);
+            state.setChoseChessmanTypeDialogOpenedForBlack(false);
         } else {
-            Set<CellCoords> possibleMoves = getPossibleMoves(preparedMoveFrom);
-            if (possibleMoves.contains(coords)) {
-                final Move currMove = state.getCurrMove();
-                Move newMove = Move.builder()
-                        .from(preparedMoveFrom)
-                        .to(coords)
-                        .resultPosition(makeMove(currMove.getResultPosition().encode(), preparedMoveFrom, coords))
-                        .build();
-                copyCastlingAbilities(currMove, newMove);
-                currMove.getNextMoves().add(newMove);
-                state.setCurrMove(newMove);
+            final CellCoords preparedMoveFrom = state.getPreparedMoveFrom();
+            if (preparedMoveFrom == null) {
+                Set<CellCoords> possibleMoves = getPossibleMoves(coordsClicked);
+                if (!possibleMoves.isEmpty()) {
+                    state.setPreparedMoveFrom(coordsClicked);
+                }
+            } else if (coordsClicked.equals(preparedMoveFrom)) {
                 state.setPreparedMoveFrom(null);
             } else {
-                state.setPreparedMoveFrom(null);
-                cellLeftClicked(coords);
+                Set<CellCoords> possibleMoves = getPossibleMoves(preparedMoveFrom);
+                if (possibleMoves.contains(coordsClicked)) {
+                    final Move currMove = state.getCurrMove();
+                    Move newMove = Move.builder()
+                            .from(preparedMoveFrom)
+                            .to(coordsClicked)
+                            .resultPosition(makeMove(currMove.getResultPosition().encode(), preparedMoveFrom, coordsClicked))
+                            .build();
+                    copyCastlingAbilities(currMove, newMove);
+                    currMove.getNextMoves().add(newMove);
+                    state.setCurrMove(newMove);
+                    state.setPreparedMoveFrom(null);
+                    processPawnOnLastLine(newMove);
+                } else {
+                    state.setPreparedMoveFrom(null);
+                    cellLeftClicked(coordsClicked);
+                }
             }
         }
         return toView();
+    }
+
+    private void processPawnOnLastLine(CellCoords coordsClicked) {
+        if (state.isChoseChessmanTypeDialogOpenedForWhite()) {
+            final Move lastMove = state.getCurrMove();
+            if (coordsClicked.getX() == 20) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_KNIGHT));
+            } else if (coordsClicked.getX() == 21) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_BISHOP));
+            } else if (coordsClicked.getX() == 22) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_ROOK));
+            } else if (coordsClicked.getX() == 23) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_QUEEN));
+            }
+        } else if (state.isChoseChessmanTypeDialogOpenedForBlack()) {
+            final Move lastMove = state.getCurrMove();
+            if (coordsClicked.getX() == 20) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_KNIGHT));
+            } else if (coordsClicked.getX() == 21) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_BISHOP));
+            } else if (coordsClicked.getX() == 22) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_ROOK));
+            } else if (coordsClicked.getX() == 23) {
+                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_QUEEN));
+            }
+        }
+    }
+
+    private ChoseChessmanTypeDialogView createChoseChessmanTypeDialogView(ChessmanColor color) {
+        ChoseChessmanTypeDialogView result = new ChoseChessmanTypeDialogView();
+        result.getCellsToChoseFrom().add(
+                ChessBoardCellView.builder()
+                        .code(color.equals(ChessmanColor.WHITE)
+                                ? ChessmanType.WHITE_KNIGHT.getCode()
+                                : ChessmanType.BLACK_KNIGHT.getCode()
+                        )
+                        .coords(new CellCoords(20,0))
+                        .build()
+        );
+        result.getCellsToChoseFrom().add(
+                ChessBoardCellView.builder()
+                        .code(color.equals(ChessmanColor.WHITE)
+                                ? ChessmanType.WHITE_BISHOP.getCode()
+                                : ChessmanType.BLACK_BISHOP.getCode()
+                        )
+                        .coords(new CellCoords(21,0))
+                        .build()
+        );
+        result.getCellsToChoseFrom().add(
+                ChessBoardCellView.builder()
+                        .code(color.equals(ChessmanColor.WHITE)
+                                ? ChessmanType.WHITE_ROOK.getCode()
+                                : ChessmanType.BLACK_ROOK.getCode()
+                        )
+                        .coords(new CellCoords(22,0))
+                        .build()
+        );
+        result.getCellsToChoseFrom().add(
+                ChessBoardCellView.builder()
+                        .code(color.equals(ChessmanColor.WHITE)
+                                ? ChessmanType.WHITE_QUEEN.getCode()
+                                : ChessmanType.BLACK_QUEEN.getCode()
+                        )
+                        .coords(new CellCoords(23,0))
+                        .build()
+        );
+        return result;
+    }
+
+    private void processPawnOnLastLine(Move newMove) {
+        final Chessman pawn = newMove.getResultPosition().getPieceAt(newMove.getTo());
+        if (pawn.getType().getPieceShape().equals(PieceShape.PAWN)) {
+            if (pawn.getType().equals(ChessmanType.WHITE_PAWN) && newMove.getTo().getY() == 7) {
+                state.setChoseChessmanTypeDialogOpenedForWhite(true);
+            } else if (pawn.getType().equals(ChessmanType.BLACK_PAWN) && newMove.getTo().getY() == 0) {
+                state.setChoseChessmanTypeDialogOpenedForBlack(true);
+            }
+        }
     }
 
     public String getInitialPosition() {

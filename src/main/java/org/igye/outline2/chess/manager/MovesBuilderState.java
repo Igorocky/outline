@@ -17,4 +17,6 @@ public class MovesBuilderState {
     private Move initialPosition;
     private Move currMove;
     private CellCoords preparedMoveFrom;
+    private boolean choseChessmanTypeDialogOpenedForWhite;
+    private boolean choseChessmanTypeDialogOpenedForBlack;
 }
