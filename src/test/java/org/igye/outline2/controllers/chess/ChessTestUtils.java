@@ -26,10 +26,10 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.OutlineUtils.setOf;
 
 public class ChessTestUtils {
-    public static final String PREPARED_TO_MOVE_COLOR = "yellow";
+    public static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
     private static final Predicate<ChessBoardCellView> CELL_PREPARED_TO_MOVE =
             cell -> PREPARED_TO_MOVE_COLOR.equals(cell.getBorderColor());
-    public static final String AVAILABLE_TO_MOVE_TO_COLOR = "green";
+    public static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
     private static final Predicate<ChessBoardCellView> CELL_AVAILABLE_TO_MOVE_TO =
             cell -> AVAILABLE_TO_MOVE_TO_COLOR.equals(cell.getBorderColor());
 

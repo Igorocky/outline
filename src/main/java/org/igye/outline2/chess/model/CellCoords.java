@@ -1,16 +1,22 @@
 package org.igye.outline2.chess.model;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.igye.outline2.chess.manager.ChessUtils;
 
 import java.util.Objects;
 
 @Getter
-@AllArgsConstructor
 public final class CellCoords {
     private final int x;
     private final int y;
+
+    @JsonCreator
+    public CellCoords(@JsonProperty("x") int x, @JsonProperty("y") int y) {
+        this.x = x;
+        this.y = y;
+    }
 
     public CellCoords plusX(int dx) {
         return new CellCoords(x+dx, y);

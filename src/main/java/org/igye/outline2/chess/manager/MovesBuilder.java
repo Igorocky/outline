@@ -23,8 +23,8 @@ import java.util.Set;
 import static org.igye.outline2.chess.manager.ChessUtils.moveToString;
 
 public class MovesBuilder implements ChessComponentStateManager {
-    private static final String AVAILABLE_TO_MOVE_TO_COLOR = "green";
-    private static final String PREPARED_TO_MOVE_COLOR = "yellow";
+    public static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
+    public static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
     private static final CellCoords A1 = new CellCoords(0, 0);
     private static final CellCoords B1 = new CellCoords(1, 0);
     private static final CellCoords C1 = new CellCoords(2, 0);
@@ -41,6 +41,18 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final CellCoords F8 = new CellCoords(5, 7);
     private static final CellCoords G8 = new CellCoords(6, 7);
     private static final CellCoords H8 = new CellCoords(7, 7);
+    private static final ChessmanType[] CHESSMEN_TYPES_TO_REPLACE_WHITE_PAWN = {
+            ChessmanType.WHITE_KNIGHT,
+            ChessmanType.WHITE_BISHOP,
+            ChessmanType.WHITE_ROOK,
+            ChessmanType.WHITE_QUEEN
+    };
+    private static final ChessmanType[] CHESSMEN_TYPES_TO_REPLACE_BLACK_PAWN = {
+            ChessmanType.BLACK_KNIGHT,
+            ChessmanType.BLACK_BISHOP,
+            ChessmanType.BLACK_ROOK,
+            ChessmanType.BLACK_QUEEN
+    };
     private MovesBuilderState state;
 
     public MovesBuilder(Move initialPosition) {
@@ -88,10 +100,8 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     @Override
     public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
-        if (coordsClicked.getX() >= 20) {
+        if (state.isChoseChessmanTypeDialogOpenedForWhite() || state.isChoseChessmanTypeDialogOpenedForBlack()) {
             processPawnOnLastLine(coordsClicked);
-            state.setChoseChessmanTypeDialogOpenedForWhite(false);
-            state.setChoseChessmanTypeDialogOpenedForBlack(false);
         } else {
             final CellCoords preparedMoveFrom = state.getPreparedMoveFrom();
             if (preparedMoveFrom == null) {
@@ -125,28 +135,18 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void processPawnOnLastLine(CellCoords coordsClicked) {
-        if (state.isChoseChessmanTypeDialogOpenedForWhite()) {
-            final Move lastMove = state.getCurrMove();
-            if (coordsClicked.getX() == 20) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_KNIGHT));
-            } else if (coordsClicked.getX() == 21) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_BISHOP));
-            } else if (coordsClicked.getX() == 22) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_ROOK));
-            } else if (coordsClicked.getX() == 23) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.WHITE_QUEEN));
+        final int xCoord = coordsClicked.getX();
+        final Move lastMove = state.getCurrMove();
+        if (20 <= xCoord && xCoord <= 23) {
+            ChessmanType[] types = null;
+            if (state.isChoseChessmanTypeDialogOpenedForWhite()) {
+                types = CHESSMEN_TYPES_TO_REPLACE_WHITE_PAWN;
+                state.setChoseChessmanTypeDialogOpenedForWhite(false);
+            } else if (state.isChoseChessmanTypeDialogOpenedForBlack()) {
+                types = CHESSMEN_TYPES_TO_REPLACE_BLACK_PAWN;
+                state.setChoseChessmanTypeDialogOpenedForBlack(false);
             }
-        } else if (state.isChoseChessmanTypeDialogOpenedForBlack()) {
-            final Move lastMove = state.getCurrMove();
-            if (coordsClicked.getX() == 20) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_KNIGHT));
-            } else if (coordsClicked.getX() == 21) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_BISHOP));
-            } else if (coordsClicked.getX() == 22) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_ROOK));
-            } else if (coordsClicked.getX() == 23) {
-                lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(ChessmanType.BLACK_QUEEN));
-            }
+            lastMove.getResultPosition().placePiece(lastMove.getTo(), new Chessman(types[xCoord-20]));
         }
     }
 
