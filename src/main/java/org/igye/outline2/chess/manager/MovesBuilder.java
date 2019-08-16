@@ -20,6 +20,8 @@ import java.util.Set;
 import static org.igye.outline2.chess.manager.ChessUtils.moveToString;
 
 public class MovesBuilder implements ChessComponentStateManager {
+    private static final String AVAILABLE_TO_MOVE_TO_COLOR = "green";
+    private static final String PREPARED_TO_MOVE_COLOR = "yellow";
     private static final CellCoords A1 = new CellCoords(0, 0);
     private static final CellCoords B1 = new CellCoords(1, 0);
     private static final CellCoords C1 = new CellCoords(2, 0);
@@ -50,13 +52,21 @@ public class MovesBuilder implements ChessComponentStateManager {
         ChessComponentView result = new ChessComponentView();
         result.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
         result.setTab(ChessComponentStage.MOVES);
+        final Move currMove = state.getCurrMove();
         if (state.getPreparedMoveFrom() != null) {
-            result.getChessBoard().setBorderColor(state.getPreparedMoveFrom(), "yellow");
+            result.getChessBoard().setBorderColor(state.getPreparedMoveFrom(), PREPARED_TO_MOVE_COLOR);
             getPossibleMoves(state.getPreparedMoveFrom()).forEach(coords ->
-                    result.getChessBoard().setBorderColor(coords, "green")
+                    result.getChessBoard().setBorderColor(coords, AVAILABLE_TO_MOVE_TO_COLOR)
             );
+        } else {
+            if (currMove.getFrom() != null) {
+                result.getChessBoard().setBorderColor(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
+            }
+            if (currMove.getTo() != null) {
+                result.getChessBoard().setBorderColor(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
+            }
         }
-        result.setHistory(toDto(state.getInitialPosition(), state.getCurrMove()));
+        result.setHistory(toDto(state.getInitialPosition(), currMove));
         return result;
     }
 
@@ -157,7 +167,26 @@ public class MovesBuilder implements ChessComponentStateManager {
         chessboard.placePiece(to, chessboard.getPieceAt(from));
         chessboard.placePiece(from, null);
         processCastling(from, to, chessboard);
+        processEnPassant(new ChessBoard(initialPosition), from, to, chessboard);
         return chessboard;
+    }
+
+    private void processEnPassant(ChessBoard chessBoardBeforeMove,
+                                  CellCoords from, CellCoords to,
+                                  ChessBoard chessboardAfterMove) {
+        if (isChessmanOnCell(chessboardAfterMove, ChessmanType.WHITE_PAWN, to)) {
+            if (null == chessBoardBeforeMove.getPieceAt(to)) {
+                if (to.getX() == from.getX() - 1 || to.getX() == from.getX() + 1) {
+                    chessboardAfterMove.placePiece(to.plusY(-1), null);
+                }
+            }
+        } else if (isChessmanOnCell(chessboardAfterMove, ChessmanType.BLACK_PAWN, to)) {
+            if (null == chessBoardBeforeMove.getPieceAt(to)) {
+                if (to.getX() == from.getX() - 1 || to.getX() == from.getX() + 1) {
+                    chessboardAfterMove.placePiece(to.plusY(1), null);
+                }
+            }
+        }
     }
 
     private void processCastling(CellCoords from, CellCoords to, ChessBoard chessboardAfterMove) {
@@ -198,7 +227,36 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
         Set<CellCoords> possibleMoves = lastMove.getResultPosition().getPossibleMoves(from);
         possibleMoves.addAll(getPossibleCastlings(lastMove, selectedChessman));
+        possibleMoves.addAll(getPossibleEnPassant(lastMove, from));
         return possibleMoves;
+    }
+
+    private Set<CellCoords> getPossibleEnPassant(Move move, CellCoords from) {
+        Set<CellCoords> result = new HashSet<>();
+        if (move.getResultPosition().getPieceAt(from).getType().equals(ChessmanType.WHITE_PAWN)
+                && from.getY() == 4
+                && move.getResultPosition().getPieceAt(move.getTo()).getType().equals(ChessmanType.BLACK_PAWN)
+                && move.getFrom() != null
+                && move.getFrom().getY() == 6 && move.getTo().getY() == 4
+        ) {
+            if (move.getFrom().getX() == from.getX() - 1 && move.getTo().getX() == from.getX() - 1) {
+                result.add(from.plusX(-1).plusY(1));
+            } else if (move.getFrom().getX() == from.getX() + 1 && move.getTo().getX() == from.getX() + 1) {
+                result.add(from.plusX(1).plusY(1));
+            }
+        } else if (move.getResultPosition().getPieceAt(from).getType().equals(ChessmanType.BLACK_PAWN)
+                && from.getY() == 3
+                && move.getResultPosition().getPieceAt(move.getTo()).getType().equals(ChessmanType.WHITE_PAWN)
+                && move.getFrom() != null
+                && move.getFrom().getY() == 1 && move.getTo().getY() == 3
+        ) {
+            if (move.getFrom().getX() == from.getX() - 1 && move.getTo().getX() == from.getX() - 1) {
+                result.add(from.plusX(-1).plusY(-1));
+            } else if (move.getFrom().getX() == from.getX() + 1 && move.getTo().getX() == from.getX() + 1) {
+                result.add(from.plusX(1).plusY(-1));
+            }
+        }
+        return result;
     }
 
     private Set<CellCoords> getPossibleCastlings(Move move, Chessman selectedChessman) {

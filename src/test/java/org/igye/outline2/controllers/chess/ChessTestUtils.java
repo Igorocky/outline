@@ -211,7 +211,7 @@ public class ChessTestUtils {
                 code -> code == 0 ? null : code,
                 ChessmanType::fromCode,
                 ChessmanType::getSymbol,
-                '.'
+                ' '
         ).toString();
 
         String borderColor = nullSafeGetterWithDefault(

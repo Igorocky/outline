@@ -75,9 +75,9 @@ public class ChessBoardViewBuilder {
     public ChessBoardViewBuilder yk(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_KING.getCode()); }
     public ChessBoardViewBuilder gk(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_KING.getCode()); }
 
-    public ChessBoardViewBuilder uo(CellCoords coords) { return setCell(chessBoard, coords, null, 0); }
-    public ChessBoardViewBuilder yo(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, 0); }
-    public ChessBoardViewBuilder go(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, 0); }
+    public ChessBoardViewBuilder u_(CellCoords coords) { return setCell(chessBoard, coords, null, 0); }
+    public ChessBoardViewBuilder y_(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, 0); }
+    public ChessBoardViewBuilder g_(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, 0); }
 
     private ChessBoardViewBuilder setCell(ChessBoardView cbv, CellCoords coords, String borderColor, int code) {
         ChessBoardCellView cell = cbv.getCell(coords);

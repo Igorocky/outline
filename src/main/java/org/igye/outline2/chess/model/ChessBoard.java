@@ -49,7 +49,9 @@ public class ChessBoard {
 
     public Set<CellCoords> getPossibleMoves(CellCoords from) {
         Chessman chessman = getPieceAt(from);
-        if (chessman.getType().getPieceShape() == PieceShape.KNIGHT) {
+        if (chessman.getType().getPieceShape() == PieceShape.PAWN) {
+            return getPossibleTargetCellsForPawn(chessman.getType().getPieceColor(), from);
+        } else if (chessman.getType().getPieceShape() == PieceShape.KNIGHT) {
             return getPossibleTargetCellsForKnight(chessman.getType().getPieceColor(), from);
         } else if (chessman.getType().getPieceShape() == PieceShape.BISHOP) {
             return getPossibleTargetCellsForBishop(chessman.getType().getPieceColor(), from);
@@ -162,7 +164,47 @@ public class ChessBoard {
         }
     }
 
-    private Set<CellCoords> getPossibleTargetCellsForKnight(ChessmanColor color, CellCoords from) {
+    private Set<CellCoords> getPossibleTargetCellsForPawn(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
+        Set<CellCoords> result = new HashSet<>();
+        if (colorOfWhoIsMoving.equals(ChessmanColor.WHITE)) {
+            CellCoords left = from.plusX(-1).plusY(1);
+            if (isInsideBoard(left) && isEnemy(colorOfWhoIsMoving, left)) {
+                result.add(left);
+            }
+            CellCoords right = from.plusX(1).plusY(1);
+            if (isInsideBoard(right) && isEnemy(colorOfWhoIsMoving, right)) {
+                result.add(right);
+            }
+            CellCoords forward = from.plusX(0).plusY(1);
+            if (getPieceAt(forward) == null) {
+                result.add(forward);
+            }
+            CellCoords forward2 = from.plusX(0).plusY(2);
+            if (from.getY() == 1 && getPieceAt(forward2) == null) {
+                result.add(forward2);
+            }
+        } else {
+            CellCoords left = from.plusX(-1).plusY(-1);
+            if (isInsideBoard(left) && isEnemy(colorOfWhoIsMoving, left)) {
+                result.add(left);
+            }
+            CellCoords right = from.plusX(1).plusY(-1);
+            if (isInsideBoard(right) && isEnemy(colorOfWhoIsMoving, right)) {
+                result.add(right);
+            }
+            CellCoords forward = from.plusX(0).plusY(-1);
+            if (getPieceAt(forward) == null) {
+                result.add(forward);
+            }
+            CellCoords forward2 = from.plusX(0).plusY(-2);
+            if (from.getY() == 6 && getPieceAt(forward2) == null) {
+                result.add(forward2);
+            }
+        }
+        return result;
+    }
+
+    private Set<CellCoords> getPossibleTargetCellsForKnight(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
         return Arrays.asList(
                 Pair.of(-2, 1),
                 Pair.of(-2, -1),
@@ -174,36 +216,36 @@ public class ChessBoard {
                 Pair.of(+1, -2)
         ).stream()
                 .map(pair -> from.plusX(pair.getLeft()).plusY(pair.getRight()))
-                .filter(dest -> canBePlacedTo(color, dest))
+                .filter(dest -> canBePlacedTo(colorOfWhoIsMoving, dest))
                 .collect(Collectors.toSet());
     }
 
-    private Set<CellCoords> getPossibleTargetCellsForBishop(ChessmanColor color, CellCoords from) {
+    private Set<CellCoords> getPossibleTargetCellsForBishop(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
         Set<CellCoords> result = new HashSet<>();
-        result.addAll(createRay(color, from, 1,1));
-        result.addAll(createRay(color, from, 1,-1));
-        result.addAll(createRay(color, from, -1,-1));
-        result.addAll(createRay(color, from, -1,1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, 1,1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, 1,-1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, -1,-1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, -1,1));
         return result;
     }
 
-    private Set<CellCoords> getPossibleTargetCellsForRook(ChessmanColor color, CellCoords from) {
+    private Set<CellCoords> getPossibleTargetCellsForRook(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
         Set<CellCoords> result = new HashSet<>();
-        result.addAll(createRay(color, from, 0,1));
-        result.addAll(createRay(color, from, 0,-1));
-        result.addAll(createRay(color, from, 1,0));
-        result.addAll(createRay(color, from, -1,0));
+        result.addAll(createRay(colorOfWhoIsMoving, from, 0,1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, 0,-1));
+        result.addAll(createRay(colorOfWhoIsMoving, from, 1,0));
+        result.addAll(createRay(colorOfWhoIsMoving, from, -1,0));
         return result;
     }
 
-    private Set<CellCoords> getPossibleTargetCellsForQueen(ChessmanColor color, CellCoords from) {
+    private Set<CellCoords> getPossibleTargetCellsForQueen(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
         Set<CellCoords> result = new HashSet<>();
-        result.addAll(getPossibleTargetCellsForBishop(color, from));
-        result.addAll(getPossibleTargetCellsForRook(color, from));
+        result.addAll(getPossibleTargetCellsForBishop(colorOfWhoIsMoving, from));
+        result.addAll(getPossibleTargetCellsForRook(colorOfWhoIsMoving, from));
         return result;
     }
 
-    private Set<CellCoords> getPossibleTargetCellsForKing(ChessmanColor color, CellCoords from) {
+    private Set<CellCoords> getPossibleTargetCellsForKing(ChessmanColor colorOfWhoIsMoving, CellCoords from) {
         return Arrays.asList(
                 Pair.of(-1, 1),
                 Pair.of(-1, 0),
@@ -215,16 +257,16 @@ public class ChessBoard {
                 Pair.of(1, -1)
         ).stream()
                 .map(pair -> from.plusX(pair.getLeft()).plusY(pair.getRight()))
-                .filter(dest -> canBePlacedTo(color, dest))
+                .filter(dest -> canBePlacedTo(colorOfWhoIsMoving, dest))
                 .collect(Collectors.toSet());
     }
 
-    private Set<CellCoords> createRay(ChessmanColor color, CellCoords from, int dx, int dy) {
+    private Set<CellCoords> createRay(ChessmanColor colorOfWhoIsMoving, CellCoords from, int dx, int dy) {
         Set<CellCoords> result = new HashSet<>();
         CellCoords to = from.plusX(dx).plusY(dy);
-        while (canBePlacedTo(color, to)) {
+        while (canBePlacedTo(colorOfWhoIsMoving, to)) {
             result.add(to);
-            if (isEnemy(color, to)) {
+            if (isEnemy(colorOfWhoIsMoving, to)) {
                 break;
             }
             to = to.plusX(dx).plusY(dy);
@@ -232,22 +274,30 @@ public class ChessBoard {
         return result;
     }
 
-    private boolean canBePlacedTo(ChessmanColor color, CellCoords to) {
-        if (to.getX() < 0 || to.getX() > 7 || to.getY() < 0 || to.getY() > 7) {
+    private boolean isInsideBoard(CellCoords coords) {
+        return 0 <= coords.getX() && coords.getX() <= 7 && 0 <= coords.getY() && coords.getY() <= 7;
+    }
+
+    private boolean canBePlacedTo(ChessmanColor colorOfWhoIsMoving, CellCoords to) {
+        if (!isInsideBoard(to)) {
             return false;
         }
         Chessman chessmanTypeAtDestination = getPieceAt(to);
         if (chessmanTypeAtDestination == null) {
             return true;
         }
-        if (!chessmanTypeAtDestination.getType().getPieceColor().equals(color)) {
+        if (!chessmanTypeAtDestination.getType().getPieceColor().equals(colorOfWhoIsMoving)) {
             return true;
         }
         return false;
     }
 
-    private boolean isEnemy(ChessmanColor color, CellCoords at) {
+    private boolean isEnemy(ChessmanColor colorOfWhoIsMoving, CellCoords at) {
+        if (!isInsideBoard(at)) {
+            return false;
+        }
         Chessman chessmanTypeAtDestination = getPieceAt(at);
-        return chessmanTypeAtDestination != null && !chessmanTypeAtDestination.getType().getPieceColor().equals(color);
+        return chessmanTypeAtDestination != null
+                && !chessmanTypeAtDestination.getType().getPieceColor().equals(colorOfWhoIsMoving);
     }
 }
