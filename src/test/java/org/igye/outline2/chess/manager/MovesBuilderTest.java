@@ -782,8 +782,8 @@ public class MovesBuilderTest {
 
         view = movesBuilder.cellLeftClicked(f8);
         assertEquals(chessBoardView(b -> b
-                .u_(a8).u_(b8).u_(c8).u_(d8).u_(e8).gP(f8).u_(g8).u_(h8)
-                .u_(a7).u_(b7).u_(c7).u_(d7).u_(e7).y_(f7).u_(g7).u_(h7)
+                .u_(a8).u_(b8).u_(c8).u_(d8).u_(e8).g_(f8).u_(g8).u_(h8)
+                .u_(a7).u_(b7).u_(c7).u_(d7).u_(e7).yP(f7).u_(g7).u_(h7)
                 .u_(a6).u_(b6).u_(c6).u_(d6).up(e6).u_(f6).u_(g6).u_(h6)
                 .u_(a5).u_(b5).u_(c5).u_(d5).u_(e5).u_(f5).u_(g5).u_(h5)
                 .u_(a4).u_(b4).u_(c4).u_(d4).u_(e4).u_(f4).u_(g4).u_(h4)
@@ -891,8 +891,8 @@ public class MovesBuilderTest {
                 .u_(a5).u_(b5).u_(c5).u_(d5).u_(e5).u_(f5).u_(g5).u_(h5)
                 .u_(a4).u_(b4).u_(c4).u_(d4).uP(e4).u_(f4).u_(g4).u_(h4)
                 .u_(a3).u_(b3).u_(c3).u_(d3).u_(e3).u_(f3).u_(g3).u_(h3)
-                .u_(a2).u_(b2).u_(c2).u_(d2).u_(e2).y_(f2).u_(g2).u_(h2)
-                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).gp(f1).u_(g1).u_(h1)
+                .u_(a2).u_(b2).u_(c2).u_(d2).u_(e2).yp(f2).u_(g2).u_(h2)
+                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).g_(f1).u_(g1).u_(h1)
         ), view.getChessBoard());
         assertChoseChessmanTypeDialogForColor(BLACK, view);
 
@@ -947,8 +947,8 @@ public class MovesBuilderTest {
                 .u_(a5).u_(b5).u_(c5).u_(d5).u_(e5).u_(f5).u_(g5).u_(h5)
                 .u_(a4).u_(b4).u_(c4).u_(d4).u_(e4).u_(f4).u_(g4).u_(h4)
                 .u_(a3).u_(b3).u_(c3).u_(d3).u_(e3).u_(f3).u_(g3).u_(h3)
-                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).y_(f2).u_(g2).u_(h2)
-                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).gp(f1).u_(g1).u_(h1)
+                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).yp(f2).u_(g2).u_(h2)
+                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).g_(f1).u_(g1).u_(h1)
         ), view.getChessBoard());
         assertChoseChessmanTypeDialogForColor(BLACK, view);
 
@@ -960,8 +960,8 @@ public class MovesBuilderTest {
                 .u_(a5).u_(b5).u_(c5).u_(d5).u_(e5).u_(f5).u_(g5).u_(h5)
                 .u_(a4).u_(b4).u_(c4).u_(d4).u_(e4).u_(f4).u_(g4).u_(h4)
                 .u_(a3).u_(b3).u_(c3).u_(d3).u_(e3).u_(f3).u_(g3).u_(h3)
-                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).y_(f2).u_(g2).u_(h2)
-                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).gp(f1).u_(g1).u_(h1)
+                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).yp(f2).u_(g2).u_(h2)
+                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).g_(f1).u_(g1).u_(h1)
         ), view.getChessBoard());
         assertChoseChessmanTypeDialogForColor(BLACK, view);
 
@@ -973,8 +973,8 @@ public class MovesBuilderTest {
                 .u_(a5).u_(b5).u_(c5).u_(d5).u_(e5).u_(f5).u_(g5).u_(h5)
                 .u_(a4).u_(b4).u_(c4).u_(d4).u_(e4).u_(f4).u_(g4).u_(h4)
                 .u_(a3).u_(b3).u_(c3).u_(d3).u_(e3).u_(f3).u_(g3).u_(h3)
-                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).y_(f2).u_(g2).u_(h2)
-                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).gp(f1).u_(g1).u_(h1)
+                .u_(a2).u_(b2).u_(c2).u_(d2).uP(e2).yp(f2).u_(g2).u_(h2)
+                .u_(a1).u_(b1).u_(c1).u_(d1).u_(e1).g_(f1).u_(g1).u_(h1)
         ), view.getChessBoard());
         assertChoseChessmanTypeDialogForColor(BLACK, view);
     }

@@ -26,7 +26,11 @@ public class ChessUtils {
     }
 
     public static String coordsToString(CellCoords coords) {
-        return String.valueOf(X_NAMES.charAt(coords.getX())) + (coords.getY()+1);
+        if (coords != null) {
+            return String.valueOf(X_NAMES.charAt(coords.getX())) + (coords.getY()+1);
+        } else {
+            return "--";
+        }
     }
 
 }

@@ -17,7 +17,7 @@ import java.util.List;
 public class ChessBoardView {
     private List<List<ChessBoardCellView>> cells;
 
-    public void setBorderColor(CellCoords coords, String color) {
+    public void setBorderColorForCell(CellCoords coords, String color) {
         getCell(coords).setBorderColor(color);
     }
 

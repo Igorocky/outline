@@ -1,22 +1,33 @@
 package org.igye.outline2.chess.manager;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.exceptions.OutlineException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class MovesBuilderState {
-    private Move initialPosition;
-    private Move currMove;
-    private CellCoords preparedMoveFrom;
-    private boolean choseChessmanTypeDialogOpenedForWhite;
-    private boolean choseChessmanTypeDialogOpenedForBlack;
+    private GamePosition initialPosition;
+    private GamePosition currPosition;
+    private List<Move> preparedMoves = new ArrayList<>();
+    private boolean choseChessmanTypeDialogOpened;
+
+    public MovesBuilderState(Move initialPosition) {
+        this.initialPosition = new GamePosition(initialPosition);
+        currPosition = this.initialPosition;
+    }
+
+    public void appendPreparedMoveToHistory() {
+        if (preparedMoves == null || preparedMoves.size() != 1) {
+            throw new OutlineException("preparedMoves == null || preparedMoves.size() != 1");
+        }
+        GamePosition newPosition = new GamePosition(currPosition, preparedMoves.get(0));
+        currPosition.getChildren().add(newPosition);
+        currPosition = newPosition;
+        preparedMoves = null;
+    }
 }

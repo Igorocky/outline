@@ -72,10 +72,10 @@ public class ChessTestUtils {
         chessBoardBuilderConsumer.accept(chessBoardBuilder);
         ChessBoard initialBoard = chessBoardBuilder.build();
         ChessmanColor colorOfWhoMadePreviousMove = whoToMove.inverse();
-        return Move.builder()
-                .to(initialBoard.findFirstCoords(cm -> cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove)))
-                .resultPosition(initialBoard)
-                .build();
+        return new Move(
+                initialBoard.findFirstCoords(cm -> cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove)),
+                initialBoard
+        );
     }
 
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {
@@ -217,8 +217,12 @@ public class ChessTestUtils {
         String borderColor = nullSafeGetterWithDefault(
                 cell,
                 ChessBoardCellView::getBorderColor,
+                color ->
+                        color.equals(PREPARED_TO_MOVE_COLOR) ? "y" :
+                        color.equals(AVAILABLE_TO_MOVE_TO_COLOR) ? "g" :
+                        "?",
                 "u"
-        ).substring(0,1);
+        );
 
         return " " + borderColor + type;
     }

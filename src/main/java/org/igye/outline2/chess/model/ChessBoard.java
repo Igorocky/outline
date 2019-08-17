@@ -112,6 +112,10 @@ public class ChessBoard {
         }
     }
 
+    public ChessBoard clone() {
+        return new ChessBoard(encode());
+    }
+
     private void decode(String encodedPosition) {
         int cellPointer = 0;
         int charPointer = 0;

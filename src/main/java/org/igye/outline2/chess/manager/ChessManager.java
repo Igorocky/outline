@@ -34,12 +34,12 @@ public class ChessManager implements ChessComponentStateManager {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
                 ChessmanColor colorOfWhoMadePreviousMove = positionBuilder.getNextMoveColor().inverse();
                 ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
-                Move initialMove = Move.builder()
-                        .to(initialPosition.findFirstCoords(
-                                cm->cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove))
-                        )
-                        .resultPosition(initialPosition)
-                        .build();
+                Move initialMove = new Move(
+                        initialPosition.findFirstCoords(
+                                cm->cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove)
+                        ),
+                        initialPosition
+                );
                 stateManager = new MovesBuilder(initialMove);
             }
         } else if (stateManager instanceof MovesBuilder) {

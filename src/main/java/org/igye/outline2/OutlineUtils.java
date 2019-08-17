@@ -224,6 +224,15 @@ public class OutlineUtils {
         return set;
     }
 
+    public static <A,B> List<B> mapToList(Set<A> set, Function<A,B> mapper) {
+        List<B> list = new ArrayList<>();
+        for (A a : set) {
+            B b = mapper.apply(a);
+            list.add(b);
+        }
+        return list;
+    }
+
     public static <E,K,V> Map<K,List<V>> mapToMap(Collection<E> collection,
                                                   Function<E,K> keyExtractor, Function<E,V> valueExtractor) {
         Map<K,List<V>> result = new HashMap<>();

@@ -26,6 +26,10 @@ public final class CellCoords {
         return new CellCoords(x, y+dy);
     }
 
+    public CellCoords plusXY(int dx, int dy) {
+        return new CellCoords(x+dx, y+dy);
+    }
+
     @Override
     public String toString() {
         return ChessUtils.coordsToString(this);
