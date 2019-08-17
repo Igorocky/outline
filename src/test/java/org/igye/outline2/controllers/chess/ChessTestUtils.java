@@ -105,7 +105,7 @@ public class ChessTestUtils {
                                 Function3<Integer, Integer, ChessBoardCellView, Boolean> consumer) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                final ChessBoardCellView cell = chessBoardView.getCells().get(x).get(y);
+                final ChessBoardCellView cell = chessBoardView.getCell(x, y);
                 if (cell != null && !consumer.apply(x, y, cell)) {
                     break;
                 }

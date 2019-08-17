@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ChessBoard {
-    private List<List<ChessmanType>> board;
+    private ChessmanType[][] board;
 
     public ChessBoard() {
         clear();
@@ -27,7 +27,7 @@ public class ChessBoard {
         }
     }
 
-    public List<List<ChessmanType>> getBoard() {
+    public ChessmanType[][] getBoard() {
         return board;
     }
 
@@ -36,7 +36,7 @@ public class ChessBoard {
     }
 
     public void placePiece(int x, int y, ChessmanType chessman) {
-        board.get(x).set(y, chessman);
+        board[x][y] = chessman;
     }
 
     public ChessmanType getPieceAt(CellCoords coords) {
@@ -44,7 +44,7 @@ public class ChessBoard {
     }
 
     public ChessmanType getPieceAt(int x, int y) {
-        return board.get(x).get(y);
+        return board[x][y];
     }
 
     public Set<CellCoords> getPossibleMoves(CellCoords from) {
@@ -68,8 +68,8 @@ public class ChessBoard {
 
     public String encode() {
         StringBuilder sb = new StringBuilder();
-        final int height = board.get(0).size();
-        final int width = board.size();
+        final int height = board[0].length;
+        final int width = board.length;
         int emptyCellCnt = 0;
         for (int y = height-1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
@@ -79,7 +79,7 @@ public class ChessBoard {
                 } else {
                     writeEmptyCellCnt(sb, emptyCellCnt);
                     emptyCellCnt = 0;
-                    sb.append(chessmanToString(board.get(x).get(y)));
+                    sb.append(chessmanToString(board[x][y]));
                 }
             }
         }
@@ -142,7 +142,7 @@ public class ChessBoard {
     }
 
     private void clear() {
-        board = ChessUtils.emptyBoard(8,8, (x,y)->null);
+        board = ChessUtils.emptyBoard(ChessmanType[].class, ChessmanType.class, 8,8, (x,y)->null);
     }
 
     private void writeEmptyCellCnt(StringBuilder sb, int cnt) {

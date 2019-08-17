@@ -9,10 +9,11 @@ public class ChessViewConverter {
 
     public static ChessBoardView toDto(ChessBoard chessBoard) {
         ChessBoardView chessBoardView = new ChessBoardView();
-        chessBoardView.setCells(ChessUtils.emptyBoard(8,8, (x, y)->{
+        chessBoardView.setCells(ChessUtils.emptyBoard(
+                ChessBoardCellView[].class, ChessBoardCellView.class, 8,8, (x, y)->{
             ChessBoardCellView cellDto = new ChessBoardCellView();
             cellDto.setCoords(new CellCoords(x,y));
-            ChessmanType chessman = chessBoard.getBoard().get(x).get(y);
+            ChessmanType chessman = chessBoard.getPieceAt(x, y);
             cellDto.setBackgroundColor((x + y) % 2 == 0 ? "#DCDCDC" : "white");
             cellDto.setCode(chessman != null ? chessman.getCode() : 0);
             return cellDto;

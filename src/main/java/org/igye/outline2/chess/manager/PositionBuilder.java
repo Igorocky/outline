@@ -9,7 +9,6 @@ import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
@@ -34,16 +33,16 @@ public class PositionBuilder implements ChessComponentStateManager {
     private ChessBoard chessBoard;
     private ChessmanColor nextMoveColor = ChessmanColor.WHITE;
 
-    private List<List<ChessBoardCellView>> availablePieces;
+    private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
 
     public PositionBuilder(String initialPosition) {
         chessBoard = new ChessBoard(initialPosition);
         initAvailablePieces();
         unhighlightAvailablePieces();
-        availablePieces.get(6).set(1, createCell(6,1, RECYCLE_BIN_CODE));
+        availablePieces[6][1] = createCell(6,1, RECYCLE_BIN_CODE);
 
-        ChessBoardCellView selectedPiece = availablePieces.get(0).get(1);
+        ChessBoardCellView selectedPiece = availablePieces[0][1];
         selectedPiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
         selectedCode = selectedPiece.getCode();
     }
@@ -105,13 +104,14 @@ public class PositionBuilder implements ChessComponentStateManager {
                 {WHITE_KING, BLACK_KING},
                 {null, null},
         };
-        this.availablePieces = ChessUtils.emptyBoard(7, 2, (x,y)->
+        this.availablePieces = ChessUtils.emptyBoard(
+                ChessBoardCellView[].class, ChessBoardCellView.class, 7, 2, (x,y)->
                 createCell(x, y, availableChessmen[x][y])
         );
     }
 
-    private void traverseCells(List<List<ChessBoardCellView>> cells, Consumer<ChessBoardCellView> consumer) {
-        for (List<ChessBoardCellView> row : cells) {
+    private void traverseCells(ChessBoardCellView[][] cells, Consumer<ChessBoardCellView> consumer) {
+        for (ChessBoardCellView[] row : cells) {
             for (ChessBoardCellView cell : row) {
                 consumer.accept(cell);
             }

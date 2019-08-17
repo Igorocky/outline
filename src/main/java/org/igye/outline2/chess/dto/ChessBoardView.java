@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ChessBoardView {
-    private List<List<ChessBoardCellView>> cells;
+    private ChessBoardCellView[][] cells;
 
     public void setBorderColorForCell(CellCoords coords, String color) {
         getCell(coords).setBorderColor(color);
@@ -26,6 +26,6 @@ public class ChessBoardView {
     }
 
     public ChessBoardCellView getCell(int x, int y) {
-        return cells.get(x).get(y);
+        return cells[x][y];
     }
 }

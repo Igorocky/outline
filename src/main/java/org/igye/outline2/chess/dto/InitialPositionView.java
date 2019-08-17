@@ -1,9 +1,11 @@
 package org.igye.outline2.chess.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.igye.outline2.chess.model.ChessmanColor;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -11,6 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class InitialPositionView {
-    private List<List<ChessBoardCellView>> availableChessmanTypes;
+    private ChessBoardCellView[][] availableChessmanTypes;
     private ChessmanColor nextMove;
 }

@@ -14,7 +14,8 @@ public class ChessBoardViewBuilder {
 
     public ChessBoardViewBuilder() {
         chessBoard = new ChessBoardView();
-        chessBoard.setCells(ChessUtils.emptyBoard(8,8, (x, y)->{
+        chessBoard.setCells(ChessUtils.emptyBoard(
+                ChessBoardCellView[].class, ChessBoardCellView.class, 8,8, (x, y)->{
             ChessBoardCellView cellDto = new ChessBoardCellView();
             cellDto.setCoords(new CellCoords(x,y));
             cellDto.setBorderColor(null);
