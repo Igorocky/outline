@@ -36,7 +36,7 @@ public class ChessManager implements ChessComponentStateManager {
                 ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
                 Move initialMove = new Move(
                         initialPosition.findFirstCoords(
-                                cm->cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove)
+                                cm->cm.getPieceColor().equals(colorOfWhoMadePreviousMove)
                         ),
                         initialPosition
                 );

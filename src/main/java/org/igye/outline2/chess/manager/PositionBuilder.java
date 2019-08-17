@@ -6,7 +6,6 @@ import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.dto.InitialPositionView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
-import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 
@@ -76,14 +75,13 @@ public class PositionBuilder implements ChessComponentStateManager {
         } else {
             int codeOnTheCell = nullSafeGetterWithDefault(
                     chessBoard.getPieceAt(coords),
-                    Chessman::getType,
                     ChessmanType::getCode,
                     -1
             );
             if (selectedCode == codeOnTheCell) {
                 chessBoard.placePiece(coords, null);
             } else {
-                chessBoard.placePiece(coords, new Chessman(ChessmanType.fromCode(selectedCode)));
+                chessBoard.placePiece(coords, ChessmanType.fromCode(selectedCode));
             }
         }
         return toView();

@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ChessBoard {
-    private List<List<Chessman>> board;
+    private List<List<ChessmanType>> board;
 
     public ChessBoard() {
         clear();
@@ -27,40 +27,40 @@ public class ChessBoard {
         }
     }
 
-    public List<List<Chessman>> getBoard() {
+    public List<List<ChessmanType>> getBoard() {
         return board;
     }
 
-    public void placePiece(CellCoords coords, Chessman chessman) {
+    public void placePiece(CellCoords coords, ChessmanType chessman) {
         placePiece(coords.getX(), coords.getY(), chessman);
     }
 
-    public void placePiece(int x, int y, Chessman chessman) {
+    public void placePiece(int x, int y, ChessmanType chessman) {
         board.get(x).set(y, chessman);
     }
 
-    public Chessman getPieceAt(CellCoords coords) {
+    public ChessmanType getPieceAt(CellCoords coords) {
         return getPieceAt(coords.getX(), coords.getY());
     }
 
-    public Chessman getPieceAt(int x, int y) {
+    public ChessmanType getPieceAt(int x, int y) {
         return board.get(x).get(y);
     }
 
     public Set<CellCoords> getPossibleMoves(CellCoords from) {
-        Chessman chessman = getPieceAt(from);
-        if (chessman.getType().getPieceShape() == PieceShape.PAWN) {
-            return getPossibleTargetCellsForPawn(chessman.getType().getPieceColor(), from);
-        } else if (chessman.getType().getPieceShape() == PieceShape.KNIGHT) {
-            return getPossibleTargetCellsForKnight(chessman.getType().getPieceColor(), from);
-        } else if (chessman.getType().getPieceShape() == PieceShape.BISHOP) {
-            return getPossibleTargetCellsForBishop(chessman.getType().getPieceColor(), from);
-        } else if (chessman.getType().getPieceShape() == PieceShape.ROOK) {
-            return getPossibleTargetCellsForRook(chessman.getType().getPieceColor(), from);
-        } else if (chessman.getType().getPieceShape() == PieceShape.QUEEN) {
-            return getPossibleTargetCellsForQueen(chessman.getType().getPieceColor(), from);
-        } else if (chessman.getType().getPieceShape() == PieceShape.KING) {
-            return getPossibleTargetCellsForKing(chessman.getType().getPieceColor(), from);
+        ChessmanType chessman = getPieceAt(from);
+        if (chessman.getPieceShape() == PieceShape.PAWN) {
+            return getPossibleTargetCellsForPawn(chessman.getPieceColor(), from);
+        } else if (chessman.getPieceShape() == PieceShape.KNIGHT) {
+            return getPossibleTargetCellsForKnight(chessman.getPieceColor(), from);
+        } else if (chessman.getPieceShape() == PieceShape.BISHOP) {
+            return getPossibleTargetCellsForBishop(chessman.getPieceColor(), from);
+        } else if (chessman.getPieceShape() == PieceShape.ROOK) {
+            return getPossibleTargetCellsForRook(chessman.getPieceColor(), from);
+        } else if (chessman.getPieceShape() == PieceShape.QUEEN) {
+            return getPossibleTargetCellsForQueen(chessman.getPieceColor(), from);
+        } else if (chessman.getPieceShape() == PieceShape.KING) {
+            return getPossibleTargetCellsForKing(chessman.getPieceColor(), from);
         } else {
             return Collections.emptySet();
         }
@@ -73,7 +73,7 @@ public class ChessBoard {
         int emptyCellCnt = 0;
         for (int y = height-1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
-                Chessman piece = getPieceAt(x, y);
+                ChessmanType piece = getPieceAt(x, y);
                 if (piece == null) {
                     emptyCellCnt++;
                 } else {
@@ -89,7 +89,7 @@ public class ChessBoard {
         return sb.toString();
     }
 
-    public CellCoords findFirstCoords(Predicate<Chessman> predicate) {
+    public CellCoords findFirstCoords(Predicate<ChessmanType> predicate) {
         final CellCoords[] result = {null};
         traverse((x,y,chessman) -> {
             if (predicate.test(chessman)) {
@@ -101,10 +101,10 @@ public class ChessBoard {
         return result[0];
     }
 
-    public void traverse(Function3<Integer, Integer, Chessman, Boolean> consumer) {
+    public void traverse(Function3<Integer, Integer, ChessmanType, Boolean> consumer) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                final Chessman chessman = getPieceAt(x, y);
+                final ChessmanType chessman = getPieceAt(x, y);
                 if (chessman != null && !consumer.apply(x, y, chessman)) {
                     break;
                 }
@@ -129,7 +129,7 @@ public class ChessBoard {
         if (isPiece(ch)) {
             int x = cellPointer%8;
             int y = 7-cellPointer/8;
-            placePiece(x,y,new Chessman(ChessmanType.fromSymbol(ch)));
+            placePiece(x,y, ChessmanType.fromSymbol(ch));
             return cellPointer + 1;
         } else {
             return cellPointer + ch - 48;
@@ -160,11 +160,11 @@ public class ChessBoard {
         }
     }
 
-    private String chessmanToString(Chessman chessman) {
-        if (chessman.getType().getPieceColor().equals(ChessmanColor.WHITE)) {
-            return chessman.getType().getPieceShape().getSymbol().toString().toUpperCase();
+    private String chessmanToString(ChessmanType chessman) {
+        if (chessman.getPieceColor().equals(ChessmanColor.WHITE)) {
+            return chessman.getPieceShape().getSymbol().toString().toUpperCase();
         } else {
-            return chessman.getType().getPieceShape().getSymbol().toString();
+            return chessman.getPieceShape().getSymbol().toString();
         }
     }
 
@@ -286,11 +286,11 @@ public class ChessBoard {
         if (!isInsideBoard(to)) {
             return false;
         }
-        Chessman chessmanTypeAtDestination = getPieceAt(to);
+        ChessmanType chessmanTypeAtDestination = getPieceAt(to);
         if (chessmanTypeAtDestination == null) {
             return true;
         }
-        if (!chessmanTypeAtDestination.getType().getPieceColor().equals(colorOfWhoIsMoving)) {
+        if (!chessmanTypeAtDestination.getPieceColor().equals(colorOfWhoIsMoving)) {
             return true;
         }
         return false;
@@ -300,8 +300,8 @@ public class ChessBoard {
         if (!isInsideBoard(at)) {
             return false;
         }
-        Chessman chessmanTypeAtDestination = getPieceAt(at);
+        ChessmanType chessmanTypeAtDestination = getPieceAt(at);
         return chessmanTypeAtDestination != null
-                && !chessmanTypeAtDestination.getType().getPieceColor().equals(colorOfWhoIsMoving);
+                && !chessmanTypeAtDestination.getPieceColor().equals(colorOfWhoIsMoving);
     }
 }

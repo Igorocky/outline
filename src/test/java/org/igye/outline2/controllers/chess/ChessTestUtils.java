@@ -5,7 +5,6 @@ import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
-import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
@@ -73,7 +72,7 @@ public class ChessTestUtils {
         ChessBoard initialBoard = chessBoardBuilder.build();
         ChessmanColor colorOfWhoMadePreviousMove = whoToMove.inverse();
         return new Move(
-                initialBoard.findFirstCoords(cm -> cm.getType().getPieceColor().equals(colorOfWhoMadePreviousMove)),
+                initialBoard.findFirstCoords(cm -> cm.getPieceColor().equals(colorOfWhoMadePreviousMove)),
                 initialBoard
         );
     }
@@ -125,10 +124,7 @@ public class ChessTestUtils {
                         + " expected=" + expected.encode() + " actual=" + actual.encode();
                 Assert.assertTrue(
                         msg,
-                        Objects.equals(
-                                nullSafeGetter(expected.getPieceAt(x,y), p->p.getType()),
-                                nullSafeGetter(actual.getPieceAt(x,y), p->p.getType())
-                        )
+                        Objects.equals(expected.getPieceAt(x,y), actual.getPieceAt(x,y))
                 );
             }
         }
@@ -140,7 +136,7 @@ public class ChessTestUtils {
             for (int y = 0; y < 8; y++) {
                 final ChessBoardView actualChessBoard = actual.getChessBoard();
                 if (!Objects.equals(
-                        nullSafeGetter(expected.getPieceAt(x, y), p -> p.getType()),
+                        expected.getPieceAt(x, y),
                         nullSafeGetter(
                                 actualChessBoard.getCell(x, y),
                                 p -> p.getCode() == 0 ? null : ChessmanType.fromCode(p.getCode())
@@ -194,10 +190,9 @@ public class ChessTestUtils {
         }
     }
 
-    private static String chessmenToString(Chessman chessman) {
+    private static String chessmenToString(ChessmanType chessman) {
         return nullSafeGetterWithDefault(
                 chessman,
-                Chessman::getType,
                 ChessmanType::getPieceShape,
                 PieceShape::getSymbol,
                 '.'

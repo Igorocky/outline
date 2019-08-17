@@ -1,7 +1,6 @@
 package org.igye.outline2.controllers;
 
 import org.igye.outline2.chess.model.ChessBoard;
-import org.igye.outline2.chess.model.Chessman;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClass;
@@ -95,7 +94,7 @@ public class Randoms {
             for (int y = 0; y < 8; y++) {
                 chessBoard.placePiece(
                         x,y,
-                        either(emptyCellProb, null, () -> new Chessman(element(ChessmanType.values())))
+                        either(emptyCellProb, null, () -> element(ChessmanType.values()))
                 );
             }
         }

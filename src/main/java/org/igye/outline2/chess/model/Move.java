@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapOf;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
@@ -76,7 +75,7 @@ public final class Move {
     }
 
     public ChessmanColor getColorOfWhoMadeMove() {
-        return resultPosition.getPieceAt(to).getType().getPieceColor();
+        return resultPosition.getPieceAt(to).getPieceColor();
     }
 
     public ChessBoard getResultPosition() {
@@ -84,7 +83,7 @@ public final class Move {
     }
 
     public ChessmanType getPieceAt(CellCoords coords) {
-        return nullSafeGetter(resultPosition.getPieceAt(coords), Chessman::getType);
+        return resultPosition.getPieceAt(coords);
     }
 
     public List<Move> getPossibleNextMoves(CellCoords from) {
@@ -94,7 +93,7 @@ public final class Move {
     private Set<CellCoords> getAllCellsAttackedBy(ChessmanColor colorOfAttacker) {
         Set<CellCoords> attackers = new HashSet<>();
         resultPosition.traverse((x,y,piece) -> {
-            if (piece.getType().getPieceColor() == colorOfAttacker) {
+            if (piece.getPieceColor() == colorOfAttacker) {
                 attackers.add(new CellCoords(x,y));
             }
             return true;
@@ -110,19 +109,19 @@ public final class Move {
 
     public boolean isCheckFor(ChessmanColor colorOfKing) {
         CellCoords kingCoords = resultPosition.findFirstCoords(chessman ->
-                chessman.getType().getPieceColor() == colorOfKing
-                        && chessman.getType().getPieceShape() == PieceShape.KING
+                chessman.getPieceColor() == colorOfKing
+                        && chessman.getPieceShape() == PieceShape.KING
         );
         return getAllCellsAttackedBy(colorOfKing.inverse()).contains(kingCoords);
     }
 
     private List<Move> getPossibleNextMoves(CellCoords from, OptionsToFindNextMoves options) {
-        Chessman selectedChessman = resultPosition.getPieceAt(from);
+        ChessmanType selectedChessman = resultPosition.getPieceAt(from);
         if (selectedChessman == null) {
             return Collections.emptyList();
         }
         ChessmanColor colorToMove = getColorOfWhoMadeMove().inverse();
-        if ((options == null || options.isCheckColor()) && selectedChessman.getType().getPieceColor() != colorToMove) {
+        if ((options == null || options.isCheckColor()) && selectedChessman.getPieceColor() != colorToMove) {
             return Collections.emptyList();
         }
         Set<CellCoords> possibleMoves = resultPosition.getPossibleMoves(from);
@@ -139,10 +138,10 @@ public final class Move {
         return possibleNextMoves;
     }
 
-    private Set<CellCoords> getPossibleCastlings(Chessman selectedChessman) {
+    private Set<CellCoords> getPossibleCastlings(ChessmanType selectedChessman) {
         Set<CellCoords> result = new HashSet<>();
         Set<CellCoords> cellsUnderAttack = null;
-        if (selectedChessman.getType().equals(ChessmanType.WHITE_KING)) {
+        if (selectedChessman.equals(ChessmanType.WHITE_KING)) {
             if (
                     whiteQueenCastleAvailable
                             && isChessmanOnCell(WHITE_ROOK, A1)
@@ -172,7 +171,7 @@ public final class Move {
                     result.add(G1);
                 }
             }
-        } else if (selectedChessman.getType().equals(ChessmanType.BLACK_KING)) {
+        } else if (selectedChessman.equals(ChessmanType.BLACK_KING)) {
             if (
                     blackQueenCastleAvailable
                             && isChessmanOnCell(BLACK_ROOK, A8)
@@ -210,8 +209,8 @@ public final class Move {
         if (from == null) {
             return Collections.emptySet();
         }
-        final ChessmanType selectedPiece = resultPosition.getPieceAt(selectedCell).getType();
-        final ChessmanType lastMovedPiece = resultPosition.getPieceAt(to).getType();
+        final ChessmanType selectedPiece = resultPosition.getPieceAt(selectedCell);
+        final ChessmanType lastMovedPiece = resultPosition.getPieceAt(to);
         if (selectedPiece == WHITE_PAWN
                 && lastMovedPiece == ChessmanType.BLACK_PAWN
                 && selectedCell.getY() == 4
@@ -246,11 +245,11 @@ public final class Move {
     }
 
     private List<Move> replacePawnOnBackRankIfNecessary(CellCoords from, CellCoords to, ChessBoard chessboardAfterMove) {
-        final ChessmanType movedPiece = chessboardAfterMove.getPieceAt(to).getType();
+        final ChessmanType movedPiece = chessboardAfterMove.getPieceAt(to);
         if (movedPiece.getPieceShape() == PieceShape.PAWN && (to.getY() == 7 || to.getY() == 0)) {
             return map(PAWN_REPLACEMENTS.get(movedPiece), replacement -> {
                 ChessBoard chessboardWithReplacement = chessboardAfterMove.clone();
-                chessboardWithReplacement.placePiece(to, new Chessman(replacement));
+                chessboardWithReplacement.placePiece(to, replacement);
                 return new Move(this, from, to, chessboardWithReplacement);
             });
         } else {
@@ -282,12 +281,12 @@ public final class Move {
     private void processEnPassant(ChessBoard chessBoardBeforeMove,
                                   CellCoords from, CellCoords to,
                                   ChessBoard chessboardAfterMove) {
-        Chessman movedPiece = chessboardAfterMove.getPieceAt(to);
-        if (movedPiece.getType().getPieceShape() == PieceShape.PAWN
+        ChessmanType movedPiece = chessboardAfterMove.getPieceAt(to);
+        if (movedPiece.getPieceShape() == PieceShape.PAWN
                 && (to.getX() == from.getX() - 1 || to.getX() == from.getX() + 1)
                 && null == chessBoardBeforeMove.getPieceAt(to)) {
             chessboardAfterMove.placePiece(
-                    to.plusY(movedPiece.getType().getPieceColor() == ChessmanColor.WHITE ? -1 : 1),
+                    to.plusY(movedPiece.getPieceColor() == ChessmanColor.WHITE ? -1 : 1),
                     null
             );
         }
@@ -348,8 +347,8 @@ public final class Move {
     }
 
     private boolean isChessmanOnCell(ChessBoard chessBoard, ChessmanType type, CellCoords coords) {
-        final Chessman chessmanAtCoords = chessBoard.getPieceAt(coords);
+        final ChessmanType chessmanAtCoords = chessBoard.getPieceAt(coords);
         return type==null && chessmanAtCoords==null
-                || chessmanAtCoords!=null && chessmanAtCoords.getType().equals(type);
+                || chessmanAtCoords!=null && chessmanAtCoords.equals(type);
     }
 }
