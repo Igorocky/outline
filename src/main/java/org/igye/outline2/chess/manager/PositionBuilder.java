@@ -41,7 +41,7 @@ public class PositionBuilder implements ChessComponentStateManager {
         chessBoard = new ChessBoard(initialPosition);
         initAvailablePieces();
         unhighlightAvailablePieces();
-        availablePieces.get(6).set(0, createCell(6,0, RECYCLE_BIN_CODE));
+        availablePieces.get(6).set(1, createCell(6,1, RECYCLE_BIN_CODE));
 
         ChessBoardCellView selectedPiece = availablePieces.get(0).get(1);
         selectedPiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
@@ -88,12 +88,12 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     private void initAvailablePieces() {
         ChessmanType[][] availableChessmen = new ChessmanType[][]{
-                {BLACK_PAWN, WHITE_PAWN},
-                {BLACK_KNIGHT, WHITE_KNIGHT},
-                {BLACK_BISHOP, WHITE_BISHOP},
-                {BLACK_ROOK, WHITE_ROOK},
-                {BLACK_QUEEN, WHITE_QUEEN},
-                {BLACK_KING, WHITE_KING},
+                {WHITE_PAWN, BLACK_PAWN},
+                {WHITE_KNIGHT, BLACK_KNIGHT},
+                {WHITE_BISHOP, BLACK_BISHOP},
+                {WHITE_ROOK, BLACK_ROOK},
+                {WHITE_QUEEN, BLACK_QUEEN},
+                {WHITE_KING, BLACK_KING},
                 {null, null},
         };
         this.availablePieces = ChessUtils.emptyBoard(7, 2, (x,y)->
