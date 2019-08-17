@@ -27,55 +27,55 @@ public class ChessBoardViewBuilder {
         return chessBoard;
     }
 
-    public ChessBoardViewBuilder uP(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_PAWN.getCode()); }
+    public ChessBoardViewBuilder _P(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_PAWN.getCode()); }
     public ChessBoardViewBuilder yP(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_PAWN.getCode()); }
     public ChessBoardViewBuilder gP(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_PAWN.getCode()); }
 
-    public ChessBoardViewBuilder uN(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_KNIGHT.getCode()); }
+    public ChessBoardViewBuilder _N(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_KNIGHT.getCode()); }
     public ChessBoardViewBuilder yN(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_KNIGHT.getCode()); }
     public ChessBoardViewBuilder gN(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_KNIGHT.getCode()); }
 
-    public ChessBoardViewBuilder uB(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_BISHOP.getCode()); }
+    public ChessBoardViewBuilder _B(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_BISHOP.getCode()); }
     public ChessBoardViewBuilder yB(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_BISHOP.getCode()); }
     public ChessBoardViewBuilder gB(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_BISHOP.getCode()); }
 
-    public ChessBoardViewBuilder uR(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_ROOK.getCode()); }
+    public ChessBoardViewBuilder _R(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_ROOK.getCode()); }
     public ChessBoardViewBuilder yR(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_ROOK.getCode()); }
     public ChessBoardViewBuilder gR(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_ROOK.getCode()); }
 
-    public ChessBoardViewBuilder uQ(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_QUEEN.getCode()); }
+    public ChessBoardViewBuilder _Q(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_QUEEN.getCode()); }
     public ChessBoardViewBuilder yQ(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_QUEEN.getCode()); }
     public ChessBoardViewBuilder gQ(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_QUEEN.getCode()); }
 
-    public ChessBoardViewBuilder uK(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_KING.getCode()); }
+    public ChessBoardViewBuilder _K(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.WHITE_KING.getCode()); }
     public ChessBoardViewBuilder yK(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.WHITE_KING.getCode()); }
     public ChessBoardViewBuilder gK(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.WHITE_KING.getCode()); }
 
-    public ChessBoardViewBuilder up(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_PAWN.getCode()); }
+    public ChessBoardViewBuilder _p(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_PAWN.getCode()); }
     public ChessBoardViewBuilder yp(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_PAWN.getCode()); }
     public ChessBoardViewBuilder gp(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_PAWN.getCode()); }
 
-    public ChessBoardViewBuilder un(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_KNIGHT.getCode()); }
+    public ChessBoardViewBuilder _n(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_KNIGHT.getCode()); }
     public ChessBoardViewBuilder yn(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_KNIGHT.getCode()); }
     public ChessBoardViewBuilder gn(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_KNIGHT.getCode()); }
 
-    public ChessBoardViewBuilder ub(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_BISHOP.getCode()); }
+    public ChessBoardViewBuilder _b(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_BISHOP.getCode()); }
     public ChessBoardViewBuilder yb(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_BISHOP.getCode()); }
     public ChessBoardViewBuilder gb(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_BISHOP.getCode()); }
 
-    public ChessBoardViewBuilder ur(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_ROOK.getCode()); }
+    public ChessBoardViewBuilder _r(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_ROOK.getCode()); }
     public ChessBoardViewBuilder yr(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_ROOK.getCode()); }
     public ChessBoardViewBuilder gr(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_ROOK.getCode()); }
 
-    public ChessBoardViewBuilder uq(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_QUEEN.getCode()); }
+    public ChessBoardViewBuilder _q(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_QUEEN.getCode()); }
     public ChessBoardViewBuilder yq(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_QUEEN.getCode()); }
     public ChessBoardViewBuilder gq(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_QUEEN.getCode()); }
 
-    public ChessBoardViewBuilder uk(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_KING.getCode()); }
+    public ChessBoardViewBuilder _k(CellCoords coords) { return setCell(chessBoard, coords, null, ChessmanType.BLACK_KING.getCode()); }
     public ChessBoardViewBuilder yk(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, ChessmanType.BLACK_KING.getCode()); }
     public ChessBoardViewBuilder gk(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, ChessmanType.BLACK_KING.getCode()); }
 
-    public ChessBoardViewBuilder u_(CellCoords coords) { return setCell(chessBoard, coords, null, 0); }
+    public ChessBoardViewBuilder __(CellCoords coords) { return setCell(chessBoard, coords, null, 0); }
     public ChessBoardViewBuilder y_(CellCoords coords) { return setCell(chessBoard, coords, PREPARED_TO_MOVE_COLOR, 0); }
     public ChessBoardViewBuilder g_(CellCoords coords) { return setCell(chessBoard, coords, AVAILABLE_TO_MOVE_TO_COLOR, 0); }
 

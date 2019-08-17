@@ -1,9 +1,9 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.InitialPositionView;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
+import org.igye.outline2.chess.dto.InitialPositionView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.Chessman;
@@ -13,6 +13,7 @@ import org.igye.outline2.chess.model.ChessmanType;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
@@ -73,7 +74,17 @@ public class PositionBuilder implements ChessComponentStateManager {
         } else if (selectedCode == RECYCLE_BIN_CODE) {
             chessBoard.placePiece(coords, null);
         } else {
-            chessBoard.placePiece(coords, new Chessman(ChessmanType.fromCode(selectedCode)));
+            int codeOnTheCell = nullSafeGetterWithDefault(
+                    chessBoard.getPieceAt(coords),
+                    Chessman::getType,
+                    ChessmanType::getCode,
+                    -1
+            );
+            if (selectedCode == codeOnTheCell) {
+                chessBoard.placePiece(coords, null);
+            } else {
+                chessBoard.placePiece(coords, new Chessman(ChessmanType.fromCode(selectedCode)));
+            }
         }
         return toView();
     }
