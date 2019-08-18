@@ -9,7 +9,8 @@ import java.util.function.BiFunction;
 public class ChessUtils {
     private static final String X_NAMES = "abcdefgh";
 
-    public static <T> T[][] emptyBoard(Class<T[]> clazz1, Class<T> clazz2, int width, int height, BiFunction<Integer,Integer,T> elemSupplier) {
+    public static <T> T[][] emptyBoard(Class<T[]> clazz1, Class<T> clazz2,
+                                       int width, int height, BiFunction<Integer,Integer,T> elemSupplier) {
         T[][] cells = (T[][]) Array.newInstance(clazz1, width);
         for (int x = 0; x < width; x++) {
             cells[x] = (T[]) Array.newInstance(clazz2, height);

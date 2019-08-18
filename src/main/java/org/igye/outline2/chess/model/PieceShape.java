@@ -6,17 +6,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PieceShape {
-    PAWN('p'),
-    KNIGHT('n'),
-    BISHOP('b'),
-    ROOK('r'),
-    QUEEN('q'),
-    KING('k'),
+    PAWN("P"),
+    KNIGHT("N"),
+    BISHOP("B"),
+    ROOK("R"),
+    QUEEN("Q"),
+    KING("K"),
     ;
 
-    private Character symbol;
+    private String symbol;
 
-    private static Map<Character, PieceShape> symbolToValueMap = new HashMap<>();
+    private static Map<String, PieceShape> symbolToValueMap = new HashMap<>();
 
     static {
         for (PieceShape value : values()) {
@@ -24,15 +24,15 @@ public enum PieceShape {
         }
     }
 
-    PieceShape(Character symbol) {
+    PieceShape(String symbol) {
         this.symbol = symbol;
     }
 
-    public Character getSymbol() {
+    public String getSymbol() {
         return symbol;
     }
 
-    public static PieceShape fromSymbol(Character symbol) {
+    public static PieceShape fromSymbol(String symbol) {
         if (!symbolToValueMap.containsKey(symbol)) {
             throw new OutlineException("!symbolToValueMap.containsKey('" + symbol + "')");
         }

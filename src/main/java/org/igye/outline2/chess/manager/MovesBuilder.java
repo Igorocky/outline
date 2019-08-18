@@ -98,6 +98,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         return toView();
     }
 
+    @Override
+    public ChessComponentView execCommand(String command) {
+        notImplemented();
+        return null;
+    }
+
     private void processPawnOnLastLine(CellCoords coordsClicked) {
         final int xCoord = coordsClicked.getX();
         if (20 <= xCoord && xCoord <= 23) {

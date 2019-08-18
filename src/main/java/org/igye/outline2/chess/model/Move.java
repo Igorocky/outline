@@ -25,32 +25,7 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
 
 public final class Move {
-    private static final CellCoords A1 = new CellCoords(0, 0);
-    private static final CellCoords B1 = new CellCoords(1, 0);
-    private static final CellCoords C1 = new CellCoords(2, 0);
-    private static final CellCoords D1 = new CellCoords(3, 0);
-    private static final CellCoords E1 = new CellCoords(4, 0);
-    private static final CellCoords F1 = new CellCoords(5, 0);
-    private static final CellCoords G1 = new CellCoords(6, 0);
-    private static final CellCoords H1 = new CellCoords(7, 0);
-    private static final CellCoords A8 = new CellCoords(0, 7);
-    private static final CellCoords B8 = new CellCoords(1, 7);
-    private static final CellCoords C8 = new CellCoords(2, 7);
-    private static final CellCoords D8 = new CellCoords(3, 7);
-    private static final CellCoords E8 = new CellCoords(4, 7);
-    private static final CellCoords F8 = new CellCoords(5, 7);
-    private static final CellCoords G8 = new CellCoords(6, 7);
-    private static final CellCoords H8 = new CellCoords(7, 7);
-    private static final Map<ChessmanType, List<ChessmanType>> PAWN_REPLACEMENTS= mapOf(
-            WHITE_PAWN, listOf(WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN),
-            BLACK_PAWN, listOf(BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN)
-    );
-    private static final OptionsToFindNextMoves OPTIONS_TO_FIND_NEXT_MOVES_ALL_FALSE = OptionsToFindNextMoves.builder()
-            .checkColor(false)
-            .checkPossibleCastlings(false)
-            .performSelfCheckValidation(false)
-            .build();
-
+    private final ChessBoard startPosition;
     @Getter
     private final CellCoords from;
     @Getter
@@ -62,12 +37,14 @@ public final class Move {
     private boolean blackQueenCastleAvailable = true;
 
     public Move(CellCoords to, ChessBoard resultPosition) {
+        startPosition=null;
         from = null;
         this.to = to;
         this.resultPosition = resultPosition.clone();
     }
 
     private Move(Move prevMove, CellCoords from, CellCoords to, ChessBoard resultPosition) {
+        this.startPosition = prevMove.resultPosition.clone();
         this.from = from;
         this.to = to;
         this.resultPosition = resultPosition.clone();
@@ -351,4 +328,30 @@ public final class Move {
         return type==null && chessmanAtCoords==null
                 || chessmanAtCoords!=null && chessmanAtCoords.equals(type);
     }
+
+    private static final CellCoords A1 = new CellCoords(0, 0);
+    private static final CellCoords B1 = new CellCoords(1, 0);
+    private static final CellCoords C1 = new CellCoords(2, 0);
+    private static final CellCoords D1 = new CellCoords(3, 0);
+    private static final CellCoords E1 = new CellCoords(4, 0);
+    private static final CellCoords F1 = new CellCoords(5, 0);
+    private static final CellCoords G1 = new CellCoords(6, 0);
+    private static final CellCoords H1 = new CellCoords(7, 0);
+    private static final CellCoords A8 = new CellCoords(0, 7);
+    private static final CellCoords B8 = new CellCoords(1, 7);
+    private static final CellCoords C8 = new CellCoords(2, 7);
+    private static final CellCoords D8 = new CellCoords(3, 7);
+    private static final CellCoords E8 = new CellCoords(4, 7);
+    private static final CellCoords F8 = new CellCoords(5, 7);
+    private static final CellCoords G8 = new CellCoords(6, 7);
+    private static final CellCoords H8 = new CellCoords(7, 7);
+    private static final Map<ChessmanType, List<ChessmanType>> PAWN_REPLACEMENTS= mapOf(
+            WHITE_PAWN, listOf(WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN),
+            BLACK_PAWN, listOf(BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN)
+    );
+    private static final OptionsToFindNextMoves OPTIONS_TO_FIND_NEXT_MOVES_ALL_FALSE = OptionsToFindNextMoves.builder()
+            .checkColor(false)
+            .checkPossibleCastlings(false)
+            .performSelfCheckValidation(false)
+            .build();
 }

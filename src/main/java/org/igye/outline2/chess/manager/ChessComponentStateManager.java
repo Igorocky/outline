@@ -7,6 +7,7 @@ import org.igye.outline2.exceptions.OutlineException;
 public interface ChessComponentStateManager {
     ChessComponentView toView();
     ChessComponentView cellLeftClicked(CellCoords coords);
+    ChessComponentView execCommand(String command);
 
     default void notSupported() {
         throw new OutlineException("Method not supported.");

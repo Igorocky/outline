@@ -46,10 +46,10 @@ public enum ChessmanType {
         throw new OutlineException("Cannot find any chessman with code " + code + ".");
     }
 
-    public static ChessmanType fromSymbol(Character symbol) {
-        Character lowerCaseSymbol = symbol.toString().toLowerCase().charAt(0);
-        PieceShape shape = PieceShape.fromSymbol(lowerCaseSymbol);
-        ChessmanColor color = symbol.equals(lowerCaseSymbol) ? BLACK : WHITE;
+    public static ChessmanType fromSymbol(String symbol) {
+        String upperCaseSymbol = symbol.toUpperCase();
+        PieceShape shape = PieceShape.fromSymbol(upperCaseSymbol);
+        ChessmanColor color = symbol.equals(upperCaseSymbol) ? WHITE : BLACK;
         return getByColorAndShape(color, shape);
     }
 
@@ -62,11 +62,11 @@ public enum ChessmanType {
         throw new OutlineException("getByColorAndShape");
     }
 
-    public Character getSymbol() {
-        if (pieceColor == BLACK) {
+    public String getSymbol() {
+        if (pieceColor == WHITE) {
             return pieceShape.getSymbol();
         } else {
-            return pieceShape.getSymbol().toString().toUpperCase().charAt(0);
+            return pieceShape.getSymbol().toLowerCase();
         }
     }
 }

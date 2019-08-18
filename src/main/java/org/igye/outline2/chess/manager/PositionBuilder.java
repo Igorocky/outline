@@ -86,6 +86,12 @@ public class PositionBuilder implements ChessComponentStateManager {
         return toView();
     }
 
+    @Override
+    public ChessComponentView execCommand(String command) {
+        notImplemented();
+        return null;
+    }
+
     public String getPosition() {
         return chessBoard.encode();
     }

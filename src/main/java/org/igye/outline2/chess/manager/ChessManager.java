@@ -27,6 +27,12 @@ public class ChessManager implements ChessComponentStateManager {
         return stateManager.cellLeftClicked(coords);
     }
 
+    @Override
+    public ChessComponentView execCommand(String command) {
+        notImplemented();
+        return null;
+    }
+
     @RpcMethod
     public ChessComponentView chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {

@@ -129,7 +129,7 @@ public class ChessBoard {
         if (isPiece(ch)) {
             int x = cellPointer%8;
             int y = 7-cellPointer/8;
-            placePiece(x,y, ChessmanType.fromSymbol(ch));
+            placePiece(x,y, ChessmanType.fromSymbol(String.valueOf(ch)));
             return cellPointer + 1;
         } else {
             return cellPointer + ch - 48;
@@ -162,9 +162,9 @@ public class ChessBoard {
 
     private String chessmanToString(ChessmanType chessman) {
         if (chessman.getPieceColor().equals(ChessmanColor.WHITE)) {
-            return chessman.getPieceShape().getSymbol().toString().toUpperCase();
+            return chessman.getPieceShape().getSymbol();
         } else {
-            return chessman.getPieceShape().getSymbol().toString();
+            return chessman.getPieceShape().getSymbol().toLowerCase();
         }
     }
 
