@@ -11,6 +11,7 @@ import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.chess.model.ParseMoveException;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
@@ -68,7 +69,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
         if (state.isChoseChessmanTypeDialogOpened()) {
             processPawnOnLastLine(coordsClicked);
-        } else if (state.getCurrPosition().getChildren().isEmpty()) {
+        } else if (canMakeMove()) {
             final List<Move> preparedMoves = state.getPreparedMoves();
             if (CollectionUtils.isEmpty(preparedMoves)) {
                 List<Move> possibleMoves = state.getCurrPosition().getMove().getPossibleNextMoves(coordsClicked);
@@ -99,8 +100,21 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     @Override
     public ChessComponentView execCommand(String command) {
-        notImplemented();
-        return null;
+        if (canMakeMove()) {
+            try {
+                state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
+                state.setErrorMsg(null);
+                state.appendPreparedMoveToHistory();
+            } catch (ParseMoveException ex) {
+                state.setErrorMsg(ex.getMessage());
+            }
+        }
+        return toView();
+    }
+
+    private boolean canMakeMove() {
+        return state.getCurrPosition().getChildren().isEmpty()
+                && !state.isChoseChessmanTypeDialogOpened();
     }
 
     private void processPawnOnLastLine(CellCoords coordsClicked) {

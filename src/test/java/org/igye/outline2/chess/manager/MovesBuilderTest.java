@@ -5,7 +5,6 @@ import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
-import org.igye.outline2.chess.model.PieceShape;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -85,6 +84,7 @@ import static org.igye.outline2.controllers.chess.ChessTestUtils.assertEqualsByC
 import static org.igye.outline2.controllers.chess.ChessTestUtils.assertNoCellPreparedToMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoard;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardView;
+import static org.igye.outline2.controllers.chess.ChessTestUtils.execCommand;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getLastMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.makeMove;
@@ -905,7 +905,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c3, c4);
+        ChessComponentView view = execCommand(movesBuilder, "c4");
         assertEquals("c4", getLastMove(view));
     }
     @Test public void moveNotationForAmbiguousPawnMove() {
@@ -920,7 +920,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c7, d6);
+        ChessComponentView view = execCommand(movesBuilder, "cd6");
         assertEquals("cxd6", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWithCapture() {
@@ -935,7 +935,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, d6, e7);
+        ChessComponentView view = execCommand(movesBuilder, "e7");
         assertEquals("xe7", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChanges() {
@@ -950,7 +950,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, g7, g8, PieceShape.QUEEN);
+        ChessComponentView view = execCommand(movesBuilder, "g8q");
         assertEquals("g8Q", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanEscape() {
@@ -965,7 +965,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c2, c1, PieceShape.ROOK);
+        ChessComponentView view = execCommand(movesBuilder, "c1r");
         assertEquals("c1R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanBeProtected() {
@@ -980,7 +980,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c2, c1, PieceShape.ROOK);
+        ChessComponentView view = execCommand(movesBuilder, "c1r");
         assertEquals("c1R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckMate() {
@@ -995,7 +995,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c2, c1, PieceShape.ROOK);
+        ChessComponentView view = execCommand(movesBuilder, "c1r");
         assertEquals("c1R#", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnCapturesAndChangesWithCheckMate() {
@@ -1010,7 +1010,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, h7, g8, PieceShape.QUEEN);
+        ChessComponentView view = execCommand(movesBuilder, "hg8q");
         assertEquals("hxg8Q#", getLastMove(view));
     }
     @Test public void moveNotationForEnPassantPawnMove() {
@@ -1026,7 +1026,7 @@ public class MovesBuilderTest {
         ));
 
         makeMove(movesBuilder, e2,e4);
-        ChessComponentView view = makeMove(movesBuilder, d4,e3);
+        ChessComponentView view = execCommand(movesBuilder, "e3");
         assertEquals("e3e.p.", getLastMove(view));
     }
     @Test public void moveNotationIndicatesUniqueXCoordFromWhenItIsAmbiguous() {
@@ -1041,7 +1041,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c3, d5);
+        ChessComponentView view = execCommand(movesBuilder, "ncd5");
         assertEquals("Ncxd5", getLastMove(view));
     }
     @Test public void moveNotationIndicatesUniqueYCoordFromWhenItIsAmbiguous() {
@@ -1056,7 +1056,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c3, d5);
+        ChessComponentView view = execCommand(movesBuilder, "n3d5");
         assertEquals("N3xd5", getLastMove(view));
     }
     @Test public void moveNotationDoesntIndicateCoordFromWhenThereAreFewPiecesButTheyAreOfDifferentTypes() {
@@ -1071,7 +1071,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, c4, d5);
+        ChessComponentView view = execCommand(movesBuilder, "qd5");
         assertEquals("Qxd5", getLastMove(view));
     }
     @Test public void moveNotationForShortCastling() {
@@ -1086,7 +1086,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1).R(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, e1, g1);
+        ChessComponentView view = execCommand(movesBuilder, "kg1");
         assertEquals("0-0", getLastMove(view));
     }
     @Test public void moveNotationForLongCastling() {
@@ -1101,7 +1101,7 @@ public class MovesBuilderTest {
                 ._(a1).K(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = makeMove(movesBuilder, e8, c8);
+        ChessComponentView view = execCommand(movesBuilder, "kc8");
         assertEquals("0-0-0", getLastMove(view));
     }
 

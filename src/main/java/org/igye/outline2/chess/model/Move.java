@@ -1,7 +1,9 @@
 package org.igye.outline2.chess.model;
 
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,11 +12,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapOf;
+import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.igye.outline2.chess.manager.ChessUtils.X_NAMES;
 import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
@@ -139,6 +145,80 @@ public final class Move {
 
     public boolean isLongCastling() {
         return isCastling() && to.getX() == 2;
+    }
+
+    public Move makeMove(String notation) throws ParseMoveException {
+        String upperCaseNotation = notation.trim().toUpperCase();
+        Matcher matcher = Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?([A-H])([1-8])([NBRQ]?)$").matcher(upperCaseNotation);
+        if (!matcher.matches()) {
+            throw new ParseMoveException("Move notation format is incorrect.");
+        }
+        PieceShape pieceShape = nullSafeGetterWithDefault(
+                matcher.group(1),
+                s-> StringUtils.isBlank(s)?null:s,
+                PieceShape::fromSymbol,
+                PieceShape.PAWN
+        );
+        Integer coordFromX = strCoordToInt(matcher.group(2));
+        Integer coordFromY = strCoordToInt(matcher.group(3));
+        CellCoords cellToMoveTo = new CellCoords(
+                strCoordToInt(matcher.group(4)),
+                strCoordToInt(matcher.group(5))
+        );
+        PieceShape replacement = nullSafeGetter(
+                matcher.group(6),
+                s-> StringUtils.isBlank(s)?null:s,
+                PieceShape::fromSymbol
+        );
+
+        ChessmanColor colorToMove = getColorOfWhoMadeMove().invert();
+        Set<CellCoords> availableCellsFrom = findAll(c ->
+                c.getPieceShape() == pieceShape && c.getPieceColor() == colorToMove
+        );
+        availableCellsFrom.removeIf(c ->
+                coordFromX != null && c.getX() != coordFromX
+                        || coordFromY != null && c.getY() != coordFromY
+        );
+        if (availableCellsFrom.isEmpty()) {
+            throw new ParseMoveException("Cannot find specified piece to move.");
+        }
+        List<Pair<CellCoords, List<Move>>> possibleMoves = availableCellsFrom.stream()
+                .map(c -> Pair.of(c, this.getPossibleNextMoves(c)))
+                .map(p -> Pair.of(p, p.getRight().stream().map(Move::getTo).collect(Collectors.toSet())))
+                .filter(p -> p.getRight().contains(cellToMoveTo))
+                .map(pp -> pp.getLeft())
+                .collect(Collectors.toList());
+        if (possibleMoves.isEmpty()) {
+            throw new ParseMoveException("Move is not possible.");
+        }
+        if (possibleMoves.size() > 1) {
+            throw new ParseMoveException("Move is ambiguously specified.");
+        }
+        List<Move> result = possibleMoves.get(0).getRight().stream()
+                .filter(m -> m.getTo().equals(cellToMoveTo))
+                .collect(Collectors.toList());
+        if (pieceShape == PieceShape.PAWN && (cellToMoveTo.getY() == 0 || cellToMoveTo.getY() == 7)) {
+            if (replacement == null) {
+                throw new ParseMoveException("Replacement is not specified.");
+            }
+            result.removeIf(m->m.resultPosition.getPieceAt(cellToMoveTo).getPieceShape() != replacement);
+        }
+        if (result.size() != 1) {
+            throw new OutlineException("result.size() != 1");
+        }
+        return result.get(0);
+    }
+
+    private Integer strCoordToInt(String strCoord) {
+        if (strCoord == null) {
+            return null;
+        }
+        int coordCode = strCoord.charAt(0);
+        if (coordCode >= 65) {
+            return coordCode - 65;
+        } else {
+            return coordCode - 49;
+        }
     }
 
     private boolean isCastling() {

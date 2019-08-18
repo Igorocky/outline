@@ -247,6 +247,10 @@ public class ChessTestUtils {
         return movesBuilder.cellLeftClicked(to);
     }
 
+    public static ChessComponentView execCommand(MovesBuilder movesBuilder, String command) {
+        return movesBuilder.execCommand(command);
+    }
+
     public static String getLastMove(ChessComponentView view) {
         final List<MoveView> moves = view.getHistory().getMoves();
         MoveView lastMove = moves.get(moves.size() - 1);
