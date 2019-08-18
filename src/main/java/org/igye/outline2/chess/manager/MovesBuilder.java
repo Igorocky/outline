@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
-import static org.igye.outline2.chess.manager.ChessUtils.moveToString;
 
 public class MovesBuilder implements ChessComponentStateManager {
     public static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
@@ -186,10 +185,10 @@ public class MovesBuilder implements ChessComponentStateManager {
         while (currPosition != null) {
             final Move currMove = currPosition.getMove();
             if (currMove.getColorOfWhoMadeMove() == ChessmanColor.WHITE) {
-                moveView.setWhitesMove(moveToString(currMove));
+                moveView.setWhitesMove(currMove.getShortNotation());
                 moveView.setWhitesMoveSelected(selectedPosition == currPosition);
             } else {
-                moveView.setBlacksMove(moveToString(currMove));
+                moveView.setBlacksMove(currMove.getShortNotation());
                 moveView.setBlacksMoveSelected(selectedPosition == currPosition);
 
                 historyView.getMoves().add(moveView);

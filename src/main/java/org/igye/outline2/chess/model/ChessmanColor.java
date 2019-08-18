@@ -4,7 +4,7 @@ public enum ChessmanColor {
     WHITE, BLACK
     ;
 
-    public ChessmanColor inverse() {
+    public ChessmanColor invert() {
         if (this.equals(WHITE)) {
             return BLACK;
         } else {

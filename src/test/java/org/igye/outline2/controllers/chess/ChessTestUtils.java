@@ -3,6 +3,8 @@ package org.igye.outline2.controllers.chess;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
+import org.igye.outline2.chess.dto.MoveView;
+import org.igye.outline2.chess.manager.MovesBuilder;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
@@ -10,9 +12,11 @@ import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function3;
+import org.igye.outline2.exceptions.OutlineException;
 import org.junit.Assert;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -70,7 +74,7 @@ public class ChessTestUtils {
         final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
         chessBoardBuilderConsumer.accept(chessBoardBuilder);
         ChessBoard initialBoard = chessBoardBuilder.build();
-        ChessmanColor colorOfWhoMadePreviousMove = whoToMove.inverse();
+        ChessmanColor colorOfWhoMadePreviousMove = whoToMove.invert();
         return new Move(
                 initialBoard.findFirstCoords(cm -> cm.getPieceColor().equals(colorOfWhoMadePreviousMove)),
                 initialBoard
@@ -167,7 +171,7 @@ public class ChessTestUtils {
         && expected.getCode() == actual.getCode();
     }
 
-    public static void assertEquals(ChessBoardView expected, ChessBoardView actual) {
+    public static void assertBoardsEqual(ChessBoardView expected, ChessBoardView actual) {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 if (!equals(expected.getCell(x, y), actual.getCell(x, y))) {
@@ -220,5 +224,36 @@ public class ChessTestUtils {
         );
 
         return " " + borderColor + type;
+    }
+
+    public static ChessComponentView makeMove(MovesBuilder movesBuilder, CellCoords from, CellCoords to,
+                                              PieceShape pieceShape) {
+        ChessComponentView view = makeMove(movesBuilder, from, to);
+        if (view.getChoseChessmanTypeDialogView() != null) {
+            return movesBuilder.cellLeftClicked(new CellCoords(
+                    pieceShape == PieceShape.KNIGHT ? 20 :
+                            pieceShape == PieceShape.BISHOP ? 21 :
+                                    pieceShape == PieceShape.ROOK ? 22 :
+                                            pieceShape == PieceShape.QUEEN ? 23
+                                                    : 0,
+                    0
+            ));
+        } else {
+            throw new OutlineException("view.getChoseChessmanTypeDialogView() == null");
+        }
+    }
+    public static ChessComponentView makeMove(MovesBuilder movesBuilder, CellCoords from, CellCoords to) {
+        movesBuilder.cellLeftClicked(from);
+        return movesBuilder.cellLeftClicked(to);
+    }
+
+    public static String getLastMove(ChessComponentView view) {
+        final List<MoveView> moves = view.getHistory().getMoves();
+        MoveView lastMove = moves.get(moves.size() - 1);
+        if (lastMove.getBlacksMove() != null) {
+            return lastMove.getBlacksMove();
+        } else {
+            return lastMove.getWhitesMove();
+        }
     }
 }

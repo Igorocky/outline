@@ -68,7 +68,7 @@ import static org.igye.outline2.controllers.chess.CellCoordsConstants.h5;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.h6;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.h7;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.h8;
-import static org.igye.outline2.controllers.chess.ChessTestUtils.assertEquals;
+import static org.igye.outline2.controllers.chess.ChessTestUtils.assertBoardsEqual;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardView;
 
 public class PositionBuilderTest {
@@ -79,7 +79,7 @@ public class PositionBuilderTest {
 
         positionBuilder.cellLeftClicked(new CellCoords(11,1));
         ChessComponentView view = positionBuilder.cellLeftClicked(f6);
-        assertEquals(chessBoardView(b -> b
+        assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6)._n(f6).__(g6).__(h6)
@@ -92,7 +92,7 @@ public class PositionBuilderTest {
 
         positionBuilder.cellLeftClicked(new CellCoords(12,1));
         view = positionBuilder.cellLeftClicked(f6);
-        assertEquals(chessBoardView(b -> b
+        assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6)._b(f6).__(g6).__(h6)
@@ -104,7 +104,7 @@ public class PositionBuilderTest {
         ), view.getChessBoard());
 
         view = positionBuilder.cellLeftClicked(f6);
-        assertEquals(chessBoardView(b -> b
+        assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)

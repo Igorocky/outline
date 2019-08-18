@@ -38,7 +38,7 @@ public class ChessManager implements ChessComponentStateManager {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
-                ChessmanColor colorOfWhoMadePreviousMove = positionBuilder.getNextMoveColor().inverse();
+                ChessmanColor colorOfWhoMadePreviousMove = positionBuilder.getNextMoveColor().invert();
                 ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
                 Move initialMove = new Move(
                         initialPosition.findFirstCoords(

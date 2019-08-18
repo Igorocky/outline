@@ -27,5 +27,5 @@ public class ChessBoardBuilder {
     public ChessBoardBuilder r(CellCoords coords) { chessBoard.placePiece(coords, ChessmanType.BLACK_ROOK); return this; }
     public ChessBoardBuilder q(CellCoords coords) { chessBoard.placePiece(coords, ChessmanType.BLACK_QUEEN); return this; }
     public ChessBoardBuilder k(CellCoords coords) { chessBoard.placePiece(coords, ChessmanType.BLACK_KING); return this; }
-    public ChessBoardBuilder o(CellCoords coords) { chessBoard.placePiece(coords, null); return this; }
+    public ChessBoardBuilder _(CellCoords coords) { chessBoard.placePiece(coords, null); return this; }
 }

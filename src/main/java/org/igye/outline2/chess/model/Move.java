@@ -1,18 +1,23 @@
 package org.igye.outline2.chess.model;
 
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
 import static org.igye.outline2.OutlineUtils.map;
 import static org.igye.outline2.OutlineUtils.mapOf;
 import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.chess.manager.ChessUtils.X_NAMES;
+import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_PAWN;
@@ -25,7 +30,8 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
 
 public final class Move {
-    private final ChessBoard startPosition;
+    @Getter
+    private final Move prevMove;
     @Getter
     private final CellCoords from;
     @Getter
@@ -35,20 +41,28 @@ public final class Move {
     private boolean whiteQueenCastleAvailable = true;
     private boolean blackKingCastleAvailable = true;
     private boolean blackQueenCastleAvailable = true;
+    private String shortNotation;
 
     public Move(CellCoords to, ChessBoard resultPosition) {
-        startPosition=null;
+        prevMove=null;
         from = null;
         this.to = to;
         this.resultPosition = resultPosition.clone();
     }
 
     private Move(Move prevMove, CellCoords from, CellCoords to, ChessBoard resultPosition) {
-        this.startPosition = prevMove.resultPosition.clone();
+        this.prevMove = prevMove;
         this.from = from;
         this.to = to;
         this.resultPosition = resultPosition.clone();
         copyCastlingAbilities(prevMove, this);
+    }
+
+    public String getShortNotation() {
+        if (shortNotation == null) {
+            shortNotation = generateShortNotation(this);
+        }
+        return shortNotation;
     }
 
     public ChessmanColor getColorOfWhoMadeMove() {
@@ -65,6 +79,10 @@ public final class Move {
 
     public List<Move> getPossibleNextMoves(CellCoords from) {
         return getPossibleNextMoves(from, null);
+    }
+
+    public Set<CellCoords> findAll(Predicate<ChessmanType> predicate) {
+        return resultPosition.findAll(predicate);
     }
 
     private Set<CellCoords> getAllCellsAttackedBy(ChessmanColor colorOfAttacker) {
@@ -84,12 +102,49 @@ public final class Move {
                 .collect(Collectors.toSet());
     }
 
+    public boolean isCheck() {
+        final ChessmanColor colorOfOpponent = getColorOfWhoMadeMove().invert();
+        return isCheckFor(colorOfOpponent);
+    }
+
     public boolean isCheckFor(ChessmanColor colorOfKing) {
-        CellCoords kingCoords = resultPosition.findFirstCoords(chessman ->
+        CellCoords kingCoords = getKingCoords(colorOfKing);
+        if (kingCoords == null) {
+            return false;
+        }
+        return getAllCellsAttackedBy(colorOfKing.invert()).contains(kingCoords);
+    }
+
+    public boolean isCheckMate() {
+        ChessmanColor colorOfOpponent = getColorOfWhoMadeMove().invert();
+        Set<CellCoords> allOpponentsChessmen = findAll(cm -> cm.getPieceColor() == colorOfOpponent);
+        allOpponentsChessmen.removeIf(c -> getPossibleNextMoves(c).isEmpty());
+        return allOpponentsChessmen.isEmpty();
+    }
+
+    public boolean isEnPassant() {
+        return isEnPassant(prevMove.resultPosition, from, to, resultPosition);
+    }
+
+    private CellCoords getKingCoords(ChessmanColor colorOfKing) {
+        return resultPosition.findFirstCoords(chessman ->
                 chessman.getPieceColor() == colorOfKing
                         && chessman.getPieceShape() == PieceShape.KING
         );
-        return getAllCellsAttackedBy(colorOfKing.inverse()).contains(kingCoords);
+    }
+
+    public boolean isShortCastling() {
+        return isCastling() && to.getX() == 6;
+    }
+
+    public boolean isLongCastling() {
+        return isCastling() && to.getX() == 2;
+    }
+
+    private boolean isCastling() {
+        return from != null
+                && resultPosition.getPieceAt(to).getPieceShape() == PieceShape.KING
+                && (Math.abs(from.getX()-to.getX()) > 1 || Math.abs(from.getY()-to.getY()) > 1);
     }
 
     private List<Move> getPossibleNextMoves(CellCoords from, OptionsToFindNextMoves options) {
@@ -97,7 +152,7 @@ public final class Move {
         if (selectedChessman == null) {
             return Collections.emptyList();
         }
-        ChessmanColor colorToMove = getColorOfWhoMadeMove().inverse();
+        ChessmanColor colorToMove = getColorOfWhoMadeMove().invert();
         if ((options == null || options.isCheckColor()) && selectedChessman.getPieceColor() != colorToMove) {
             return Collections.emptyList();
         }
@@ -255,15 +310,21 @@ public final class Move {
         }
     }
 
-    private void processEnPassant(ChessBoard chessBoardBeforeMove,
+    private boolean isEnPassant(ChessBoard chessBoardBeforeMove,
                                   CellCoords from, CellCoords to,
                                   ChessBoard chessboardAfterMove) {
         ChessmanType movedPiece = chessboardAfterMove.getPieceAt(to);
-        if (movedPiece.getPieceShape() == PieceShape.PAWN
+        return movedPiece.getPieceShape() == PieceShape.PAWN
                 && (to.getX() == from.getX() - 1 || to.getX() == from.getX() + 1)
-                && null == chessBoardBeforeMove.getPieceAt(to)) {
+                && null == chessBoardBeforeMove.getPieceAt(to);
+    }
+
+    private void processEnPassant(ChessBoard chessBoardBeforeMove,
+                                  CellCoords from, CellCoords to,
+                                  ChessBoard chessboardAfterMove) {
+        if (isEnPassant(chessBoardBeforeMove, from, to, chessboardAfterMove)) {
             chessboardAfterMove.placePiece(
-                    to.plusY(movedPiece.getPieceColor() == ChessmanColor.WHITE ? -1 : 1),
+                    to.plusY(chessboardAfterMove.getPieceAt(to).getPieceColor() == ChessmanColor.WHITE ? -1 : 1),
                     null
             );
         }
@@ -327,6 +388,96 @@ public final class Move {
         final ChessmanType chessmanAtCoords = chessBoard.getPieceAt(coords);
         return type==null && chessmanAtCoords==null
                 || chessmanAtCoords!=null && chessmanAtCoords.equals(type);
+    }
+
+    private static String generateShortNotation(Move move) {
+        if (move.getFrom() == null) {
+            return "start-position";
+        } else if (move.isShortCastling()) {
+            return "0-0";
+        } else if (move.isLongCastling()) {
+            return "0-0-0";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(whatMoved(move));
+        if (wasCapture(move)) {
+            sb.append("x");
+        }
+        sb.append(coordsToString(move.getTo()));
+        if (wasPawnChange(move)) {
+            sb.append(chessmanShapeToShortSymbol(move.getPieceAt(move.getTo())));
+        }
+        if (move.isEnPassant()) {
+            sb.append("e.p.");
+        }
+        if (move.isCheckMate()) {
+            sb.append("#");
+        } else if (move.isCheck()) {
+            sb.append("+");
+        }
+        return sb.toString();
+    }
+
+    private static boolean wasPawnChange(Move move) {
+        return move.getPrevMove().getPieceAt(move.getFrom()).getPieceShape() == PieceShape.PAWN
+                && move.getPieceAt(move.getTo()).getPieceShape() != PieceShape.PAWN;
+    }
+
+    private static boolean wasCapture(Move move) {
+        return move.getPrevMove().getPieceAt(move.getTo()) != null;
+    }
+
+    private static String whatMoved(Move move) {
+        ChessmanType movedPiece = move.getPrevMove().getPieceAt(move.getFrom());
+        Set<CellCoords> coordsOfAllPiecesWithSameShape =
+                move.getPrevMove().findAll(piece ->
+                        piece.getPieceShape() == movedPiece.getPieceShape()
+                        && piece.getPieceColor() == movedPiece.getPieceColor()
+                );
+        if (coordsOfAllPiecesWithSameShape.size() == 1) {
+            return chessmanShapeToShortSymbol(movedPiece);
+        }
+        List<CellCoords> moveCandidates = coordsOfAllPiecesWithSameShape.stream()
+                .map(from -> Pair.of(
+                        from,
+                        move.getPrevMove().getPossibleNextMoves(from).stream()
+                                .map(Move::getTo)
+                                .collect(Collectors.toSet())
+                ))
+                .filter(pair -> pair.getRight().contains(move.getTo()))
+                .map(Pair::getLeft)
+                .collect(Collectors.toList());
+        if (moveCandidates.size() == 1) {
+            return chessmanShapeToShortSymbol(movedPiece);
+        }
+        return chessmanShapeToShortSymbol(movedPiece) + getUniqueCoord(move.getFrom(), moveCandidates);
+    }
+
+    private static String chessmanShapeToShortSymbol(ChessmanType type) {
+        final PieceShape pieceShape = type.getPieceShape();
+        if (pieceShape == PieceShape.PAWN) {
+            return "";
+        } else {
+            return pieceShape.getSymbol();
+        }
+    }
+
+    private static String getUniqueCoord(CellCoords from, List<CellCoords> moveCandidates) {
+        if (1 == countCoordsWithSameComponent(from, moveCandidates, CellCoords::getX)) {
+            return String.valueOf(X_NAMES.charAt(from.getX()));
+        }
+        if (1 == countCoordsWithSameComponent(from, moveCandidates, CellCoords::getY)) {
+            return String.valueOf(from.getY()+1);
+        }
+        return coordsToString(from);
+    }
+
+    private static long countCoordsWithSameComponent(CellCoords from,
+                                                     List<CellCoords> moveCandidates,
+                                                     Function<CellCoords,Integer> componentExtractor) {
+        return moveCandidates.stream()
+                .filter(coord -> componentExtractor.apply(coord) == componentExtractor.apply(from))
+                .count();
     }
 
     private static final CellCoords A1 = new CellCoords(0, 0);

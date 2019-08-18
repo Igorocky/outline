@@ -101,6 +101,17 @@ public class ChessBoard {
         return result[0];
     }
 
+    public Set<CellCoords> findAll(Predicate<ChessmanType> predicate) {
+        final Set<CellCoords> result = new HashSet<>();
+        traverse((x,y,chessman) -> {
+            if (predicate.test(chessman)) {
+                result.add(new CellCoords(x,y));
+            }
+            return true;
+        });
+        return result;
+    }
+
     public void traverse(Function3<Integer, Integer, ChessmanType, Boolean> consumer) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
