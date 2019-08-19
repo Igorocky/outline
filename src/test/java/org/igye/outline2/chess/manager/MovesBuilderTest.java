@@ -579,6 +579,62 @@ public class MovesBuilderTest {
                 .__(a1).__(b1).__(c1).__(d1).__(e1).__(f1).__(g1).__(h1)
         ), view.getChessBoard());
     }
+    @Test public void test_whitePawnCannotJumpOverAPiece() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3).Q(g3).p(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2).P(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        //when
+        ChessComponentView view = movesBuilder.cellLeftClicked(g2);
+
+        //then
+        assertBoardsEqual(chessBoardView(b -> b
+                .__(a8).__(b8).__(c8).__(d8)._k(e8).__(f8).__(g8).__(h8)
+                .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
+                .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)
+                .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
+                .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3)._Q(g3).gp(h3)
+                .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).yP(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1)._K(e1).__(f1).__(g1).__(h1)
+        ), view.getChessBoard());
+    }
+    @Test public void test_blackPawnCannotJumpOverAPiece() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).p(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6).q(g6).P(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        //when
+        ChessComponentView view = movesBuilder.cellLeftClicked(g7);
+
+        //then
+        assertBoardsEqual(chessBoardView(b -> b
+                .__(a8).__(b8).__(c8).__(d8)._k(e8).__(f8).__(g8).__(h8)
+                .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).yp(g7).__(h7)
+                .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6)._q(g6).gP(h6)
+                .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
+                .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
+                .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).__(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1)._K(e1).__(f1).__(g1).__(h1)
+        ), view.getChessBoard());
+    }
     @Test public void test_whitePawnTurnsIntoAnotherPiece() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
                 .P(f6).p(e7)
@@ -785,12 +841,6 @@ public class MovesBuilderTest {
                 .__(a1).__(b1).__(c1).__(d1).__(e1)._q(f1).__(g1).__(h1)
         ), view.getChessBoard());
         Assert.assertNull(view.getChoseChessmanTypeDialogView());
-    }
-    @Test public void test_whitePawnCannotJumpOverAPiece() {
-        throw new RuntimeException();
-    }
-    @Test public void test_blackPawnCannotJumpOverAPiece() {
-        throw new RuntimeException();
     }
     @Test public void test_ChoseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b

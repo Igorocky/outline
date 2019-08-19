@@ -195,7 +195,7 @@ public class ChessBoard {
                 result.add(forward);
             }
             CellCoords forward2 = from.plusX(0).plusY(2);
-            if (from.getY() == 1 && getPieceAt(forward2) == null) {
+            if (from.getY() == 1 && getPieceAt(forward) == null && getPieceAt(forward2) == null) {
                 result.add(forward2);
             }
         } else {
@@ -212,7 +212,7 @@ public class ChessBoard {
                 result.add(forward);
             }
             CellCoords forward2 = from.plusX(0).plusY(-2);
-            if (from.getY() == 6 && getPieceAt(forward2) == null) {
+            if (from.getY() == 6 && getPieceAt(forward) == null && getPieceAt(forward2) == null) {
                 result.add(forward2);
             }
         }
