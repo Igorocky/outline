@@ -15,7 +15,7 @@ public class MovesBuilderState {
     private GamePosition currPosition;
     private List<Move> preparedMoves = new ArrayList<>();
     private boolean choseChessmanTypeDialogOpened;
-    private String errorMsg;
+    private String commandErrorMsg;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);

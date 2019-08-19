@@ -38,6 +38,8 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     public PositionBuilder(String initialPosition) {
         chessBoard = new ChessBoard(initialPosition);
+//        chessBoard.placePiece(new CellCoords(4,0), WHITE_KING);
+//        chessBoard.placePiece(new CellCoords(4,7), BLACK_KING);
         initAvailablePieces();
         unhighlightAvailablePieces();
         availablePieces[6][1] = createCell(6,1, RECYCLE_BIN_CODE);
@@ -87,7 +89,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView execCommand(String command) {
+    public ChessComponentView execChessCommand(String command) {
         notImplemented();
         return null;
     }

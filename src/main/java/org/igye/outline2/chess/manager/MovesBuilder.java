@@ -13,22 +13,35 @@ import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.ParseMoveException;
 import org.igye.outline2.chess.model.PieceShape;
+import org.igye.outline2.common.Function4;
 import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
 
 public class MovesBuilder implements ChessComponentStateManager {
-    public static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
-    public static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
+    private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
+    private static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
+    private static final String PREV_POSITION_CMD = "p";
+    private static final String NEXT_POSITION_CMD = "n";
+    private static final String GO_TO_POSITION_CMD = "g";
+    private static final String GO_TO_END_POSITION_CMD = "e";
+    private static final String GO_TO_START_POSITION_CMD = "s";
+    private static final String DELETE_ALL_TO_THE_RIGHT_CMD = "rr";
 
     private MovesBuilderState state;
+    private Map<String, Consumer<String[]>> commands;
 
     public MovesBuilder(Move initialPosition) {
         state = new MovesBuilderState(initialPosition);
+        initCommandMap();
     }
 
     @Override
@@ -52,12 +65,70 @@ public class MovesBuilder implements ChessComponentStateManager {
                 chessComponentView.getChessBoard().setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
             }
         }
-        chessComponentView.setHistory(toDto(state.getInitialPosition(), state.getCurrPosition()));
+        chessComponentView.setHistory(createHistoryView());
         createChoseChessmanTypeDialogViewIfNecessary(chessComponentView);
-        if (state.getErrorMsg() != null) {
-            chessComponentView.setErrorMsg(state.getErrorMsg());
+        if (state.getCommandErrorMsg() != null) {
+            chessComponentView.setCommandErrorMsg(state.getCommandErrorMsg());
         }
         return chessComponentView;
+    }
+
+    private void initCommandMap() {
+        commands = new HashMap<>();
+        commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
+        commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
+        commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
+        commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
+        commands.put(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
+        commands.put(GO_TO_POSITION_CMD, args -> {
+            final String destination = args[1];
+            goToPosition(
+                    Integer.parseInt(destination.substring(0, destination.length()-1)),
+                    destination.charAt(destination.length()-1) == 'w'
+                            ? ChessmanColor.WHITE
+                            : ChessmanColor.BLACK
+            );
+        });
+    }
+
+    private void goToPosition(int feMoveNumber, ChessmanColor color) {
+        traverseHistory((position, currFeMoveNumber, move, selected) -> {
+            if (currFeMoveNumber == feMoveNumber && move.getColorOfWhoMadeMove() == color) {
+                state.setCurrPosition(position);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    private void goToPrevPosition() {
+        final GamePosition prevPosition = state.getCurrPosition().getParent();
+        if (prevPosition != null) {
+            state.setCurrPosition(prevPosition);
+        }
+    }
+
+    private void goToNextPosition() {
+        final GamePosition nextPosition = getNextOnlyPosition(state.getCurrPosition());
+        if (nextPosition != null) {
+            state.setCurrPosition(nextPosition);
+        }
+    }
+
+    private void goToEndPosition() {
+        GamePosition currPosition = state.getCurrPosition();
+        while (getNextOnlyPosition(currPosition) != null) {
+            currPosition = getNextOnlyPosition(currPosition);
+        }
+        state.setCurrPosition(currPosition);
+    }
+
+    private void goToStartPosition() {
+        state.setCurrPosition(state.getInitialPosition());
+    }
+
+    private void deleteAllToTheRight() {
+        state.getCurrPosition().setChildren(new ArrayList<>());
     }
 
     private void createChoseChessmanTypeDialogViewIfNecessary(ChessComponentView chessComponentView) {
@@ -102,14 +173,19 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView execCommand(String command) {
-        if (canMakeMove()) {
-            try {
-                state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
-                state.setErrorMsg(null);
-                state.appendPreparedMoveToHistory();
-            } catch (ParseMoveException ex) {
-                state.setErrorMsg(ex.getMessage());
+    public ChessComponentView execChessCommand(String command) {
+        state.setCommandErrorMsg(null);
+        String[] parsedCommand = command.trim().split("\\s");
+        if (commands.containsKey(parsedCommand[0])) {
+            commands.get(parsedCommand[0]).accept(parsedCommand);
+        } else {
+            if (canMakeMove()) {
+                try {
+                    state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
+                    state.appendPreparedMoveToHistory();
+                } catch (ParseMoveException ex) {
+                    state.setCommandErrorMsg(ex.getMessage());
+                }
             }
         }
         return toView();
@@ -193,30 +269,55 @@ public class MovesBuilder implements ChessComponentStateManager {
         return state.getCurrPosition().getMove().getResultPosition();
     }
 
-    private HistoryView toDto(GamePosition initialPosition, final GamePosition selectedPosition) {
-        HistoryView historyView = new HistoryView();
+    private void traverseHistory(Function4<GamePosition, Integer, Move, Boolean, Boolean> moveVisitor) {
+        GamePosition currPosition = state.getInitialPosition();
+        if (!moveVisitor.apply(
+                currPosition,
+                0,
+                currPosition.getMove(),
+                state.getCurrPosition() == currPosition
+        )) {
+            return;
+        }
         int feMoveNumber = 1;
-        MoveView moveView = new MoveView();
-        moveView.setFeMoveNumber(feMoveNumber);
-        GamePosition currPosition = getNextOnlyPosition(initialPosition);
+        currPosition = getNextOnlyPosition(currPosition);
         while (currPosition != null) {
-            final Move currMove = currPosition.getMove();
-            if (currMove.getColorOfWhoMadeMove() == ChessmanColor.WHITE) {
-                moveView.setWhitesMove(currMove.getShortNotation());
-                moveView.setWhitesMoveSelected(selectedPosition == currPosition);
-            } else {
-                moveView.setBlacksMove(currMove.getShortNotation());
-                moveView.setBlacksMoveSelected(selectedPosition == currPosition);
-
-                historyView.getMoves().add(moveView);
+            if (!moveVisitor.apply(
+                    currPosition,
+                    feMoveNumber,
+                    currPosition.getMove(),
+                    state.getCurrPosition() == currPosition
+            )) {
+                return;
+            }
+            if (currPosition.getMove().getColorOfWhoMadeMove() == ChessmanColor.BLACK) {
                 feMoveNumber++;
-                moveView = new MoveView();
-                moveView.setFeMoveNumber(feMoveNumber);
             }
             currPosition = getNextOnlyPosition(currPosition);
         }
-        if (moveView.getWhitesMove() != null) {
-            historyView.getMoves().add(moveView);
+    }
+
+    private HistoryView createHistoryView() {
+        HistoryView historyView = new HistoryView();
+        final MoveView[] moveView = {new MoveView()};
+        traverseHistory((position, feMoveNumber, move, selected) -> {
+            moveView[0].setFeMoveNumber(feMoveNumber);
+            if (feMoveNumber == 0) {
+                historyView.setStartPositionSelected(selected);
+            } else if (move.getColorOfWhoMadeMove() == ChessmanColor.WHITE) {
+                moveView[0].setWhitesMove(move.getShortNotation());
+                moveView[0].setWhitesMoveSelected(selected);
+            } else {
+                moveView[0].setBlacksMove(move.getShortNotation());
+                moveView[0].setBlacksMoveSelected(selected);
+
+                historyView.getMoves().add(moveView[0]);
+                moveView[0] = new MoveView();
+            }
+            return true;
+        });
+        if (moveView[0].getWhitesMove() != null) {
+            historyView.getMoves().add(moveView[0]);
         }
         return historyView;
     }

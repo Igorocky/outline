@@ -27,10 +27,14 @@ public class ChessManager implements ChessComponentStateManager {
         return stateManager.cellLeftClicked(coords);
     }
 
+    @RpcMethod
     @Override
-    public ChessComponentView execCommand(String command) {
-        notImplemented();
-        return null;
+    public ChessComponentView execChessCommand(String command) {
+        if (!StringUtils.isBlank(command)) {
+            return stateManager.execChessCommand(command);
+        } else {
+            return stateManager.toView();
+        }
     }
 
     @RpcMethod

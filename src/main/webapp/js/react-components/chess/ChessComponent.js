@@ -37,6 +37,24 @@ const ChessComponent = () => {
         doRpcCall("chessTabSelected", {tab:newValue}, setRootComponentState)
     }
 
+    function renderCommandInputField() {
+        return re(CommandInput, {onExecCommand: ({commandStr, onDone}) =>
+                doRpcCall("execChessCommand", {command:commandStr},
+                    resp => {
+                        onDone({errorMsg:resp.commandErrorMsg})
+                        setChessComponentState(resp)
+                    }
+                )
+        })
+    }
+
+    function renderLeftPanel() {
+        return re(Container.col.top.left, {childStyle:{marginBottom:"5px"}},
+            renderChessBoard(),
+            renderCommandInputField()
+        )
+    }
+
     function renderRightPanel() {
         return re(Container.col.top.left, {childStyle:{marginBottom:"5px"}},
             re(Paper, {square:true},
@@ -56,7 +74,7 @@ const ChessComponent = () => {
     function renderPageContent() {
         if (state) {
             return re(Container.row.left.top, {childStyle:{marginLeft:"5px",marginTop:"5px"}},
-                renderChessBoard(),
+                renderLeftPanel(),
                 renderRightPanel()
             )
         } else {

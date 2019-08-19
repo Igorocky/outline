@@ -83,9 +83,11 @@ import static org.igye.outline2.controllers.chess.ChessTestUtils.assertCellsAvai
 import static org.igye.outline2.controllers.chess.ChessTestUtils.assertEqualsByChessmenTypes;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.assertNoCellPreparedToMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoard;
+import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardBuilder;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardView;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.execCommand;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getLastMove;
+import static org.igye.outline2.controllers.chess.ChessTestUtils.getSelectedMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.makeMove;
 import static org.junit.Assert.assertEquals;
@@ -1043,6 +1045,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "ncd5");
+        assertNull(view.getCommandErrorMsg());
         assertEquals("Ncxd5", getLastMove(view));
     }
     @Test public void moveNotationIndicatesUniqueYCoordFromWhenItIsAmbiguous() {
@@ -1118,7 +1121,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "k");
-        assertEquals("Move notation format is incorrect.", view.getErrorMsg());
+        assertEquals("Move notation format is incorrect.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
@@ -1133,7 +1136,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "ng4");
-        assertEquals("Cannot find specified piece to move.", view.getErrorMsg());
+        assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsPresentOnTheBoardButItsCoordinateIsSpecifiedIncorrectly() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
@@ -1148,7 +1151,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "nbd6");
-        assertEquals("Cannot find specified piece to move.", view.getErrorMsg());
+        assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfThereAreMoreThanOnePieceAbleToDoSpecifiedMove() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
@@ -1163,7 +1166,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "nc6");
-        assertEquals("Move is ambiguously specified.", view.getErrorMsg());
+        assertEquals("Move is ambiguously specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfAPawnShouldBeReplacedButReplacementIsNotSpecified() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
@@ -1178,7 +1181,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "g8");
-        assertEquals("Replacement is not specified.", view.getErrorMsg());
+        assertEquals("Replacement is not specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveErrorMessageDisappearsAfterTheCommandIsCorrected() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
@@ -1193,8 +1196,274 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "g8q");
-        assertNull(view.getErrorMsg());
+        assertNull(view.getCommandErrorMsg());
         assertEquals("g8Q+", getLastMove(view));
+    }
+    @Test public void historyNavigationWorksCorrectly() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2).P(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        //1w
+        ChessComponentView view = execCommand(movesBuilder, "f4");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("f4", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //1b
+        view = execCommand(movesBuilder, "e5");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //2w
+        view = execCommand(movesBuilder, "e5");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("xe5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).P(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //2b
+        view = execCommand(movesBuilder, "ke7");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("Ke7", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).P(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //3w
+        view = execCommand(movesBuilder, "e6");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e6", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6).P(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //g 1w
+        view = execCommand(movesBuilder, "g 1w");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("f4", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //p
+        view = execCommand(movesBuilder, "p");
+        assertNull(view.getCommandErrorMsg());
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2).P(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //n
+        view = execCommand(movesBuilder, "n");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("f4", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //n
+        view = execCommand(movesBuilder, "n");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //e
+        view = execCommand(movesBuilder, "e");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e6", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6).P(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //g 1b
+        view = execCommand(movesBuilder, "g 1b");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //rr
+        view = execCommand(movesBuilder, "rr");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //s
+        view = execCommand(movesBuilder, "s");
+        assertNull(view.getCommandErrorMsg());
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2).P(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //n
+        view = execCommand(movesBuilder, "n");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("f4", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //n
+        view = execCommand(movesBuilder, "n");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //n
+        view = execCommand(movesBuilder, "n");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("e5", getSelectedMove(view));
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5).p(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).P(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
     }
 
     private void assertChoseChessmanTypeDialogForColor(ChessmanColor color, ChessComponentView view) {

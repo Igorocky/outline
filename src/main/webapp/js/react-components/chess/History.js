@@ -8,12 +8,18 @@ const historyTableStyle = {
     ...historyTdStyle,
 }
 
-const History = ({setRootComponentState, moves}) => {
+const History = ({setRootComponentState, startPositionSelected, moves}) => {
+
+    function getStyleForCell(selected) {
+        return selected
+        ?{backgroundColor: "#90EE90"}
+        :{}
+    }
 
     return re('table', {style:{...historyTableStyle}},
         re('tbody',{},
             re('tr',{key:-1},
-                re('td',{colSpan:3, style:{...historyTdStyle}},
+                re('td',{colSpan:3, style:{...historyTdStyle, ...getStyleForCell(startPositionSelected)}},
                     "Start"
                 )
             ),
@@ -22,10 +28,10 @@ const History = ({setRootComponentState, moves}) => {
                     re('td',{key:"n", style:{...historyTdStyle}},
                         move.feMoveNumber
                     ),
-                    re('td',{key:"w", style:{...historyTdStyle}},
+                    re('td',{key:"w", style:{...historyTdStyle, ...getStyleForCell(move.whitesMoveSelected)}},
                         move.whitesMove
                     ),
-                    re('td',{key:"b", style:{...historyTdStyle}},
+                    re('td',{key:"b", style:{...historyTdStyle, ...getStyleForCell(move.blacksMoveSelected)}},
                         move.blacksMove
                     ),
                 )

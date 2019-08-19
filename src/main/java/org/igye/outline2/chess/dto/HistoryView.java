@@ -15,5 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class HistoryView {
+    private boolean startPositionSelected;
     private List<MoveView> moves = new ArrayList<>();
 }

@@ -1,4 +1,4 @@
-const cellSize = 65;
+const cellSize = 50;
 const cellStyle = {
     width: cellSize + "px",
     height: cellSize + "px",

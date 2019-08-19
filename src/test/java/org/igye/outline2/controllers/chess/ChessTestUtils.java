@@ -199,8 +199,9 @@ public class ChessTestUtils {
                 chessman,
                 ChessmanType::getPieceShape,
                 PieceShape::getSymbol,
-                '.'
-        ).toString();
+                s -> "  "+s,
+                "  ."
+        );
     }
 
     private static String cellToString(ChessBoardCellView cell) {
@@ -210,7 +211,7 @@ public class ChessTestUtils {
                 code -> code == 0 ? null : code,
                 ChessmanType::fromCode,
                 ChessmanType::getSymbol,
-                ' '
+                '.'
         ).toString();
 
         String borderColor = nullSafeGetterWithDefault(
@@ -248,7 +249,7 @@ public class ChessTestUtils {
     }
 
     public static ChessComponentView execCommand(MovesBuilder movesBuilder, String command) {
-        return movesBuilder.execCommand(command);
+        return movesBuilder.execChessCommand(command);
     }
 
     public static String getLastMove(ChessComponentView view) {
@@ -259,5 +260,16 @@ public class ChessTestUtils {
         } else {
             return lastMove.getWhitesMove();
         }
+    }
+
+    public static String getSelectedMove(ChessComponentView view) {
+        for (MoveView moveView : view.getHistory().getMoves()) {
+            if (moveView.isWhitesMoveSelected()) {
+                return moveView.getWhitesMove();
+            } else if (moveView.isBlacksMoveSelected()) {
+                return moveView.getBlacksMove();
+            }
+        }
+        return null;
     }
 }
