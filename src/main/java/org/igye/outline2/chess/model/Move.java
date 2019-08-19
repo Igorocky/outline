@@ -122,30 +122,16 @@ public final class Move {
         return getAllCellsAttackedBy(colorOfKing.invert()).contains(kingCoords);
     }
 
+    public boolean isStaleMate() {
+        return !isCheck() && opponentHasNoMoves();
+    }
+
     public boolean isCheckMate() {
-        ChessmanColor colorOfOpponent = getColorOfWhoMadeMove().invert();
-        Set<CellCoords> allOpponentsChessmen = findAll(cm -> cm.getPieceColor() == colorOfOpponent);
-        allOpponentsChessmen.removeIf(c -> getPossibleNextMoves(c).isEmpty());
-        return allOpponentsChessmen.isEmpty();
+        return isCheck() && opponentHasNoMoves();
     }
 
     public boolean isEnPassant() {
         return isEnPassant(prevMove.resultPosition, from, to, resultPosition);
-    }
-
-    private CellCoords getKingCoords(ChessmanColor colorOfKing) {
-        return resultPosition.findFirstCoords(chessman ->
-                chessman.getPieceColor() == colorOfKing
-                        && chessman.getPieceShape() == PieceShape.KING
-        );
-    }
-
-    public boolean isShortCastling() {
-        return isCastling() && to.getX() == 6;
-    }
-
-    public boolean isLongCastling() {
-        return isCastling() && to.getX() == 2;
     }
 
     public Move makeMove(String notation) throws ParseMoveException {
@@ -208,6 +194,28 @@ public final class Move {
             throw new OutlineException("result.size() != 1");
         }
         return result.get(0);
+    }
+
+    public boolean isShortCastling() {
+        return isCastling() && to.getX() == 6;
+    }
+
+    public boolean isLongCastling() {
+        return isCastling() && to.getX() == 2;
+    }
+
+    private CellCoords getKingCoords(ChessmanColor colorOfKing) {
+        return resultPosition.findFirstCoords(chessman ->
+                chessman.getPieceColor() == colorOfKing
+                        && chessman.getPieceShape() == PieceShape.KING
+        );
+    }
+
+    private boolean opponentHasNoMoves() {
+        ChessmanColor colorOfOpponent = getColorOfWhoMadeMove().invert();
+        Set<CellCoords> allOpponentsChessmen = findAll(cm -> cm.getPieceColor() == colorOfOpponent);
+        allOpponentsChessmen.removeIf(c -> getPossibleNextMoves(c).isEmpty());
+        return allOpponentsChessmen.isEmpty();
     }
 
     private Integer strCoordToInt(String strCoord) {
@@ -493,6 +501,8 @@ public final class Move {
         }
         if (move.isCheckMate()) {
             sb.append("#");
+        } else if (move.isStaleMate()) {
+            sb.append("=");
         } else if (move.isCheck()) {
             sb.append("+");
         }
