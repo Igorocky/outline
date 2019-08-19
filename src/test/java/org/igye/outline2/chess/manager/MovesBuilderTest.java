@@ -1057,6 +1057,9 @@ public class MovesBuilderTest {
         ChessComponentView view = execCommand(movesBuilder, "c1r");
         assertEquals("c1R#", getLastMove(view));
     }
+    @Test public void moveNotationForStalemate() {
+        throw new RuntimeException();
+    }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnCapturesAndChangesWithCheckMate() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
                 ._(a8)._(b8).k(c8)._(d8)._(e8)._(f8).n(g8)._(h8)
