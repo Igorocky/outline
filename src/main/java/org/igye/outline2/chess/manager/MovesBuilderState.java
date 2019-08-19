@@ -2,6 +2,7 @@ package org.igye.outline2.chess.manager;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.exceptions.OutlineException;
 
@@ -16,6 +17,7 @@ public class MovesBuilderState {
     private List<Move> preparedMoves = new ArrayList<>();
     private boolean choseChessmanTypeDialogOpened;
     private String commandErrorMsg;
+    private ChessmanColor autoResponseForColor;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);

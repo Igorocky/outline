@@ -36,7 +36,8 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GO_TO_END_POSITION_CMD = "e";
     private static final String GO_TO_START_POSITION_CMD = "s";
     private static final String DELETE_ALL_TO_THE_RIGHT_CMD = "rr";
-    private static final String GENERATE_RANDOM_MOVE = "nn";
+    private static final String GENERATE_RANDOM_MOVE_CMD = "nn";
+    private static final String AUTORESPONSE_CMD = "aa";
 
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
@@ -79,7 +80,8 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands = new HashMap<>();
         commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
         commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
-        commands.put(GENERATE_RANDOM_MOVE, args -> generateRandomMove());
+        commands.put(GENERATE_RANDOM_MOVE_CMD, args -> generateRandomMove());
+        commands.put(AUTORESPONSE_CMD, args -> setAutoresponse());
         commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
         commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
         commands.put(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
@@ -150,6 +152,17 @@ public class MovesBuilder implements ChessComponentStateManager {
         state.getCurrPosition().setChildren(new ArrayList<>());
     }
 
+    private void setAutoresponse() {
+        if (state.getAutoResponseForColor()!=null) {
+            state.setAutoResponseForColor(null);
+        } else {
+            if (canMakeMove()) {
+                state.setAutoResponseForColor(state.getCurrPosition().getMove().getColorOfWhoMadeMove());
+                execChessCommand(GENERATE_RANDOM_MOVE_CMD);
+            }
+        }
+    }
+
     private void createChoseChessmanTypeDialogViewIfNecessary(ChessComponentView chessComponentView) {
         if (state.isChoseChessmanTypeDialogOpened()) {
             chessComponentView.setChoseChessmanTypeDialogView(
@@ -181,6 +194,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                         state.setChoseChessmanTypeDialogOpened(true);
                     } else {
                         state.appendPreparedMoveToHistory();
+                        generateAutoresponseIfNecessary();
                     }
                 } else {
                     state.setPreparedMoves(null);
@@ -189,6 +203,12 @@ public class MovesBuilder implements ChessComponentStateManager {
             }
         }
         return toView();
+    }
+
+    private void generateAutoresponseIfNecessary() {
+        if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove()) {
+            execChessCommand(GENERATE_RANDOM_MOVE_CMD);
+        }
     }
 
     @Override
@@ -202,6 +222,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 try {
                     state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
                     state.appendPreparedMoveToHistory();
+                    generateAutoresponseIfNecessary();
                 } catch (ParseMoveException ex) {
                     state.setCommandErrorMsg(ex.getMessage());
                 }
