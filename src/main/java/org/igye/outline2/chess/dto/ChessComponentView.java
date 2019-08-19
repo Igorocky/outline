@@ -18,5 +18,5 @@ public class ChessComponentView {
     private InitialPositionView availableChessmanTypes;
     private HistoryView history;
     private ChoseChessmanTypeDialogView choseChessmanTypeDialogView;
-
+    private String errorMsg;
 }

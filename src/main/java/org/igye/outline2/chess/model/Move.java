@@ -36,6 +36,7 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
 
 public final class Move {
+    private static final Pattern MOVE_COMMAND_PATTERN = Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?([A-H])([1-8])([NBRQ]?)$");
     @Getter
     private final Move prevMove;
     @Getter
@@ -149,7 +150,7 @@ public final class Move {
 
     public Move makeMove(String notation) throws ParseMoveException {
         String upperCaseNotation = notation.trim().toUpperCase();
-        Matcher matcher = Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?([A-H])([1-8])([NBRQ]?)$").matcher(upperCaseNotation);
+        Matcher matcher = MOVE_COMMAND_PATTERN.matcher(upperCaseNotation);
         if (!matcher.matches()) {
             throw new ParseMoveException("Move notation format is incorrect.");
         }

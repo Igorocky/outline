@@ -89,6 +89,7 @@ import static org.igye.outline2.controllers.chess.ChessTestUtils.getLastMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.makeMove;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MovesBuilderTest {
 
@@ -1103,6 +1104,97 @@ public class MovesBuilderTest {
 
         ChessComponentView view = execCommand(movesBuilder, "kc8");
         assertEquals("0-0-0", getLastMove(view));
+    }
+    @Test public void makeMoveFailsForIncorrecltyFormattedCommand() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "k");
+        assertEquals("Move notation format is incorrect.", view.getErrorMsg());
+    }
+    @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "ng4");
+        assertEquals("Cannot find specified piece to move.", view.getErrorMsg());
+    }
+    @Test public void makeMoveFailsIfSpecifiedPieceIsPresentOnTheBoardButItsCoordinateIsSpecifiedIncorrectly() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4).N(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "nbd6");
+        assertEquals("Cannot find specified piece to move.", view.getErrorMsg());
+    }
+    @Test public void makeMoveFailsIfThereAreMoreThanOnePieceAbleToDoSpecifiedMove() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4).N(b4)._(c4).N(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "nc6");
+        assertEquals("Move is ambiguously specified.", view.getErrorMsg());
+    }
+    @Test public void makeMoveFailsIfAPawnShouldBeReplacedButReplacementIsNotSpecified() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "g8");
+        assertEquals("Replacement is not specified.", view.getErrorMsg());
+    }
+    @Test public void makeMoveErrorMessageDisappearsAfterTheCommandIsCorrected() {
+        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+                ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "g8q");
+        assertNull(view.getErrorMsg());
+        assertEquals("g8Q+", getLastMove(view));
     }
 
     private void assertChoseChessmanTypeDialogForColor(ChessmanColor color, ChessComponentView view) {

@@ -54,6 +54,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
         chessComponentView.setHistory(toDto(state.getInitialPosition(), state.getCurrPosition()));
         createChoseChessmanTypeDialogViewIfNecessary(chessComponentView);
+        if (state.getErrorMsg() != null) {
+            chessComponentView.setErrorMsg(state.getErrorMsg());
+        }
         return chessComponentView;
     }
 
