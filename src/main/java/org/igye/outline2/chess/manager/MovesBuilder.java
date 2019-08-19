@@ -73,6 +73,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (state.getCommandErrorMsg() != null) {
             chessComponentView.setCommandErrorMsg(state.getCommandErrorMsg());
         }
+        if (state.getCommandResponseMsg() != null) {
+            chessComponentView.setCommandResponseMsg(state.getCommandResponseMsg());
+        }
         return chessComponentView;
     }
 
@@ -132,6 +135,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             if (!availableMoves.isEmpty()) {
                 state.setPreparedMoves(listOf(Randoms.element(availableMoves)));
                 state.appendPreparedMoveToHistory();
+                state.setCommandResponseMsg(state.getCurrPosition().getMove().getShortNotation());
             }
         }
     }
@@ -214,6 +218,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     @Override
     public ChessComponentView execChessCommand(String command) {
         state.setCommandErrorMsg(null);
+        state.setCommandResponseMsg(null);
         String[] parsedCommand = command.trim().split("\\s");
         if (commands.containsKey(parsedCommand[0])) {
             commands.get(parsedCommand[0]).accept(parsedCommand);

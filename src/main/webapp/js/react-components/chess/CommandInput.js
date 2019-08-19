@@ -2,24 +2,28 @@
 const CommandInput = ({onExecCommand, style}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
+    const [responseMsg, setResponseMsg] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
 
     useEffect(() => {
-        if (ref.current && errorMsg) {
+        if (ref.current && (errorMsg || responseMsg)) {
             setAnchorEl(ref.current)
         } else {
             setAnchorEl(null)
         }
-    }, [ref.current, errorMsg])
+    }, [ref.current, errorMsg, responseMsg])
 
     function execCommand() {
-        onExecCommand({commandStr: commandStr, onDone: ({errorMsg}) => {
+        onExecCommand({commandStr: commandStr, onDone: ({errorMsg, responseMsg}) => {
             if (errorMsg) {
                 setErrorMsg(errorMsg)
             } else {
                 setErrorMsg(null)
                 setCommandStr(null)
+                if (responseMsg) {
+                    setResponseMsg(responseMsg)
+                }
             }
         }})
     }
@@ -27,6 +31,7 @@ const CommandInput = ({onExecCommand, style}) => {
     function cancel() {
         setCommandStr(null);
         setErrorMsg(null);
+        setResponseMsg(null);
     }
 
     function onKeyDown(event) {
@@ -58,7 +63,7 @@ const CommandInput = ({onExecCommand, style}) => {
                 key: "CommandInput-Popper",
                 onClickAway: () => setAnchorEl(null),
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
-                    paper(re('span',{style:{color:"red"}},errorMsg))
+                    paper(re('span',{style:errorMsg?{color:"red"}:{}},errorMsg?errorMsg:responseMsg))
                 )
             })
             : null

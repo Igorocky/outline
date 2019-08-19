@@ -17,6 +17,7 @@ public class MovesBuilderState {
     private List<Move> preparedMoves = new ArrayList<>();
     private boolean choseChessmanTypeDialogOpened;
     private String commandErrorMsg;
+    private String commandResponseMsg;
     private ChessmanColor autoResponseForColor;
 
     public MovesBuilderState(Move initialPosition) {

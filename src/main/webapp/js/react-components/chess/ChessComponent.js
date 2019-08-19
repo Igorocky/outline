@@ -41,7 +41,7 @@ const ChessComponent = () => {
         return re(CommandInput, {onExecCommand: ({commandStr, onDone}) =>
                 doRpcCall("execChessCommand", {command:commandStr},
                     resp => {
-                        onDone({errorMsg:resp.commandErrorMsg})
+                        onDone({errorMsg:resp.commandErrorMsg, responseMsg: resp.commandResponseMsg})
                         setChessComponentState(resp)
                     }
                 )
