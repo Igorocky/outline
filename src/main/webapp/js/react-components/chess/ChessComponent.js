@@ -17,8 +17,12 @@ const ChessComponent = () => {
     }, [])
 
     function renderChessBoard() {
-        return re(ChessBoard,{key:"ChessBoard", setRootComponentState:setRootComponentState,
-            ...state.chessBoard})
+        if (state.chessBoard) {
+            return re(ChessBoard,{key:"ChessBoard", setRootComponentState:setRootComponentState,
+                ...state.chessBoard})
+        } else {
+            return null
+        }
     }
 
     function renderCurrentTabContent() {

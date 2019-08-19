@@ -19,6 +19,7 @@ public class MovesBuilderState {
     private String commandErrorMsg;
     private String commandResponseMsg;
     private ChessmanColor autoResponseForColor;
+    private boolean chessbordIsHidden;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);
