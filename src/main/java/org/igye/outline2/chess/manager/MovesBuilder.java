@@ -14,6 +14,7 @@ import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.ParseMoveException;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function4;
+import org.igye.outline2.common.Randoms;
 import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
 
@@ -35,6 +36,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GO_TO_END_POSITION_CMD = "e";
     private static final String GO_TO_START_POSITION_CMD = "s";
     private static final String DELETE_ALL_TO_THE_RIGHT_CMD = "rr";
+    private static final String GENERATE_RANDOM_MOVE = "nn";
 
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
@@ -77,6 +79,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands = new HashMap<>();
         commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
         commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
+        commands.put(GENERATE_RANDOM_MOVE, args -> generateRandomMove());
         commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
         commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
         commands.put(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
@@ -112,6 +115,22 @@ public class MovesBuilder implements ChessComponentStateManager {
         final GamePosition nextPosition = getNextOnlyPosition(state.getCurrPosition());
         if (nextPosition != null) {
             state.setCurrPosition(nextPosition);
+        }
+    }
+
+    private void generateRandomMove() {
+        if (canMakeMove()) {
+            final Move currMove = state.getCurrPosition().getMove();
+            ChessmanColor colorOfOpponent = currMove.getColorOfWhoMadeMove().invert();
+            List<Move> availableMoves = currMove.getResultPosition()
+                    .findAll(p -> p.getPieceColor() == colorOfOpponent)
+                    .stream()
+                    .flatMap(opponentCoords -> currMove.getPossibleNextMoves(opponentCoords).stream())
+                    .collect(Collectors.toList());
+            if (!availableMoves.isEmpty()) {
+                state.setPreparedMoves(listOf(Randoms.element(availableMoves)));
+                state.appendPreparedMoveToHistory();
+            }
         }
     }
 

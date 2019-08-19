@@ -36,7 +36,7 @@ import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabas
 import static org.igye.outline2.controllers.OutlineTestUtils.doNotSerialize;
 import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatabase;
 import static org.igye.outline2.controllers.OutlineTestUtils.writeValueAsString;
-import static org.igye.outline2.controllers.Randoms.randomNode;
+import static org.igye.outline2.common.Randoms.randomNode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;

@@ -786,6 +786,12 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
         Assert.assertNull(view.getChoseChessmanTypeDialogView());
     }
+    @Test public void test_whitePawnCannotJumpOverAPiece() {
+        throw new RuntimeException();
+    }
+    @Test public void test_blackPawnCannotJumpOverAPiece() {
+        throw new RuntimeException();
+    }
     @Test public void test_ChoseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
         MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
                 .p(f2).P(e2)

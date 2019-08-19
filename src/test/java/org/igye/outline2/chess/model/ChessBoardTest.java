@@ -1,6 +1,6 @@
 package org.igye.outline2.chess.model;
 
-import org.igye.outline2.controllers.Randoms;
+import org.igye.outline2.common.Randoms;
 import org.junit.Test;
 
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.*;

@@ -1,4 +1,4 @@
-package org.igye.outline2.controllers;
+package org.igye.outline2.common;
 
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanType;
