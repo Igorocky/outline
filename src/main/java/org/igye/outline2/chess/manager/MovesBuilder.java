@@ -53,23 +53,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(ChessComponentStage.MOVES);
         if (!state.isChessbordIsHidden()) {
-            chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
-            final Move currMove = state.getCurrPosition().getMove();
-            if (!CollectionUtils.isEmpty(state.getPreparedMoves())) {
-                chessComponentView.getChessBoard().setBorderColorForCell(
-                        state.getPreparedMoves().get(0).getFrom(), PREPARED_TO_MOVE_COLOR
-                );
-                state.getPreparedMoves().forEach(move ->
-                        chessComponentView.getChessBoard().setBorderColorForCell(move.getTo(), AVAILABLE_TO_MOVE_TO_COLOR)
-                );
-            } else {
-                if (currMove.getFrom() != null) {
-                    chessComponentView.getChessBoard().setBorderColorForCell(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
-                }
-                if (currMove.getTo() != null) {
-                    chessComponentView.getChessBoard().setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
-                }
-            }
+            renderChessboard(chessComponentView);
         }
         chessComponentView.setHistory(createHistoryView());
         createChoseChessmanTypeDialogViewIfNecessary(chessComponentView);
@@ -80,6 +64,31 @@ public class MovesBuilder implements ChessComponentStateManager {
             chessComponentView.setCommandResponseMsg(state.getCommandResponseMsg());
         }
         return chessComponentView;
+    }
+
+    private void renderChessboard(ChessComponentView chessComponentView) {
+        chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
+        final Move currMove = state.getCurrPosition().getMove();
+        if (/*state.getAutoResponseForColor() != null*/1 == 2) {
+            state.getCurrPosition().getMove().getAllCellsAttackedBy(state.getAutoResponseForColor()).forEach(
+                    c->chessComponentView.getChessBoard().setBorderColorForCell(c, "#F08080")
+            );
+        }
+        if (!CollectionUtils.isEmpty(state.getPreparedMoves())) {
+            chessComponentView.getChessBoard().setBorderColorForCell(
+                    state.getPreparedMoves().get(0).getFrom(), PREPARED_TO_MOVE_COLOR
+            );
+            state.getPreparedMoves().forEach(move ->
+                    chessComponentView.getChessBoard().setBorderColorForCell(move.getTo(), AVAILABLE_TO_MOVE_TO_COLOR)
+            );
+        } else {
+            if (currMove.getFrom() != null) {
+                chessComponentView.getChessBoard().setBorderColorForCell(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
+            }
+            if (currMove.getTo() != null) {
+                chessComponentView.getChessBoard().setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
+            }
+        }
     }
 
     private void initCommandMap() {

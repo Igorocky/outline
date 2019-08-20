@@ -92,7 +92,7 @@ public final class Move {
         return resultPosition.findAll(predicate);
     }
 
-    private Set<CellCoords> getAllCellsAttackedBy(ChessmanColor colorOfAttacker) {
+    public Set<CellCoords> getAllCellsAttackedBy(ChessmanColor colorOfAttacker) {
         Set<CellCoords> attackers = new HashSet<>();
         resultPosition.traverse((x,y,piece) -> {
             if (piece.getPieceColor() == colorOfAttacker) {
