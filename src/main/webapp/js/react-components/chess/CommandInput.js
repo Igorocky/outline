@@ -1,5 +1,6 @@
+const fontSize = "20px";
 
-const CommandInput = ({onExecCommand, style}) => {
+const CommandInput = ({onExecCommand}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [errorMsg, setErrorMsg] = useState(null)
     const [responseMsg, setResponseMsg] = useState(null)
@@ -48,7 +49,7 @@ const CommandInput = ({onExecCommand, style}) => {
             type:"text",
             ref:ref,
             // autoFocus: true,
-            style: style,
+            style: {fontSize: fontSize},
             onKeyDown: onKeyDown,
             value: commandStr?commandStr:"",
             variant: "outlined",
@@ -63,7 +64,7 @@ const CommandInput = ({onExecCommand, style}) => {
                 key: "CommandInput-Popper",
                 onClickAway: () => setAnchorEl(null),
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
-                    paper(re('span',{style:errorMsg?{color:"red"}:{}},errorMsg?errorMsg:responseMsg))
+                    paper(re('span',{style:{...(errorMsg?{color:"red"}:{}), fontSize: fontSize}},errorMsg?errorMsg:responseMsg))
                 )
             })
             : null
