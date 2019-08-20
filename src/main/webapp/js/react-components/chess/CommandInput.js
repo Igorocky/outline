@@ -16,6 +16,7 @@ const CommandInput = ({onExecCommand}) => {
     }, [ref.current, errorMsg, responseMsg])
 
     function execCommand() {
+        setAnchorEl(null)
         onExecCommand({commandStr: commandStr, onDone: ({errorMsg, responseMsg}) => {
             if (errorMsg) {
                 setErrorMsg(errorMsg)

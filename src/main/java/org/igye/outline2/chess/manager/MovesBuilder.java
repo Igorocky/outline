@@ -37,8 +37,8 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GO_TO_START_POSITION_CMD = "s";
     private static final String DELETE_ALL_TO_THE_RIGHT_CMD = "rr";
     private static final String GENERATE_RANDOM_MOVE_CMD = "nn";
-    private static final String AUTORESPONSE_CMD = "aa";
-    private static final String HIDE_SHOW_CHESSBOARD_CMD = "h";
+    private static final String AUTO_RESPONSE_CMD = "aa";
+    private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
 
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
@@ -88,7 +88,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
         commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
         commands.put(GENERATE_RANDOM_MOVE_CMD, args -> generateRandomMove());
-        commands.put(AUTORESPONSE_CMD, args -> setAutoresponse());
+        commands.put(AUTO_RESPONSE_CMD, args -> setAutoresponse());
         commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
         commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
         commands.put(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
