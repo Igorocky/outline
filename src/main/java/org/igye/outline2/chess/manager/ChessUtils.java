@@ -1,6 +1,7 @@
 package org.igye.outline2.chess.manager;
 
 import org.igye.outline2.chess.model.CellCoords;
+import org.igye.outline2.exceptions.OutlineException;
 
 import java.lang.reflect.Array;
 import java.util.function.BiFunction;
@@ -26,6 +27,28 @@ public class ChessUtils {
         } else {
             return "--";
         }
+    }
+
+    public static byte[] mult(byte[] v, float[][] m) {
+        if (v.length != m.length) {
+            throw new OutlineException("v.length != m.length");
+        }
+        long[] resultL = new long[m[0].length];
+        for (int i = 0; i < m[0].length; i++) {
+            resultL[i] = 0;
+            for (int k = 0; k < v.length; k++) {
+                resultL[i] += (v[k]+128)*m[k][i];
+            }
+        }
+        byte[] resultB = new byte[resultL.length];
+        for (int i = 0; i < resultL.length; i++) {
+            int intV = Math.toIntExact(resultL[i] / v.length);
+            if (intV<0 || 255<intV) {
+                throw new OutlineException("intV<0 || 255<intV, intV = " + intV);
+            }
+            resultB[i] = (byte) (intV-128);
+        }
+        return resultB;
     }
 
 }
