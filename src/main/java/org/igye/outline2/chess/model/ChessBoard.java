@@ -8,7 +8,6 @@ import org.igye.outline2.common.Function3;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -20,10 +19,10 @@ public class ChessBoard {
         clear();
     }
 
-    public ChessBoard(String str) {
+    public ChessBoard(String fen) {
         clear();
-        if (!StringUtils.isEmpty(str)) {
-            decode(str);
+        if (!StringUtils.isEmpty(fen)) {
+            decode(fen);
         }
     }
 
@@ -66,12 +65,16 @@ public class ChessBoard {
         }
     }
 
-    public String encode() {
+    public String toFen() {
         StringBuilder sb = new StringBuilder();
         final int height = board[0].length;
         final int width = board.length;
         int emptyCellCnt = 0;
-        for (int y = height-1; y >= 0; y--) {
+        final int maxY = height - 1;
+        for (int y = maxY; y >= 0; y--) {
+            if (y < maxY) {
+                sb.append("/");
+            }
             for (int x = 0; x < width; x++) {
                 ChessmanType piece = getPieceAt(x, y);
                 if (piece == null) {
@@ -82,10 +85,10 @@ public class ChessBoard {
                     sb.append(chessmanToString(board[x][y]));
                 }
             }
-        }
-        if (emptyCellCnt > 0) {
             writeEmptyCellCnt(sb, emptyCellCnt);
+            emptyCellCnt = 0;
         }
+        writeEmptyCellCnt(sb, emptyCellCnt);
         return sb.toString();
     }
 
@@ -124,14 +127,14 @@ public class ChessBoard {
     }
 
     public ChessBoard clone() {
-        return new ChessBoard(encode());
+        return new ChessBoard(toFen());
     }
 
-    private void decode(String encodedPosition) {
+    private void decode(String fen) {
         int cellPointer = 0;
         int charPointer = 0;
         while (cellPointer < 64) {
-            cellPointer = processNextChar(encodedPosition.charAt(charPointer), cellPointer);
+            cellPointer = processNextChar(fen.charAt(charPointer), cellPointer);
             charPointer++;
         }
     }
@@ -142,6 +145,8 @@ public class ChessBoard {
             int y = 7-cellPointer/8;
             placePiece(x,y, ChessmanType.fromSymbol(String.valueOf(ch)));
             return cellPointer + 1;
+        } else if(ch == '/') {
+            return cellPointer;
         } else {
             return cellPointer + ch - 48;
         }
@@ -159,15 +164,8 @@ public class ChessBoard {
     private void writeEmptyCellCnt(StringBuilder sb, int cnt) {
         if (cnt == 0) {
             return;
-        }
-        int cnt9 = cnt / 9;
-        int rem = cnt%9;
-        while (cnt9 > 0) {
-            sb.append("9");
-            cnt9--;
-        }
-        if (rem > 0) {
-            sb.append(rem + "");
+        } else {
+            sb.append(cnt);
         }
     }
 

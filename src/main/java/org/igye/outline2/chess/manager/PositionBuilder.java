@@ -95,7 +95,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     public String getPosition() {
-        return chessBoard.encode();
+        return chessBoard.toFen();
     }
 
     public ChessmanColor getNextMoveColor() {

@@ -324,7 +324,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     public String getInitialPosition() {
-        return state.getInitialPosition().getMove().getResultPosition().encode();
+        return state.getInitialPosition().getMove().getResultPosition().toFen();
     }
 
     private ChessBoard getCurrentPosition() {
