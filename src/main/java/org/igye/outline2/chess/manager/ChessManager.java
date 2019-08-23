@@ -8,11 +8,14 @@ import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @RpcMethodsCollection
 @Component
 public class ChessManager implements ChessComponentStateManager {
+    @Value("${chess.stockfish.cmd:null}")
+    private String stockfishCmd;
     private ChessComponentStateManager stateManager;
 
     @RpcMethod
@@ -50,7 +53,7 @@ public class ChessManager implements ChessComponentStateManager {
                         ),
                         initialPosition
                 );
-                stateManager = new MovesBuilder(initialMove);
+                stateManager = new MovesBuilder(stockfishCmd, initialMove);
             }
         } else if (stateManager instanceof MovesBuilder) {
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {

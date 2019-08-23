@@ -12,6 +12,9 @@ import java.util.List;
 @Getter
 @Setter
 public class MovesBuilderState {
+    public static final int MAX_DEPTH = 30;
+    public static final int MAX_MOVE_TIME = 10;
+
     private GamePosition initialPosition;
     private GamePosition currPosition;
     private List<Move> preparedMoves = new ArrayList<>();
@@ -20,6 +23,8 @@ public class MovesBuilderState {
     private String commandResponseMsg;
     private ChessmanColor autoResponseForColor;
     private boolean chessbordIsHidden;
+    private int depth = MAX_DEPTH;
+    private int movetimeSec = MAX_MOVE_TIME;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);

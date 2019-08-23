@@ -97,7 +97,7 @@ public class MovesBuilderTest {
 
     @Test public void test_highlightingDisappearsIfNextClickOnTheSameCell() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b.N(e4).n(a1)));
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b.N(e4).n(a1)));
 
         //when
         ChessComponentView view = movesBuilder.cellLeftClicked(e4);
@@ -113,7 +113,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_highlightingDisappearsIfNextClickOnTheCellNotAvailableToMoveTo() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b.N(e4).n(a1)));
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b.N(e4).n(a1)));
 
         //when
         ChessComponentView view = movesBuilder.cellLeftClicked(e4);
@@ -129,7 +129,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_knightMovesFromCenter() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b.N(e4).n(a1)));
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b.N(e4).n(a1)));
 
         //when
         ChessComponentView view = movesBuilder.cellLeftClicked(e4);
@@ -146,7 +146,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_availableCastlingsAreDeterminedCorrectlyInCaseOfKingsMove() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .r(a8).k(e8).r(h8)
                 .p(b7).p(g7)
                 .P(b2).P(g2)
@@ -218,7 +218,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_availableCastlingsAreDeterminedCorrectlyInCaseOfRooksMove() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .r(a8).k(e8).r(h8)
                 .p(b7).p(g7)
                 .P(b2).P(g2)
@@ -317,7 +317,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_enPasssantIsDeterminedCorrectlyForWhiteLeft() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .p(d7).p(f6).P(e5)
         ));
 
@@ -383,7 +383,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_enPasssantIsDeterminedCorrectlyForWhiteRight() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .p(d6).p(f7).P(e5)
         ));
 
@@ -449,7 +449,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_enPasssantIsDeterminedCorrectlyForBlackLeft() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .P(a2).p(b4).P(c3)
         ));
 
@@ -515,7 +515,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_enPasssantIsDeterminedCorrectlyForBlackRight() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .P(a3).p(b4).P(c2)
         ));
 
@@ -581,7 +581,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_whitePawnCannotJumpOverAPiece() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -609,7 +609,7 @@ public class MovesBuilderTest {
     }
     @Test public void test_blackPawnCannotJumpOverAPiece() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).p(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6).q(g6).P(h6)
@@ -636,7 +636,7 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
     }
     @Test public void test_whitePawnTurnsIntoAnotherPiece() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .P(f6).p(e7)
         ));
 
@@ -739,7 +739,7 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
     }
     @Test public void test_blackPawnTurnsIntoAnotherPiece() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .p(f3).P(e2)
         ));
 
@@ -843,7 +843,7 @@ public class MovesBuilderTest {
         Assert.assertNull(view.getChoseChessmanTypeDialogView());
     }
     @Test public void test_ChoseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .p(f2).P(e2)
         ));
 
@@ -899,7 +899,7 @@ public class MovesBuilderTest {
         assertChoseChessmanTypeDialogForColor(BLACK, view);
     }
     @Test public void test_itIsNotPossibleToMoveKingToACellWhereItWillBeChecked() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .p(b7).p(e4).K(c2)
         ));
 
@@ -916,7 +916,7 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
     }
     @Test public void test_itIsNotPossibleToCastleIfKingIsChecked() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .r(e8)
                 .p(b7)
                 .R(a1).K(e1).R(h1)
@@ -935,7 +935,7 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
     }
     @Test public void test_itIsNotPossibleToCastleIfKingWouldJumpOverAnAttackedCell() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .r(a8).k(e8).r(h8)
                 .P(g4).B(h4)
         ));
@@ -953,7 +953,7 @@ public class MovesBuilderTest {
         ), view.getChessBoard());
     }
     @Test public void moveNotationForSimplePawnMove() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -968,7 +968,7 @@ public class MovesBuilderTest {
         assertEquals("c4", getLastMove(view));
     }
     @Test public void moveNotationForAmbiguousPawnMove() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .k(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7).p(c7)._(d7).p(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6).B(d6)._(e6)._(f6)._(g6)._(h6)
@@ -983,7 +983,7 @@ public class MovesBuilderTest {
         assertEquals("cxd6", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWithCapture() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7).p(c7)._(d7).p(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6).P(d6)._(e6)._(f6).P(g6)._(h6)
@@ -998,7 +998,7 @@ public class MovesBuilderTest {
         assertEquals("xe7", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChanges() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7).p(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
                 ._(a6)._(b6)._(c6).P(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1013,7 +1013,7 @@ public class MovesBuilderTest {
         assertEquals("g8Q", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanEscape() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1028,7 +1028,7 @@ public class MovesBuilderTest {
         assertEquals("c1R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanBeProtected() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1043,7 +1043,7 @@ public class MovesBuilderTest {
         assertEquals("c1R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckMate() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1058,7 +1058,7 @@ public class MovesBuilderTest {
         assertEquals("c1R#", getLastMove(view));
     }
     @Test public void moveNotationForStalemate() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1073,7 +1073,7 @@ public class MovesBuilderTest {
         assertEquals("Bc4=", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnCapturesAndChangesWithCheckMate() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8).k(c8)._(d8)._(e8)._(f8).n(g8)._(h8)
                 .R(a7)._(b7)._(c7)._(d7)._(e7).P(f7)._(g7).P(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1088,7 +1088,7 @@ public class MovesBuilderTest {
         assertEquals("hxg8Q#", getLastMove(view));
     }
     @Test public void moveNotationForEnPassantPawnMove() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 .k(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1104,7 +1104,7 @@ public class MovesBuilderTest {
         assertEquals("e3e.p.", getLastMove(view));
     }
     @Test public void moveNotationIndicatesUniqueXCoordFromWhenItIsAmbiguous() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .k(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7).n(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1120,7 +1120,7 @@ public class MovesBuilderTest {
         assertEquals("Ncxd5", getLastMove(view));
     }
     @Test public void moveNotationIndicatesUniqueYCoordFromWhenItIsAmbiguous() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .k(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7).n(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1135,7 +1135,7 @@ public class MovesBuilderTest {
         assertEquals("N3xd5", getLastMove(view));
     }
     @Test public void moveNotationDoesntIndicateCoordFromWhenThereAreFewPiecesButTheyAreOfDifferentTypes() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .k(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6).b(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1150,7 +1150,7 @@ public class MovesBuilderTest {
         assertEquals("Qxd5", getLastMove(view));
     }
     @Test public void moveNotationForShortCastling() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8).k(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1165,7 +1165,7 @@ public class MovesBuilderTest {
         assertEquals("0-0", getLastMove(view));
     }
     @Test public void moveNotationForLongCastling() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(BLACK, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .r(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1180,7 +1180,7 @@ public class MovesBuilderTest {
         assertEquals("0-0-0", getLastMove(view));
     }
     @Test public void makeMoveFailsForIncorrecltyFormattedCommand() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1195,7 +1195,7 @@ public class MovesBuilderTest {
         assertEquals("Move notation format is incorrect.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1210,7 +1210,7 @@ public class MovesBuilderTest {
         assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsPresentOnTheBoardButItsCoordinateIsSpecifiedIncorrectly() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1225,7 +1225,7 @@ public class MovesBuilderTest {
         assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfThereAreMoreThanOnePieceAbleToDoSpecifiedMove() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1240,7 +1240,7 @@ public class MovesBuilderTest {
         assertEquals("Move is ambiguously specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfAPawnShouldBeReplacedButReplacementIsNotSpecified() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1255,7 +1255,7 @@ public class MovesBuilderTest {
         assertEquals("Replacement is not specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveErrorMessageDisappearsAfterTheCommandIsCorrected() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -1271,7 +1271,7 @@ public class MovesBuilderTest {
         assertEquals("g8Q+", getLastMove(view));
     }
     @Test public void historyNavigationWorksCorrectly() {
-        MovesBuilder movesBuilder = new MovesBuilder(initialPosition(WHITE, b->b
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
                 ._(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7).p(e7)._(f7).P(g7)._(h7)
                 ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)

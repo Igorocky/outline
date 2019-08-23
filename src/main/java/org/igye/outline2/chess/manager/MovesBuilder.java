@@ -14,10 +14,10 @@ import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.ParseMoveException;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function4;
-import org.igye.outline2.common.Randoms;
 import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +26,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.OutlineUtils.listOf;
+import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
+import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
 
 public class MovesBuilder implements ChessComponentStateManager {
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
@@ -36,14 +38,18 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GO_TO_END_POSITION_CMD = "e";
     private static final String GO_TO_START_POSITION_CMD = "s";
     private static final String DELETE_ALL_TO_THE_RIGHT_CMD = "rr";
-    private static final String GENERATE_RANDOM_MOVE_CMD = "nn";
+    private static final String GENERATE_NEXT_MOVE_CMD = "nn";
     private static final String AUTO_RESPONSE_CMD = "aa";
     private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
+    private static final String SET_DEPTH_CMD = "d";
+    private static final String SET_MOVE_TIME_CMD = "t";
 
+    private final String runStockfishCmd;
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
 
-    public MovesBuilder(Move initialPosition) {
+    public MovesBuilder(String runStockfishCmd, Move initialPosition) {
+        this.runStockfishCmd = runStockfishCmd;
         state = new MovesBuilderState(initialPosition);
         initCommandMap();
     }
@@ -96,7 +102,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands.put(HIDE_SHOW_CHESSBOARD_CMD, args -> hideShowChessboard());
         commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
         commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
-        commands.put(GENERATE_RANDOM_MOVE_CMD, args -> generateRandomMove());
+        commands.put(GENERATE_NEXT_MOVE_CMD, args -> generateNextMove());
         commands.put(AUTO_RESPONSE_CMD, args -> setAutoresponse());
         commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
         commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
@@ -109,6 +115,14 @@ public class MovesBuilder implements ChessComponentStateManager {
                             ? ChessmanColor.WHITE
                             : ChessmanColor.BLACK
             );
+        });
+        commands.put(SET_DEPTH_CMD, args -> {
+            final int depth = Integer.parseInt(args[1]);
+            state.setDepth((1 <= depth && depth <= MAX_DEPTH) ? depth : MAX_DEPTH);
+        });
+        commands.put(SET_MOVE_TIME_CMD, args -> {
+            final int moveTime = Integer.parseInt(args[1]);
+            state.setMovetimeSec((1 <= moveTime && moveTime <= MAX_MOVE_TIME) ? moveTime : MAX_MOVE_TIME);
         });
     }
 
@@ -140,17 +154,19 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
     }
 
-    private void generateRandomMove() {
+    private void generateNextMove() {
         if (canMakeMove()) {
             final Move currMove = state.getCurrPosition().getMove();
-            ChessmanColor colorOfOpponent = currMove.getColorOfWhoMadeMove().invert();
-            List<Move> availableMoves = currMove.getResultPosition()
-                    .findAll(p -> p.getPieceColor() == colorOfOpponent)
-                    .stream()
-                    .flatMap(opponentCoords -> currMove.getPossibleNextMoves(opponentCoords).stream())
-                    .collect(Collectors.toList());
-            if (!availableMoves.isEmpty()) {
-                state.setPreparedMoves(listOf(Randoms.element(availableMoves)));
+            if (!currMove.isStaleMate() && !currMove.isCheckMate()) {
+                Move nextMove = null;
+                try {
+                    nextMove = StockFishRunner.getNextMove(
+                            runStockfishCmd, currMove, state.getDepth(), state.getMovetimeSec()
+                    );
+                } catch (IOException ex) {
+                    throw new OutlineException(ex);
+                }
+                state.setPreparedMoves(listOf(nextMove));
                 state.appendPreparedMoveToHistory();
                 state.setCommandResponseMsg(state.getCurrPosition().getMove().getShortNotation());
             }
@@ -179,7 +195,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             if (canMakeMove()) {
                 state.setAutoResponseForColor(state.getCurrPosition().getMove().getColorOfWhoMadeMove());
-                execChessCommand(GENERATE_RANDOM_MOVE_CMD);
+                execChessCommand(GENERATE_NEXT_MOVE_CMD);
             }
         }
     }
@@ -228,7 +244,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void generateAutoresponseIfNecessary() {
         if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove()) {
-            execChessCommand(GENERATE_RANDOM_MOVE_CMD);
+            execChessCommand(GENERATE_NEXT_MOVE_CMD);
         }
     }
 
