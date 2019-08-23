@@ -19,7 +19,7 @@ public class ChessUtilsTest {
 //            System.out.println("Matrix:");
 //            printMatrix(matrix);
             ChessUtils.mult(vector, matrix);
-            System.out.println(i + " ======================================= ");
+//            System.out.println(i + " ======================================= ");
         }
     }
 

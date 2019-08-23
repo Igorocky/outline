@@ -1,7 +1,13 @@
-package org.igye.outline2.chess.model;
+package org.igye.outline2.chess.manager;
 
+import org.igye.outline2.chess.model.ChessmanType;
+import org.igye.outline2.chess.model.Move;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+
+import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a2;
@@ -68,12 +74,15 @@ import static org.igye.outline2.controllers.chess.CellCoordsConstants.h6;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.h7;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.h8;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
-import static org.junit.Assert.assertEquals;
 
-public class MoveTest {
-    @Test public void toFen_doesntShowCastlingsIfTheyAreNotPossible() {
+public class StockFishRunnerTest {
+
+    private static final String STOCKFISH_CMD = "D:/Install/chess/stockfish-10-win/Windows/stockfish_10_x64.exe";
+
+    @Test
+    public void getNextMove_parsesResponseWithoutPawnPromotion() throws IOException {
         //given
-        Move move = initialPosition(WHITE, b->b
+        Move move = initialPosition(BLACK, b->b
                 ._(a8)._(b8)._(c8)._(d8)._(e8).K(f8)._(g8)._(h8)
                 ._(a7)._(b7).R(c7)._(d7)._(e7)._(f7)._(g7).b(h7)
                 ._(a6).B(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
@@ -84,23 +93,31 @@ public class MoveTest {
                 ._(a1)._(b1)._(c1)._(d1).b(e1)._(f1)._(g1)._(h1)
         );
 
+        //when
+        Move nextMove = StockFishRunner.getNextMove(STOCKFISH_CMD, move, 5, 10);
+
         //then
-        assertEquals("5K2/2R4b/1B6/8/5nB1/8/1k6/4b3 w - - 0 1", move.toFen());
+        Assert.assertNotNull(nextMove);
     }
-    @Test public void toFen_showsCastlingsIfTheyArePossible() {
+
+    @Test
+    public void getNextMove_parsesResponseWithPawnPromotion() throws IOException {
         //given
         Move move = initialPosition(WHITE, b->b
-                .r(a8)._(b8)._(c8)._(d8).k(e8)._(f8)._(g8)._(h8)
-                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
-                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a8)._(b8).k(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7).P(g7)._(h7)
+                ._(a6)._(b6).K(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
                 ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
                 ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
                 ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
                 ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
-                ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1).R(h1)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         );
 
+        //when
+        Move nextMove = StockFishRunner.getNextMove(STOCKFISH_CMD, move, 5, 10);
+
         //then
-        assertEquals("r3k3/8/8/8/8/8/8/4K2R w Kq - 0 1", move.toFen());
+        Assert.assertTrue(nextMove.getPieceAt(g8) == ChessmanType.WHITE_QUEEN);
     }
 }

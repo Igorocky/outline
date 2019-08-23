@@ -3,6 +3,7 @@ package org.igye.outline2.chess.model;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.Collections;
@@ -24,12 +25,15 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.OutlineUtils.setOf;
 import static org.igye.outline2.chess.manager.ChessUtils.X_NAMES;
 import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
+import static org.igye.outline2.chess.manager.ChessUtils.strCoordToInt;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_PAWN;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_ROOK;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KING;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
@@ -196,6 +200,18 @@ public final class Move {
         return result.get(0);
     }
 
+    public Move makeMove(CellCoords from, CellCoords to, PieceShape promotion) {
+        return OutlineUtils.getSingleValue(
+                getPossibleNextMoves(from).stream()
+                        .filter(
+                                mv -> mv.getTo().equals(to)
+                                        && (promotion == null
+                                        || promotion != null && mv.getPieceAt(to).getPieceShape() == promotion)
+                        )
+                        .collect(Collectors.toList())
+        );
+    }
+
     public boolean isShortCastling() {
         return isCastling() && to.getX() == 6;
     }
@@ -232,16 +248,16 @@ public final class Move {
 
     private String getCastlingAvailability() {
         StringBuilder sb = new StringBuilder();
-        if (whiteKingCastleAvailable) {
+        if (isCastlingPossible(WHITE_KING)) {
             sb.append("K");
         }
-        if (whiteQueenCastleAvailable) {
+        if (isCastlingPossible(WHITE_QUEEN)) {
             sb.append("Q");
         }
-        if (blackKingCastleAvailable) {
+        if (isCastlingPossible(BLACK_KING)) {
             sb.append("k");
         }
-        if (blackQueenCastleAvailable) {
+        if (isCastlingPossible(BLACK_QUEEN)) {
             sb.append("q");
         }
         if (sb.length() == 0) {
@@ -264,18 +280,6 @@ public final class Move {
         Set<CellCoords> allOpponentsChessmen = findAll(cm -> cm.getPieceColor() == colorOfOpponent);
         allOpponentsChessmen.removeIf(c -> getPossibleNextMoves(c).isEmpty());
         return allOpponentsChessmen.isEmpty();
-    }
-
-    private Integer strCoordToInt(String strCoord) {
-        if (strCoord == null) {
-            return null;
-        }
-        int coordCode = strCoord.charAt(0);
-        if (coordCode >= 65) {
-            return coordCode - 65;
-        } else {
-            return coordCode - 49;
-        }
     }
 
     private boolean isCastling() {
@@ -307,68 +311,73 @@ public final class Move {
         return possibleNextMoves;
     }
 
+    private boolean isCastlingPossible(ChessmanType castlingType) {
+        if (castlingType.getPieceColor() == ChessmanColor.WHITE) {
+            Set<CellCoords> cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.BLACK);
+            if (castlingType == WHITE_QUEEN) {
+                return whiteQueenCastleAvailable
+                        && isChessmanOnCell(WHITE_ROOK, A1)
+                        && isChessmanOnCell((ChessmanType) null, B1)
+                        && isChessmanOnCell((ChessmanType) null, C1)
+                        && isChessmanOnCell((ChessmanType) null, D1)
+                        && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
+                        && !cellsUnderAttack.contains(D1)
+                        && !cellsUnderAttack.contains(C1)
+                        && !cellsUnderAttack.contains(E1);
+            } else if (castlingType == WHITE_KING) {
+                return whiteKingCastleAvailable
+                        && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
+                        && isChessmanOnCell((ChessmanType) null, F1)
+                        && isChessmanOnCell((ChessmanType) null, G1)
+                        && isChessmanOnCell(WHITE_ROOK, H1)
+                        && !cellsUnderAttack.contains(F1)
+                        && !cellsUnderAttack.contains(G1)
+                        && !cellsUnderAttack.contains(E1);
+            } else {
+                return false;
+            }
+        } else {
+            Set<CellCoords> cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.WHITE);
+            if (castlingType == BLACK_QUEEN) {
+                return blackQueenCastleAvailable
+                        && isChessmanOnCell(BLACK_ROOK, A8)
+                        && isChessmanOnCell((ChessmanType) null, B8)
+                        && isChessmanOnCell((ChessmanType) null, C8)
+                        && isChessmanOnCell((ChessmanType) null, D8)
+                        && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
+                        && !cellsUnderAttack.contains(C8)
+                        && !cellsUnderAttack.contains(D8)
+                        && !cellsUnderAttack.contains(E8);
+            } else if (castlingType == BLACK_KING) {
+                return blackKingCastleAvailable
+                        && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
+                        && isChessmanOnCell((ChessmanType) null, F8)
+                        && isChessmanOnCell((ChessmanType) null, G8)
+                        && isChessmanOnCell(BLACK_ROOK, H8)
+                        && !cellsUnderAttack.contains(F8)
+                        && !cellsUnderAttack.contains(G8)
+                        && !cellsUnderAttack.contains(E8);
+            } else {
+                return false;
+            }
+        }
+    }
+
     private Set<CellCoords> getPossibleCastlings(ChessmanType selectedChessman) {
         Set<CellCoords> result = new HashSet<>();
-        Set<CellCoords> cellsUnderAttack = null;
         if (selectedChessman.equals(ChessmanType.WHITE_KING)) {
-            if (
-                    whiteQueenCastleAvailable
-                            && isChessmanOnCell(WHITE_ROOK, A1)
-                            && isChessmanOnCell((ChessmanType) null, B1)
-                            && isChessmanOnCell((ChessmanType) null, C1)
-                            && isChessmanOnCell((ChessmanType) null, D1)
-                            && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
-            ) {
-                if (cellsUnderAttack == null) {
-                    cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.BLACK);
-                }
-                if (!cellsUnderAttack.contains(D1) && !cellsUnderAttack.contains(C1) && !cellsUnderAttack.contains(E1)) {
-                    result.add(C1);
-                }
+            if (isCastlingPossible(WHITE_QUEEN)) {
+                result.add(C1);
             }
-            if (
-                    whiteKingCastleAvailable
-                            && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
-                            && isChessmanOnCell((ChessmanType) null, F1)
-                            && isChessmanOnCell((ChessmanType) null, G1)
-                            && isChessmanOnCell(WHITE_ROOK, H1)
-            ) {
-                if (cellsUnderAttack == null) {
-                    cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.BLACK);
-                }
-                if (!cellsUnderAttack.contains(F1) && !cellsUnderAttack.contains(G1) && !cellsUnderAttack.contains(E1)) {
-                    result.add(G1);
-                }
+            if (isCastlingPossible(WHITE_KING)) {
+                result.add(G1);
             }
         } else if (selectedChessman.equals(ChessmanType.BLACK_KING)) {
-            if (
-                    blackQueenCastleAvailable
-                            && isChessmanOnCell(BLACK_ROOK, A8)
-                            && isChessmanOnCell((ChessmanType) null, B8)
-                            && isChessmanOnCell((ChessmanType) null, C8)
-                            && isChessmanOnCell((ChessmanType) null, D8)
-                            && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
-            ) {
-                if (cellsUnderAttack == null) {
-                    cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.WHITE);
-                }
-                if (!cellsUnderAttack.contains(C8) && !cellsUnderAttack.contains(D8) && !cellsUnderAttack.contains(E8)) {
-                    result.add(C8);
-                }
+            if (isCastlingPossible(BLACK_QUEEN)) {
+                result.add(C8);
             }
-            if (
-                    blackKingCastleAvailable
-                            && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
-                            && isChessmanOnCell((ChessmanType) null, F8)
-                            && isChessmanOnCell((ChessmanType) null, G8)
-                            && isChessmanOnCell(BLACK_ROOK, H8)
-            ) {
-                if (cellsUnderAttack == null) {
-                    cellsUnderAttack = getAllCellsAttackedBy(ChessmanColor.WHITE);
-                }
-                if (!cellsUnderAttack.contains(F8) && !cellsUnderAttack.contains(G8) && !cellsUnderAttack.contains(E8)) {
-                    result.add(G8);
-                }
+            if (isCastlingPossible(BLACK_KING)) {
+                result.add(G8);
             }
         }
         return result;
