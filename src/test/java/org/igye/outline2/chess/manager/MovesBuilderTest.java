@@ -1192,7 +1192,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "k");
-        assertEquals("Move notation format is incorrect.", view.getCommandErrorMsg());
+        assertEquals("'k' - move notation format is incorrect.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1207,7 +1207,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "ng4");
-        assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
+        assertEquals("'ng4' - cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsPresentOnTheBoardButItsCoordinateIsSpecifiedIncorrectly() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1222,7 +1222,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "nbd6");
-        assertEquals("Cannot find specified piece to move.", view.getCommandErrorMsg());
+        assertEquals("'nbd6' - cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfThereAreMoreThanOnePieceAbleToDoSpecifiedMove() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1252,7 +1252,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "g8");
-        assertEquals("Replacement is not specified.", view.getCommandErrorMsg());
+        assertEquals("'g8' - replacement is not specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveErrorMessageDisappearsAfterTheCommandIsCorrected() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b

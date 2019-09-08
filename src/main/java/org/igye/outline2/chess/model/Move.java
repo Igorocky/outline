@@ -142,7 +142,7 @@ public final class Move {
         String upperCaseNotation = notation.trim().toUpperCase();
         Matcher matcher = MOVE_COMMAND_PATTERN.matcher(upperCaseNotation);
         if (!matcher.matches()) {
-            throw new ParseMoveException("Move notation format is incorrect.");
+            throw new ParseMoveException("'" + notation + "' - move notation format is incorrect.");
         }
         PieceShape pieceShape = nullSafeGetterWithDefault(
                 matcher.group(1),
@@ -171,7 +171,7 @@ public final class Move {
                         || coordFromY != null && c.getY() != coordFromY
         );
         if (availableCellsFrom.isEmpty()) {
-            throw new ParseMoveException("Cannot find specified piece to move.");
+            throw new ParseMoveException("'" + notation + "' - cannot find specified piece to move.");
         }
         List<Pair<CellCoords, List<Move>>> possibleMoves = availableCellsFrom.stream()
                 .map(c -> Pair.of(c, this.getPossibleNextMoves(c)))
@@ -180,7 +180,7 @@ public final class Move {
                 .map(pp -> pp.getLeft())
                 .collect(Collectors.toList());
         if (possibleMoves.isEmpty()) {
-            throw new ParseMoveException("Move is not possible.");
+            throw new ParseMoveException("'" + notation + "' - move is not possible.");
         }
         if (possibleMoves.size() > 1) {
             throw new ParseMoveException("Move is ambiguously specified.");
@@ -190,7 +190,7 @@ public final class Move {
                 .collect(Collectors.toList());
         if (pieceShape == PieceShape.PAWN && (cellToMoveTo.getY() == 0 || cellToMoveTo.getY() == 7)) {
             if (replacement == null) {
-                throw new ParseMoveException("Replacement is not specified.");
+                throw new ParseMoveException("'" + notation + "' - replacement is not specified.");
             }
             result.removeIf(m->m.resultPosition.getPieceAt(cellToMoveTo).getPieceShape() != replacement);
         }

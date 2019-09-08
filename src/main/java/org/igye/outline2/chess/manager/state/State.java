@@ -1,9 +1,10 @@
 package org.igye.outline2.chess.manager.state;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.java.Log;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.exceptions.OutlineException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -11,10 +12,9 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.logging.Level;
 
-@Log
 public abstract class State {
+    private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
     private Map<String, Pair<Object, Method>> methodMap;
     private WebSocketSession session;
 
@@ -38,7 +38,7 @@ public abstract class State {
             try {
                 session.close();
             } catch (IOException ex) {
-                log.log(Level.WARNING, ex.getMessage(), ex);
+                LOG.error(ex.getMessage(), ex);
             }
         }
         session = null;

@@ -5,6 +5,8 @@ import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.rpc.RpcDispatcher;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ import java.util.concurrent.Executors;
 @RpcMethodsCollection
 @Component
 public class StateManager {
+    private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
     private Map<UUID, State> states = new HashMap<>();
     private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
@@ -55,6 +58,7 @@ public class StateManager {
                     stateObject.sendMessageToFe(result);
                 }
             } catch (Exception ex) {
+                LOG.error(ex.getMessage(), ex);
                 throw new OutlineException(ex);
             }
         });
