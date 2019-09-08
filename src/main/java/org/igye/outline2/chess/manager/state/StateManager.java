@@ -46,7 +46,7 @@ public class StateManager {
         states.remove(stateId);
     }
 
-    public void invokeMethodOnBackendState(UUID stateId, String methodName, JsonNode params) throws IllegalAccessException, IOException, InvocationTargetException {
+    public void invokeMethodOnBackendState(UUID stateId, String methodName, JsonNode params) {
         executorService.submit(() -> {
             final State stateObject = getStateObject(stateId);
             try {
@@ -61,13 +61,13 @@ public class StateManager {
     }
 
     public void bindSessionToState(UUID stateId, WebSocketSession session) {
-        final State stateObject = states.get(stateId);
+        final State stateObject = getStateObject(stateId);
         stateObject.closeSession();
         stateObject.setSession(session);
     }
 
     public void unbindSessionFromState(UUID stateId) {
-        states.get(stateId).setSession(null);
+        getStateObject(stateId).setSession(null);
     }
 
     private State getStateObject(UUID stateId) {
