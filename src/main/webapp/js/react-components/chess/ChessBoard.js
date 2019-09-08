@@ -8,7 +8,7 @@ const chessBoardTableStyle = {
     ...chessBoardTdStyle,
 }
 
-const ChessBoard = ({setRootComponentState, cells}) => {
+const ChessBoard = ({backend, cells}) => {
 
     return re('table', {style:{...chessBoardTableStyle}},
         re('tbody',{},
@@ -16,7 +16,7 @@ const ChessBoard = ({setRootComponentState, cells}) => {
                 re('tr',{key:y},
                     _.range(0, 8).map(x =>
                         re('td',{key:x, style:{...chessBoardTdStyle}},
-                            re(ChessBoardCell,{setRootComponentState:setRootComponentState, ...cells[x][y]})
+                            re(ChessBoardCell,{backend:backend, ...cells[x][y]})
                         )
                     )
                 )

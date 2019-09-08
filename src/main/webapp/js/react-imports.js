@@ -91,10 +91,10 @@ const ALIGN_ITEMS = {
 }
 
 function containerFactory(direction, justify, alignItems) {
-    return props => re(Grid, {container:true, direction:direction,
-            justify:justify, alignItems:alignItems, style:props.style},
-        React.Children.map(props.children, child => {
-            return re(Grid, {item:true, style:props.childStyle}, child)
+    return ({style, children, childStyle}) => re(Grid, {container:true, direction:direction,
+            justify:justify, alignItems:alignItems, style:style},
+        React.Children.map(children, child => {
+            return re(Grid, {item:true, style:childStyle}, child)
         })
     )
 }
@@ -112,3 +112,36 @@ const Container = {
     }
 }
 
+function useBackend({stateType, onRegistered}) {
+    const [stateId, setStateId] = useState(null)
+
+    function createBackend(stateId){
+        return {
+            call: function (methodName, params, onSuccess) {
+                doRpcCall(
+                    "invokeMethodOnBackendState",
+                    {stateId:stateId, methodName:methodName, params:params},
+                    onSuccess
+                )
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (!stateId) {
+            doRpcCall("registerNewBackendState", {stateType:stateType}, newStateId => {
+                setStateId(newStateId)
+                if (onRegistered) {
+                    onRegistered(createBackend(newStateId))
+                }
+            })
+        }
+        return () => {
+            if (stateId) {
+                doRpcCall("removeBackendState", {stateId:stateId})
+            }
+        }
+    }, [stateId])
+
+    return createBackend(stateId)
+}

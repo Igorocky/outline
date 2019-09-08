@@ -8,7 +8,7 @@ const historyTableStyle = {
     ...historyTdStyle,
 }
 
-const History = ({setRootComponentState, startPositionSelected, moves}) => {
+const History = ({backend, startPositionSelected, moves}) => {
 
     function getStyleForCell(selected) {
         return selected

@@ -6,10 +6,10 @@ const cellStyle = {
     lineHeight: cellSize*1.08 + "px",
 }
 
-const ChessBoardCell = ({setRootComponentState, coords,backgroundColor,borderColor,code}) => {
+const ChessBoardCell = ({backend, coords,backgroundColor,borderColor,code}) => {
 
     function clicked() {
-        doRpcCall("cellLeftClicked", {coords:coords}, setRootComponentState)
+        backend.call("cellLeftClicked", {coords:coords})
     }
 
     function getCursorType() {

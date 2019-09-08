@@ -2,25 +2,32 @@ package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentView;
+import org.igye.outline2.chess.manager.state.State;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.RpcMethod;
-import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-@RpcMethodsCollection
-@Component
-public class ChessManager implements ChessComponentStateManager {
+import javax.annotation.PostConstruct;
+
+@Component("chessboard")
+@Scope("prototype")
+public class ChessManager extends State implements ChessComponentStateManager {
     @Value("${chess.stockfish.cmd:null}")
     private String stockfishCmd;
     private ChessComponentStateManager stateManager;
 
-    @RpcMethod
-    public ChessComponentView initialState() {
+    @PostConstruct
+    public void postConstruct() {
         stateManager = new PositionBuilder(StringUtils.EMPTY);
+    }
+
+    @RpcMethod
+    public ChessComponentView getCurrentState() {
         return stateManager.toView();
     }
 

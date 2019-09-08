@@ -7,7 +7,7 @@ const PATH = {
     nodeWithId: CONTEXT_PATH + "/node/:id",
     createNodeWithIdPath: id => CONTEXT_PATH + "/node/" + id,
     chessboard: CONTEXT_PATH + "/chessboard",
-    view2: CONTEXT_PATH + "/view2",
+    admin: CONTEXT_PATH + "/admin",
 }
 
 function useRedirect() {

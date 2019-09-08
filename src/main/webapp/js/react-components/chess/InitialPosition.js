@@ -8,7 +8,7 @@ const availablePiecesListTableStyle = {
     ...availablePiecesTdStyle,
 }
 
-const InitialPosition = ({setRootComponentState, availableChessmanTypes}) => {
+const InitialPosition = ({backend, availableChessmanTypes}) => {
 
     return re('table', {style:{...availablePiecesListTableStyle}},
         re('tbody',{},
@@ -16,7 +16,7 @@ const InitialPosition = ({setRootComponentState, availableChessmanTypes}) => {
                 re('tr',{key:y},
                     _.range(0, _.size(availableChessmanTypes)).map(x =>
                         re('td',{key:x, style:{...availablePiecesTdStyle}},
-                            re(ChessBoardCell,{setRootComponentState:setRootComponentState, ...availableChessmanTypes[x][y]})
+                            re(ChessBoardCell,{backend:backend, ...availableChessmanTypes[x][y]})
                         )
                     )
                 )

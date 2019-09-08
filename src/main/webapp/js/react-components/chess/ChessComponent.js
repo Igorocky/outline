@@ -8,17 +8,25 @@ const ChessComponent = () => {
 
     const [state, setChessComponentState] = useState(null)
 
-    function setRootComponentState(newState) {
-        setChessComponentState(newState)
-    }
+    const backendInner = useBackend({
+        stateType: "chessboard",
+        onRegistered: backend =>
+            backend.call("getCurrentState", {}, initialState => setChessComponentState(initialState))
+    })
 
-    useEffect(() => {
-        doRpcCall("initialState", {}, setRootComponentState)
-    }, [])
+    const backend = {
+        call: function (methodName, params) {
+            backendInner.call(
+                methodName,
+                params,
+                newState => setChessComponentState(newState)
+            )
+        }
+    }
 
     function renderChessBoard() {
         if (state.chessBoard) {
-            return re(ChessBoard,{key:"ChessBoard", setRootComponentState:setRootComponentState,
+            return re(ChessBoard,{key:"ChessBoard", backend:backend,
                 ...state.chessBoard})
         } else {
             return null
@@ -27,10 +35,10 @@ const ChessComponent = () => {
 
     function renderCurrentTabContent() {
         if (state.availableChessmanTypes) {
-            return re(InitialPosition,{key:"InitialPosition", setRootComponentState:setRootComponentState,
+            return re(InitialPosition,{key:"InitialPosition", backend:backend,
                 ...state.availableChessmanTypes})
         } else if (state.history) {
-            return re(History,{key:"History", setRootComponentState:setRootComponentState,
+            return re(History,{key:"History", backend:backend,
                 ...state.history})
         } else {
             return null;
@@ -38,12 +46,12 @@ const ChessComponent = () => {
     }
 
     function handleTabChange(event, newValue) {
-        doRpcCall("chessTabSelected", {tab:newValue}, setRootComponentState)
+        backend.call("chessTabSelected", {tab:newValue})
     }
 
     function renderCommandInputField() {
         return re(CommandInput, {onExecCommand: ({commandStr, onDone}) =>
-                doRpcCall("execChessCommand", {command:commandStr},
+                backendInner.call("execChessCommand", {command:commandStr},
                     resp => {
                         onDone({errorMsg:resp.commandErrorMsg, responseMsg: resp.commandResponseMsg})
                         setChessComponentState(resp)

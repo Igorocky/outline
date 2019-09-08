@@ -44,19 +44,15 @@ public class RpcDispatcher {
     public void init() {
         listOfUuidsJavaType = objectMapper.getTypeFactory().constructType(new TypeReference<List<UUID>>() {});
         for (Object rpcMethodsCollection : rpcMethodsCollections) {
-            for (Method method : AopUtils.getTargetClass(rpcMethodsCollection).getMethods()) {
-                if (method.getAnnotation(RpcMethod.class) != null) {
-                    String methodName = method.getName();
-                    if (methodMap.containsKey(methodName)) {
-                        throw new OutlineException("methodMap.containsKey(\"" + methodName + "\")");
-                    }
-                    methodMap.put(methodName, Pair.of(rpcMethodsCollection, method));
-                }
-            }
+            methodMap.putAll(createMethodMap(rpcMethodsCollection));
         }
     }
 
     public Object dispatchRpcCall(String methodName, JsonNode passedParams) throws IOException, InvocationTargetException, IllegalAccessException {
+        return dispatchRpcCall(methodName, passedParams, methodMap);
+    }
+
+    public Object dispatchRpcCall(String methodName, JsonNode passedParams, Map<String, Pair<Object, Method>> methodMap) throws IOException, InvocationTargetException, IllegalAccessException {
         Pair<Object, Method> objectMethodPair = methodMap.get(methodName);
         if (objectMethodPair == null) {
             throw new OutlineException("Could not find RPC method with name " + methodName);
@@ -70,7 +66,21 @@ public class RpcDispatcher {
         );
     }
 
-    private void validatePassedParams(String methodName, Parameter[] declaredParams, JsonNode passedParams) throws JsonProcessingException {
+    public Map<String, Pair<Object, Method>> createMethodMap(Object rpcMethodsCollection) {
+        Map<String, Pair<Object, Method>> methodMap = new HashMap<>();
+        for (Method method : AopUtils.getTargetClass(rpcMethodsCollection).getMethods()) {
+            if (method.getAnnotation(RpcMethod.class) != null) {
+                String methodName = method.getName();
+                if (methodMap.containsKey(methodName)) {
+                    throw new OutlineException("methodMap.containsKey(\"" + methodName + "\")");
+                }
+                methodMap.put(methodName, Pair.of(rpcMethodsCollection, method));
+            }
+        }
+        return methodMap;
+    }
+
+    private void validatePassedParams(String methodName, Parameter[] declaredParams, JsonNode passedParams) {
         Set<String> allParamNames = OutlineUtils.mapToSet(declaredParams, Parameter::getName);
         passedParams.fieldNames().forEachRemaining(passedParamName -> {
             if (!allParamNames.contains(passedParamName)) {
