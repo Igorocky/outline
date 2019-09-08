@@ -2,3 +2,6 @@
 /.idea/
 /outline.iml
 /logs/
+/tmp/
+/h2-db.mv.db
+/export/
