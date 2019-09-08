@@ -1,9 +1,7 @@
 const fontSize = "20px";
 
-const CommandInput = ({onExecCommand}) => {
+const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
     const [commandStr, setCommandStr] = useState(null)
-    const [errorMsg, setErrorMsg] = useState(null)
-    const [responseMsg, setResponseMsg] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
 
@@ -17,23 +15,12 @@ const CommandInput = ({onExecCommand}) => {
 
     function execCommand() {
         setAnchorEl(null)
-        onExecCommand({commandStr: commandStr, onDone: ({errorMsg, responseMsg}) => {
-            if (errorMsg) {
-                setErrorMsg(errorMsg)
-            } else {
-                setErrorMsg(null)
-                setCommandStr(null)
-                if (responseMsg) {
-                    setResponseMsg(responseMsg)
-                }
-            }
-        }})
+        setCommandStr(null)
+        onExecCommand(commandStr)
     }
 
     function cancel() {
         setCommandStr(null);
-        setErrorMsg(null);
-        setResponseMsg(null);
     }
 
     function onKeyDown(event) {

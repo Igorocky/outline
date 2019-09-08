@@ -1,23 +1,28 @@
 package org.igye.outline2.chess.manager.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.rpc.RpcDispatcher;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RpcMethodsCollection
 @Component
 public class StateManager {
     private Map<UUID, State> states = new HashMap<>();
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -26,7 +31,7 @@ public class StateManager {
     private RpcDispatcher rpcDispatcher;
 
     @RpcMethod
-    public UUID registerNewBackendState(String stateType) throws IllegalAccessException, IOException, InvocationTargetException {
+    public UUID createNewBackendState(String stateType) throws IllegalAccessException, IOException, InvocationTargetException {
         UUID newId = UUID.randomUUID();
         State stateObj = (State) applicationContext.getBean(stateType);
         stateObj.setMethodMap(rpcDispatcher.createMethodMap(stateObj));
@@ -36,11 +41,36 @@ public class StateManager {
 
     @RpcMethod
     public void removeBackendState(UUID stateId) {
+        State stateObj = getStateObject(stateId);
+        stateObj.closeSession();
         states.remove(stateId);
     }
 
-    @RpcMethod
-    public Object invokeMethodOnBackendState(UUID stateId, String methodName, JsonNode params) throws IllegalAccessException, IOException, InvocationTargetException {
-        return rpcDispatcher.dispatchRpcCall(methodName, params, states.get(stateId).getMethodMap());
+    public void invokeMethodOnBackendState(UUID stateId, String methodName, JsonNode params) throws IllegalAccessException, IOException, InvocationTargetException {
+        executorService.submit(() -> {
+            final State stateObject = getStateObject(stateId);
+            try {
+                Object result = rpcDispatcher.dispatchRpcCall(methodName, params, stateObject.getMethodMap());
+                if (result != null) {
+                    stateObject.sendMessageToFe(result);
+                }
+            } catch (Exception ex) {
+                throw new OutlineException(ex);
+            }
+        });
+    }
+
+    public void bindSessionToState(UUID stateId, WebSocketSession session) {
+        final State stateObject = states.get(stateId);
+        stateObject.closeSession();
+        stateObject.setSession(session);
+    }
+
+    public void unbindSessionFromState(UUID stateId) {
+        states.get(stateId).setSession(null);
+    }
+
+    private State getStateObject(UUID stateId) {
+        return states.get(stateId);
     }
 }

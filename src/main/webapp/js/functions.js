@@ -3,6 +3,7 @@
 const CONTEXT_PATH = "/fe"
 
 const PATH = {
+    stateWebSocketUrl: "/be/websocket/state",
     node: CONTEXT_PATH + "/node",
     nodeWithId: CONTEXT_PATH + "/node/:id",
     createNodeWithIdPath: id => CONTEXT_PATH + "/node/" + id,

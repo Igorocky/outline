@@ -8,21 +8,11 @@ const ChessComponent = () => {
 
     const [state, setChessComponentState] = useState(null)
 
-    const backendInner = useBackend({
+    const backend = useBackend({
         stateType: "chessboard",
-        onRegistered: backend =>
-            backend.call("getCurrentState", {}, initialState => setChessComponentState(initialState))
+        onBackendStateCreated: backend => backend.call("getCurrentState", {}),
+        onMessageFromBackend: newState => setChessComponentState(newState)
     })
-
-    const backend = {
-        call: function (methodName, params) {
-            backendInner.call(
-                methodName,
-                params,
-                newState => setChessComponentState(newState)
-            )
-        }
-    }
 
     function renderChessBoard() {
         if (state.chessBoard) {
@@ -50,13 +40,9 @@ const ChessComponent = () => {
     }
 
     function renderCommandInputField() {
-        return re(CommandInput, {onExecCommand: ({commandStr, onDone}) =>
-                backendInner.call("execChessCommand", {command:commandStr},
-                    resp => {
-                        onDone({errorMsg:resp.commandErrorMsg, responseMsg: resp.commandResponseMsg})
-                        setChessComponentState(resp)
-                    }
-                )
+        return re(CommandInput, {
+            onExecCommand: commandStr => backend.call("execChessCommand", {command:commandStr}),
+            errorMsg: state.commandErrorMsg, responseMsg: state.commandResponseMsg
         })
     }
 

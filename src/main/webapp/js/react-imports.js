@@ -112,29 +112,39 @@ const Container = {
     }
 }
 
-function useBackend({stateType, onRegistered}) {
+function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
     const [stateId, setStateId] = useState(null)
+    const [webSocket, setWebSocket] = useState(null)
 
-    function createBackend(stateId){
-        return {
-            call: function (methodName, params, onSuccess) {
-                doRpcCall(
-                    "invokeMethodOnBackendState",
-                    {stateId:stateId, methodName:methodName, params:params},
-                    onSuccess
-                )
+    function callBackendStateMethod(methodName, params) {
+        if (!webSocket || webSocket.readyState != 1) {
+            const newWebSocket = new WebSocket("ws://" + location.host + PATH.stateWebSocketUrl)
+            newWebSocket.onmessage = event => onMessageFromBackend(JSON.parse(event.data))
+            newWebSocket.onopen = () => {
+                newWebSocket.send(stateId)
+                callBackendStateMethodInner(newWebSocket, methodName, params)
+                setWebSocket(newWebSocket)
             }
+        } else {
+            callBackendStateMethodInner(webSocket, methodName, params)
         }
     }
 
+    function callBackendStateMethodInner(webSocket, methodName, params) {
+        webSocket.send(JSON.stringify({methodName:methodName, params:params}))
+    }
+
+    const backend = {call: callBackendStateMethod}
+
     useEffect(() => {
         if (!stateId) {
-            doRpcCall("registerNewBackendState", {stateType:stateType}, newStateId => {
+            doRpcCall("createNewBackendState", {stateType:stateType}, newStateId => {
                 setStateId(newStateId)
-                if (onRegistered) {
-                    onRegistered(createBackend(newStateId))
-                }
             })
+        } else {
+            if (onBackendStateCreated) {
+                onBackendStateCreated(backend)
+            }
         }
         return () => {
             if (stateId) {
@@ -143,5 +153,5 @@ function useBackend({stateType, onRegistered}) {
         }
     }, [stateId])
 
-    return createBackend(stateId)
+    return backend
 }
