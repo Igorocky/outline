@@ -61,7 +61,7 @@ public class AssetsController {
         }
     }
 
-    private byte[] getBytes(@PathVariable String filePath) throws IOException {
+    private byte[] getBytes(String filePath) throws IOException {
         return IOUtils.toByteArray(
                 servletContext.getResourceAsStream(filePath)
         );

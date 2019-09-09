@@ -1,12 +1,15 @@
 package org.igye.outline2;
 
+import org.apache.commons.io.IOUtils;
 import org.hibernate.Session;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.exceptions.OutlineException;
-import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -139,40 +141,9 @@ public class OutlineUtils {
         );
     }
 
-    public static void assertNotNull(Object obj) {
-        if (obj == null) {
-            throw new OutlineException("obj == null");
-        }
-    }
-
     public static File getImgFile(String imagesLocation, UUID imgId) {
         String idStr = imgId.toString();
         return new File(imagesLocation + "/" + idStr.substring(0,2) + "/" + idStr);
-    }
-
-    public static <T> Optional<T> getNextSibling(List<T> list, Function<T,Boolean> comparator, boolean toTheRight) {
-        if (CollectionUtils.isEmpty(list) ||
-                !toTheRight && comparator.apply(list.get(0)) ||
-                toTheRight && comparator.apply(list.get(list.size() - 1))) {
-            return Optional.empty();
-        } else {
-            for (int i = 0; i < list.size(); i++) {
-                if (comparator.apply(list.get(i))) {
-                    return Optional.of(list.get(i + (toTheRight ? 1 : -1)));
-                }
-            }
-            throw new OutlineException("getNextSibling");
-        }
-    }
-
-    public static <T> Optional<T> getFurthestSibling(List<T> list, Function<T,Boolean> comparator, Boolean toTheRight) {
-        if (CollectionUtils.isEmpty(list) ||
-                !toTheRight && comparator.apply(list.get(0)) ||
-                toTheRight && comparator.apply(list.get(list.size() - 1))) {
-            return Optional.empty();
-        } else {
-            return Optional.of(list.get(toTheRight ? list.size() - 1 : 0));
-        }
     }
 
     public static Session getCurrentSession(EntityManager entityManager) {
@@ -314,4 +285,11 @@ public class OutlineUtils {
             optVal.ifPresent(consumer);
         }
     }
+
+    public static String readStringFromClasspath(String filePath) throws IOException {
+        try (InputStream in = OutlineUtils.class.getResourceAsStream(filePath)) {
+            return IOUtils.toString(in, StandardCharsets.UTF_8);
+        }
+    }
+
 }
