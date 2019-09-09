@@ -15,7 +15,7 @@
 
     <properties>
         <functional.java.version>4.8</functional.java.version>
-        <h2.version>1.4.197</h2.version>
+        <h2.version>1.4.199</h2.version>
     </properties>
 
     <scm>
@@ -68,29 +68,9 @@
             <version>5.1.1</version>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>25.1-jre</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.functionaljava</groupId>
-            <artifactId>functionaljava</artifactId>
-            <version>${functional.java.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.functionaljava</groupId>
-            <artifactId>functionaljava-java8</artifactId>
-            <version>${functional.java.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javaxt</groupId>
-            <artifactId>javaxt-core</artifactId>
-            <version>1.9.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

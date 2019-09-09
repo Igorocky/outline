@@ -1,7 +1,5 @@
 package org.igye.outline2;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.hibernate.Session;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.exceptions.OutlineException;
@@ -10,6 +8,7 @@ import org.springframework.util.CollectionUtils;
 import javax.persistence.EntityManager;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -279,11 +278,15 @@ public class OutlineUtils {
     }
 
     public static <E> List<E> listOf(E... elems) {
-        return ImmutableList.copyOf(elems);
+        return Arrays.asList(elems);
     }
 
     public static <E> Set<E> setOf(E... elems) {
-        return ImmutableSet.copyOf(elems);
+        Set<E> set = new HashSet<>();
+        for (E elem : elems) {
+            set.add(elem);
+        }
+        return set;
     }
 
     public static <K,V> Map<K,V> mapOf(K k1, V v1) {
