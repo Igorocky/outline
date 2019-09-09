@@ -292,4 +292,10 @@ public class OutlineUtils {
         }
     }
 
+    public static byte[] readBytesFromClasspath(String filePath) throws IOException {
+        try (InputStream in = OutlineUtils.class.getResourceAsStream(filePath)) {
+            return IOUtils.toByteArray(in);
+        }
+    }
+
 }

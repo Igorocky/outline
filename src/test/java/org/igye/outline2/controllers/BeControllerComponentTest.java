@@ -61,7 +61,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
         ScriptEngine engine = factory.getScriptEngine(new String[] { "--language=es6" });
         engine.eval(new FileReader("./src/test/resources/js-test-utils.js"));
-        engine.eval(new FileReader("./src/main/webapp/js/be-integration.js"));
+        engine.eval(new FileReader("./src/main/resources/web/js/be-integration.js"));
         jsAdapter = (Invocable) engine;
     }
 
