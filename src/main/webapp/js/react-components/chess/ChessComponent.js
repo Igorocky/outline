@@ -47,14 +47,14 @@ const ChessComponent = () => {
     }
 
     function renderLeftPanel() {
-        return re(Container.col.top.left, {childStyle:{marginBottom:"5px"}},
+        return RE.Container.col.top.left({},{style:{marginBottom:"5px"}},
             renderChessBoard(),
             renderCommandInputField()
         )
     }
 
     function renderRightPanel() {
-        return re(Container.col.top.left, {childStyle:{marginBottom:"5px"}},
+        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
             re(Paper, {square:true},
                 re(Tabs,{value:state.tab,
                         indicatorColor:"primary",
@@ -71,7 +71,7 @@ const ChessComponent = () => {
 
     function renderPageContent() {
         if (state) {
-            return re(Container.row.left.top, {childStyle:{marginLeft:"5px",marginTop:"5px"}},
+            return RE.Container.row.left.top({},{style:{marginLeft:"5px",marginTop:"5px"}},
                 renderLeftPanel(),
                 renderRightPanel()
             )

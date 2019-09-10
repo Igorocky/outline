@@ -61,13 +61,40 @@ function reFactory(elemType) {
 
 const MaterialUI = window['MaterialUI']
 const MuiColors = MaterialUI.colors
+
+const DIRECTION = {row: "row", column: "column",}
+const JUSTIFY = {flexStart: "flex-start", center: "center", flexEnd: "flex-end", spaceBetween: "space-between", spaceAround: "space-around",}
+const ALIGN_ITEMS = {flexStart: "flex-start", center: "center", flexEnd: "flex-end", stretch: "stretch", spaceAround: "baseline",}
+
+function gridFactory(direction, justify, alignItems) {
+    return (props, childProps, ...children) => re(MaterialUI.Grid, {container:true, direction:direction,
+            justify:justify, alignItems:alignItems, ...props},
+        React.Children.map(children, child => {
+            return re(MaterialUI.Grid, {item:true, ...childProps}, child)
+        })
+    )
+}
+
 const RE = {
     div: reFactory('div'),
     Button: reFactory(MaterialUI.Button),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
+    Grid: reFactory(MaterialUI.Grid),
     Paper: reFactory(MaterialUI.Paper),
     If: (condition, ...elems) => condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfTrue: (condition, ...elems) => re(Fragment,{},...elems),
+    Container: {
+        row: {
+            left: {
+                top: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
+            }
+        },
+        col: {
+            top: {
+                left: gridFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
+            }
+        }
+    },
 }
 
 function paper(children) {
@@ -82,49 +109,6 @@ function iconButton({onClick, iconName}) {
 
 function clickAwayListener({onClickAway, children, key}) {
     return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
-}
-
-const DIRECTION = {
-    row: "row",
-    column: "column",
-}
-
-const JUSTIFY = {
-    flexStart: "flex-start",
-    center: "center",
-    flexEnd: "flex-end",
-    spaceBetween: "space-between",
-    spaceAround: "space-around",
-}
-
-const ALIGN_ITEMS = {
-    flexStart: "flex-start",
-    center: "center",
-    flexEnd: "flex-end",
-    stretch: "stretch",
-    spaceAround: "baseline",
-}
-
-function containerFactory(direction, justify, alignItems) {
-    return ({style, children, childStyle}) => re(Grid, {container:true, direction:direction,
-            justify:justify, alignItems:alignItems, style:style},
-        React.Children.map(children, child => {
-            return re(Grid, {item:true, style:childStyle}, child)
-        })
-    )
-}
-
-const Container = {
-    row: {
-        left: {
-            top: containerFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
-        }
-    },
-    col: {
-        top: {
-            left: containerFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
-        }
-    }
 }
 
 function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {

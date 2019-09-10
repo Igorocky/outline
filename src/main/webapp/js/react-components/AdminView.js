@@ -1,4 +1,3 @@
-const buttonsStyle = {margin: "10px"}
 const inButtonCircularProgressStyle = {
     color: MuiColors.green[500],
     position: 'absolute',
@@ -16,10 +15,10 @@ const AdminView = () => {
         doRpcCall("doBackup", {}, () => setBackupIsInProgress(false))
     }
 
-    return Container.row.left.top({children: [
-        RE.div({style:{position: 'relative'}},
+    function renderBackupButton() {
+        return RE.div({style:{position: 'relative'}},
             RE.Button({
-                    key: "backup-btn", style: buttonsStyle, variant: "contained", disabled: backupIsInProgress,
+                    key: "backup-btn", variant: "contained", disabled: backupIsInProgress,
                     onClick: doBackup
                 }, "Backup"
             ),
@@ -27,5 +26,10 @@ const AdminView = () => {
                 RE.CircularProgress({size:24, style: inButtonCircularProgressStyle})
             )
         )
-    ]})
+
+    }
+
+    return RE.Container.row.left.top({},{style:{margin: "10px"}},
+        renderBackupButton()
+    )
 }
