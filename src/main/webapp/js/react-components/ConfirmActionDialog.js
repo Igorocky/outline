@@ -1,8 +1,8 @@
 
-const ConfirmActionDialog = ({pTitle, pConfirmText, pOnCancel, pStartActionBtnText, pStartAction,
-    pActionInProgressText, pActionDoneText, pActionDoneBtnText, pOnActionDoneBtnClick}) => {
-    const [actionIsDone, setActionIsDone] = useState(false)
+const ConfirmActionDialog = ({pConfirmText, pOnCancel, pStartActionBtnText, pStartAction,
+    pActionDoneText, pActionDoneBtnText, pOnActionDoneBtnClick}) => {
     const [actionIsInProgress, setActionIsInProgress] = useState(false)
+    const [actionIsDone, setActionIsDone] = useState(false)
 
     function startAction() {
         setActionIsInProgress(true)
@@ -14,34 +14,26 @@ const ConfirmActionDialog = ({pTitle, pConfirmText, pOnCancel, pStartActionBtnTe
 
     function drawContent() {
         if (!actionIsDone) {
-            return re(Typography, {}, pConfirmText)
+            return RE.Typography({}, pConfirmText)
         } else {
-            return re(Typography, {}, pActionDoneText)
+            return RE.Typography({}, pActionDoneText)
         }
     }
 
     function drawActionButtons() {
         if (!actionIsDone) {
-            if (!actionIsInProgress) {
-                return [
-                    re(Button, {key:"ConfirmActionDialog-cancel-btn", onClick: pOnCancel}, "Cancel"),
-                    re(Button, {key:"ConfirmActionDialog-ok-btn", color:"primary", variant:"contained",
-                        onClick: startAction}, pStartActionBtnText)
-                ]
-            } else {
-                return [
-                    re(CircularProgress, {key: "ConfirmActionDialog-CircularProgress", size: 24}),
-                    re(Typography, {key: "ConfirmActionDialog-Typography"}, pActionInProgressText)
-                ]
-            }
+            return RE.Fragment({},
+                RE.Button({onClick: pOnCancel, disabled: actionIsInProgress}, "Cancel"),
+                re(ButtonWithCircularProgress, {pButtonText: pStartActionBtnText, pStartAction: startAction})
+            )
         } else {
-            return re(Button, {key:"ConfirmActionDialog-ok-btn", color:"primary", variant:"contained",
-                onClick: pOnActionDoneBtnClick}, pActionDoneBtnText)
+            return RE.Button({onClick: pOnActionDoneBtnClick, color:"primary", variant:"contained"},
+                pActionDoneBtnText
+            )
         }
     }
 
     return re(Dialog, {open:true},
-        re(DialogTitle, {}, pTitle),
         re(DialogContent, {}, drawContent()),
         re(DialogActions, {}, drawActionButtons())
     )

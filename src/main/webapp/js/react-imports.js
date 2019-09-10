@@ -79,9 +79,12 @@ const RE = {
     div: reFactory('div'),
     Button: reFactory(MaterialUI.Button),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
+    Fragment: reFactory(React.Fragment),
     Grid: reFactory(MaterialUI.Grid),
     Paper: reFactory(MaterialUI.Paper),
+    Typography: reFactory(MaterialUI.Typography),
     If: (condition, ...elems) => condition?re(Fragment,{},...elems):re(Fragment,{}),
+    IfNot: (condition, ...elems) => !condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfTrue: (condition, ...elems) => re(Fragment,{},...elems),
     Container: {
         row: {
@@ -153,4 +156,26 @@ function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
     }, [stateId])
 
     return backend
+}
+
+function useConfirmActionDialog() {
+    const [confirmActionDialogData, setConfirmActionDialogData] = useState(null)
+
+    function renderConfirmActionDialog() {
+        if (confirmActionDialogData) {
+            return re(ConfirmActionDialog, confirmActionDialogData)
+        } else {
+            return null;
+        }
+    }
+
+    function openConfirmActionDialog(dialogParams) {
+        setConfirmActionDialogData(dialogParams)
+    }
+
+    function closeConfirmActionDialog() {
+        setConfirmActionDialogData(null)
+    }
+
+    return [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog]
 }

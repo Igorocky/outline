@@ -4,7 +4,7 @@ const NodeView = props => {
     const [curNode, setCurNode] = useState(null)
     const [checkedNodes, setCheckedNodes] = useState(null)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
-    const [confirmActionDialogData, setConfirmActionDialogData] = useState(null)
+    const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [redirect, setRedirect] = useRedirect()
 
     useEffect(() => {
@@ -70,16 +70,17 @@ const NodeView = props => {
     }
 
     function deleteNode(nodeId) {
-        setConfirmActionDialogData({
-            pTitle:"Confirm deletion",
+        openConfirmActionDialog({
             pConfirmText: "Delete?",
-            pOnCancel: () => setConfirmActionDialogData(null),
+            pOnCancel: closeConfirmActionDialog,
             pStartActionBtnText: "Delete",
             pStartAction: ({onDone}) => beRemoveNode(nodeId, () => {
-                setConfirmActionDialogData(null)
+                closeConfirmActionDialog()
                 reloadCurrNode()
             }),
-            pActionInProgressText: "Deleting..."
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
         })
     }
 
@@ -205,16 +206,14 @@ const NodeView = props => {
     }
 
     function openExportDialog(nodeId) {
-        setConfirmActionDialogData({
-            pTitle:"Export",
+        openConfirmActionDialog({
             pConfirmText: "Start export?",
-            pOnCancel: () => setConfirmActionDialogData(null),
+            pOnCancel: closeConfirmActionDialog,
             pStartActionBtnText: "Export",
             pStartAction: ({onDone}) => exportToFile({nodeId:nodeId, onSuccess: onDone}),
-            pActionInProgressText: "Exporting...",
             pActionDoneText: "Export finished.",
             pActionDoneBtnText: "OK",
-            pOnActionDoneBtnClick: () => setConfirmActionDialogData(null),
+            pOnActionDoneBtnClick: closeConfirmActionDialog
         })
     }
 
@@ -286,19 +285,11 @@ const NodeView = props => {
         }
     }
 
-    function renderConfirmActionDialogIfNecessary() {
-        if (confirmActionDialogData) {
-            return re(ConfirmActionDialog, {key:"ConfirmActionDialog", ...confirmActionDialogData})
-        } else {
-            return null;
-        }
-    }
-
-    return [
+    return RE.Fragment({},
         renderPageContent(),
         re(Portal, {key:"Portal",container: props.actionsContainerRef.current}, renderActions()),
         renderImportDialogIfNecessary(),
-        renderConfirmActionDialogIfNecessary(),
+        renderConfirmActionDialog(),
         redirectTo(redirect)
-    ]
+    )
 }
