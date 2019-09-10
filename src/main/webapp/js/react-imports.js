@@ -60,11 +60,14 @@ function reFactory(elemType) {
 }
 
 const MaterialUI = window['MaterialUI']
+const MuiColors = MaterialUI.colors
 const RE = {
+    div: reFactory('div'),
     Button: reFactory(MaterialUI.Button),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
-    If: (condition, elem) => condition?elem:null,
-    IfTrue: (condition, elem) => elem,
+    Paper: reFactory(MaterialUI.Paper),
+    If: (condition, ...elems) => condition?re(Fragment,{},...elems):re(Fragment,{}),
+    IfTrue: (condition, ...elems) => re(Fragment,{},...elems),
 }
 
 function paper(children) {
