@@ -55,6 +55,18 @@ const {
     Switch
 } = window["ReactRouterDOM"]
 
+function reFactory(elemType) {
+    return (props, ...children) => re(elemType, props, ...children)
+}
+
+const MaterialUI = window['MaterialUI']
+const RE = {
+    Button: reFactory(MaterialUI.Button),
+    CircularProgress: reFactory(MaterialUI.CircularProgress),
+    If: (condition, elem) => condition?elem:null,
+    IfTrue: (condition, elem) => elem,
+}
+
 function paper(children) {
     return re(Paper,{},children)
 }
