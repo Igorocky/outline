@@ -1,7 +1,8 @@
 package org.igye.outline2.controllers;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -45,22 +46,6 @@ public class AssetsController {
         );
     }
 
-    @GetMapping("/{assetType:js|css|img}/**")
-    @ResponseBody
-    public ResponseEntity<byte[]> nonVersionedAssets(HttpServletRequest request) throws IOException {
-        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        setContentType(responseHeaders, path);
-        return new ResponseEntity<>(getBytes(path), responseHeaders, HttpStatus.OK);
-    }
-
-    private void setContentType(HttpHeaders responseHeaders, String path) {
-        final MediaType mediaType = getMediaType(path);
-        if (mediaType != null) {
-            responseHeaders.setContentType(mediaType);
-        }
-    }
-
     private MediaType getMediaType(String path) {
         if (path.endsWith(".js")) {
             return MediaType.valueOf("application/javascript;charset=UTF-8");
@@ -69,11 +54,11 @@ public class AssetsController {
         } else if (path.endsWith(".png")) {
             return MediaType.valueOf("image/png");
         } else {
-            return null;
+            throw new OutlineException("Cannot determine MediaType for path '" + path + "'");
         }
     }
 
     private byte[] getBytes(String filePath) throws IOException {
-        return OutlineUtils.readBytesFromClasspath("/web/" + filePath);
+        return IOUtils.toByteArray(servletContext.getResourceAsStream(filePath));
     }
 }

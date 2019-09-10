@@ -1,5 +1,7 @@
 package org.igye.outline2.controllers;
 
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,10 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
-import static org.igye.outline2.OutlineUtils.readStringFromClasspath;
 
 @Controller
 @RequestMapping("/fe")
@@ -21,15 +22,21 @@ public class FeController {
     private String appVersion;
     @Value("${config.name}")
     private String configName;
+    @Autowired
+    ServletContext servletContext;
 
     @GetMapping("/**")
     public ResponseEntity<byte[]> index() throws IOException {
         return new ResponseEntity<>(
-                readStringFromClasspath("/web/index.html")
+                readFileToString("/index.html")
                         .replaceAll("@app\\.version@", appVersion)
                         .replaceAll("@config\\.name@", configName)
                         .getBytes(StandardCharsets.UTF_8),
                 HttpStatus.OK
         );
+    }
+
+    private String readFileToString(String filePath) throws IOException {
+        return IOUtils.toString(servletContext.getResourceAsStream(filePath), StandardCharsets.UTF_8);
     }
 }
