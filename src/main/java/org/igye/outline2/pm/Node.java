@@ -37,8 +37,9 @@ import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 public class Node implements HasTags {
     @Id
     private UUID id = UUID.randomUUID();
-    private String clazz = NodeClasses.CONTAINER;
     private Instant createdWhen;
+
+    private String clazz = NodeClasses.CONTAINER;
 
     @OneToMany(mappedBy = "node", orphanRemoval = true)
     @Cascade({PERSIST, REFRESH, SAVE_UPDATE, MERGE, REMOVE, DELETE})
