@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.igye.outline2.pm.NodeClass;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,12 +24,15 @@ public class NodeDto implements HasTagDtos {
     // TODO: 22.07.2019 tc: fails on unknown attr
     @JsonInclude(value = JsonInclude.Include.ALWAYS)
     private UUID id;
-    private NodeClass clazz;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant createdWhen;
 
     private List<TagDto> tags;
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
+    @JsonDeserialize(using = DeserializerOfOptString.class)
+    @JsonSerialize(using = SerializerOfOptString.class)
+    private OptVal<String> clazz;
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptUuid.class)
     @JsonSerialize(using = SerializerOfOptUuid.class)

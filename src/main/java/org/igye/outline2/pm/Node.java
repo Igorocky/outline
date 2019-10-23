@@ -10,8 +10,6 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -20,7 +18,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.hibernate.annotations.CascadeType.DELETE;
@@ -40,8 +37,7 @@ import static org.hibernate.annotations.CascadeType.SAVE_UPDATE;
 public class Node implements HasTags {
     @Id
     private UUID id = UUID.randomUUID();
-    @Enumerated(EnumType.STRING)
-    private NodeClass clazz = NodeClass.CONTAINER;
+    private String clazz = NodeClasses.CONTAINER;
     private Instant createdWhen;
 
     @OneToMany(mappedBy = "node", orphanRemoval = true)
@@ -81,7 +77,7 @@ public class Node implements HasTags {
     }
 
     public boolean isTopNode() {
-        return getClazz().equals(NodeClass.TOP_CONTAINER);
+        return getClazz().equals(NodeClasses.TOP_CONTAINER);
     }
 
     public List<Node> getPath() {

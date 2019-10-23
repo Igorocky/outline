@@ -12,7 +12,7 @@ function doTestCall(funcName, args) {
     return result
 }
 
-const MvcAdapter = Java.type('org.igye.outline2.controllers.BeControllerComponentTest');
+const MvcAdapter = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase');
 
 function doGet(url, onSuccess) {
     print("js-test-utils.doGet: url = " + url)

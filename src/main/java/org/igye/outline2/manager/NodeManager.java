@@ -4,9 +4,8 @@ import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
-import org.igye.outline2.pm.NodeClass;
+import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
-import org.igye.outline2.pm.TagId;
 import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -46,7 +45,6 @@ public class NodeManager {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
-            node.setClazz(nodeDto.getClazz());
             node.setCreatedWhen(clock.instant());
             node = nodeRepository.save(node);
         } else {
@@ -65,7 +63,7 @@ public class NodeManager {
         if (id == null) {
             result = new Node();
             result.setId(null);
-            result.setClazz(NodeClass.TOP_CONTAINER);
+            result.setClazz(NodeClasses.TOP_CONTAINER);
             if (depth > 0) {
                 result.setChildNodes(nodeRepository.findByParentNodeId(null));
             }
@@ -141,13 +139,13 @@ public class NodeManager {
 
     @RpcMethod
     @Transactional
-    public void rpcSetSingleTagForNode(UUID nodeId, TagId tagId, String value) {
+    public void rpcSetSingleTagForNode(UUID nodeId, String tagId, String value) {
         nodeRepository.getOne(nodeId).setTagSingleValue(tagId, value);
     }
 
     @RpcMethod
     @Transactional
-    public void rpcRemoveTagsFromNode(UUID nodeId, TagId tagId) {
+    public void rpcRemoveTagsFromNode(UUID nodeId, String tagId) {
         nodeRepository.getOne(nodeId).removeTags(tagId);
     }
 
@@ -176,13 +174,7 @@ public class NodeManager {
             }
             Tag finalTag = tag;
             ifPresent(tagDto.getTagId(), tagId -> finalTag.setTagId(tagId));
-            ifPresent(tagDto.getValue(), value -> {
-                if (value != null) {
-                    finalTag.setValue(value);
-                } else {
-                    finalTag.delete();
-                }
-            });
+            ifPresent(tagDto.getValue(), value -> finalTag.setValue(value));
         }
     }
 
@@ -198,6 +190,7 @@ public class NodeManager {
     }
 
     private void patchNode(NodeDto nodeDto, Node node) {
+        ifPresent(nodeDto.getClazz(), clazz-> node.setClazz(clazz));
         ifPresent(nodeDto.getParentId(), parId-> moveNodeToAnotherParent(parId, node));
 
         final List<TagDto> tags = nodeDto.getTags();

@@ -29,7 +29,7 @@ public class Tag {
     private Node node;
 
     @NotNull
-    private TagId tagId;
+    private String tagId;
     @NotNull
     private String value;
 

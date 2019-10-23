@@ -3,7 +3,7 @@ package org.igye.outline2.common;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.pm.Node;
-import org.igye.outline2.pm.NodeClass;
+import org.igye.outline2.pm.NodeClasses;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class Randoms {
     public static final Consumer<Node> NODE_RANDOMIZER = node -> {
-        node.setClazz(NodeClass.CONTAINER);
+        node.setClazz(NodeClasses.CONTAINER);
         node.setCreatedWhen(instant());
     };
     private static Random rnd = new Random();

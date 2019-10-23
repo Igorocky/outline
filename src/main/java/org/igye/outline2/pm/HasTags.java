@@ -1,7 +1,5 @@
 package org.igye.outline2.pm;
 
-import org.igye.outline2.OutlineUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +9,7 @@ public interface HasTags {
     List<Tag> getTags();
     void addTag(Tag tag);
 
-    default String getTagSingleValue(TagId tagId) {
+    default String getTagSingleValue(String tagId) {
         List<String> values = new ArrayList<>();
         getTags().forEach(tag -> {
             if (tag.getTagId().equals(tagId)) {
@@ -21,7 +19,7 @@ public interface HasTags {
         return getSingleValue(values);
     }
 
-    default List<Tag> getTags(TagId tagId) {
+    default List<Tag> getTags(String tagId) {
         List<Tag> tags = new ArrayList<>();
         getTags().forEach(tag -> {
             if (tag.getTagId().equals(tagId)) {
@@ -31,11 +29,11 @@ public interface HasTags {
         return tags;
     }
 
-    default Tag getTagSingle(TagId tagId) {
+    default Tag getTagSingle(String tagId) {
         return getSingleValue(getTags(tagId));
     }
 
-    default void setTagSingleValue(TagId tagId, String value) {
+    default void setTagSingleValue(String tagId, String value) {
         Tag existingTag = getTagSingle(tagId);
         if (existingTag == null) {
             if (value != null) {
@@ -50,7 +48,7 @@ public interface HasTags {
         }
     }
 
-    default void removeTags(TagId tagId) {
+    default void removeTags(String tagId) {
         getTags(tagId).forEach(Tag::delete);
     }
 }

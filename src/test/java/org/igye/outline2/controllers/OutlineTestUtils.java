@@ -6,9 +6,7 @@ import org.hibernate.Session;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeRepository;
 import org.igye.outline2.pm.Node;
-import org.igye.outline2.pm.NodeClass;
 import org.igye.outline2.pm.Tag;
-import org.igye.outline2.pm.TagId;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 
@@ -101,7 +99,7 @@ public class OutlineTestUtils {
                 (rs, idx) -> Tag.builder()
                         .id((UUID) rs.getObject("ID"))
                         .node(Node.builder().id((UUID) rs.getObject("NODE_ID")).build())
-                        .tagId(TagId.fromString(rs.getString("TAG_ID")))
+                        .tagId(rs.getString("TAG_ID"))
                         .value(rs.getString("VALUE"))
                         .build()
         );
@@ -113,7 +111,7 @@ public class OutlineTestUtils {
                 new Object[]{nodeId},
                 (rs, idx) -> Node.builder()
                         .id((UUID) rs.getObject("ID"))
-                        .clazz(NodeClass.valueOf(rs.getString(CLAZZ)))
+                        .clazz(rs.getString(CLAZZ))
                         .createdWhen(rs.getTimestamp(CREATED_WHEN, UTC_CALENDAR).toInstant())
                         .tags(getTagsOfNode(jdbcTemplate, nodeId))
                         .parentNode(nullSafeGetter(

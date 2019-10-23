@@ -1,7 +1,6 @@
 package org.igye.outline2.dto;
 
 import org.igye.outline2.OutlineUtils;
-import org.igye.outline2.pm.TagId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +8,11 @@ import java.util.List;
 public interface HasTagDtos {
     List<TagDto> getTags();
 
-    default String getTagSingleValue(TagId tagId) {
+    default String getTagSingleValue(String tagId) {
         return OutlineUtils.getSingleValue(getTagsValues(tagId));
     }
 
-    default List<String> getTagsValues(TagId tagId) {
+    default List<String> getTagsValues(String tagId) {
         List<String> values = new ArrayList<>();
         getTags().forEach(tag -> {
             if (tag.getTagId().getVal().equals(tagId)) {
@@ -23,7 +22,7 @@ public interface HasTagDtos {
         return values;
     }
 
-    default List<TagDto> getTags(TagId tagId) {
+    default List<TagDto> getTags(String tagId) {
         List<TagDto> tags = new ArrayList<>();
         getTags().forEach(tag -> {
             if (tag.getTagId().getVal().equals(tagId)) {

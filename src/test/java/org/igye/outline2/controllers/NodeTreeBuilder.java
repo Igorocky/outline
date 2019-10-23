@@ -1,7 +1,7 @@
 package org.igye.outline2.controllers;
 
 import org.igye.outline2.pm.Node;
-import org.igye.outline2.pm.TagId;
+import org.igye.outline2.pm.TagIds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class NodeTreeBuilder {
     }
 
     public NodeTreeBuilder setName(String name) {
-        getLastNode().setTagSingleValue(TagId.NAME, name);
+        getLastNode().setTagSingleValue(TagIds.NAME, name);
         return this;
     }
 

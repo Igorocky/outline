@@ -17,7 +17,7 @@ public class DtoConverter {
     public static NodeDto toDto(Node node, int depth) {
         NodeDto nodeDto = new NodeDto();
         nodeDto.setId(node.getId());
-        nodeDto.setClazz(node.getClazz());
+        nodeDto.setClazz(new OptVal<>(node.getClazz()));
         nodeDto.setCreatedWhen(node.getCreatedWhen());
         nodeDto.setParentId(nullSafeGetter(
                 node.getParentNode(),

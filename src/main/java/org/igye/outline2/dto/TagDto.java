@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.igye.outline2.pm.TagId;
 
 import java.util.UUID;
 
@@ -23,9 +22,9 @@ public class TagDto {
     private UUID node;
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
-    @JsonDeserialize(using = DeserializerOfOptTagId.class)
-    @JsonSerialize(using = SerializerOfOptTagId.class)
-    private OptVal<TagId> tagId;
+    @JsonDeserialize(using = DeserializerOfOptString.class)
+    @JsonSerialize(using = SerializerOfOptString.class)
+    private OptVal<String> tagId;
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = OptValExclusionFilter.class)
     @JsonDeserialize(using = DeserializerOfOptString.class)
