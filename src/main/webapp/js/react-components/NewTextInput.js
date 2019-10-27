@@ -20,7 +20,7 @@ const NewTextInput = props => {
         }
     }
 
-    return re(Toolbar, {variant: "dense"},
+    return RE.Toolbar({variant: "dense"},
         re(Typography, {key:"Typography", edge: "start"},
             "New text:"
         ),

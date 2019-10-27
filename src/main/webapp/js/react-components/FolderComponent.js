@@ -31,12 +31,12 @@ const FolderComponent = props => {
                 style:{backgroundColor: anchorEl?"rgb(215, 215, 215)":""},
                 onClick: props.onClick
             },
-            re(IconButton, {key:"folder-button", edge: "start", color: "inherit", onClick: onClick,
+            RE.IconButton({key:"folder-button", edge: "start", color: "inherit", onClick: onClick,
                     style:{marginLeft: "15px"},
                     onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
                 iconIsHovered
-                    ?re(Icon, {style: {fontSize: "24px"}}, "more_vert")
-                    :re(Icon, {style: {fontSize: "24px"}}, "folder")
+                    ?RE.Icon({style: {fontSize: "24px"}}, "more_vert")
+                    :RE.Icon({style: {fontSize: "24px"}}, "folder")
             ),
             re(Typography, {key:"folder-name", variant:"body1"},
                 props.name

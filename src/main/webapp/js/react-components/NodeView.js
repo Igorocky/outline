@@ -134,7 +134,7 @@ const NodeView = props => {
         } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {
             return renderContainerNode(node)
         } else {
-            return re(ListItem,{key:node[NODE.id]},
+            return RE.ListItem({key:node[NODE.id]},
                 paper("Unknown type of node: " + node[NODE.objectClass])
             )
         }
@@ -168,10 +168,10 @@ const NodeView = props => {
     }
 
     function renderCurrNodeChildren() {
-        return re(List, {key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
-            re(ListItem,{key:childNode[NODE.id], dense:true},
+        return RE.List({key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
+                RE.ListItem({key:childNode[NODE.id], dense:true},
                 renderCheckBoxIfCheckMode(childNode),
-                re(ListItemText,{}, renderNode(childNode))
+                    RE.ListItemText({}, renderNode(childNode))
             )
         ))
     }

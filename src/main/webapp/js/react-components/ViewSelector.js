@@ -4,7 +4,7 @@ const VIEWS = [
     {name:"Admin", component: AdminView, path: PATH.admin},
 ]
 
-const ViewSelector = props => {
+const ViewSelector = () => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
     const [redirect, setRedirect] = useRedirect()
     const actionsContainerRef = React.useRef(null)
@@ -18,40 +18,39 @@ const ViewSelector = props => {
         return event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')
     }
 
-    function openSideMenu(even) {
-        if (isTabOrShift(even)) {
+    function openSideMenu(event) {
+        if (isTabOrShift(event)) {
             return
         }
         setSideMenuIsOpen(true)
     }
 
-    function closeSideMenu(even) {
-        if (isTabOrShift(even)) {
+    function closeSideMenu(event) {
+        if (isTabOrShift(event)) {
             return
         }
         setSideMenuIsOpen(false)
     }
 
     function renderAppBar() {
-        return re(AppBar, {key: "AppBar", position: "static"},
-            re(Toolbar, {variant: "dense", ref:actionsContainerRef},
-                re(IconButton, {edge: "start", color: "inherit", onClick: openSideMenu},
-                    re(Icon, {style: {fontSize: "24px"}}, "menu")
+        return RE.AppBar({position: "static"},
+            RE.Toolbar({variant: "dense", ref:actionsContainerRef},
+                RE.IconButton({edge: "start", color: "inherit", onClick: openSideMenu},
+                    RE.Icon({style: {fontSize: "24px"}}, "menu")
                 )
             )
         )
     }
 
     function renderDrawer() {
-        return re(Drawer, {
-                key: "drawer",
+        return RE.Drawer({
                 open: sideMenuIsOpen,
                 onClick: closeSideMenu,
                 onKeyDown: closeSideMenu
             },
-            re(List, {},
-                VIEWS.map((view,idx) => re(ListItem,{button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path)},
-                    re(ListItemText,{},view.name)
+            RE.List({},
+                VIEWS.map((view,idx) => RE.ListItem({button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path)},
+                    RE.ListItemText({},view.name)
                 ))
             )
         )
@@ -67,13 +66,15 @@ const ViewSelector = props => {
     return re(BrowserRouter, {},
         renderAppBar(),
         renderDrawer(),
-        re(Switch, {key:"Switch"}, [
+        re(Switch, {},
             re(Route, {
                 key: PATH.nodeWithId, path: PATH.nodeWithId, exact: true,
-                render: props => re(NodeView, {nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef})
+                render: props => re(NodeView, {
+                    ...props, nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef
+                })
             }),
             ...getViewRoutes()
-        ]),
+        ),
         redirectTo(redirect)
     )
 }

@@ -51,7 +51,7 @@ const NodeViewActions = props => {
                 getAction(ACTION_NEW_NODE).text
             ),
             re(Button, {variant:"open-dropdown-btn", size:"small", onClick: openDropdown, onKeyDown: onKeyDown},
-                re(Icon, {style: {fontSize: "24px"}}, "arrow_drop_down")
+                RE.Icon({style: {fontSize: "24px"}}, "arrow_drop_down")
             )
         ),
         anchorEl

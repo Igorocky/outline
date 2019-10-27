@@ -21,19 +21,11 @@ const {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    Icon,
     MuiThemeProvider,
     Typography,
     Breadcrumbs,
     Link,
-    AppBar,
-    Toolbar,
-    IconButton,
-    Drawer,
-    List,
-    ListItem,
     ListItemIcon,
-    ListItemText,
     ListItemSecondaryAction,
     TextField,
     InputBase,
@@ -77,15 +69,23 @@ function gridFactory(direction, justify, alignItems) {
 
 const RE = {
     div: reFactory('div'),
+    AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
+    Drawer: reFactory(MaterialUI.Drawer),
     Fragment: reFactory(React.Fragment),
     Grid: reFactory(MaterialUI.Grid),
     Paper: reFactory(MaterialUI.Paper),
     Typography: reFactory(MaterialUI.Typography),
+    Toolbar: reFactory(MaterialUI.Toolbar),
+    IconButton: reFactory(MaterialUI.IconButton),
+    Icon: reFactory(MaterialUI.Icon),
     If: (condition, ...elems) => condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfNot: (condition, ...elems) => !condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfTrue: (condition, ...elems) => re(Fragment,{},...elems),
+    List: reFactory(MaterialUI.List),
+    ListItem: reFactory(MaterialUI.ListItem),
+    ListItemText: reFactory(MaterialUI.ListItemText),
     Container: {
         row: {
             left: {
@@ -105,8 +105,8 @@ function paper(children) {
 }
 
 function iconButton({onClick, iconName}) {
-    return re(IconButton, {key: iconName, color: "inherit", onClick: onClick},
-        re(Icon, {style: {fontSize: "24px"}}, iconName)
+    return RE.IconButton({key: iconName, color: "inherit", onClick: onClick},
+        RE.Icon({style: {fontSize: "24px"}}, iconName)
     )
 }
 
