@@ -16,7 +16,7 @@ const NODE0 = {
         },
         {
             [NODE.id]: "1",
-            [NODE.objectClass]: OBJECT_CLASS.node,
+            [NODE.objectClass]: OBJECT_CLASS.container,
             [NODE.name]: "node1"
         }
     ]
@@ -28,7 +28,7 @@ const NODE1 = {
     [NODE.childNodes]: [
         {
             [NODE.id]: "2",
-            [NODE.objectClass]: OBJECT_CLASS.node,
+            [NODE.objectClass]: OBJECT_CLASS.container,
             [NODE.name]: "node2"
         },
         {

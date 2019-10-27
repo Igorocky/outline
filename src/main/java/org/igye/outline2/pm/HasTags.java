@@ -36,15 +36,9 @@ public interface HasTags {
     default void setTagSingleValue(String tagId, String value) {
         Tag existingTag = getTagSingle(tagId);
         if (existingTag == null) {
-            if (value != null) {
-                addTag(Tag.builder().tagId(tagId).value(value).build());
-            }
+            addTag(Tag.builder().tagId(tagId).value(value).build());
         } else {
-            if (value != null) {
-                existingTag.setValue(value);
-            } else {
-                existingTag.delete();
-            }
+            existingTag.setValue(value);
         }
     }
 

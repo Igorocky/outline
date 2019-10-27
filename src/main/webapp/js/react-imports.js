@@ -23,9 +23,6 @@ const {
     DialogTitle,
     MuiThemeProvider,
     Typography,
-    Breadcrumbs,
-    Link,
-    ListItemIcon,
     ListItemSecondaryAction,
     TextField,
     InputBase,
@@ -33,10 +30,8 @@ const {
     Popover,
     Popper,
     ClickAwayListener,
-    LinearProgress,
     CircularProgress,
     Portal,
-    Checkbox,
     withStyles,
 } = window['MaterialUI']
 
@@ -71,7 +66,9 @@ const RE = {
     div: reFactory('div'),
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
+    Breadcrumbs: reFactory(MaterialUI.Breadcrumbs),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
+    Checkbox: reFactory(MaterialUI.Checkbox),
     Drawer: reFactory(MaterialUI.Drawer),
     Fragment: reFactory(React.Fragment),
     Grid: reFactory(MaterialUI.Grid),
@@ -86,6 +83,9 @@ const RE = {
     List: reFactory(MaterialUI.List),
     ListItem: reFactory(MaterialUI.ListItem),
     ListItemText: reFactory(MaterialUI.ListItemText),
+    ListItemIcon: reFactory(MaterialUI.ListItemIcon),
+    Link: reFactory(MaterialUI.Link),
+    LinearProgress: reFactory(MaterialUI.LinearProgress),
     Container: {
         row: {
             left: {

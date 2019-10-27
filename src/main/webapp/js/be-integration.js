@@ -11,8 +11,8 @@ const NODE = {
 }
 
 const OBJECT_CLASS = {
-    rootNode: "TOP_CONTAINER",
-    node: "CONTAINER",
+    topContainer: "TOP_CONTAINER",
+    container: "CONTAINER",
     text: "TEXT",
     image: "IMAGE"
 }
@@ -62,7 +62,7 @@ function reorderNode(nodeId,direction,onSuccess) {
 function createChildNode(currNode,onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
-    request[NODE.objectClass] = OBJECT_CLASS.node
+    request[NODE.objectClass] = OBJECT_CLASS.container
     patchNode(request, onSuccess)
 }
 

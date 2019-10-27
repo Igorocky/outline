@@ -76,7 +76,7 @@ const ChessComponent = () => {
                 renderRightPanel()
             )
         } else {
-            return re(LinearProgress, {key:"LinearProgress",color:"secondary"})
+            return RE.LinearProgress({key:"LinearProgress",color:"secondary"})
         }
     }
 

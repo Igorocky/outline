@@ -1,6 +1,6 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
-const NodeView = props => {
+const NodeView = ({actionsContainerRef, nodeIdToLoad}) => {
     const [curNode, setCurNode] = useState(null)
     const [checkedNodes, setCheckedNodes] = useState(null)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
@@ -8,8 +8,8 @@ const NodeView = props => {
     const [redirect, setRedirect] = useRedirect()
 
     useEffect(() => {
-        getNodeById(props.nodeIdToLoad, resp => setCurNode(resp))
-    }, [props.nodeIdToLoad])
+        getNodeById(nodeIdToLoad, resp => setCurNode(resp))
+    }, [nodeIdToLoad])
 
     useEffect(() => {
         document.onpaste = event => curNode?uploadImage({
@@ -38,11 +38,11 @@ const NodeView = props => {
     }
 
     function renderPathToCurrNode() {
-        return re(Breadcrumbs,{key:"path-to-cur-node"+getCurrNodeId()},
-            re(Link, {key:"rootLink", color:"primary", className:"path-elem pointer-on-hover",
+        return RE.Breadcrumbs({key:"path-to-cur-node"+getCurrNodeId()},
+            RE.Link({key:"rootLink", color:"primary", className:"path-elem pointer-on-hover",
                 onClick: () => setRedirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
-                re(Link, {key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
+                    RE.Link({key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
                     getTagSingleValue(pathElem, TAG_ID.name, "")
                 )
@@ -131,7 +131,7 @@ const NodeView = props => {
             return renderTextNode(node)
         } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
             return renderImageNode(node)
-        } else if (node[NODE.objectClass] === OBJECT_CLASS.node) {
+        } else if (node[NODE.objectClass] === OBJECT_CLASS.container) {
             return renderContainerNode(node)
         } else {
             return RE.ListItem({key:node[NODE.id]},
@@ -156,8 +156,8 @@ const NodeView = props => {
 
     function renderCheckBoxIfCheckMode(childNode) {
         if (checkedNodes) {
-            return re(ListItemIcon,{},
-                re(Checkbox,{edge:"start",
+            return RE.ListItemIcon({},
+                RE.Checkbox({edge:"start",
                     checked:isNodeChecked(childNode),
                     onClick: checkNode(childNode),
                     tabIndex:-1, disableRipple:true})
@@ -170,21 +170,21 @@ const NodeView = props => {
     function renderCurrNodeChildren() {
         return RE.List({key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
                 RE.ListItem({key:childNode[NODE.id], dense:true},
-                renderCheckBoxIfCheckMode(childNode),
+                    renderCheckBoxIfCheckMode(childNode),
                     RE.ListItemText({}, renderNode(childNode))
-            )
+                )
         ))
     }
 
     function renderPageContent() {
         if (curNode) {
-            return [
+            return RE.Fragment({},
                 renderPathToCurrNode(),
                 renderCurrNodeName(),
                 renderCurrNodeChildren()
-            ]
+            )
         } else {
-            return re(LinearProgress, {key:"LinearProgress",color:"secondary"})
+            return RE.LinearProgress({key:"LinearProgress",color:"secondary"})
         }
     }
 
@@ -262,7 +262,7 @@ const NodeView = props => {
     }
 
     function renderActions() {
-        return [
+        return RE.Fragment({},
             re(NodeViewActions,{key:"NodeViewActions",
                 onNewNode: createChildNodeIfPossible, onNewSiblingNode: () => null,
                 onSelect: unselectAllItems, onImport: openImportDialog, onExport: ()=>openExportDialog(getCurrNodeId())
@@ -271,7 +271,7 @@ const NodeView = props => {
             renderCancelSelectionBtnIfNecessary(),
             renderCutBtnIfNecessary(),
             renderPasteBtnIfNecessary()
-        ]
+        )
     }
 
     function renderImportDialogIfNecessary() {
@@ -287,7 +287,7 @@ const NodeView = props => {
 
     return RE.Fragment({},
         renderPageContent(),
-        re(Portal, {key:"Portal",container: props.actionsContainerRef.current}, renderActions()),
+        re(Portal, {key:"Portal",container: actionsContainerRef.current}, renderActions()),
         renderImportDialogIfNecessary(),
         renderConfirmActionDialog(),
         redirectTo(redirect)
