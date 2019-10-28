@@ -13,7 +13,6 @@ const PATH = {
 
 function useRedirect() {
     const [redirect, setRedirect] = useState(null)
-    useEffect(()=>setRedirect(null), [redirect])
     return [redirect, setRedirect]
 }
 

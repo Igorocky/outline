@@ -1,21 +1,34 @@
-const NodeCommonView = ({actionsContainerRef, nodeIdToLoad}) => {
+const NodeCommonView = ({actionsContainerRef, match}) => {
     const [curNode, setCurNode] = useState(null)
     const [redirect, setRedirect] = useRedirect()
 
+    function loadNodeById(nodeId) {
+        getNodeById(nodeId, resp => setCurNode(resp))
+    }
+
     useEffect(() => {
-        getNodeById(nodeIdToLoad, resp => setCurNode(resp))
-    }, [nodeIdToLoad])
+        const nodeIdFromUrl = getByPath(match, ["params", "id"], null)
+        if (nodeIdFromUrl != getCurrNodeId()) {
+            loadNodeById(nodeIdFromUrl)
+        } else if (!curNode) {
+            loadNodeById(null)
+        }
+    }, [match])
 
     function getCurrNodeId() {
         return curNode?curNode[NODE.id]:null
     }
 
     function navigateToNodeId(nodeId) {
-        getNodeById(nodeId, resp => setCurNode(resp))
+        if (getCurrNodeId() == nodeId) {
+            reloadCurrNode()
+        } else {
+            setRedirect(PATH.createNodeWithIdPath(nodeId))
+        }
     }
 
     function reloadCurrNode() {
-        navigateToNodeId(getCurrNodeId())
+        loadNodeById(getCurrNodeId())
     }
 
     function renderPathToCurrNode() {

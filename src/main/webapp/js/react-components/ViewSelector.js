@@ -1,7 +1,7 @@
 const VIEWS = [
-    {name:"Nodes", component: NodeCommonView, path: PATH.node},
-    {name:"Chessboard", component: ChessComponent, path: PATH.chessboard},
-    {name:"Admin", component: AdminView, path: PATH.admin},
+    {name:"Nodes", component: NodeCommonView, path: [PATH.node, PATH.nodeWithId]},
+    {name:"Chessboard", component: ChessComponent, path: [PATH.chessboard]},
+    {name:"Admin", component: AdminView, path: [PATH.admin]},
 ]
 
 const ViewSelector = () => {
@@ -49,16 +49,20 @@ const ViewSelector = () => {
                 onKeyDown: closeSideMenu
             },
             RE.List({},
-                VIEWS.map((view,idx) => RE.ListItem({button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path)},
-                    RE.ListItemText({},view.name)
-                ))
+                VIEWS.map((view,idx) =>
+                    RE.ListItem({button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path[0])},
+                        RE.ListItemText({},view.name)
+                    )
+                )
             )
         )
     }
 
     function getViewRoutes() {
         return VIEWS.map(view => re(Route, {
-            key: view.path, path: view.path,
+            key: view.path[0],
+            path: view.path,
+            exact: true,
             render: props => re(view.component, {...props, actionsContainerRef: actionsContainerRef})
         }))
     }
@@ -66,15 +70,7 @@ const ViewSelector = () => {
     return re(BrowserRouter, {},
         renderAppBar(),
         renderDrawer(),
-        re(Switch, {},
-            re(Route, {
-                key: PATH.nodeWithId, path: PATH.nodeWithId, exact: true,
-                render: props => re(NodeCommonView, {
-                    ...props, nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef
-                })
-            }),
-            ...getViewRoutes()
-        ),
+        re(Switch, {}, ...getViewRoutes()),
         redirectTo(redirect)
     )
 }
