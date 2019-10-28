@@ -1,4 +1,4 @@
-package org.igye.outline2.chess.manager.state;
+package org.igye.outline2.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;

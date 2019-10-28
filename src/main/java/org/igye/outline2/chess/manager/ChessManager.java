@@ -2,7 +2,7 @@ package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentView;
-import org.igye.outline2.chess.manager.state.State;
+import org.igye.outline2.websocket.State;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;

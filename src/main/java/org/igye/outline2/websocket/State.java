@@ -1,4 +1,4 @@
-package org.igye.outline2.chess.manager.state;
+package org.igye.outline2.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.tuple.Pair;
