@@ -4,7 +4,7 @@ const ACTION_SELECT = "action-select";
 const ACTION_IMPORT = "action-import";
 const ACTION_EXPORT = "action-export";
 
-const NodeViewActions = props => {
+const ContainerFullViewActions = props => {
     const [anchorEl, setAnchorEl] = useState(null);
 
     const NODE_VIEW_ACTIONS = [
@@ -46,7 +46,7 @@ const NodeViewActions = props => {
     }
 
     return [
-        re(ButtonGroup, {key: "NodeViewActions-ButtonGroup", variant:"contained"},
+        re(ButtonGroup, {key: "ContainerFullViewActions-ButtonGroup", variant:"contained"},
             re(Button, {key:"new-folder-btn", variant:"contained", onClick: ()=>processAction(ACTION_NEW_NODE)},
                 getAction(ACTION_NEW_NODE).text
             ),
@@ -56,7 +56,7 @@ const NodeViewActions = props => {
         ),
         anchorEl
             ? clickAwayListener({
-                key: "NodeViewActions-clickAwayListener",
+                key: "ContainerFullViewActions-clickAwayListener",
                 onClickAway: () => setAnchorEl(null),
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'bottom-end'},
                     renderMenu()

@@ -116,3 +116,12 @@ function getByPath(obj, path, defaultValue) {
         return getByPath(obj[_.first(path)], _.tail(path), defaultValue)
     }
 }
+
+function getTagSingleValue(node, tagId, defaultValue) {
+    const tag = _.find(node[NODE.tags], tag => tag[TAG.tagId] == tagId)
+    if (tag) {
+        return tag[TAG.value]
+    } else {
+        return defaultValue
+    }
+}

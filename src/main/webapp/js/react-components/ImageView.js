@@ -1,5 +1,5 @@
 
-const ImageNodeComponent = props => {
+const ImageShortView = ({imgId, onMoveToStart, onMoveUp, onMoveDown, onMoveToEnd, onDelete}) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
     function performMove(moveFunction) {
@@ -11,11 +11,11 @@ const ImageNodeComponent = props => {
 
     function viewModeButtons() {
         return [
-            iconButton({iconName: "vertical_align_top", onClick: performMove(props.onMoveToStart)}),
-            iconButton({iconName: "keyboard_arrow_up", onClick: performMove(props.onMoveUp)}),
-            iconButton({iconName: "keyboard_arrow_down", onClick: performMove(props.onMoveDown)}),
-            iconButton({iconName: "vertical_align_bottom", onClick: performMove(props.onMoveToEnd)}),
-            iconButton({iconName: "delete", onClick: props.onDelete}),
+            iconButton({iconName: "vertical_align_top", onClick: performMove(onMoveToStart)}),
+            iconButton({iconName: "keyboard_arrow_up", onClick: performMove(onMoveUp)}),
+            iconButton({iconName: "keyboard_arrow_down", onClick: performMove(onMoveDown)}),
+            iconButton({iconName: "vertical_align_bottom", onClick: performMove(onMoveToEnd)}),
+            iconButton({iconName: "delete", onClick: onDelete}),
         ]
     }
 
@@ -27,7 +27,7 @@ const ImageNodeComponent = props => {
         re('img',
             {
                 key: "imageNode",
-                src:"/be/image/" + props.imgId,
+                src:"/be/image/" + imgId,
                 style: {margin:"10px"},
                 onDoubleClick: () => setAnchorEl(null),
                 onClick: onClick

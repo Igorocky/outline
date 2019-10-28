@@ -1,5 +1,5 @@
 const VIEWS = [
-    {name:"NodeView", component: NodeView, path: PATH.node},
+    {name:"Nodes", component: NodeCommonView, path: PATH.node},
     {name:"Chessboard", component: ChessComponent, path: PATH.chessboard},
     {name:"Admin", component: AdminView, path: PATH.admin},
 ]
@@ -69,7 +69,7 @@ const ViewSelector = () => {
         re(Switch, {},
             re(Route, {
                 key: PATH.nodeWithId, path: PATH.nodeWithId, exact: true,
-                render: props => re(NodeView, {
+                render: props => re(NodeCommonView, {
                     ...props, nodeIdToLoad:props.match.params.id, actionsContainerRef: actionsContainerRef
                 })
             }),
