@@ -6,12 +6,8 @@ const useEffect = React.useEffect
 const Fragment = React.Fragment
 
 const {
-    Button,
-    ButtonGroup,
     Tabs,
     Tab,
-    MenuList,
-    MenuItem,
     Paper,
     colors,
     createMuiTheme,
@@ -68,6 +64,7 @@ const RE = {
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     Breadcrumbs: reFactory(MaterialUI.Breadcrumbs),
+    ButtonGroup: reFactory(MaterialUI.ButtonGroup),
     CircularProgress: reFactory(MaterialUI.CircularProgress),
     Checkbox: reFactory(MaterialUI.Checkbox),
     Drawer: reFactory(MaterialUI.Drawer),
@@ -87,6 +84,8 @@ const RE = {
     ListItemIcon: reFactory(MaterialUI.ListItemIcon),
     Link: reFactory(MaterialUI.Link),
     LinearProgress: reFactory(MaterialUI.LinearProgress),
+    MenuList: reFactory(MaterialUI.MenuList),
+    MenuItem: reFactory(MaterialUI.MenuItem),
     Container: {
         row: {
             left: {

@@ -21,8 +21,8 @@ const ImportDialog = props => {
         re(DialogActions, {},
             !isImporting
                 ?[
-                    re(Button, {key:"ImportDialog-cancel-btn", onClick: props.onCancel}, "Cancel"),
-                    re(Button, {key:"ImportDialog-import-btn", color:"primary", variant:"contained",
+                    RE.Button({key:"ImportDialog-cancel-btn", onClick: props.onCancel}, "Cancel"),
+                    RE.Button({key:"ImportDialog-import-btn", color:"primary", variant:"contained",
                         onClick: startImport}, "Import")
                 ]
                 :[

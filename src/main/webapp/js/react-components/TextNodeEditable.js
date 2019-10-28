@@ -1,42 +1,30 @@
 
-const TextNodeEditable = props => {
+const TextNodeEditable = ({value, textAreaStyle, onSave}) => {
     const [editMode, setEditMode] = useState(false)
-    const [value, setValue] = useState(props.value)
+    const [newValue, setNewValue] = useState(value)
     const [anchorEl, setAnchorEl] = useState(null)
 
     function save(newValue) {
-        props.onSave({newValue: newValue, onSaved: () => {
+        onSave({newValue: newValue, onSaved: () => {
                 setEditMode(false)
                 setAnchorEl(null)
         }})
     }
 
     function cancel() {
-        setValue(props.value);
+        setNewValue(value);
         setEditMode(false);
         setAnchorEl(null)
     }
 
-    function performMove(moveFunction) {
-        return () => {
-            setAnchorEl(null)
-            moveFunction()
-        }
-    }
-
     function viewModeButtons() {
-        return [
+        return RE.Fragment({},
             iconButton({iconName: "edit", onClick: () => setEditMode(true)}),
-            iconButton({iconName: "vertical_align_top", onClick: performMove(props.onMoveToStart)}),
-            iconButton({iconName: "keyboard_arrow_up", onClick: performMove(props.onMoveUp)}),
-            iconButton({iconName: "keyboard_arrow_down", onClick: performMove(props.onMoveDown)}),
-            iconButton({iconName: "vertical_align_bottom", onClick: performMove(props.onMoveToEnd)}),
-            iconButton({iconName: "delete", onClick: props.onDelete}),
-        ]
+        )
     }
     function editModeButtons() {
         return [
-            iconButton({iconName: "save", onClick: () => save(value)}),
+            iconButton({iconName: "save", onClick: () => save(newValue)}),
             iconButton({iconName: "cancel", onClick: cancel}),
         ]
     }
@@ -53,19 +41,19 @@ const TextNodeEditable = props => {
         }
     }
 
-    return [
+    return RE.Fragment({},
         re(TextField, {
             key: "TextField",
             autoFocus: true,
             onKeyDown: onKeyDown,
             className: "black-text",
-            style: props.textAreaStyle,
+            style: textAreaStyle,
             multiline: true,
             rowsMax: editMode?30:3000,
-            value: value?value:"",
+            value: newValue?newValue:"",
             disabled: !editMode,
             variant: editMode ? "outlined" : "standard",
-            onChange: e => setValue(e.target.value),
+            onChange: e => setNewValue(e.target.value),
             onDoubleClick: () => !editMode?setAnchorEl(null):null,
             onClick: onClick
         }),
@@ -78,5 +66,5 @@ const TextNodeEditable = props => {
                 )
             })
             : null
-    ]
+    )
 }

@@ -1,6 +1,4 @@
-const TextShortView = ({
-    id, text, onChanged, onMoveToStart, onMoveUp, onMoveDown, onMoveToEnd, onDelete,
-}) => {
+const TextShortView = ({id, text, onChanged}) => {
     return paper(re(TextNodeEditable,
         {
             value:text,
@@ -8,12 +6,7 @@ const TextShortView = ({
             onSave: ({newValue, onSaved}) => updateTextNodeText(id, newValue, onSuccess => {
                 onSaved()
                 onChanged()
-            }),
-            onMoveToStart: onMoveToStart,
-            onMoveUp: onMoveUp,
-            onMoveDown: onMoveDown,
-            onMoveToEnd: onMoveToEnd,
-            onDelete: onDelete,
+            })
         }
     ))
 }

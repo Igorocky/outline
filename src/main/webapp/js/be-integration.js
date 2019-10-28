@@ -14,7 +14,8 @@ const OBJECT_CLASS = {
     topContainer: "TOP_CONTAINER",
     container: "CONTAINER",
     text: "TEXT",
-    image: "IMAGE"
+    image: "IMAGE",
+    chessPuzzle: "CHESS_PUZZLE",
 }
 
 const TAG = {
@@ -59,10 +60,10 @@ function reorderNode(nodeId,direction,onSuccess) {
     doRpcCall("rpcReorderNode", {nodeId:nodeId, direction:direction}, onSuccess)
 }
 
-function createChildNode(currNode,onSuccess) {
+function createChildNode(currNode,clazz,onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
-    request[NODE.objectClass] = OBJECT_CLASS.container
+    request[NODE.objectClass] = clazz
     patchNode(request, onSuccess)
 }
 

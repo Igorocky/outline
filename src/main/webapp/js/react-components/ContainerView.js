@@ -1,19 +1,62 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
-const ContainerShortView = ({
-    id, name, navigateToNodeId, onMoveToStart, onMoveUp, onMoveDown, onMoveToEnd, onDelete,
-}) => {
-    return re(FolderComponent,{key:id, id:id, name:name,
-        onClick: () => navigateToNodeId(id),
-        onMoveToStart: onMoveToStart,
-        onMoveUp: onMoveUp,
-        onMoveDown: onMoveDown,
-        onMoveToEnd: onMoveToEnd,
-        onDelete: onDelete,
-    })
+const ContainerShortView = ({id, name, navigateToNodeId}) => {
+    return re(FolderComponent,{name:name, onClick: () => navigateToNodeId(id)})
 }
+
+const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
+                                 onMoveToStart, onMoveUp, onMoveDown, onMoveToEnd, onDelete}) => {
+    const [anchorEl, setAnchorEl] = useState(null)
+
+    function performMove(moveFunction) {
+        return () => {
+            setAnchorEl(null)
+            moveFunction()
+        }
+    }
+
+    function moveDeleteButtons() {
+        return RE.Fragment({},
+            iconButton({iconName: "vertical_align_top", onClick: performMove(onMoveToStart)}),
+            iconButton({iconName: "keyboard_arrow_up", onClick: performMove(onMoveUp)}),
+            iconButton({iconName: "keyboard_arrow_down", onClick: performMove(onMoveDown)}),
+            iconButton({iconName: "vertical_align_bottom", onClick: performMove(onMoveToEnd)}),
+            iconButton({iconName: "delete", onClick: onDelete}),
+        )
+    }
+
+    return RE.Fragment({},
+        checkMode ? RE.ListItemIcon({},
+            RE.Checkbox({
+                edge: "start",
+                checked: checked,
+                onClick: onChecked,
+                tabIndex: -1, disableRipple: true
+            })
+        ) : null,
+        reorderMode?RE.ListItemIcon({},
+            iconButton({
+                onClick: e => {
+                    setAnchorEl(e.currentTarget)
+                    e.stopPropagation()
+                },
+                iconName: "more_vert"
+            })
+        ):null,
+        anchorEl
+            ? clickAwayListener({
+                onClickAway: () => setAnchorEl(null),
+                children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
+                    paper(moveDeleteButtons())
+                )
+            })
+            : null
+    )
+}
+
 const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
     const [checkedNodes, setCheckedNodes] = useState(null)
+    const [reorderMode, setReorderMode] = useState(false)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
 
@@ -64,28 +107,23 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         return re(TextShortView,{
             id:node[NODE.id],
             text:getTagSingleValue(node, TAG_ID.text),
-            onChanged: reloadCurrNode,
-            ...createMoveDeleteActions(node)
+            onChanged: reloadCurrNode
         })
     }
 
     function renderImageShortView(node) {
-        return re(ImageShortView,{
-            imgId: getTagSingleValue(node, TAG_ID.imgId),
-            ...createMoveDeleteActions(node)
-        })
+        return re(ImageShortView,{imgId: getTagSingleValue(node, TAG_ID.imgId)})
     }
 
     function renderContainerShortView(node) {
         return re(ContainerShortView, {
             id: node[NODE.id],
             name: getTagSingleValue(node, TAG_ID.name),
-            navigateToNodeId: navigateToNodeId,
-            ...createMoveDeleteActions(node)
+            navigateToNodeId: navigateToNodeId
         })
     }
 
-    function renderNodeShortView(node) {
+    function renderChildNodeShortView(node) {
         if (node[NODE.objectClass] === OBJECT_CLASS.text) {
             return renderTextShortView(node)
         } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
@@ -93,9 +131,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         } else if (node[NODE.objectClass] === OBJECT_CLASS.container) {
             return renderContainerShortView(node)
         } else {
-            return RE.ListItem({key:node[NODE.id]},
-                paper("Unknown type of node: " + node[NODE.objectClass])
-            )
+            return paper("Unknown type of node: " + node[NODE.objectClass])
         }
     }
 
@@ -113,24 +149,15 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
-    function renderCheckBoxIfCheckMode(childNode) {
-        if (checkedNodes) {
-            return RE.ListItemIcon({},
-                RE.Checkbox({edge:"start",
-                    checked:isNodeChecked(childNode),
-                    onClick: checkNode(childNode),
-                    tabIndex:-1, disableRipple:true})
-            )
-        } else {
-            return null
-        }
-    }
-
     function renderCurrNodeChildren() {
         return RE.List({key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
             RE.ListItem({key:childNode[NODE.id], dense:true},
-                renderCheckBoxIfCheckMode(childNode),
-                RE.ListItemText({}, renderNodeShortView(childNode))
+                re(ChildItemLeftButton, {
+                    checkMode: checkedNodes, checked: checkedNodes && isNodeChecked(childNode),
+                    onChecked: checkNode(childNode),
+                    reorderMode: reorderMode, ...createMoveDeleteActions(childNode)
+                }),
+                RE.ListItemText({}, renderChildNodeShortView(childNode))
             )
         ))
     }
@@ -165,7 +192,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderCutBtnIfNecessary() {
         if (checkedNodes && checkedNodes.length > 0) {
-            return re(Button, {
+            return RE.Button({
                     key: "Cut-btn", style: actionButtonsStyle, variant: "contained",
                     onClick: () => putNodeIdsToClipboard(checkedNodes, () => setCheckedNodes(null))
                 }, "Cut"
@@ -177,10 +204,22 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderCancelSelectionBtnIfNecessary() {
         if (checkedNodes) {
-            return re(Button, {
+            return RE.Button({
                     key: "cancel-selection-btn", style: actionButtonsStyle, variant: "contained",
-                    onClick: () => setCheckedNodes(null)
+                    onClick: cancelSelection
                 }, "Cancel selection"
+            )
+        } else {
+            return null
+        }
+    }
+
+    function renderCancelReorderingBtnIfNecessary() {
+        if (reorderMode) {
+            return RE.Button({
+                    style: actionButtonsStyle, variant: "contained",
+                    onClick: cancelReordering
+                }, "Cancel reordering"
             )
         } else {
             return null
@@ -189,7 +228,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderPasteBtnIfNecessary() {
         if (curNode[NODE.canPaste]) {
-            return re(Button,{key:"Paste-btn", style:actionButtonsStyle, variant:"contained",
+            return RE.Button({key:"Paste-btn", style:actionButtonsStyle, variant:"contained",
                 onClick: () => pasteNodesFromClipboard(getCurrNodeId(), reloadCurrNode)}, "Paste"
             )
         } else {
@@ -197,17 +236,34 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
+    function cancelSelection() {
+        setCheckedNodes(null)
+    }
+
+    function cancelReordering() {
+        setReorderMode(false)
+    }
+
     function renderActions() {
         return RE.Fragment({},
             re(ContainerFullViewActions,{key:"ContainerFullViewActions",
-                onNewNode: () => createChildNode(curNode, newNodeId => navigateToNodeId(newNodeId)),
+                onNewNode: () => createChildNode(curNode, OBJECT_CLASS.container, navigateToNodeId),
                 onNewSiblingNode: () => null,
-                onSelect: unselectAllItems,
+                onNewChessPuzzle: () => createChildNode(curNode, OBJECT_CLASS.chessPuzzle, navigateToNodeId),
+                onSelect: () => {
+                    cancelReordering()
+                    unselectAllItems()
+                },
+                onReorder: () => {
+                    cancelSelection()
+                    setReorderMode(true)
+                },
                 onImport: openImportDialog,
                 onExport: ()=>openExportDialog(getCurrNodeId())
             }),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
             renderCancelSelectionBtnIfNecessary(),
+            renderCancelReorderingBtnIfNecessary(),
             renderCutBtnIfNecessary(),
             renderPasteBtnIfNecessary()
         )
