@@ -14,7 +14,7 @@ public class ChessViewConverter {
             ChessBoardCellView cellDto = new ChessBoardCellView();
             cellDto.setCoords(new CellCoords(x,y));
             ChessmanType chessman = chessBoard.getPieceAt(x, y);
-            cellDto.setBackgroundColor((x + y) % 2 == 0 ? "#DCDCDC" : "white");
+            cellDto.setBackgroundColor((x + y) % 2 == 0 ? "rgb(181,136,99)" : "rgb(240,217,181)");
             cellDto.setCode(chessman != null ? chessman.getCode() : 0);
             return cellDto;
         }));

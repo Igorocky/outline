@@ -1,12 +1,21 @@
 const cellSize = 50;
-const cellStyle = {
-    width: cellSize + "px",
-    height: cellSize + "px",
-    fontSize: cellSize*0.9 + "px",
-    lineHeight: cellSize*1.08 + "px",
+const codeToImgArr = {
+    9817:"Chess_plt45",
+    9816:"Chess_nlt45",
+    9815:"Chess_blt45",
+    9814:"Chess_rlt45",
+    9813:"Chess_qlt45",
+    9812:"Chess_klt45",
+    9823:"Chess_pdt45",
+    9822:"Chess_ndt45",
+    9821:"Chess_bdt45",
+    9820:"Chess_rdt45",
+    9819:"Chess_qdt45",
+    9818:"Chess_kdt45",
+    10007:"delete-icon",
 }
 
-const ChessBoardCell = ({backend, coords,backgroundColor,borderColor,code}) => {
+const ChessBoardCell = ({backend,xShift,yShift,coords,backgroundColor,borderColor,code}) => {
 
     function clicked() {
         backend.call("cellLeftClicked", {coords:coords})
@@ -20,20 +29,28 @@ const ChessBoardCell = ({backend, coords,backgroundColor,borderColor,code}) => {
         }
     }
 
-    function codeToStr(code) {
+    function codeToImg(code) {
         if (code == 0) {
-            return ""
+            return null
         } else {
-            return String.fromCharCode(code)
+            return "/img/chess/" + codeToImgArr[code] + ".svg"
         }
     }
 
-    return re('div', {style: {
-                ...cellStyle,
-                backgroundColor:backgroundColor,
-                ...(borderColor?{backgroundColor:borderColor}:{}),
-                cursor:getCursorType()},
-            onClick: clicked},
-            codeToStr(code)
+    const cellXPos = (coords.x+(xShift?xShift:0))*cellSize
+    const cellYPos = (7-(coords.y+(yShift?yShift:0)))*cellSize
+    return RE.Fragment({},
+        SVG.rect({
+            x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,
+            style:{fill:borderColor?borderColor:backgroundColor},
+            onClick:clicked
+        }),
+        code == 0
+            ?null
+            :SVG.image({
+                x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,
+                href:codeToImg(code),
+                onClick:clicked
+            })
     )
 }

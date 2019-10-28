@@ -85,7 +85,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         })
     }
 
-    function renderNode(node) {
+    function renderNodeShortView(node) {
         if (node[NODE.objectClass] === OBJECT_CLASS.text) {
             return renderTextShortView(node)
         } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
@@ -130,7 +130,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         return RE.List({key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
             RE.ListItem({key:childNode[NODE.id], dense:true},
                 renderCheckBoxIfCheckMode(childNode),
-                RE.ListItemText({}, renderNode(childNode))
+                RE.ListItemText({}, renderNodeShortView(childNode))
             )
         ))
     }

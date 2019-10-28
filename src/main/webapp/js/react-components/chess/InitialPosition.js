@@ -1,25 +1,14 @@
-const availablePiecesTdStyle = {
-    borderCollapse: "collapse",
-    border: "1px solid black",
-    padding: "0px"
-}
-
-const availablePiecesListTableStyle = {
-    ...availablePiecesTdStyle,
-}
-
 const InitialPosition = ({backend, availableChessmanTypes}) => {
 
-    return re('table', {style:{...availablePiecesListTableStyle}},
-        re('tbody',{},
-            _.range(_.size(availableChessmanTypes[0])-1, -1, -1).map(y =>
-                re('tr',{key:y},
-                    _.range(0, _.size(availableChessmanTypes)).map(x =>
-                        re('td',{key:x, style:{...availablePiecesTdStyle}},
-                            re(ChessBoardCell,{backend:backend, ...availableChessmanTypes[x][y]})
-                        )
-                    )
-                )
+    const width = _.size(availableChessmanTypes);
+    const height = _.size(availableChessmanTypes[0]);
+    return RE.svg({
+            width: width*cellSize,
+            height: height*cellSize
+        },
+        _.range(height-1, -1, -1).map(y =>
+            _.range(0, width).map(x =>
+                re(ChessBoardCell,{key:x+":"+y,backend:backend, ...availableChessmanTypes[x][y], xShift:-10, yShift:6})
             )
         )
     )

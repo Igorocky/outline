@@ -64,6 +64,7 @@ function gridFactory(direction, justify, alignItems) {
 
 const RE = {
     div: reFactory('div'),
+    svg: reFactory('svg'),
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     Breadcrumbs: reFactory(MaterialUI.Breadcrumbs),
@@ -98,6 +99,11 @@ const RE = {
             }
         }
     },
+}
+
+const SVG = {
+    rect: reFactory('rect'),
+    image: reFactory('image'),
 }
 
 function paper(children) {
