@@ -42,9 +42,16 @@ const ChessBoardCell = ({backend,xShift,yShift,coords,backgroundColor,borderColo
     return RE.Fragment({},
         SVG.rect({
             x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,
-            style:{fill:borderColor?borderColor:backgroundColor},
+            style:{fill:backgroundColor},
             onClick:clicked
         }),
+        borderColor
+            ?SVG.rect({
+                x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,
+                style:{fill:borderColor, fillOpacity:"0.6"},
+                onClick:clicked
+            })
+            :null,
         code == 0
             ?null
             :SVG.image({
