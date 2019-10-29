@@ -60,6 +60,7 @@ function gridFactory(direction, justify, alignItems) {
 const RE = {
     div: reFactory('div'),
     svg: reFactory('svg'),
+    img: reFactory('img'),
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     Breadcrumbs: reFactory(MaterialUI.Breadcrumbs),
@@ -89,7 +90,8 @@ const RE = {
     Container: {
         row: {
             left: {
-                top: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
+                top: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart),
+                center: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.center),
             }
         },
         col: {

@@ -1,7 +1,6 @@
 
 const ImageShortView = ({node}) => {
-    return re('img', {
-        key: "imageNode",
+    return RE.img({
         src:"/be/image/" + getTagSingleValue(node, TAG_ID.imgId),
         style: {margin:"10px"}
     })

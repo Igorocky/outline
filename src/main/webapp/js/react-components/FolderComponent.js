@@ -1,11 +1,13 @@
 
-const FolderComponent = ({name, onClick}) => {
-    return re(Grid, {
-            key: "folder-grid", container: true, direction: "row", justify: "flex-start", alignItems: "center",
+const FolderComponent = ({text, onClick, icon}) => {
+    return RE.Container.row.left.center(
+        {
+            onClick: onClick,
             className: "grey-background-on-hover pointer-on-hover",
-            onClick: onClick
+            style: {padding:"5px 0px"}
         },
-        iconButton({onClick: () => null, iconName: "folder"}),
-        re(Typography, {key: "folder-name", variant: "body1"}, name)
+        {style: {marginRight:"7px"}},
+        icon,
+        re(Typography, {key: "folder-name", variant: "body1"}, text)
     )
 }

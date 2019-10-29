@@ -2,8 +2,9 @@ const actionButtonsStyle = {marginRight: "10px"}
 
 const ContainerShortView = ({node, navigateToNodeId, reloadParentNode}) => {
     return re(FolderComponent,{
-        name:getTagSingleValue(node, TAG_ID.name),
-        onClick: () => navigateToNodeId(node[NODE.id])
+        text:getTagSingleValue(node, TAG_ID.name),
+        onClick: () => navigateToNodeId(node[NODE.id]),
+        icon: RE.Icon({style: {fontSize: "24px", marginTop: "5px", marginLeft: "5px"}}, "folder")
     })
 }
 
@@ -11,6 +12,7 @@ const OBJECT_CLASS_TO_SHORT_VIEW_MAP = {
     [OBJECT_CLASS.container]: ContainerShortView,
     [OBJECT_CLASS.text]: TextShortView,
     [OBJECT_CLASS.image]: ImageShortView,
+    [OBJECT_CLASS.chessPuzzle]: ChessPuzzleShortView,
 }
 
 const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
