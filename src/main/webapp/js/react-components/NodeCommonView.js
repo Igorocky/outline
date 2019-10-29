@@ -1,3 +1,10 @@
+'use strict'
+
+const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
+    [OBJECT_CLASS.topContainer]: ContainerFullView,
+    [OBJECT_CLASS.container]: ContainerFullView,
+}
+
 const NodeCommonView = ({actionsContainerRef, match}) => {
     const [curNode, setCurNode] = useState(null)
     const [redirect, setRedirect] = useRedirect()
@@ -38,7 +45,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
             curNode[NODE.path].map(pathElem =>
                     RE.Link({key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
-                    getTagSingleValue(pathElem, TAG_ID.name, "")
+                    getTagSingleValue(pathElem, TAG_ID.name, pathElem[NODE.objectClass])
                 )
             )
         )
@@ -64,15 +71,23 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
     }
 
     function renderNodeContent() {
-        const nodeClass = curNode[NODE.objectClass];
-        if (nodeClass === OBJECT_CLASS.topContainer || nodeClass === OBJECT_CLASS.container) {
-            return re(ContainerFullView,{
+        const fullView = OBJECT_CLASS_TO_FULL_VIEW_MAP[curNode[NODE.objectClass]]
+        if (fullView) {
+            return re(fullView,{
                 curNode: curNode,
                 actionsContainerRef: actionsContainerRef,
                 navigateToNodeId: navigateToNodeId
             })
         } else {
-            return paper("Unknown type of node: " + nodeClass)
+            return RE.TextField({
+                className: "black-text",
+                style: {width:"1000px", margin:"0px 0px 10px 10px"},
+                multiline: true,
+                rowsMax: 3000,
+                value: JSON.stringify(curNode, (k,v) => (k != NODE.path)?v:undefined, 2),
+                disabled: true,
+                variant: "standard",
+            })
         }
     }
 

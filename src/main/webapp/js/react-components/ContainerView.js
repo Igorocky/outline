@@ -1,7 +1,16 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
-const ContainerShortView = ({id, name, navigateToNodeId}) => {
-    return re(FolderComponent,{name:name, onClick: () => navigateToNodeId(id)})
+const ContainerShortView = ({node, navigateToNodeId, reloadParentNode}) => {
+    return re(FolderComponent,{
+        name:getTagSingleValue(node, TAG_ID.name),
+        onClick: () => navigateToNodeId(node[NODE.id])
+    })
+}
+
+const OBJECT_CLASS_TO_SHORT_VIEW_MAP = {
+    [OBJECT_CLASS.container]: ContainerShortView,
+    [OBJECT_CLASS.text]: TextShortView,
+    [OBJECT_CLASS.image]: ImageShortView,
 }
 
 const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
@@ -103,35 +112,16 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
-    function renderTextShortView(node) {
-        return re(TextShortView,{
-            id:node[NODE.id],
-            text:getTagSingleValue(node, TAG_ID.text),
-            onChanged: reloadCurrNode
-        })
-    }
-
-    function renderImageShortView(node) {
-        return re(ImageShortView,{imgId: getTagSingleValue(node, TAG_ID.imgId)})
-    }
-
-    function renderContainerShortView(node) {
-        return re(ContainerShortView, {
-            id: node[NODE.id],
-            name: getTagSingleValue(node, TAG_ID.name),
-            navigateToNodeId: navigateToNodeId
-        })
-    }
-
     function renderChildNodeShortView(node) {
-        if (node[NODE.objectClass] === OBJECT_CLASS.text) {
-            return renderTextShortView(node)
-        } else if (node[NODE.objectClass] === OBJECT_CLASS.image) {
-            return renderImageShortView(node)
-        } else if (node[NODE.objectClass] === OBJECT_CLASS.container) {
-            return renderContainerShortView(node)
+        const shortView = OBJECT_CLASS_TO_SHORT_VIEW_MAP[node[NODE.objectClass]]
+        if (shortView) {
+            return re(shortView,{node:node, navigateToNodeId:navigateToNodeId, reloadParentNode:reloadCurrNode})
         } else {
-            return paper("Unknown type of node: " + node[NODE.objectClass])
+            return RE.Link({
+                    color:"primary", className:"path-elem pointer-on-hover",
+                    onClick: () => navigateToNodeId(node[NODE.id])},
+                node[NODE.objectClass]
+            )
         }
     }
 

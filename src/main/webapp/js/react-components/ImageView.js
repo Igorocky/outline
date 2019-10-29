@@ -1,4 +1,8 @@
 
-const ImageShortView = ({imgId}) => {
-    return re('img', {key: "imageNode", src:"/be/image/" + imgId, style: {margin:"10px"}})
+const ImageShortView = ({node}) => {
+    return re('img', {
+        key: "imageNode",
+        src:"/be/image/" + getTagSingleValue(node, TAG_ID.imgId),
+        style: {margin:"10px"}
+    })
 }

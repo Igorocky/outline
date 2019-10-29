@@ -58,7 +58,7 @@ const NodeNameEditable = props => {
                 props.value?props.value:"Enter node name here"
             )
         } else {
-            return re(TextField, {
+            return RE.TextField({
                 key: "NodeNameEditable-TextField",
                 ref:ref,
                 autoFocus: true,

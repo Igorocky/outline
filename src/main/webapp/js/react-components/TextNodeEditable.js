@@ -42,7 +42,7 @@ const TextNodeEditable = ({value, textAreaStyle, onSave}) => {
     }
 
     return RE.Fragment({},
-        re(TextField, {
+        RE.TextField({
             key: "TextField",
             autoFocus: true,
             onKeyDown: onKeyDown,
