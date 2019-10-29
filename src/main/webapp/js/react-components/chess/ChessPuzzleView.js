@@ -7,7 +7,15 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode}) => {
         icon: RE.img({
             src:"/img/chess/chess_puzzle.png",
             style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
-        })
+        }),
+        popupActions: RE.Fragment({},
+            iconButton({iconName: "open_in_new",
+                onClick: e => {
+                    window.open(getTagSingleValue(node, TAG_ID.chessPuzzleUrl))
+                    e.stopPropagation()
+                }
+            })
+        )
     })
 }
 
