@@ -58,6 +58,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
         }
         return re(EditableTextField,
             {
+                key:"name-of-node-" + getCurrNodeId(),
                 initialValue:getTagSingleValue(curNode, TAG_ID.name),
                 variant: "h5",
                 typographyStyle: {width:"1000px", margin:"0px 0px 10px 10px"},

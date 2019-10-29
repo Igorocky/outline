@@ -1,5 +1,6 @@
 
-const EditableTextField = ({placeholder, initialValue, variant, typographyStyle, textFieldStyle, onSave}) => {
+const EditableTextField = ({placeholder, initialValue, variant, typographyStyle, textFieldStyle, onSave,
+                               popupActions}) => {
     const [editMode, setEditMode] = useState(false)
     const [value, setValue] = useState(initialValue)
     const [anchorEl, setAnchorEl] = useState(null);
@@ -25,15 +26,16 @@ const EditableTextField = ({placeholder, initialValue, variant, typographyStyle,
     }
 
     function viewModeButtons() {
-        return [
-            iconButton({iconName: "edit", onClick: () => {setEditMode(true);setAnchorEl(null)}})
-        ]
+        return RE.Fragment({},
+            iconButton({iconName: "edit", onClick: () => {setEditMode(true);setAnchorEl(null)}}),
+            popupActions
+        )
     }
     function editModeButtons() {
-        return [
+        return RE.Fragment({},
             iconButton({iconName: "save", onClick: () => save(value)}),
-            iconButton({iconName: "cancel", onClick: cancel}),
-        ]
+            iconButton({iconName: "cancel", onClick: cancel})
+        )
     }
 
     function onClick(e) {

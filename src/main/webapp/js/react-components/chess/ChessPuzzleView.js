@@ -16,6 +16,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         RE.Container.row.left.center({},{},
             "URL",
             re(EditableTextField,{
+                key:"puzzle-url-" + curNode[NODE.id],
                 initialValue:getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl),
                 typographyStyle: {margin:"0px 10px"},
                 textFieldStyle: {width:"1000px", margin:"0px 10px"},
@@ -29,7 +30,12 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                             navigateToNodeId(curNode[NODE.id])
                         }
                     ),
-                placeholder: "URL"
+                placeholder: "URL",
+                popupActions: RE.Fragment({},
+                    iconButton({iconName: "open_in_new",
+                        onClick: () => window.open(getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl))
+                    })
+                )
             })
         )
     )
