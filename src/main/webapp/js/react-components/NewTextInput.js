@@ -21,7 +21,7 @@ const NewTextInput = props => {
     }
 
     return RE.Toolbar({variant: "dense"},
-        re(Typography, {key:"Typography", edge: "start"},
+        RE.Typography({key:"Typography", edge: "start"},
             "New text:"
         ),
         re(InputBase, {

@@ -5,4 +5,5 @@ public final class TagIds {
     public final static String ICON = "icon";
     public final static String IMG_ID = "imgId";
     public final static String TEXT = "text";
+    public final static String CHESS_PUZZLE_URL = "chessPuzzleUrl";
 }

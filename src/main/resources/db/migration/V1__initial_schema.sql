@@ -32,7 +32,7 @@ create table TAG
 	ID uuid not null primary key,
 	NODE_ID uuid,
 	TAG_ID VARCHAR not null,
-	VALUE VARCHAR not null,
+	VALUE VARCHAR,
 	constraint TAG_FK foreign key (NODE_ID) references NODE
 );
 

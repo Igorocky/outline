@@ -3,6 +3,7 @@
 const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
     [OBJECT_CLASS.topContainer]: ContainerFullView,
     [OBJECT_CLASS.container]: ContainerFullView,
+    [OBJECT_CLASS.chessPuzzle]: ChessPuzzleFullView,
 }
 
 const NodeCommonView = ({actionsContainerRef, match}) => {
@@ -45,7 +46,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
             curNode[NODE.path].map(pathElem =>
                     RE.Link({key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
                         onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
-                    getTagSingleValue(pathElem, TAG_ID.name, pathElem[NODE.objectClass])
+                    getTagSingleValue(pathElem, TAG_ID.name, "[" + pathElem[NODE.objectClass] + "]")
                 )
             )
         )
@@ -55,17 +56,19 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
         if (!curNode || !getCurrNodeId()) {
             return null
         }
-        return re(NodeNameEditable,
+        return re(EditableTextField,
             {
-                key:"NodeNameEditable" + getCurrNodeId(),
-                value:getTagSingleValue(curNode, TAG_ID.name),
-                style: {width:"1000px", margin:"0px 0px 10px 10px"},
+                initialValue:getTagSingleValue(curNode, TAG_ID.name),
+                variant: "h5",
+                typographyStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                textFieldStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
                 onSave: ({newValue, onSaved}) => updateNodeName(getCurrNodeId(), newValue,
                     response => {
                         onSaved()
                         reloadCurrNode()
                     }
-                )
+                ),
+                placeholder: "Enter node name here"
             }
         )
     }

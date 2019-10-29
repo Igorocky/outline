@@ -1,9 +1,11 @@
 package org.igye.outline2.manager;
 
+import org.igye.outline2.dto.ChessPuzzleDto;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.pm.Node;
+import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
 import org.springframework.util.CollectionUtils;
 
@@ -15,7 +17,7 @@ import static org.igye.outline2.OutlineUtils.nullSafeGetter;
 public class DtoConverter {
 
     public static NodeDto toDto(Node node, int depth) {
-        NodeDto nodeDto = new NodeDto();
+        NodeDto nodeDto = createNodeDto(node.getClazz());
         nodeDto.setId(node.getId());
         nodeDto.setClazz(new OptVal<>(node.getClazz()));
         nodeDto.setCreatedWhen(node.getCreatedWhen());
@@ -44,5 +46,13 @@ public class DtoConverter {
                 .tagId(new OptVal<>(tag.getTagId()))
                 .value(new OptVal<>(tag.getValue()))
                 .build();
+    }
+
+    private static NodeDto createNodeDto(String clazz) {
+        if (NodeClasses.CHESS_PUZZLE.equals(clazz)) {
+            return new ChessPuzzleDto();
+        } else {
+            return new NodeDto();
+        }
     }
 }

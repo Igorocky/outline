@@ -18,7 +18,6 @@ const {
     DialogContentText,
     DialogTitle,
     MuiThemeProvider,
-    Typography,
     ListItemSecondaryAction,
     InputBase,
     Grid,

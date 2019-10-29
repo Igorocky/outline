@@ -30,7 +30,6 @@ public class Tag {
 
     @NotNull
     private String tagId;
-    @NotNull
     private String value;
 
     public void delete() {

@@ -30,6 +30,7 @@ const TAG_ID = {
     icon: "icon",
     text: "text",
     imgId: "imgId",
+    chessPuzzleUrl: "chessPuzzleUrl",
 }
 
 function doRpcCall(methodName, params, onSuccess) {

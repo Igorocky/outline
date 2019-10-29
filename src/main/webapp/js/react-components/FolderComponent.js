@@ -8,6 +8,6 @@ const FolderComponent = ({text, onClick, icon}) => {
         },
         {style: {marginRight:"7px"}},
         icon,
-        re(Typography, {key: "folder-name", variant: "body1"}, text)
+        RE.Typography({key: "folder-name", variant: "body1"}, text)
     )
 }

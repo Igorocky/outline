@@ -27,7 +27,7 @@ const ImportDialog = props => {
                 ]
                 :[
                     re(CircularProgress, {key:"ImportDialog-CircularProgress", size:24}),
-                    re(Typography, {key:"ImportDialog-Typography"}, "Importing...")
+                    RE.Typography({key:"ImportDialog-Typography"}, "Importing...")
                 ]
         )
     )

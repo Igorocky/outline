@@ -122,7 +122,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             return RE.Link({
                     color:"primary", className:"path-elem pointer-on-hover",
                     onClick: () => navigateToNodeId(node[NODE.id])},
-                node[NODE.objectClass]
+                "[" + node[NODE.objectClass] + "]"
             )
         }
     }

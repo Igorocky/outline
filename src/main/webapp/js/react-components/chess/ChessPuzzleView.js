@@ -10,3 +10,27 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode}) => {
         })
     })
 }
+
+const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
+    return RE.Container.col.top.left({},{},
+        RE.Container.row.left.center({},{},
+            "URL",
+            re(EditableTextField,{
+                initialValue:getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl),
+                typographyStyle: {margin:"0px 10px"},
+                textFieldStyle: {width:"1000px", margin:"0px 10px"},
+                onSave: ({newValue, onSaved}) =>
+                    setSingleTagForNode(
+                        curNode[NODE.id],
+                        TAG_ID.chessPuzzleUrl,
+                        newValue,
+                        () => {
+                            onSaved()
+                            navigateToNodeId(curNode[NODE.id])
+                        }
+                    ),
+                placeholder: "URL"
+            })
+        )
+    )
+}

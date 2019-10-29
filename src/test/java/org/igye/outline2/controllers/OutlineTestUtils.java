@@ -50,7 +50,6 @@ public class OutlineTestUtils {
         assertEquals(message, expectedNode.getCreatedWhen(), nodeInDatabase.getCreatedWhen());
 
         List<Tag> expectedTags = expectedNode.getTags();
-        assertEquals(message, expectedTags.size(), nodeInDatabase.getTags().size());
         compareTags(message, expectedTags, nodeInDatabase.getTags());
 
         assertEquals(

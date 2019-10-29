@@ -1,7 +1,7 @@
 
-const NodeNameEditable = props => {
+const EditableTextField = ({placeholder, initialValue, variant, typographyStyle, textFieldStyle, onSave}) => {
     const [editMode, setEditMode] = useState(false)
-    const [value, setValue] = useState(props.value)
+    const [value, setValue] = useState(initialValue)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
 
@@ -12,14 +12,14 @@ const NodeNameEditable = props => {
     })
 
     function save(newValue) {
-        props.onSave({newValue: newValue, onSaved: () => {
+        onSave({newValue: newValue, onSaved: () => {
                 setEditMode(false)
                 setAnchorEl(null)
         }})
     }
 
     function cancel() {
-        setValue(props.value);
+        setValue(initialValue);
         setEditMode(false);
         setAnchorEl(null)
     }
@@ -52,17 +52,16 @@ const NodeNameEditable = props => {
 
     function renderTextField() {
         if (!editMode) {
-            return re(Typography,
-                {key:"NodeNameEditable-Typography", variant:"h5", onClick:onClick,
-                    style:props.value?props.style:{...props.style, color: "lightgrey"}},
-                props.value?props.value:"Enter node name here"
+            return RE.Typography(
+                {variant:variant, onClick:onClick,
+                    style:initialValue?typographyStyle:{...typographyStyle, color: "lightgrey"}},
+                initialValue?initialValue:placeholder
             )
         } else {
             return RE.TextField({
-                key: "NodeNameEditable-TextField",
                 ref:ref,
                 autoFocus: true,
-                style: props.style,
+                style: textFieldStyle,
                 onKeyDown: onKeyDown,
                 value: value?value:"",
                 variant: "outlined",
@@ -72,7 +71,7 @@ const NodeNameEditable = props => {
         }
     }
 
-    return [
+    return RE.Fragment({},
         renderTextField(),
         anchorEl
             ? clickAwayListener({
@@ -83,5 +82,5 @@ const NodeNameEditable = props => {
                 )
             })
             : null
-    ]
+    )
 }
