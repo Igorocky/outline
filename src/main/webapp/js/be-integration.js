@@ -16,6 +16,7 @@ const OBJECT_CLASS = {
     text: "TEXT",
     image: "IMAGE",
     chessPuzzle: "CHESS_PUZZLE",
+    CHESS_PUZZLE_COMMENT: "CHESS_PUZZLE_COMMENT",
 }
 
 const TAG = {
@@ -30,7 +31,8 @@ const TAG_ID = {
     icon: "icon",
     text: "text",
     imgId: "imgId",
-    chessPuzzleUrl: "chessPuzzleUrl",
+    chessPuzzleUrl: "chess_puzzle_url",
+    CHESS_PUZZLE_COMMENT_TEXT: "chess_puzzle_comment_text"
 }
 
 function doRpcCall(methodName, params, onSuccess) {
@@ -53,10 +55,6 @@ function removeTagFromNode(nodeId,tagId,onSuccess) {
     doRpcCall("rpcRemoveTagsFromNode", {nodeId:nodeId, tagId:tagId}, onSuccess)
 }
 
-function getNodeById(id, responseHandler) {
-    getNode({id:id, depth: 1, includeCanPaste: true}, responseHandler)
-}
-
 function reorderNode(nodeId,direction,onSuccess) {
     doRpcCall("rpcReorderNode", {nodeId:nodeId, direction:direction}, onSuccess)
 }
@@ -64,6 +62,13 @@ function reorderNode(nodeId,direction,onSuccess) {
 function createChildNode(currNode,clazz,onSuccess) {
     const request = {}
     request[NODE.parentId] = currNode[NODE.id]
+    request[NODE.objectClass] = clazz
+    patchNode(request, onSuccess)
+}
+
+function createNode(parentId,clazz,onSuccess) {
+    const request = {}
+    request[NODE.parentId] = parentId
     request[NODE.objectClass] = clazz
     patchNode(request, onSuccess)
 }
@@ -135,4 +140,15 @@ function pasteNodesFromClipboard(idOfNodeToPasteToOrNull,onSuccess) {
 
 function beRemoveNode(nodeId,onSuccess) {
     doRpcCall("rpcRemoveNode", {nodeId:nodeId}, onSuccess)
+}
+
+function saveCommentForChessPuzzle(params, onSuccess) {
+    createNode(params.puzzleId, OBJECT_CLASS.CHESS_PUZZLE_COMMENT,
+        function (comment) {
+            print("in js: comment = " + JSON.stringify(comment))
+            const nodeId = comment[NODE.id]
+            print("nodeId = " + JSON.stringify(nodeId));
+            setSingleTagForNode(nodeId, TAG_ID.CHESS_PUZZLE_COMMENT_TEXT, params.text, onSuccess)
+        }
+    )
 }

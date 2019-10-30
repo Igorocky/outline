@@ -14,6 +14,10 @@ function doTestCall(funcName, args) {
 
 const MvcAdapter = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase');
 
+function onSuccessCallback(response) {
+    MvcAdapter.onSuccess(JSON.stringify(response))
+}
+
 function doGet(url, onSuccess) {
     print("js-test-utils.doGet: url = " + url)
     const result = MvcAdapter.doGet(url)
@@ -23,7 +27,9 @@ function doGet(url, onSuccess) {
 function doPatch(url, data, onSuccess) {
     const dataStr = JSON.stringify(data)
     print("js-test-utils.doPatch: url = " + url + " , body = " + dataStr)
-    const result = MvcAdapter.doPatch(url, dataStr)
+    const result = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase').doPatch(url, dataStr)
     print("js-test-utils.doPatch: result = " + result)
-    onSuccess?onSuccess(result):null
+    print("js-test-utils.doPatch: onSuccess = " + onSuccess)
+    print("js-test-utils.doPatch: typeof result = " + (typeof result))
+    onSuccess?onSuccess(eval(result)):null
 }

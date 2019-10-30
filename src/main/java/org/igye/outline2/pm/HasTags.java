@@ -2,12 +2,23 @@ package org.igye.outline2.pm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.getSingleValue;
 
 public interface HasTags {
     List<Tag> getTags();
     void addTag(Tag tag);
+
+    default UUID addTag(String tagId, String value) {
+        final UUID id = UUID.randomUUID();
+        addTag(Tag.builder()
+                .id(id)
+                .tagId(tagId)
+                .value(value)
+                .build());
+        return id;
+    }
 
     default String getTagSingleValue(String tagId) {
         List<String> values = new ArrayList<>();

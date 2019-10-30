@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.ifPresent;
 import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.OutlineUtils.mapOf;
 import static org.igye.outline2.OutlineUtils.mapToMap;
 import static org.igye.outline2.OutlineUtils.mapToSet;
 import static org.igye.outline2.OutlineUtils.nullSafeGetter;
@@ -41,7 +42,7 @@ public class NodeManager {
 
     @RpcMethod
     @Transactional
-    public UUID rpcPatchNode(NodeDto nodeDto) {
+    public NodeDto rpcPatchNode(NodeDto nodeDto) {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
@@ -51,13 +52,14 @@ public class NodeManager {
             node = nodeRepository.getOne(nodeDto.getId());
         }
         patchNode(nodeDto, node);
-        return node.getId();
+        return DtoConverter.toDto(node, 0);
     }
 
     @RpcMethod
     @Transactional
     public NodeDto rpcGetNode(@Default("null") UUID id,
                            @Default("0") Integer depth,
+                           @Default("false") Boolean includePath,
                            @Default("false") Boolean includeCanPaste) {
         Node result;
         if (id == null) {
@@ -71,7 +73,9 @@ public class NodeManager {
             result = nodeRepository.getOne(id);
         }
         NodeDto resultDto = DtoConverter.toDto(result, depth);
-        resultDto.setPath(map(result.getPath(), n -> DtoConverter.toDto(n, 0)));
+        if (includePath) {
+            resultDto.setPath(map(result.getPath(), n -> DtoConverter.toDto(n, 0)));
+        }
         if (includeCanPaste) {
             resultDto.setCanPaste(validateMoveOfNodesFromClipboard(resultDto.getId()));
         }

@@ -33,7 +33,7 @@ public class ControllerComponentTestBase extends ComponentTestBase {
     protected Invocable jsAdapter;
     protected static String actualPatchUrl;
     protected static String actualPatchBody;
-    private static final String ON_SUCCESS_CALLBACK = "function(response){Java.type('org.igye.outline2.controllers.ControllerComponentTestBase').onSuccess(response)}";
+    private static final String ON_SUCCESS_CALLBACK = "function(response){onSuccessCallback(response)}";
     protected static String onSuccessResponse;
 
     @Before

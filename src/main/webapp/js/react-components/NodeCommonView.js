@@ -11,7 +11,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
     const [redirect, setRedirect] = useRedirect()
 
     function loadNodeById(nodeId) {
-        getNodeById(nodeId, resp => setCurNode(resp))
+        getNode({id:nodeId, depth: 1, includeCanPaste: true, includePath: true}, resp => setCurNode(resp))
     }
 
     useEffect(() => {

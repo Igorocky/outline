@@ -49,7 +49,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         assertEquals(NodeClasses.TOP_CONTAINER, nodeDto.getClazz().getVal());
         assertTrue(nodeDto.getChildNodes().isEmpty());
         assertEquals(
-                setOf("id", "clazz", "tags", "parentId", "childNodes", "path"),
+                setOf("id", "clazz", "tags", "parentId", "childNodes"),
                 parseAsMap(res).keySet()
         );
     }
@@ -65,7 +65,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals(NodeClasses.TOP_CONTAINER, nodeDto.getClazz().getVal());
         assertNull(nodeDto.getChildNodes());
-        assertEquals(setOf("id", "clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "tags", "parentId"), parseAsMap(res).keySet());
     }
     @Test public void getNode_databaseIsEmptyAndDepthIsNotSpecified_RootNodeWithoutChildrenListIsReturned() throws Exception {
         //given
@@ -79,7 +79,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         NodeDto nodeDto = parseNodeDto(res);
         assertEquals(NodeClasses.TOP_CONTAINER, nodeDto.getClazz().getVal());
         assertNull(nodeDto.getChildNodes());
-        assertEquals(setOf("id", "clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "tags", "parentId"), parseAsMap(res).keySet());
     }
     @Test public void getNode_nodeHas2LevelsOfChildrenAndDepth1Requested_onlyTheFirstLevelReturned() throws Exception {
         //given
@@ -237,39 +237,39 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         //then
         Map<String, Object> nodeDto = parseAsMap(res);
         assertNull(nodeDto.get("id"));
-        assertEquals(setOf("id", "clazz", "tags", "parentId", "path"), parseAsMap(res).keySet());
+        assertEquals(setOf("id", "clazz", "tags", "parentId"), parseAsMap(res).keySet());
     }
-    @Test public void getNodeByIdInJs_nullIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeInJs_nullIdIsPassed_rootNodeIsRequested() throws Exception {
         //given
         actualPatchUrl = null;
         actualPatchBody = null;
 
         //when
-        invokeJsRpcFunction("getNodeById", null);
+        invokeJsRpcFunction("getNode", mapOf("id", null));
 
         //then
         assertEquals("/be/rpc/rpcGetNode", actualPatchUrl);
         assertMapsEqual(
-                mapOf("id", null, "depth", 1, "includeCanPaste", true),
+                mapOf("id", null),
                 parseAsMap(actualPatchBody)
         );
     }
-    @Test public void getNodeByIdInJs_undefinedIsPassed_rootNodeWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeInJs_undefinedIdIsPassed_rootNodeIsRequested() throws Exception {
         //given
         actualPatchUrl = null;
         actualPatchBody = null;
 
         //when
-        invokeJsRpcFunction("getNodeById", doNotSerialize("undefined"));
+        invokeJsRpcFunction("getNode", Collections.emptyMap());
 
         //then
         assertEquals("/be/rpc/rpcGetNode", actualPatchUrl);
         assertMapsEqual(
-                mapOf("depth", 1, "includeCanPaste", true),
+                Collections.emptyMap(),
                 parseAsMap(actualPatchBody)
         );
     }
-    @Test public void getNodeByIdInJs_UuidIsPassed_nodeWithTheGivenUuidWithDepth1IsRequested() throws Exception {
+    @Test public void getNodeInJs_UuidIsPassed_nodeWithTheGivenUuidIsRequested() throws Exception {
         //given
         actualPatchUrl = null;
         actualPatchBody = null;
@@ -277,12 +277,14 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         nodeRepository.save(node);
 
         //when
-        invokeJsRpcFunction("getNodeById", node.getId());
+        invokeJsRpcFunction("getNode", mapOf(
+                "id", node.getId()
+        ));
 
         //then
         assertEquals("/be/rpc/rpcGetNode", actualPatchUrl);
         assertMapsEqual(
-                mapOf("id", node.getId().toString(), "depth", 1, "includeCanPaste", true),
+                mapOf("id", node.getId().toString()),
                 parseAsMap(actualPatchBody)
         );
     }
@@ -296,7 +298,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
-        invokeJsRpcFunction("createChildNode", doNotSerialize(topFakeNode));
+        invokeJsRpcFunction("createChildNode", doNotSerialize(topFakeNode), NodeClasses.CONTAINER);
 
         //then
         UUID newNodeId = nodeRepository.findByParentNodeId(null).stream()
@@ -334,7 +336,7 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         testClock.setFixedTime(2019, 7, 10, 10, 8, 11);
         Set<UUID> existingNodes = nodeRepository.findByParentNodeId(null).stream()
                 .map(Node::getId).collect(Collectors.toSet());
-        String topNode = invokeJsRpcFunction("getNodeById", null);
+        String topNode = invokeJsRpcFunction("getNode", null);
         Node expectedNode = new Node();
         expectedNode.setClazz(NodeClasses.IMAGE);
         expectedNode.setCreatedWhen(testClock.instant());
@@ -372,13 +374,15 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .node(randomNode)
         ;
         rootNodes.get().forEach(nodeRepository::save);
-        String currNodeStr = invokeJsRpcFunction("getNodeById", currNode.get().getId());
+        String currNodeStr = invokeJsRpcFunction("getNode", mapOf(
+                "id", currNode.get().getId()
+        ));
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         Node expectedNode = new Node();
         expectedNode.setCreatedWhen(testClock.instant());
 
         //when
-        invokeJsRpcFunction("createChildNode", doNotSerialize(currNodeStr));
+        invokeJsRpcFunction("createChildNode", doNotSerialize(currNodeStr), NodeClasses.CONTAINER);
 
         //then
         UUID newNodeId = nodeRepository.findAll().stream()
@@ -411,7 +415,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 .node(randomNode)
         ;
         rootNodes.get().forEach(nodeRepository::save);
-        String currNodeStr = invokeJsRpcFunction("getNodeById", currNode.get().getId());
+        String currNodeStr = invokeJsRpcFunction("getNode", mapOf(
+                "id", currNode.get().getId()
+        ));
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         final String expectedText = "some-text-qgfwfg";
         Node expectedNode = new Node();
@@ -454,7 +460,9 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         ;
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
-        String currNodeStr = invokeJsRpcFunction("getNodeById", currNode.get().getId());
+        String currNodeStr = invokeJsRpcFunction("getNode", mapOf(
+                "id", currNode.get().getId()
+        ));
         Set<UUID> allNodeIdsBeforeTest = nodeRepository.findAll().stream().map(Node::getId).collect(Collectors.toSet());
         Node expectedNode = new Node();
         expectedNode.setClazz(NodeClasses.IMAGE);
@@ -978,7 +986,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         saveNodeTreeToDatabase(nodeRepository, rootNodes);
 
         //when
-        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
+        String res = invokeJsRpcFunction("getNode", mapOf(
+                "id", nodeToMoveTo.get().getId(),
+                "includeCanPaste", true
+        ));
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
@@ -1020,7 +1031,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 nodeToMove2.get().getId(),
                 nodeToMove3.get().getId()
         ));
-        String res = invokeJsRpcFunction("getNodeById", nodeToMove2.get().getId());
+        String res = invokeJsRpcFunction("getNode", mapOf(
+                "id", nodeToMove2.get().getId(),
+                "includeCanPaste", true
+        ));
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
@@ -1060,7 +1074,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
+        String res = invokeJsRpcFunction("getNode", mapOf(
+                "id", nodeToMoveTo.get().getId(),
+                "includeCanPaste", true
+        ));
 
         //then
         NodeDto nodeDto = parseNodeDto(res);
@@ -1098,7 +1115,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
                 "putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        String res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
+        String res = invokeJsRpcFunction("getNode", mapOf(
+                "id", nodeToMoveTo.get().getId(),
+                "includeCanPaste", true
+        ));
         NodeDto nodeDto = parseNodeDto(res);
         assertTrue(nodeDto.getCanPaste());
         onSuccessResponse = null;
@@ -1106,7 +1126,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("pasteNodesFromClipboard", nodeToMoveTo.get().getId());
 
         //when
-        res = invokeJsRpcFunction("getNodeById", nodeToMoveTo.get().getId());
+        res = invokeJsRpcFunction("getNode", mapOf(
+                "id", nodeToMoveTo.get().getId(),
+                "includeCanPaste", true
+        ));
 
         //then
         nodeDto = parseNodeDto(res);
@@ -1144,7 +1167,10 @@ public class BeControllerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("putNodeIdsToClipboard",
                 Arrays.asList(nodeToMove1.get().getId(), nodeToMove2.get().getId())
         );
-        String res = invokeJsRpcFunction("getNodeById", null);
+        String res = invokeJsRpcFunction("getNode", mapOf(
+                "id", null,
+                "includeCanPaste", true
+        ));
 
         //then
         NodeDto nodeDto = parseNodeDto(res);

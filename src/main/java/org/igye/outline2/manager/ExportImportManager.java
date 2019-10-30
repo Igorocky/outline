@@ -63,12 +63,12 @@ public class ExportImportManager {
         Map<UUID, UUID> imageIdsMap = new HashMap<>();
         importImages(dataFile, imageIdsMap);
         UUID newNodeId = importNodes(dataFile, parentId, imageIdsMap);
-        return nodeManager.rpcGetNode(newNodeId, 0, false);
+        return nodeManager.rpcGetNode(newNodeId, 0, false, false);
     }
 
     @Transactional
     public void exportToFile(UUID nodeId) throws IOException {
-        NodeDto root = nodeManager.rpcGetNode(nodeId, Integer.MAX_VALUE, false);
+        NodeDto root = nodeManager.rpcGetNode(nodeId, Integer.MAX_VALUE, false, false);
         root.setPath(null);
         String nodeName = nullSafeGetterWithDefault(
                 root.getTagSingleValue(TagIds.NAME),
@@ -124,7 +124,7 @@ public class ExportImportManager {
             nodeDto.setParentId(new OptVal<>(parentId));
             updateImageRefs(nodeDto, IMAGE_TAG_IDS, imageIdsMap);
             updateTagIds(nodeDto);
-            newNodeId = nodeManager.rpcPatchNode(nodeDto);
+            newNodeId = nodeManager.rpcPatchNode(nodeDto).getId();
             if (nodeDto.getCreatedWhen() != null) {
                 nodeRepository.getOne(newNodeId).setCreatedWhen(nodeDto.getCreatedWhen());
             }

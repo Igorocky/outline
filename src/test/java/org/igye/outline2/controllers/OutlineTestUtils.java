@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
+import java.sql.Connection;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +123,9 @@ public class OutlineTestUtils {
     }
 
     public static <T> T exploreDB(EntityManager entityManager) {
-        getCurrentSession(entityManager).doWork(connection -> org.h2.tools.Server.startWebServer(connection));
+        getCurrentSession(entityManager).doWork(connection ->
+                org.h2.tools.Server.startWebServer(connection.unwrap(Connection.class))
+        );
         return null;
     }
 
