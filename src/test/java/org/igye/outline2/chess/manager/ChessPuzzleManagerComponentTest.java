@@ -39,7 +39,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         chessPuzzleDto = getPuzzleDto(puzzleId);
         final List<ChessPuzzleCommentDto> comments = chessPuzzleDto.getComments();
         assertEquals(1, comments.size());
-        assertEquals("comment-1", comments.get(0));
+        assertEquals("comment-1", comments.get(0).getText());
 
 
     }
