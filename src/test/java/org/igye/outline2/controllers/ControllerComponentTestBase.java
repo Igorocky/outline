@@ -33,7 +33,7 @@ public class ControllerComponentTestBase extends ComponentTestBase {
     protected Invocable jsAdapter;
     protected static String actualPatchUrl;
     protected static String actualPatchBody;
-    private static final String ON_SUCCESS_CALLBACK = "function(response){onSuccessCallback(response)}";
+    private static final String ON_SUCCESS_CALLBACK = "function(response){MvcAdapter.onSuccess(JSON.stringify(response))}";
     protected static String onSuccessResponse;
 
     @Before

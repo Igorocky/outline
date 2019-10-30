@@ -23,7 +23,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
     @Test
     public void it_is_possible_to_create_and_update_puzzle_comments() throws ScriptException, NoSuchMethodException, IOException {
         //when
-        UUID puzzleId = createNode(null, NodeClasses.CHESS_PUZZLE, ChessPuzzleDto.class).getId();
+        UUID puzzleId = createNode(null, NodeClasses.CHESS_PUZZLE);
 
         //then
         ChessPuzzleDto chessPuzzleDto = getPuzzleDto(puzzleId);
@@ -51,10 +51,10 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         );
     }
 
-    private <T> T createNode(UUID parentId, String clazz, Class<T> expectedResponseType) throws ScriptException, NoSuchMethodException, IOException {
+    private UUID createNode(UUID parentId, String clazz) throws ScriptException, NoSuchMethodException, IOException {
         return objectMapper.readValue(
                 invokeJsRpcFunction("createNode", parentId, clazz),
-                expectedResponseType
+                UUID.class
         );
     }
 

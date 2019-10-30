@@ -144,11 +144,8 @@ function beRemoveNode(nodeId,onSuccess) {
 
 function saveCommentForChessPuzzle(params, onSuccess) {
     createNode(params.puzzleId, OBJECT_CLASS.CHESS_PUZZLE_COMMENT,
-        function (comment) {
-            print("in js: comment = " + JSON.stringify(comment))
-            const nodeId = comment[NODE.id]
-            print("nodeId = " + JSON.stringify(nodeId));
-            setSingleTagForNode(nodeId, TAG_ID.CHESS_PUZZLE_COMMENT_TEXT, params.text, onSuccess)
+        function (commentId) {
+            setSingleTagForNode(commentId, TAG_ID.CHESS_PUZZLE_COMMENT_TEXT, params.text, onSuccess)
         }
     )
 }

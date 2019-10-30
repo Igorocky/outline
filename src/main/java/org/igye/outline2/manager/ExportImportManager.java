@@ -124,7 +124,7 @@ public class ExportImportManager {
             nodeDto.setParentId(new OptVal<>(parentId));
             updateImageRefs(nodeDto, IMAGE_TAG_IDS, imageIdsMap);
             updateTagIds(nodeDto);
-            newNodeId = nodeManager.rpcPatchNode(nodeDto).getId();
+            newNodeId = nodeManager.rpcPatchNode(nodeDto);
             if (nodeDto.getCreatedWhen() != null) {
                 nodeRepository.getOne(newNodeId).setCreatedWhen(nodeDto.getCreatedWhen());
             }

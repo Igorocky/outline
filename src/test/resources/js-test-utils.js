@@ -14,10 +14,6 @@ function doTestCall(funcName, args) {
 
 const MvcAdapter = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase');
 
-function onSuccessCallback(response) {
-    MvcAdapter.onSuccess(JSON.stringify(response))
-}
-
 function doGet(url, onSuccess) {
     print("js-test-utils.doGet: url = " + url)
     const result = MvcAdapter.doGet(url)

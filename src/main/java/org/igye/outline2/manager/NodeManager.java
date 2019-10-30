@@ -42,7 +42,7 @@ public class NodeManager {
 
     @RpcMethod
     @Transactional
-    public NodeDto rpcPatchNode(NodeDto nodeDto) {
+    public UUID rpcPatchNode(NodeDto nodeDto) {
         Node node;
         if (nodeDto.getId() == null) {
             node = new Node();
@@ -52,7 +52,7 @@ public class NodeManager {
             node = nodeRepository.getOne(nodeDto.getId());
         }
         patchNode(nodeDto, node);
-        return DtoConverter.toDto(node, 0);
+        return node.getId();
     }
 
     @RpcMethod
