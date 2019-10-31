@@ -19,7 +19,6 @@ const {
     DialogTitle,
     MuiThemeProvider,
     ListItemSecondaryAction,
-    InputBase,
     Grid,
     Popover,
     Popper,
@@ -75,6 +74,7 @@ const RE = {
     TextField: reFactory(MaterialUI.TextField),
     IconButton: reFactory(MaterialUI.IconButton),
     Icon: reFactory(MaterialUI.Icon),
+    InputBase: reFactory(MaterialUI.InputBase),
     If: (condition, ...elems) => condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfNot: (condition, ...elems) => !condition?re(Fragment,{},...elems):re(Fragment,{}),
     IfTrue: (condition, ...elems) => re(Fragment,{},...elems),
@@ -91,13 +91,18 @@ const RE = {
             left: {
                 top: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart),
                 center: gridFactory(DIRECTION.row, JUSTIFY.flexStart, ALIGN_ITEMS.center),
-            }
+            },
+            right: {
+                top: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.flexStart),
+                center: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.center),
+            },
         },
         col: {
             top: {
-                left: gridFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart)
-            }
-        }
+                left: gridFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexStart),
+                right: gridFactory(DIRECTION.column, JUSTIFY.flexStart, ALIGN_ITEMS.flexEnd),
+            },
+        },
     },
 }
 

@@ -1,5 +1,5 @@
 
-const TextNodeEditable = ({value, textAreaStyle, onSave}) => {
+const TextNodeEditable = ({value, textAreaStyle, onSave, popupActions}) => {
     const [editMode, setEditMode] = useState(false)
     const [newValue, setNewValue] = useState(value)
     const [anchorEl, setAnchorEl] = useState(null)
@@ -20,6 +20,7 @@ const TextNodeEditable = ({value, textAreaStyle, onSave}) => {
     function viewModeButtons() {
         return RE.Fragment({},
             iconButton({iconName: "edit", onClick: () => setEditMode(true)}),
+            popupActions?popupActions:null
         )
     }
     function editModeButtons() {

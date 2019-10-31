@@ -24,7 +24,7 @@ const NewTextInput = props => {
         RE.Typography({key:"Typography", edge: "start"},
             "New text:"
         ),
-        re(InputBase, {
+        RE.InputBase({
             key: "InputBase",
             onKeyDown: onKeyDown,
             value: value?value:"",

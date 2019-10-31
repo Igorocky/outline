@@ -35,6 +35,16 @@ const TAG_ID = {
     CHESS_PUZZLE_COMMENT_TEXT: "chess_puzzle_comment_text"
 }
 
+const CHESS_PUZZLE_DTO = {
+    comments: "comments",
+    attempts: "attempts",
+}
+
+const CHESS_PUZZLE_COMMENT_DTO = {
+    id: "id",
+    text: "text",
+}
+
 function doRpcCall(methodName, params, onSuccess) {
     doPatch("/be/rpc/" + methodName, params, onSuccess)
 }

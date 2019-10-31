@@ -20,8 +20,19 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode}) => {
 }
 
 const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
-    return RE.Container.col.top.left({},{},
-        RE.Container.row.left.center({},{},
+    const [newCommentText, setNewCommentText] = useState(null)
+    const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
+
+    function getCurrNodeId() {
+        return curNode[NODE.id]
+    }
+
+    function reloadCurrNode() {
+        navigateToNodeId(getCurrNodeId())
+    }
+
+    function renderUrl() {
+        return RE.Container.row.left.center({},{},
             "URL",
             re(EditableTextField,{
                 key:"puzzle-url-" + curNode[NODE.id],
@@ -46,5 +57,80 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 )
             })
         )
+    }
+
+    function renderAddNewCommentControls() {
+        if (newCommentText != null) {
+            return RE.Container.col.top.right({},{style:{marginBottom:"5px"}},
+                RE.TextField({
+                    autoFocus: true,
+                    multiline: true,
+                    style:{width:"500px"},
+                    rowsMax: 15,
+                    value: newCommentText,
+                    variant: "outlined",
+                    onChange: e => setNewCommentText(e.target.value),
+                }),
+                RE.Container.row.left.center({},{style:{marginLeft: "10px"}},
+                    RE.Button( {onClick:() => {
+                            saveCommentForChessPuzzle(
+                                {puzzleId: getCurrNodeId(), text: newCommentText},
+                                () => {
+                                    setNewCommentText(null)
+                                    reloadCurrNode()
+                                }
+                            )
+                        }, color:"primary", variant:"contained"}, "Save"),
+                    RE.Button( {onClick:() => setNewCommentText(null), variant:"contained"}, "Cancel"),
+                )
+            )
+        } else {
+            return RE.Button( {onClick:() => setNewCommentText(""), variant:"contained"}, "Add comment")
+        }
+    }
+
+    function renderComments() {
+        return RE.Container.col.top.left({},{style:{marginBottom: "10px"}},
+            renderAddNewCommentControls(),
+            curNode[CHESS_PUZZLE_DTO.comments].map(comment=>paper(re(TextNodeEditable, {
+                key: comment[CHESS_PUZZLE_COMMENT_DTO.id],
+                value:comment[CHESS_PUZZLE_COMMENT_DTO.text],
+                textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                onSave: ({newValue, onSaved}) => setSingleTagForNode(
+                    comment[CHESS_PUZZLE_COMMENT_DTO.id],
+                    TAG_ID.CHESS_PUZZLE_COMMENT_TEXT,
+                    newValue,
+                    () => {
+                        reloadCurrNode()
+                        onSaved()
+                    }
+                ),
+                popupActions: RE.Fragment({},
+                    iconButton({iconName: "delete",
+                        onClick: () => deleteComment(comment[CHESS_PUZZLE_COMMENT_DTO.id])})
+                )
+            })))
+        )
+    }
+
+    function deleteComment(commentId) {
+        openConfirmActionDialog({
+            pConfirmText: "Delete?",
+            pOnCancel: closeConfirmActionDialog,
+            pStartActionBtnText: "Delete",
+            pStartAction: ({onDone}) => beRemoveNode(commentId, () => {
+                closeConfirmActionDialog()
+                reloadCurrNode()
+            }),
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
+        })
+    }
+
+    return RE.Container.col.top.left({},{style:{marginBottom:"20px"}},
+        renderUrl(),
+        renderComments(),
+        renderConfirmActionDialog()
     )
 }
