@@ -12,18 +12,16 @@ function doTestCall(funcName, args) {
     return result
 }
 
-const MvcAdapter = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase');
-
 function doGet(url, onSuccess) {
     print("js-test-utils.doGet: url = " + url)
-    const result = MvcAdapter.doGet(url)
+    const result = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase').doGet(url)
     onSuccess?onSuccess(result):null
 }
 
 function doPatch(url, data, onSuccess) {
     const dataStr = JSON.stringify(data)
     print("js-test-utils.doPatch: url = " + url + " , body = " + dataStr)
-    const result = MvcAdapter.doPatch(url, dataStr)
+    const result = Java.type('org.igye.outline2.controllers.ControllerComponentTestBase').doPatch(url, dataStr)
     print("js-test-utils.doPatch: result = " + result)
     onSuccess?onSuccess(result?JSON.parse(result):result):null
 }

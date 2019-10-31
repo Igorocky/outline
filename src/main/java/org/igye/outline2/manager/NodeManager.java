@@ -1,6 +1,7 @@
 package org.igye.outline2.manager;
 
 import org.igye.outline2.dto.NodeDto;
+import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
@@ -53,6 +54,12 @@ public class NodeManager {
         }
         patchNode(nodeDto, node);
         return node.getId();
+    }
+
+    @RpcMethod
+    @Transactional
+    public UUID rpcCreateNode(UUID parentId, String clazz) {
+        return rpcPatchNode(NodeDto.builder().parentId(OptVal.of(parentId)).clazz(OptVal.of(clazz)).build());
     }
 
     @RpcMethod

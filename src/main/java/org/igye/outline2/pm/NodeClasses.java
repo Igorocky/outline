@@ -7,4 +7,5 @@ public final class NodeClasses {
     public static final String TEXT = "TEXT";
     public static final String CHESS_PUZZLE = "CHESS_PUZZLE";
     public final static String CHESS_PUZZLE_COMMENT = "CHESS_PUZZLE_COMMENT";
+    public final static String CHESS_PUZZLE_ATTEMPT = "CHESS_PUZZLE_ATTEMPT";
 }

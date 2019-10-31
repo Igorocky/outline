@@ -78,10 +78,7 @@ function createChildNode(currNode,clazz,onSuccess) {
 }
 
 function createNode(parentId,clazz,onSuccess) {
-    const request = {}
-    request[NODE.parentId] = parentId
-    request[NODE.objectClass] = clazz
-    patchNode(request, onSuccess)
+    doRpcCall("rpcCreateNode", {parentId:parentId, clazz:clazz}, onSuccess)
 }
 
 function createChildTextNode(currNode, text, onSuccess) {

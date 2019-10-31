@@ -11,5 +11,4 @@ import java.util.List;
 @Setter
 public class ChessPuzzleDto extends NodeDto {
     private List<ChessPuzzleCommentDto> comments = new ArrayList<>();
-    private List<ChessPuzzleAttemptDto> attempts = new ArrayList<>();
 }
