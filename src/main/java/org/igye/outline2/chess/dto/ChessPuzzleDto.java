@@ -1,7 +1,6 @@
 package org.igye.outline2.chess.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.igye.outline2.dto.NodeDto;
 

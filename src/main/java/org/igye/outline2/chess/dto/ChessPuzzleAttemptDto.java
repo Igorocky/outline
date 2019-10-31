@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.igye.outline2.dto.NodeDto;
 
-import java.time.Duration;
 import java.time.Instant;
 
 @Getter
@@ -12,5 +11,5 @@ import java.time.Instant;
 public class ChessPuzzleAttemptDto extends NodeDto {
     private Instant timestamp;
     private boolean passed;
-    private Duration pauseDelay;
+    private int pauseDurationSeconds;
 }

@@ -23,12 +23,16 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
     const [newCommentText, setNewCommentText] = useState(null)
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
 
-    function getCurrNodeId() {
+    function getCurrPuzzleId() {
         return curNode[NODE.id]
     }
 
     function reloadCurrNode() {
-        navigateToNodeId(getCurrNodeId())
+        navigateToNodeId(getCurrPuzzleId())
+    }
+
+    function isPaused() {
+        return "true" == getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PAUSED)
     }
 
     function renderUrl() {
@@ -74,7 +78,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 RE.Container.row.left.center({},{style:{marginLeft: "10px"}},
                     RE.Button( {onClick:() => {
                             saveCommentForChessPuzzle(
-                                {puzzleId: getCurrNodeId(), text: newCommentText},
+                                {puzzleId: getCurrPuzzleId(), text: newCommentText},
                                 () => {
                                     setNewCommentText(null)
                                     reloadCurrNode()
@@ -128,8 +132,21 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         })
     }
 
+    function renderPaused() {
+        return RE.Container.row.left.center({},{},
+            isPaused()?"Paused":"Active",
+            RE.Switch({
+                checked: isPaused(),
+                onChange: () => setSingleTagForNode(
+                    getCurrPuzzleId(), TAG_ID.CHESS_PUZZLE_PAUSED, !isPaused(), reloadCurrNode
+                ),
+            })
+        )
+    }
+
     return RE.Container.col.top.left({},{style:{marginBottom:"20px"}},
         renderUrl(),
+        renderPaused(),
         renderComments(),
         renderConfirmActionDialog()
     )

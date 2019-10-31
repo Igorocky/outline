@@ -69,6 +69,7 @@ const RE = {
     Fragment: reFactory(React.Fragment),
     Grid: reFactory(MaterialUI.Grid),
     Paper: reFactory(MaterialUI.Paper),
+    Switch: reFactory(MaterialUI.Switch),
     Typography: reFactory(MaterialUI.Typography),
     Toolbar: reFactory(MaterialUI.Toolbar),
     TextField: reFactory(MaterialUI.TextField),
