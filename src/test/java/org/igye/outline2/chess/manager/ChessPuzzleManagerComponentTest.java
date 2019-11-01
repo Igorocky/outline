@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.igye.outline2.OutlineUtils.mapOf;
+import static org.igye.outline2.controllers.ComponentTestConfig.FIXED_DATE_TIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -60,6 +60,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
     @Test
     public void rpcSaveChessPuzzleAttempt_saves_and_updates_attempt_info() throws NoSuchMethodException, ScriptException, IOException {
         //given
+        testClock.setFixedTime(FIXED_DATE_TIME);
         UUID puzzleId = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
 
         //when
@@ -69,24 +70,22 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         ChessPuzzleDto puzzleDto = getPuzzleDto(puzzleId);
         assertEquals("false", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
         assertEquals("3d", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
-        assertEqualsWithPrecision(
-                Instant.now().plus(3, ChronoUnit.DAYS),
-                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION)),
-                5
+        assertEquals(
+                FIXED_DATE_TIME.toInstant().plus(3, ChronoUnit.DAYS),
+                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
         );
 
         //when
-        testClock.setFixedTime(testClock.instant().plusSeconds(10));
+        testClock.setFixedTime(FIXED_DATE_TIME.plusSeconds(10));
         chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, true, "12M");
 
         //then
         puzzleDto = getPuzzleDto(puzzleId);
         assertEquals("true", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
         assertEquals("12M", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
-        assertEqualsWithPrecision(
-                Instant.now().plus(12*30, ChronoUnit.DAYS),
-                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION)),
-                5
+        assertEquals(
+                FIXED_DATE_TIME.toInstant().plusSeconds(10).plus(12*30, ChronoUnit.DAYS),
+                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
         );
         ResultSetDto resultSetDto = reportManager.rpcRunReport(
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
@@ -95,10 +94,6 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
         assertEquals("false", resultSetDto.getData().get(1).get("VALUE"));
 
-    }
-
-    private void assertEqualsWithPrecision(Instant expected, Instant actual, long precisionSeconds) {
-        assertTrue(Math.abs(Duration.between(expected, actual).getSeconds()) <= precisionSeconds);
     }
 
     private ChessPuzzleDto getPuzzleDto(UUID puzzleId) throws ScriptException, NoSuchMethodException, IOException {

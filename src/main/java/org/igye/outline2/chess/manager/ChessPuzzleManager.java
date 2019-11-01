@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.UUID;
@@ -24,6 +24,8 @@ public class ChessPuzzleManager {
     private NodeManager nodeManager;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired(required = false)
+    private Clock clock = Clock.systemUTC();
 
     @RpcMethod
     @Transactional
@@ -48,7 +50,7 @@ public class ChessPuzzleManager {
             amount *= 30;
             unit = "d";
         }
-        return Instant.now().plus(amount, getChronoUnit(unit)).toString();
+        return clock.instant().plus(amount, getChronoUnit(unit)).toString();
     }
 
     private TemporalUnit getChronoUnit(String unit) {
