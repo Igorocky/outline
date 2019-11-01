@@ -83,7 +83,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
         );
         assertEquals(1, resultSetDto.getData().size());
-        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(instant1.getEpochSecond()*1000, resultSetDto.getData().get(0).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(0).get("PASSED"));
 
         //when2
@@ -106,9 +106,9 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
         );
         assertEquals(2, resultSetDto.getData().size());
-        assertEquals(instant2.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(instant2.getEpochSecond()*1000, resultSetDto.getData().get(0).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed2), resultSetDto.getData().get(0).get("PASSED"));
-        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(1).get("CREATED_WHEN"));
+        assertEquals(instant1.getEpochSecond()*1000, resultSetDto.getData().get(1).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(1).get("PASSED"));
 
         //when3
@@ -128,11 +128,11 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
         );
         assertEquals(3, resultSetDto.getData().size());
-        assertEquals(instant3.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(instant3.getEpochSecond()*1000, resultSetDto.getData().get(0).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed3), resultSetDto.getData().get(0).get("PASSED"));
-        assertEquals(instant2.getEpochSecond(), resultSetDto.getData().get(1).get("CREATED_WHEN"));
+        assertEquals(instant2.getEpochSecond()*1000, resultSetDto.getData().get(1).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed2), resultSetDto.getData().get(1).get("PASSED"));
-        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(2).get("CREATED_WHEN"));
+        assertEquals(instant1.getEpochSecond()*1000, resultSetDto.getData().get(2).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(2).get("PASSED"));
 
     }

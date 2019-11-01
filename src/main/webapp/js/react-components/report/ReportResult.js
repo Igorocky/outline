@@ -1,9 +1,4 @@
-const COMPONENTS = {
-    "TimestampFromInstant": TimestampFromInstant,
-    "BooleanPassFail": BooleanPassFail,
-}
-
-const ReportResult = ({columns, data}) => {
+const ReportResult = ({columns, data, actions}) => {
     return paper(RE.Table({size:"small"},
         RE.TableHead({},
             RE.TableRow({},
@@ -14,7 +9,8 @@ const ReportResult = ({columns, data}) => {
             data.map((row,idx) => RE.TableRow({key:idx, className:"grey-background-on-hover"},
                 columns.map(column => RE.TableCell({key:column.name},
                     column.componentName
-                        ?re(COMPONENTS[column.componentName], {cellData:row[column.name]})
+                        ?re(window[column.componentName], {
+                            cellData:row[column.name], componentConfig:column.componentConfig, actions:actions})
                         :row[column.name]
                 ))
             ))

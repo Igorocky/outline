@@ -2,6 +2,7 @@ package org.igye.outline2.report;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -10,7 +11,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ public class ReportManager {
 
     private Report loadReportFromSqlFile(String filePath) throws IOException {
         String reportStr = OutlineUtils.readStringFromClasspath(filePath);
+//        String reportStr = FileUtils.readFileToString(new File("D:/programs/java/outline2/src/main/resources" + filePath), StandardCharsets.UTF_8);
         String columnsConfigStr = reportStr.substring(
                 reportStr.indexOf(COLUMNS_CONFIG_BEGIN) + COLUMNS_CONFIG_BEGIN.length(),
                 reportStr.indexOf(COLUMNS_CONFIG_END)
@@ -72,11 +76,10 @@ public class ReportManager {
             }
             Map<String, Object> row = new HashMap<>();
             for (int i = 1; i <= columns.size(); i++) {
-                System.out.println("sql type = " + resultSet.getMetaData().getColumnType(i));
                 if (resultSet.getMetaData().getColumnType(i) == Types.TIMESTAMP) {
                     row.put(
                             columns.get(i-1),
-                            resultSet.getTimestamp(i, Calendar.getInstance(UTC)).getTime()/1000
+                            resultSet.getTimestamp(i, Calendar.getInstance(UTC)).getTime()
                     );
                 } else {
                     row.put(columns.get(i-1), resultSet.getObject(i));

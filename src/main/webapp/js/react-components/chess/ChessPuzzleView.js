@@ -108,8 +108,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                     variant: "outlined",
                     onChange: e => setNewHistoryRecord(oldVal => ({...oldVal, pauseDuration: e.target.value})),
                 }),
-                iconButton({iconName:"done",onClick:saveHistoryRecord}),
-                iconButton({iconName:"clear",onClick:() => setNewHistoryRecord(null)}),
+                iconButton({iconName:"save",onClick:saveHistoryRecord}),
+                iconButton({iconName:"cancel",onClick:() => setNewHistoryRecord(null)}),
             )
         } else {
             return iconButton({iconName: "add", onClick:() => setNewHistoryRecord({passed:false, pauseDuration:""})})
@@ -191,7 +191,9 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 renderAddNewHistoryRecordControls()
             ),
             puzzleHistory
-                ?re(ReportResult, puzzleHistory)
+                ?re(ReportResult, {...puzzleHistory, actions:{
+                    deleteHistoryRecord: deleteHistoryRecord
+                }})
                 :re(ButtonWithCircularProgress,{
                     pButtonText: "Show History",
                     variant:"text",
@@ -202,12 +204,27 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function deleteComment(commentId) {
         openConfirmActionDialog({
-            pConfirmText: "Delete?",
+            pConfirmText: "Delete comment?",
             pOnCancel: closeConfirmActionDialog,
             pStartActionBtnText: "Delete",
             pStartAction: ({onDone}) => beRemoveNode(commentId, () => {
                 closeConfirmActionDialog()
                 reloadCurrNode()
+            }),
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
+        })
+    }
+
+    function deleteHistoryRecord(historyRecordId) {
+        openConfirmActionDialog({
+            pConfirmText: "Delete history record?",
+            pOnCancel: closeConfirmActionDialog,
+            pStartActionBtnText: "Delete",
+            pStartAction: ({onDone}) => beRemoveNode(historyRecordId, () => {
+                closeConfirmActionDialog()
+                loadPuzzleHistory()
             }),
             pActionDoneText: "not used",
             pActionDoneBtnText: "not used",

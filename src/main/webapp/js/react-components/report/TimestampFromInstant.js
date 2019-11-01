@@ -1,3 +1,3 @@
-const TimestampFromInstant = ({cellData}) => {
+function TimestampFromInstant({cellData}) {
     return RE.span({}, new Date(cellData).toLocaleString())
 }
