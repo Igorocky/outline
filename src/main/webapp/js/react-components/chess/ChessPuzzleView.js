@@ -22,6 +22,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode}) => {
 const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
     const [newCommentText, setNewCommentText] = useState(null)
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
+    const [puzzleHistory, setPuzzleHistory] = useState(null)
 
     function getCurrPuzzleId() {
         return curNode[NODE.id]
@@ -95,6 +96,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderComments() {
         return RE.Container.col.top.left({},{style:{marginBottom: "10px"}},
+            RE.Typography({variant:"subtitle2"}, "Comments"),
             renderAddNewCommentControls(),
             curNode[CHESS_PUZZLE_DTO.comments].map(comment=>paper(re(TextNodeEditable, {
                 key: comment[CHESS_PUZZLE_COMMENT_DTO.id],
@@ -114,6 +116,24 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                         onClick: () => deleteComment(comment[CHESS_PUZZLE_COMMENT_DTO.id])})
                 )
             })))
+        )
+    }
+
+    function renderHistory() {
+        return RE.Container.col.top.left({},{},
+            RE.Typography({variant:"subtitle2"}, "History"),
+            puzzleHistory
+                ?re(ReportResult, puzzleHistory)
+                :re(ButtonWithCircularProgress,{
+                    pButtonText: "Load History",
+                    pStartAction: ({onDone}) => doRpcCall(
+                        "rpcRunReport",
+                        {name:"puzzle-history", params:{puzzleId:getCurrPuzzleId()}},
+                        res => {
+                            console.log("puzzle-history = " + JSON.stringify(res));
+                            setPuzzleHistory(res)
+                        })
+                })
         )
     }
 
@@ -148,6 +168,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         renderUrl(),
         renderPaused(),
         renderComments(),
+        renderHistory(),
         renderConfirmActionDialog()
     )
 }
