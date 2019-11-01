@@ -61,7 +61,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
                 key:"name-of-node-" + getCurrNodeId(),
                 initialValue:getTagSingleValue(curNode, TAG_ID.name),
                 variant: "h5",
-                typographyStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                spanStyle: {margin:"0px 0px 10px 10px", fontSize:"30px"},
                 textFieldStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
                 onSave: ({newValue, onSaved}) => updateNodeName(getCurrNodeId(), newValue,
                     response => {

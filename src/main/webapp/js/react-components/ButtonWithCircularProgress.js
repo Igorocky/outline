@@ -7,7 +7,7 @@ const inButtonCircularProgressStyle = {
     marginLeft: -12,
 }
 
-const ButtonWithCircularProgress = ({pButtonText, pStartAction}) => {
+const ButtonWithCircularProgress = ({pButtonText, pStartAction, variant}) => {
     const [actionIsInProgress, setActionIsInProgress] = useState(false)
 
     function doAction() {
@@ -16,7 +16,7 @@ const ButtonWithCircularProgress = ({pButtonText, pStartAction}) => {
     }
 
     return RE.div({style:{position: 'relative'}},
-        RE.Button({variant: "contained", disabled: actionIsInProgress, onClick: doAction}, pButtonText),
+        RE.Button({variant: variant?variant:"contained", disabled: actionIsInProgress, onClick: doAction}, pButtonText),
         RE.If(actionIsInProgress,
             RE.CircularProgress({size:24, style: inButtonCircularProgressStyle})
         )

@@ -1,6 +1,6 @@
 
-const EditableTextField = ({placeholder, initialValue, variant, typographyStyle, textFieldStyle, onSave,
-                               popupActions}) => {
+const EditableTextField = ({placeholder, initialValue, variant, spanStyle, textFieldStyle, onSave,
+                               popupActions, inlineActions}) => {
     const [editMode, setEditMode] = useState(false)
     const [value, setValue] = useState(initialValue)
     const [anchorEl, setAnchorEl] = useState(null);
@@ -39,7 +39,7 @@ const EditableTextField = ({placeholder, initialValue, variant, typographyStyle,
     }
 
     function onClick(e) {
-        if (!editMode) {
+        if (!inlineActions && !editMode) {
             setAnchorEl(e.currentTarget)
         }
     }
@@ -54,9 +54,9 @@ const EditableTextField = ({placeholder, initialValue, variant, typographyStyle,
 
     function renderTextField() {
         if (!editMode) {
-            return RE.Typography(
-                {variant:variant, onClick:onClick,
-                    style:initialValue?typographyStyle:{...typographyStyle, color: "lightgrey"}},
+            return RE.span(
+                {onClick:onClick,
+                    style:initialValue?spanStyle:{...spanStyle, color: "lightgrey"}},
                 initialValue?initialValue:placeholder
             )
         } else {
@@ -73,16 +73,24 @@ const EditableTextField = ({placeholder, initialValue, variant, typographyStyle,
         }
     }
 
-    return RE.Fragment({},
-        renderTextField(),
-        anchorEl
-            ? clickAwayListener({
+    function renderPopUp() {
+        if (anchorEl) {
+            return clickAwayListener({
                 key: "Popper",
                 onClickAway: () => !editMode ? setAnchorEl(null) : null,
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
                     paper(editMode?editModeButtons():viewModeButtons())
                 )
             })
-            : null
+        } else {
+            return null
+        }
+    }
+
+    return RE.Fragment({},
+        (inlineActions && !editMode)?viewModeButtons():null,
+        renderTextField(),
+        (inlineActions && editMode)?editModeButtons():null,
+        !inlineActions?renderPopUp():null,
     )
 }

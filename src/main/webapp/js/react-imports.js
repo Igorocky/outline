@@ -59,6 +59,7 @@ const RE = {
     div: reFactory('div'),
     svg: reFactory('svg'),
     img: reFactory('img'),
+    span: reFactory('span'),
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     Breadcrumbs: reFactory(MaterialUI.Breadcrumbs),

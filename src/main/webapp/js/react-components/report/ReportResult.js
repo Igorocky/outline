@@ -1,5 +1,5 @@
 const ReportResult = ({columns, data}) => {
-    return RE.Table({size:"small"},
+    return paper(RE.Table({size:"small"},
         RE.TableHead({},
             RE.TableRow({},
                 columns.map(column => RE.TableCell({key:column.name}, column.title))
@@ -10,5 +10,5 @@ const ReportResult = ({columns, data}) => {
                 columns.map(column => RE.TableCell({key:column.name}, row[column.name]))
             ))
         )
-    )
+    ))
 }

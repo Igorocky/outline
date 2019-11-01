@@ -21,6 +21,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode}) => {
 
 const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
     const [newCommentText, setNewCommentText] = useState(null)
+    const [newHistoryRecord, setNewHistoryRecord] = useState(null)
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [puzzleHistory, setPuzzleHistory] = useState(null)
 
@@ -41,9 +42,10 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
             "URL",
             re(EditableTextField,{
                 key:"puzzle-url-" + curNode[NODE.id],
+                inlineActions: true,
                 initialValue:getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl),
-                typographyStyle: {margin:"0px 10px"},
-                textFieldStyle: {width:"1000px", margin:"0px 10px"},
+                spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                textFieldStyle: {width:"600px", margin:"0px 10px"},
                 onSave: ({newValue, onSaved}) =>
                     setSingleTagForNode(
                         curNode[NODE.id],
@@ -90,13 +92,18 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 )
             )
         } else {
-            return RE.Button( {onClick:() => setNewCommentText(""), variant:"contained"}, "Add comment")
+            return null
         }
     }
 
     function renderComments() {
         return RE.Container.col.top.left({},{style:{marginBottom: "10px"}},
-            RE.Typography({variant:"subtitle2"}, "Comments"),
+            RE.Container.row.left.center({},{style:{marginRight:"10px"}},
+                RE.Typography({variant:"subtitle2"}, "Comments"),
+                (newCommentText == null)
+                    ?iconButton({iconName: "add_comment", onClick:() => setNewCommentText("")})
+                    :null
+            ),
             renderAddNewCommentControls(),
             curNode[CHESS_PUZZLE_DTO.comments].map(comment=>paper(re(TextNodeEditable, {
                 key: comment[CHESS_PUZZLE_COMMENT_DTO.id],
@@ -121,11 +128,17 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderHistory() {
         return RE.Container.col.top.left({},{},
-            RE.Typography({variant:"subtitle2"}, "History"),
+            RE.Container.row.left.center({},{style:{marginRight:"10px"}},
+                RE.Typography({variant:"subtitle2"}, "History"),
+                (newHistoryRecord == null)
+                    ?iconButton({iconName: "add", onClick:() => setNewHistoryRecord({})})
+                    :null
+            ),
             puzzleHistory
                 ?re(ReportResult, puzzleHistory)
                 :re(ButtonWithCircularProgress,{
                     pButtonText: "Load History",
+                    variant:"text",
                     pStartAction: ({onDone}) => doRpcCall(
                         "rpcRunReport",
                         {name:"puzzle-history", params:{puzzleId:getCurrPuzzleId()}},
@@ -152,14 +165,19 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         })
     }
 
+    function togglePaused() {
+        setSingleTagForNode(
+            getCurrPuzzleId(), TAG_ID.CHESS_PUZZLE_PAUSED, !isPaused(), reloadCurrNode
+        )
+    }
+
     function renderPaused() {
         return RE.Container.row.left.center({},{},
-            isPaused()?"Paused":"Active",
+            RE.span({style:{color: isPaused()?"red":"green"}, onClick: togglePaused},
+                isPaused()?"Paused":"Active"),
             RE.Switch({
                 checked: isPaused(),
-                onChange: () => setSingleTagForNode(
-                    getCurrPuzzleId(), TAG_ID.CHESS_PUZZLE_PAUSED, !isPaused(), reloadCurrNode
-                ),
+                onChange: togglePaused,
             })
         )
     }
