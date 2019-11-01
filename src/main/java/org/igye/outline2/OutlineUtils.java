@@ -22,6 +22,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class OutlineUtils {
@@ -298,4 +300,16 @@ public class OutlineUtils {
         }
     }
 
+    public static String replace(String content, Pattern pattern, Function<Matcher, String> replacement) {
+        Matcher matcher = pattern.matcher(content);
+        StringBuilder newContent = new StringBuilder();
+        int prevEnd = 0;
+        while (matcher.find()) {
+            newContent.append(content, prevEnd, matcher.start());
+            newContent.append(replacement.apply(matcher));
+            prevEnd = matcher.end();
+        }
+        newContent.append(content, prevEnd, content.length());
+        return newContent.toString();
+    }
 }

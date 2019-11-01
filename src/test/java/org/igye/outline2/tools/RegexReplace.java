@@ -1,6 +1,7 @@
 package org.igye.outline2.tools;
 
 import org.apache.commons.io.FileUtils;
+import org.igye.outline2.OutlineUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class RegexReplace {
         String cssDir = "./src/main/webapp/css/";
         String localVersionDir = cssDir + localVersionDirName + "/";
         replace(
-                cssDir + cssFileName,
+                new File(cssDir + cssFileName),
                 Pattern.compile("url\\(([^\\(\\)]+)\\)"),
                 matcher -> {
                     System.out.println(matcher.group(0));
@@ -49,19 +50,11 @@ public class RegexReplace {
         }
     }
 
-    public void replace(String srcFile, Pattern pattern, Function<Matcher, String> replacement, String dstFile) throws IOException {
-        String content = FileUtils.readFileToString(new File(srcFile), StandardCharsets.UTF_8);
-        Matcher matcher = pattern.matcher(content);
-        StringBuilder newContent = new StringBuilder();
-        int prevEnd = 0;
-        while (matcher.find()) {
-            newContent.append(content, prevEnd, matcher.start());
-            newContent.append(replacement.apply(matcher));
-            prevEnd = matcher.end();
-        }
-        newContent.append(content, prevEnd, content.length());
+    public void replace(File srcFile, Pattern pattern, Function<Matcher, String> replacement, String dstFile) throws IOException {
+        String content = FileUtils.readFileToString(srcFile, StandardCharsets.UTF_8);
+        String newContent = OutlineUtils.replace(content, pattern, replacement);
         File dstFileF = new File(dstFile);
         dstFileF.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(dstFileF, newContent.toString(), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(dstFileF, newContent, StandardCharsets.UTF_8);
     }
 }

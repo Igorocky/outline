@@ -4,8 +4,11 @@ import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.chess.dto.ChessPuzzleCommentDto;
 import org.igye.outline2.chess.dto.ChessPuzzleDto;
 import org.igye.outline2.controllers.ControllerComponentTestBase;
+import org.igye.outline2.controllers.TestClock;
 import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.TagIds;
+import org.igye.outline2.report.ReportManager;
+import org.igye.outline2.report.ResultSetDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +28,10 @@ import static org.junit.Assert.assertTrue;
 public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase {
     @Autowired
     private ChessPuzzleManager chessPuzzleManager;
+    @Autowired
+    private ReportManager reportManager;
+    @Autowired
+    private TestClock testClock;
 
     @Test
     public void it_is_possible_to_create_and_update_puzzle_comments() throws ScriptException, NoSuchMethodException, IOException {
@@ -68,6 +76,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         );
 
         //when
+        testClock.setFixedTime(testClock.instant().plusSeconds(10));
         chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, true, "12M");
 
         //then
@@ -79,6 +88,13 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION)),
                 5
         );
+        ResultSetDto resultSetDto = reportManager.rpcRunReport(
+                "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
+        );
+        assertEquals(2, resultSetDto.getData().size());
+        assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
+        assertEquals("false", resultSetDto.getData().get(1).get("VALUE"));
+
     }
 
     private void assertEqualsWithPrecision(Instant expected, Instant actual, long precisionSeconds) {

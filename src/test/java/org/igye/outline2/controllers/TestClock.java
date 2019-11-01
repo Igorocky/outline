@@ -16,6 +16,10 @@ public class TestClock extends Clock {
         this.fixedTime = fixedTime;
     }
 
+    public void setFixedTime(Instant instant) {
+        this.fixedTime = ZonedDateTime.ofInstant(instant, fixedTime.getZone());
+    }
+
     public void setFixedTime(int year, int month, int dayOfMonth,
                              int hour, int minute, int second) {
         this.fixedTime = ZonedDateTime.of(
