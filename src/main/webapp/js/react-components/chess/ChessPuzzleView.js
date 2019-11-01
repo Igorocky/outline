@@ -230,7 +230,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
-    return RE.Container.col.top.left({},{style:{marginBottom:"20px"}},
+    return RE.Container.col.top.left({},{},
         renderUrl(),
         renderComments(),
         renderHistory(),
