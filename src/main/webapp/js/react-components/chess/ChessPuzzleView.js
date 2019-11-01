@@ -39,6 +39,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderUrl() {
         return RE.Container.row.left.center({},{},
+            renderPaused(),
             "URL",
             re(EditableTextField,{
                 key:"puzzle-url-" + curNode[NODE.id],
@@ -64,6 +65,53 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 )
             })
         )
+    }
+
+    function saveHistoryRecord() {
+        doRpcCall(
+            "rpcSaveChessPuzzleAttempt",
+            {puzzleId:getCurrPuzzleId(), ...newHistoryRecord},
+            () => {
+                loadPuzzleHistory()
+                setPuzzleHistory(null)
+                setNewHistoryRecord(null)
+            }
+        )
+    }
+
+    function onKeyDownInNewHistoryRecord(event) {
+        if (event.keyCode == 13){
+            saveHistoryRecord()
+        } else if (event.keyCode == 27) {
+            setNewHistoryRecord(null)
+        }
+    }
+
+    function renderAddNewHistoryRecordControls() {
+        if (newHistoryRecord != null) {
+            return RE.Fragment({},
+                RE.span({
+                        style:{
+                            color: newHistoryRecord.passed?"green":"red",
+                            fontWeight:"bold", fontSize: "30px", marginRight:"10px", cursor:"pointer"},
+                        onClick: () => setNewHistoryRecord(oldVal => ({...oldVal, passed: !oldVal.passed}))
+                    },
+                    newHistoryRecord.passed?"Passed":"Failed"
+                ),
+                RE.TextField({
+                    autoFocus: true,
+                    style: {width:"100px"},
+                    onKeyDown: onKeyDownInNewHistoryRecord,
+                    value: newHistoryRecord.pauseDuration,
+                    variant: "outlined",
+                    onChange: e => setNewHistoryRecord(oldVal => ({...oldVal, pauseDuration: e.target.value})),
+                }),
+                iconButton({iconName:"done",onClick:saveHistoryRecord}),
+                iconButton({iconName:"clear",onClick:() => setNewHistoryRecord(null)}),
+            )
+        } else {
+            return iconButton({iconName: "add", onClick:() => setNewHistoryRecord({passed:false, pauseDuration:""})})
+        }
     }
 
     function renderAddNewCommentControls() {
@@ -126,26 +174,26 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function loadPuzzleHistory() {
+        doRpcCall(
+            "rpcRunReport",
+            {name:"puzzle-history", params:{puzzleId:getCurrPuzzleId()}},
+            res => setPuzzleHistory(res)
+        )
+    }
+
     function renderHistory() {
         return RE.Container.col.top.left({},{},
             RE.Container.row.left.center({},{style:{marginRight:"10px"}},
                 RE.Typography({variant:"subtitle2"}, "History"),
-                (newHistoryRecord == null)
-                    ?iconButton({iconName: "add", onClick:() => setNewHistoryRecord({})})
-                    :null
+                renderAddNewHistoryRecordControls()
             ),
             puzzleHistory
                 ?re(ReportResult, puzzleHistory)
                 :re(ButtonWithCircularProgress,{
                     pButtonText: "Load History",
                     variant:"text",
-                    pStartAction: ({onDone}) => doRpcCall(
-                        "rpcRunReport",
-                        {name:"puzzle-history", params:{puzzleId:getCurrPuzzleId()}},
-                        res => {
-                            console.log("puzzle-history = " + JSON.stringify(res));
-                            setPuzzleHistory(res)
-                        })
+                    pStartAction: loadPuzzleHistory
                 })
         )
     }
@@ -173,7 +221,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderPaused() {
         return RE.Container.row.left.center({},{},
-            RE.span({style:{color: isPaused()?"red":"green"}, onClick: togglePaused},
+            RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}, onClick: togglePaused},
                 isPaused()?"Paused":"Active"),
             RE.Switch({
                 checked: isPaused(),
@@ -184,7 +232,6 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     return RE.Container.col.top.left({},{style:{marginBottom:"20px"}},
         renderUrl(),
-        renderPaused(),
         renderComments(),
         renderHistory(),
         renderConfirmActionDialog()

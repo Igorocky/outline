@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.igye.outline2.OutlineUtils.mapOf;
 import static org.igye.outline2.controllers.ComponentTestConfig.FIXED_DATE_TIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase {
@@ -93,6 +94,23 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals(2, resultSetDto.getData().size());
         assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
         assertEquals("false", resultSetDto.getData().get(1).get("VALUE"));
+
+        //when
+        testClock.setFixedTime(FIXED_DATE_TIME.plusSeconds(20));
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, true, "");
+
+        //then
+        puzzleDto = getPuzzleDto(puzzleId);
+        assertEquals("true", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
+        assertEquals("", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertNull(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION));
+        resultSetDto = reportManager.rpcRunReport(
+                "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
+        );
+        assertEquals(3, resultSetDto.getData().size());
+        assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
+        assertEquals("true", resultSetDto.getData().get(1).get("VALUE"));
+        assertEquals("false", resultSetDto.getData().get(2).get("VALUE"));
 
     }
 

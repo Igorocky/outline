@@ -1,5 +1,6 @@
 package org.igye.outline2.chess.manager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
@@ -44,6 +45,9 @@ public class ChessPuzzleManager {
     }
 
     private String calculateActivation(String pauseDuration) {
+        if (StringUtils.isBlank(pauseDuration)) {
+            return null;
+        }
         long amount = Long.parseLong(pauseDuration.substring(0,pauseDuration.length()-1));
         String unit = pauseDuration.substring(pauseDuration.length()-1);
         if ("M".equals(unit)) {

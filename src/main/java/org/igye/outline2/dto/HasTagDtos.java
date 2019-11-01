@@ -16,7 +16,8 @@ public interface HasTagDtos {
         List<String> values = new ArrayList<>();
         getTags().forEach(tag -> {
             if (tag.getTagId().getVal().equals(tagId)) {
-                values.add(tag.getValue().getVal());
+                final OptVal<String> optVal = tag.getValue();
+                values.add(optVal==null?null:optVal.getVal());
             }
         });
         return values;
