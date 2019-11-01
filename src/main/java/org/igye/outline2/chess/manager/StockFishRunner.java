@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 import static org.igye.outline2.chess.manager.ChessUtils.strCoordToInt;
 
 public class StockFishRunner {

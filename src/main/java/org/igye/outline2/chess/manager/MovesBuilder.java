@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.OutlineUtils.listOf;
+import static org.igye.outline2.common.OutlineUtils.listOf;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
 

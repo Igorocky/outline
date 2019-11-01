@@ -11,5 +11,6 @@ public final class TagIds {
     public final static String CHESS_PUZZLE_COMMENT_TEXT = "chess_puzzle_comment_text";
     public final static String CHESS_PUZZLE_PASSED = "chess_puzzle_passed";
     public final static String CHESS_PUZZLE_DELAY = "chess_puzzle_delay";
+    public final static String CHESS_PUZZLE_DELAY_MS = "chess_puzzle_delay_ms";
     public final static String CHESS_PUZZLE_ACTIVATION = "chess_puzzle_activation";
 }

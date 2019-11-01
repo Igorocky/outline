@@ -1,4 +1,4 @@
-package org.igye.outline2;
+package org.igye.outline2.common;
 
 import org.apache.commons.io.IOUtils;
 import org.hibernate.Session;
@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,6 +29,18 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class OutlineUtils {
+    public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+    public static final long MILLIS_IN_SECOND = 1000;
+    public static final long SECONDS_IN_MINUTE = 60;
+    public static final long MINUTES_IN_HOUR = 60;
+    public static final long HOURS_IN_DAY = 24;
+    public static final long DAYS_IN_MONTH = 30;
+    public static final long MILLIS_IN_MINUTE = MILLIS_IN_SECOND * SECONDS_IN_MINUTE;
+    public static final long MILLIS_IN_HOUR = MILLIS_IN_MINUTE * MINUTES_IN_HOUR;
+    public static final long MILLIS_IN_DAY = MILLIS_IN_HOUR * HOURS_IN_DAY;
+    public static final long MILLIS_IN_MONTH = MILLIS_IN_DAY * DAYS_IN_MONTH;
+    private static final char[] DURATION_UNITS = new char[]{'M','d','h','m'};
+
     public static <T> T getSingleValue(List<T> values) {
         if (values.size() > 1) {
             throw new OutlineException("values.size() > 1");
@@ -311,5 +325,54 @@ public class OutlineUtils {
         }
         newContent.append(content, prevEnd, content.length());
         return newContent.toString();
+    }
+
+    public static Long instantToMillis(Instant instant) {
+        return instant==null?null:(instant.getEpochSecond()*1000 + instant.getNano()/1000_000);
+    }
+
+    public static Long strInstantToMillis(String strInstant) {
+        return strInstant==null?null:instantToMillis(Instant.parse(strInstant));
+    }
+
+    public static long nowMillis() {
+        return instantToMillis(Instant.now());
+    }
+
+    public static String millisToDurationStr(Long millis) {
+        if (millis == null) {
+            return null;
+        }
+        long diff = millis;
+        StringBuilder sb = new StringBuilder();
+        if (diff < 0) {
+            sb.append("- ");
+        }
+        long months = Math.abs(diff / MILLIS_IN_MONTH);
+
+        diff = diff % MILLIS_IN_MONTH;
+        long days = Math.abs(diff / MILLIS_IN_DAY);
+
+        diff = diff % MILLIS_IN_DAY;
+        long hours = Math.abs(diff / MILLIS_IN_HOUR);
+
+        diff = diff % MILLIS_IN_HOUR;
+        long minutes = Math.abs(diff / MILLIS_IN_MINUTE);
+
+        long[] parts = new long[]{months, days, hours, minutes};
+        int idx = 0;
+        while (idx < parts.length && parts[idx] == 0) {
+            idx++;
+        }
+
+        if (idx == parts.length) {
+            return "0m";
+        }
+        sb.append(parts[idx]).append(DURATION_UNITS[idx]);
+        if (idx < parts.length-1) {
+            idx++;
+            sb.append(" ").append(parts[idx]).append(DURATION_UNITS[idx]);
+        }
+        return sb.toString();
     }
 }

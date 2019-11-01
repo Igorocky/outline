@@ -1,6 +1,6 @@
 package org.igye.outline2.controllers;
 
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.common.Randoms;
 import org.junit.Test;
 

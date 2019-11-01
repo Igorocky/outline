@@ -18,10 +18,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.OutlineUtils.listOf;
-import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.mapOf;
-import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.common.OutlineUtils.listOf;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.common.Randoms.randomNode;
 import static org.igye.outline2.controllers.OutlineTestUtils.assertMapsEqual;
 import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabase;

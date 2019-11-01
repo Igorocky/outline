@@ -2,7 +2,8 @@ package org.igye.outline2.report;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
+import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +15,21 @@ import java.io.IOException;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
+
+import static org.igye.outline2.common.OutlineUtils.UTC;
 
 @Component
 @RpcMethodsCollection
 public class ReportManager {
     public static final String COLUMNS_CONFIG_BEGIN = "/*columns";
     public static final String COLUMNS_CONFIG_END = "columns*/";
-    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -36,15 +39,21 @@ public class ReportManager {
 
     @RpcMethod
     @Transactional
-    public ResultSetDto rpcRunReport(String name, Map<String,Object> params) throws IOException {
-        Report report = loadReportFromSqlFile("/reports/" + name + ".sql");
+    public ResultSetDto rpcRunReport(String name, @Default("{}") Map<String,Object> params) throws IOException {
+        ReportConfig reportConfig = loadReportFromSqlFile("/reports/" + name + ".sql");
         final ResultSetDto resultSetDto = new ResultSetDto();
-        resultSetDto.setColumns(report.getColumns());
-        resultSetDto.setData(executeQuery(report.getSqlQuery(), params));
+        resultSetDto.setColumns(reportConfig.getColumns());
+        final List<Map<String, Object>> data = executeQuery(reportConfig.getSqlQuery(), params);
+        if (resultSetDto.getColumns().isEmpty() && !data.isEmpty()) {
+            for (String colName : data.get(0).keySet()) {
+                resultSetDto.getColumns().add(ColumnDto.builder().name(colName).build());
+            }
+        }
+        resultSetDto.setData(data);
         return resultSetDto;
     }
 
-    private Report loadReportFromSqlFile(String filePath) throws IOException {
+    private ReportConfig loadReportFromSqlFile(String filePath) throws IOException {
         String reportStr = OutlineUtils.readStringFromClasspath(filePath);
 //        String reportStr = FileUtils.readFileToString(new File("D:/programs/java/outline2/src/main/resources" + filePath), StandardCharsets.UTF_8);
         String columnsConfigStr = reportStr.substring(
@@ -53,10 +62,13 @@ public class ReportManager {
         );
         String queryStr = reportStr.substring(0, reportStr.indexOf(COLUMNS_CONFIG_BEGIN));
 
-        final Report report = new Report();
-        report.setColumns(mapper.readValue(columnsConfigStr, new TypeReference<List<ColumnDto>>(){}));
-        report.setSqlQuery(queryStr);
-        return report;
+        final ReportConfig reportConfig = new ReportConfig();
+        reportConfig.setColumns(mapper.readValue(columnsConfigStr, new TypeReference<List<ColumnDto>>(){}));
+        for (ColumnDto column : reportConfig.getColumns()) {
+            column.setName(column.getName().toUpperCase());
+        }
+        reportConfig.setSqlQuery(queryStr);
+        return reportConfig;
     }
 
     private List<Map<String, Object>> executeQuery(String query, Map<String, ?> params) {

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static org.igye.outline2.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
 import static org.igye.outline2.common.Randoms.randomNode;
 import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabase;
 import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatabase;

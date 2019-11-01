@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

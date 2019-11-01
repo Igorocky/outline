@@ -5,6 +5,7 @@ const CONTEXT_PATH = "/fe"
 const PATH = {
     stateWebSocketUrl: "/be/websocket/state",
     node: CONTEXT_PATH + "/node",
+    puzzlesToRepeat: CONTEXT_PATH + "/puzzlesToRepeat",
     nodeWithId: CONTEXT_PATH + "/node/:id",
     createNodeWithIdPath: id => CONTEXT_PATH + "/node/" + id,
     chessboard: CONTEXT_PATH + "/chessboard",

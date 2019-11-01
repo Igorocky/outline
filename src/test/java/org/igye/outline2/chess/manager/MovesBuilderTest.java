@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;

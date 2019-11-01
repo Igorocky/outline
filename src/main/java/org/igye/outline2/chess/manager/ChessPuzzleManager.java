@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.UUID;
@@ -33,17 +34,21 @@ public class ChessPuzzleManager {
     public void rpcSaveChessPuzzleAttempt(UUID puzzleId, Boolean passed, String pauseDuration) {
         Node puzzle = nodeRepository.getOne(puzzleId);
         Node attempt = nodeRepository.getOne(nodeManager.rpcCreateNode(puzzleId, NodeClasses.CHESS_PUZZLE_ATTEMPT));
-        final String activation = calculateActivation(pauseDuration);
+        final Long delaySeconds = calculateDelaySeconds(pauseDuration);
+        final String activation = delaySeconds==null?null:clock.instant().plusSeconds(delaySeconds).toString();
 
         puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PASSED, passed.toString());
         puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY_MS,
+                delaySeconds==null?null:Long.valueOf(delaySeconds*1000).toString()
+        );
         puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION, activation);
 
         attempt.setTagSingleValue(TagIds.CHESS_PUZZLE_PASSED, passed.toString());
         attempt.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
     }
 
-    private String calculateActivation(String pauseDuration) {
+    private Long calculateDelaySeconds(String pauseDuration) {
         if (StringUtils.isBlank(pauseDuration)) {
             return null;
         }
@@ -53,7 +58,7 @@ public class ChessPuzzleManager {
             amount *= 30;
             unit = "d";
         }
-        return clock.instant().plus(amount, getChronoUnit(unit)).toString();
+        return getChronoUnit(unit).getDuration().getSeconds()*amount;
     }
 
     private TemporalUnit getChronoUnit(String unit) {

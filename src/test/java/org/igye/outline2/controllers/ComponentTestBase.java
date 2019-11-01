@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.igye.outline2.OutlineUtils.getCurrentSession;
-import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.getCurrentSession;
+import static org.igye.outline2.common.OutlineUtils.map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)

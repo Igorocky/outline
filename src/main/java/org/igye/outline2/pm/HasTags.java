@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.getSingleValue;
+import static org.igye.outline2.common.OutlineUtils.getSingleValue;
 
 public interface HasTags {
     List<Tag> getTags();

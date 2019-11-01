@@ -1,6 +1,6 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.chess.dto.ChessPuzzleCommentDto;
 import org.igye.outline2.chess.dto.ChessPuzzleDto;
 import org.igye.outline2.controllers.ControllerComponentTestBase;
@@ -20,7 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.MILLIS_IN_DAY;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
 import static org.igye.outline2.controllers.ComponentTestConfig.FIXED_DATE_TIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -75,6 +76,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         ChessPuzzleDto puzzleDto = getPuzzleDto(puzzleId);
         assertEquals(Boolean.toString(passed1), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
         assertEquals(activationDelay1, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertEquals(3*MILLIS_IN_DAY, Long.parseLong(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY_MS)));
         assertEquals(
                 expectedActivationInstant1,
                 Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
@@ -98,6 +100,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         puzzleDto = getPuzzleDto(puzzleId);
         assertEquals(Boolean.toString(passed2), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
         assertEquals(activationDelay2, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertEquals(12*30*MILLIS_IN_DAY, Long.parseLong(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY_MS)));
         assertEquals(
                 expectedActivationInstant2,
                 Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
@@ -123,6 +126,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         puzzleDto = getPuzzleDto(puzzleId);
         assertEquals(Boolean.toString(passed3), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
         assertEquals(activationDelay3, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertNull(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY_MS));
         assertNull(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION));
         resultSetDto = reportManager.rpcRunReport(
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)

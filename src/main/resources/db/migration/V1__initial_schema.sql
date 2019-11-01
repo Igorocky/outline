@@ -48,3 +48,6 @@ create table TAG_AUD
 	constraint TAG_AUD_FK foreign key (REV) references REVINFO
 );
 
+CREATE ALIAS STR_INSTANT_TO_MILLIS FOR "org.igye.outline2.common.OutlineUtils.strInstantToMillis";
+CREATE ALIAS NOW_MILLIS FOR "org.igye.outline2.common.OutlineUtils.nowMillis";
+CREATE ALIAS MILLIS_TO_DURATION_STR FOR "org.igye.outline2.common.OutlineUtils.millisToDurationStr";

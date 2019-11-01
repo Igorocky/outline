@@ -23,10 +23,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
-import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
-import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 
 public class ChessTestUtils {
     public static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";

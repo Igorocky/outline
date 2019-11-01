@@ -11,7 +11,7 @@ import org.igye.outline2.chess.model.ChessmanType;
 
 import java.util.function.Consumer;
 
-import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;

@@ -1,5 +1,6 @@
 const VIEWS = [
     {name:"Nodes", component: NodeCommonView, path: [PATH.node, PATH.nodeWithId]},
+    {name:"Puzzles To Repeat", component: PuzzlesToRepeatReport, path: [PATH.puzzlesToRepeat]},
     {name:"Chessboard", component: ChessComponent, path: [PATH.chessboard]},
     {name:"Admin", component: AdminView, path: [PATH.admin]},
 ]

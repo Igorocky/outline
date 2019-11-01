@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
 public class SerializerOfOptUuid extends JsonSerializer<OptVal<UUID>> {
     @Override

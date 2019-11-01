@@ -18,7 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.igye.outline2.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.map;
 import static org.igye.outline2.controllers.OutlineTestUtils.writeValueAsString;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

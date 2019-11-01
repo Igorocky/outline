@@ -1,7 +1,7 @@
 package org.igye.outline2.tools;
 
 import org.apache.commons.io.FileUtils;
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
 
 import java.io.File;
 import java.io.IOException;

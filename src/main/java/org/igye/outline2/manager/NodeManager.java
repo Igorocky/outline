@@ -22,12 +22,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.ifPresent;
-import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.mapOf;
-import static org.igye.outline2.OutlineUtils.mapToMap;
-import static org.igye.outline2.OutlineUtils.mapToSet;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.ifPresent;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.mapToMap;
+import static org.igye.outline2.common.OutlineUtils.mapToSet;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
 @RpcMethodsCollection
 @Component

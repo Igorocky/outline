@@ -1,6 +1,6 @@
 package org.igye.outline2.manager;
 
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;

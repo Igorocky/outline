@@ -2,7 +2,7 @@ const ReportResult = ({columns, data, actions}) => {
     return paper(RE.Table({size:"small"},
         RE.TableHead({},
             RE.TableRow({},
-                columns.map(column => RE.TableCell({key:column.name}, column.title))
+                columns.map(column => RE.TableCell({key:column.name}, column.title?column.title:column.name))
             )
         ),
         RE.TableBody({},

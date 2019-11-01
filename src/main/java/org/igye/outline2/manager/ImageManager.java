@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.UUID;
 
-import static org.igye.outline2.OutlineUtils.getImgFile;
+import static org.igye.outline2.common.OutlineUtils.getImgFile;
 
 @Component
 public class ImageManager {

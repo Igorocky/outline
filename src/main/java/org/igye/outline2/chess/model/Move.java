@@ -3,7 +3,7 @@ package org.igye.outline2.chess.model;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.igye.outline2.OutlineUtils;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.Collections;
@@ -17,12 +17,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.OutlineUtils.listOf;
-import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.mapOf;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
-import static org.igye.outline2.OutlineUtils.nullSafeGetterWithDefault;
-import static org.igye.outline2.OutlineUtils.setOf;
+import static org.igye.outline2.common.OutlineUtils.listOf;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.chess.manager.ChessUtils.X_NAMES;
 import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
 import static org.igye.outline2.chess.manager.ChessUtils.strCoordToInt;

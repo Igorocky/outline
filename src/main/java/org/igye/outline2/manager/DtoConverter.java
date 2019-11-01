@@ -13,8 +13,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 
-import static org.igye.outline2.OutlineUtils.map;
-import static org.igye.outline2.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
 public class DtoConverter {
 
