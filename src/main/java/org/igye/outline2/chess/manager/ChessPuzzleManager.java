@@ -34,14 +34,13 @@ public class ChessPuzzleManager {
         Node puzzle = nodeRepository.getOne(puzzleId);
         Node attempt = nodeRepository.getOne(nodeManager.rpcCreateNode(puzzleId, NodeClasses.CHESS_PUZZLE_ATTEMPT));
         final String activation = calculateActivation(pauseDuration);
-        setAttemptTags(puzzle, passed, pauseDuration, activation);
-        setAttemptTags(attempt, passed, pauseDuration, activation);
-    }
 
-    private void setAttemptTags(Node node, Boolean passed, String pauseDuration, String activation) {
-        node.setTagSingleValue(TagIds.CHESS_PUZZLE_PASSED, passed.toString());
-        node.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
-        node.setTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION, activation);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PASSED, passed.toString());
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION, activation);
+
+        attempt.setTagSingleValue(TagIds.CHESS_PUZZLE_PASSED, passed.toString());
+        attempt.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
     }
 
     private String calculateActivation(String pauseDuration) {

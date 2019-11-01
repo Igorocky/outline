@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,9 +78,10 @@ public class ReportManager {
             Map<String, Object> row = new HashMap<>();
             for (int i = 1; i <= columns.size(); i++) {
                 if (resultSet.getMetaData().getColumnType(i) == Types.TIMESTAMP) {
+                    final Timestamp timestamp = resultSet.getTimestamp(i, Calendar.getInstance(UTC));
                     row.put(
                             columns.get(i-1),
-                            resultSet.getTimestamp(i, Calendar.getInstance(UTC)).getTime()
+                            timestamp==null?null:timestamp.getTime()
                     );
                 } else {
                     row.put(columns.get(i-1), resultSet.getObject(i));

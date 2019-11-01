@@ -20,13 +20,18 @@
     "title": "Result",
     "componentName": "BooleanPassFail",
     "componentConfig": {"style": {"fontSize": "20px"}}
+  },
+  {
+    "name": "DELAY",
+    "title": "Delay"
   }
 ]
 columns*/
 
-select a.ID, a.CREATED_WHEN, passed.VALUE PASSED
+select a.ID, a.CREATED_WHEN, passed.VALUE PASSED, delay.VALUE DELAY
 from NODE p
-    left join NODE a on p.ID = a.PARENT_NODE_ID and a.CLAZZ = 'CHESS_PUZZLE_ATTEMPT'
+    inner join NODE a on p.ID = a.PARENT_NODE_ID and a.CLAZZ = 'CHESS_PUZZLE_ATTEMPT'
     left join TAG passed on a.ID = passed.NODE_ID and passed.TAG_ID = 'chess_puzzle_passed'
+    left join TAG delay on a.ID = delay.NODE_ID and delay.TAG_ID = 'chess_puzzle_delay'
 where p.ID = :puzzleId
 order by a.CREATED_WHEN desc

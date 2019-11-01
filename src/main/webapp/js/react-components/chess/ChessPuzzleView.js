@@ -75,7 +75,6 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
             {puzzleId:getCurrPuzzleId(), ...newHistoryRecord},
             () => {
                 loadPuzzleHistory()
-                setPuzzleHistory(null)
                 setNewHistoryRecord(null)
             }
         )
