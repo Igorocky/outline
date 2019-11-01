@@ -27,7 +27,10 @@ from (
         where puzzle.CLAZZ = 'CHESS_PUZZLE' and (paused.VALUE is null or paused.VALUE != 'true')
     )
 )
-order by -millis_remain/planned_delay_millis desc
+order by case
+            when millis_remain/planned_delay_millis is null then 999999999999999
+            else -millis_remain/planned_delay_millis
+         end desc
 
 
 
