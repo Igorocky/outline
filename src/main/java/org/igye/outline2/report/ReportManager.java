@@ -12,16 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.ResultSetMetaData;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 @Component
 @RpcMethodsCollection
 public class ReportManager {
     public static final String COLUMNS_CONFIG_BEGIN = "/*columns";
     public static final String COLUMNS_CONFIG_END = "columns*/";
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -68,7 +72,15 @@ public class ReportManager {
             }
             Map<String, Object> row = new HashMap<>();
             for (int i = 1; i <= columns.size(); i++) {
-                row.put(columns.get(i-1), resultSet.getObject(i));
+                System.out.println("sql type = " + resultSet.getMetaData().getColumnType(i));
+                if (resultSet.getMetaData().getColumnType(i) == Types.TIMESTAMP) {
+                    row.put(
+                            columns.get(i-1),
+                            resultSet.getTimestamp(i, Calendar.getInstance(UTC)).getTime()/1000
+                    );
+                } else {
+                    row.put(columns.get(i-1), resultSet.getObject(i));
+                }
             }
             data.add(row);
         });

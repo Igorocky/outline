@@ -61,56 +61,79 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
     @Test
     public void rpcSaveChessPuzzleAttempt_saves_and_updates_attempt_info() throws NoSuchMethodException, ScriptException, IOException {
         //given
-        testClock.setFixedTime(FIXED_DATE_TIME);
         UUID puzzleId = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
 
-        //when
-        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, false, "3d");
+        //when1
+        final Instant instant1 = FIXED_DATE_TIME.toInstant();
+        testClock.setFixedTime(instant1);
+        final boolean passed1 = false;
+        final String activationDelay1 = "3d";
+        final Instant expectedActivationInstant1 = instant1.plus(3, ChronoUnit.DAYS);
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, passed1, activationDelay1);
 
-        //then
+        //then1
         ChessPuzzleDto puzzleDto = getPuzzleDto(puzzleId);
-        assertEquals("false", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
-        assertEquals("3d", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertEquals(Boolean.toString(passed1), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
+        assertEquals(activationDelay1, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
         assertEquals(
-                FIXED_DATE_TIME.toInstant().plus(3, ChronoUnit.DAYS),
-                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
-        );
-
-        //when
-        testClock.setFixedTime(FIXED_DATE_TIME.plusSeconds(10));
-        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, true, "12M");
-
-        //then
-        puzzleDto = getPuzzleDto(puzzleId);
-        assertEquals("true", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
-        assertEquals("12M", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
-        assertEquals(
-                FIXED_DATE_TIME.toInstant().plusSeconds(10).plus(12*30, ChronoUnit.DAYS),
+                expectedActivationInstant1,
                 Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
         );
         ResultSetDto resultSetDto = reportManager.rpcRunReport(
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
         );
-        assertEquals(2, resultSetDto.getData().size());
-        assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
-        assertEquals("false", resultSetDto.getData().get(1).get("VALUE"));
+        assertEquals(1, resultSetDto.getData().size());
+        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(0).get("PASSED"));
 
-        //when
-        testClock.setFixedTime(FIXED_DATE_TIME.plusSeconds(20));
-        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, true, "");
+        //when2
+        final Instant instant2 = instant1.plusSeconds(10);
+        testClock.setFixedTime(instant2);
+        final boolean passed2 = true;
+        final String activationDelay2 = "12M";
+        final Instant expectedActivationInstant2 = instant2.plus(12*30, ChronoUnit.DAYS);
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, passed2, activationDelay2);
 
-        //then
+        //then2
         puzzleDto = getPuzzleDto(puzzleId);
-        assertEquals("true", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
-        assertEquals("", puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertEquals(Boolean.toString(passed2), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
+        assertEquals(activationDelay2, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
+        assertEquals(
+                expectedActivationInstant2,
+                Instant.parse(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION))
+        );
+        resultSetDto = reportManager.rpcRunReport(
+                "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
+        );
+        assertEquals(2, resultSetDto.getData().size());
+        assertEquals(instant2.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed2), resultSetDto.getData().get(0).get("PASSED"));
+        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(1).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(1).get("PASSED"));
+
+        //when3
+        final Instant instant3 = instant2.plusSeconds(20);
+        testClock.setFixedTime(instant3);
+        final boolean passed3 = true;
+        final String activationDelay3 = "";
+        final Instant expectedActivationInstant3 = null;
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId, passed3, activationDelay3);
+
+        //then3
+        puzzleDto = getPuzzleDto(puzzleId);
+        assertEquals(Boolean.toString(passed3), puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_PASSED));
+        assertEquals(activationDelay3, puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_DELAY));
         assertNull(puzzleDto.getTagSingleValue(TagIds.CHESS_PUZZLE_ACTIVATION));
         resultSetDto = reportManager.rpcRunReport(
                 "puzzle-history", Collections.singletonMap("puzzleId", puzzleId)
         );
         assertEquals(3, resultSetDto.getData().size());
-        assertEquals("true", resultSetDto.getData().get(0).get("VALUE"));
-        assertEquals("true", resultSetDto.getData().get(1).get("VALUE"));
-        assertEquals("false", resultSetDto.getData().get(2).get("VALUE"));
+        assertEquals(instant3.getEpochSecond(), resultSetDto.getData().get(0).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed3), resultSetDto.getData().get(0).get("PASSED"));
+        assertEquals(instant2.getEpochSecond(), resultSetDto.getData().get(1).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed2), resultSetDto.getData().get(1).get("PASSED"));
+        assertEquals(instant1.getEpochSecond(), resultSetDto.getData().get(2).get("CREATED_WHEN"));
+        assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(2).get("PASSED"));
 
     }
 

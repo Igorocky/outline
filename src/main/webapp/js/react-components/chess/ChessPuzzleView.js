@@ -25,6 +25,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [puzzleHistory, setPuzzleHistory] = useState(null)
 
+    useEffect(() => loadPuzzleHistory(),[])
+
     function getCurrPuzzleId() {
         return curNode[NODE.id]
     }
@@ -191,7 +193,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
             puzzleHistory
                 ?re(ReportResult, puzzleHistory)
                 :re(ButtonWithCircularProgress,{
-                    pButtonText: "Load History",
+                    pButtonText: "Show History",
                     variant:"text",
                     pStartAction: loadPuzzleHistory
                 })

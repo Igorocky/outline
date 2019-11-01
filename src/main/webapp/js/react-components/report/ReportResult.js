@@ -1,3 +1,8 @@
+const COMPONENTS = {
+    "TimestampFromInstant": TimestampFromInstant,
+    "BooleanPassFail": BooleanPassFail,
+}
+
 const ReportResult = ({columns, data}) => {
     return paper(RE.Table({size:"small"},
         RE.TableHead({},
@@ -6,8 +11,12 @@ const ReportResult = ({columns, data}) => {
             )
         ),
         RE.TableBody({},
-            data.map((row,idx) => RE.TableRow({key:idx},
-                columns.map(column => RE.TableCell({key:column.name}, row[column.name]))
+            data.map((row,idx) => RE.TableRow({key:idx, className:"grey-background-on-hover"},
+                columns.map(column => RE.TableCell({key:column.name},
+                    column.componentName
+                        ?re(COMPONENTS[column.componentName], {cellData:row[column.name]})
+                        :row[column.name]
+                ))
             ))
         )
     ))
