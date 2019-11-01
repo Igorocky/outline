@@ -2,7 +2,6 @@ package org.igye.outline2.report;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.igye.outline2.OutlineUtils;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -11,9 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -54,9 +51,7 @@ public class ReportManager {
                 reportStr.indexOf(COLUMNS_CONFIG_BEGIN) + COLUMNS_CONFIG_BEGIN.length(),
                 reportStr.indexOf(COLUMNS_CONFIG_END)
         );
-        String queryStr = reportStr.substring(
-                reportStr.indexOf(COLUMNS_CONFIG_END) + COLUMNS_CONFIG_END.length()
-        );
+        String queryStr = reportStr.substring(0, reportStr.indexOf(COLUMNS_CONFIG_BEGIN));
 
         final Report report = new Report();
         report.setColumns(mapper.readValue(columnsConfigStr, new TypeReference<List<ColumnDto>>(){}));
