@@ -106,7 +106,10 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                     onKeyDown: onKeyDownInNewHistoryRecord,
                     value: newHistoryRecord.pauseDuration,
                     variant: "outlined",
-                    onChange: e => setNewHistoryRecord(oldVal => ({...oldVal, pauseDuration: e.target.value})),
+                    onChange: e => {
+                        const pauseDuration = e.target.value
+                        setNewHistoryRecord(oldVal => ({...oldVal, pauseDuration: pauseDuration}))
+                    },
                 }),
                 iconButton({iconName:"save",onClick:saveHistoryRecord}),
                 iconButton({iconName:"cancel",onClick:() => setNewHistoryRecord(null)}),
