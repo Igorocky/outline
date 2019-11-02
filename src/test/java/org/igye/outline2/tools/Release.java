@@ -92,7 +92,7 @@ public class Release {
                     if (newVersion[0] == null) {
                         int v1 = Integer.parseInt(matcher.group(1));
                         int v2 = Integer.parseInt(matcher.group(2));
-                        int v3 = Integer.parseInt(matcher.group(3));
+                        int v3 = 0;
                         newVersion[0] = v1 + "." + (v2+1) + "." + v3 + "-SNAPSHOT";
                         return "<version>" + newVersion[0] + "</version>";
                     } else {
