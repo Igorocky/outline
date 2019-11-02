@@ -4,6 +4,7 @@
 /logs/
 /tmp/
 /h2-db.mv.db
+/h2-db.trace.db
 /export/
 /images/
 /backups/

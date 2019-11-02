@@ -226,6 +226,33 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
     }
 
     @Test
+    public void puzzlesToRepeat_report_returns_row_numbers() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId2 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId3 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId4 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId5 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId2, false, null);
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId4, false, "1d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId1, false, "2d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId3, false, "3d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId5, false, "4d");
+
+        //when
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals(1L, resultSetDto.getData().get(0).get("RN"));
+        assertEquals(2L, resultSetDto.getData().get(1).get("RN"));
+        assertEquals(3L, resultSetDto.getData().get(2).get("RN"));
+        assertEquals(4L, resultSetDto.getData().get(3).get("RN"));
+        assertEquals(5L, resultSetDto.getData().get(4).get("RN"));
+    }
+
+    @Test
     public void puzzlesToRepeat_report_shows_remaining_time_for_puzzles_without_overdue() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
