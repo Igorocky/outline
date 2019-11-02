@@ -3,7 +3,7 @@ select
     url,
     case when millis_remain > 0
         then MILLIS_TO_DURATION_STR(millis_remain)
-        else TO_CHAR(-millis_remain/planned_delay_millis*100,'999999999')||'%'
+        else trim(TO_CHAR(-millis_remain/planned_delay_millis*100,'999999999'))||'%'
     end delay
 from (
     select

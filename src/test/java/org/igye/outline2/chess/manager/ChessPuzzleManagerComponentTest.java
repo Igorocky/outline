@@ -1,9 +1,10 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.chess.dto.ChessPuzzleCommentDto;
 import org.igye.outline2.chess.dto.ChessPuzzleDto;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.controllers.ControllerComponentTestBase;
+import org.igye.outline2.controllers.OutlineTestUtils;
 import org.igye.outline2.controllers.TestClock;
 import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.TagIds;
@@ -22,6 +23,8 @@ import java.util.UUID;
 
 import static org.igye.outline2.common.OutlineUtils.MILLIS_IN_DAY;
 import static org.igye.outline2.common.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.mapToSet;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.controllers.ComponentTestConfig.FIXED_DATE_TIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -139,6 +142,121 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals(instant1.getEpochSecond()*1000, resultSetDto.getData().get(2).get("CREATED_WHEN"));
         assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(2).get("PASSED"));
 
+    }
+
+    @Test
+    public void puzzlesToRepeat_report_doesnt_return_paused_puzzles() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId2 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId3 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId4 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId5 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        nodeManager.rpcSetSingleTagForNode(puzzleId2,TagIds.CHESS_PUZZLE_PAUSED,"true");
+        nodeManager.rpcSetSingleTagForNode(puzzleId3,TagIds.CHESS_PUZZLE_PAUSED,"true");
+        nodeManager.rpcSetSingleTagForNode(puzzleId4,TagIds.CHESS_PUZZLE_PAUSED,"false");
+        nodeManager.rpcSetSingleTagForNode(puzzleId5,TagIds.CHESS_PUZZLE_PAUSED,"0");
+
+        //when
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals(
+                setOf(puzzleId1, puzzleId4, puzzleId5),
+                mapToSet(resultSetDto.getData(), row -> row.get("ID"))
+        );
+    }
+
+    @Test
+    public void puzzlesToRepeat_report_puzzles_without_delay_are_shown_in_first_lines() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId2 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId3 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId4 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId5 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId6 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId1, false, "1d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId2, false, "");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId3, false, "1d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId4, false, "1d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId5, false, "");
+
+        //when
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals(
+                setOf(puzzleId2, puzzleId5, puzzleId6),
+                setOf(
+                        resultSetDto.getData().get(0).get("ID"),
+                        resultSetDto.getData().get(1).get("ID"),
+                        resultSetDto.getData().get(2).get("ID")
+                )
+        );
+    }
+
+    @Test
+    public void puzzlesToRepeat_report_puzzles_are_sorted_by_delay_overdue_pct_desc() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId2 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId3 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId4 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+        UUID puzzleId5 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId2, false, null);
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId4, false, "1d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId1, false, "2d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId3, false, "3d");
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId5, false, "4d");
+
+        //when
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals(puzzleId2, resultSetDto.getData().get(0).get("ID"));
+        assertEquals(puzzleId4, resultSetDto.getData().get(1).get("ID"));
+        assertEquals(puzzleId1, resultSetDto.getData().get(2).get("ID"));
+        assertEquals(puzzleId3, resultSetDto.getData().get(3).get("ID"));
+        assertEquals(puzzleId5, resultSetDto.getData().get(4).get("ID"));
+    }
+
+    @Test
+    public void puzzlesToRepeat_report_shows_remaining_time_for_puzzles_without_overdue() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        OutlineUtils.setClock(testClock);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId1, false, "2M");
+
+        //when
+        testClock.plus(25, ChronoUnit.DAYS);
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals("1M 5d", resultSetDto.getData().get(0).get("DELAY"));
+    }
+
+    @Test
+    public void puzzlesToRepeat_report_shows_overdue_pct_for_puzzles_with_overdue() throws IOException {
+        //given
+        OutlineTestUtils.deleteAllNodes(nodeRepository);
+        OutlineUtils.setClock(testClock);
+        UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
+
+        chessPuzzleManager.rpcSaveChessPuzzleAttempt(puzzleId1, false, "3d");
+
+        //when
+        testClock.plus(5, ChronoUnit.DAYS);
+        ResultSetDto resultSetDto = reportManager.rpcRunReport("puzzles-to-repeat", Collections.emptyMap());
+
+        //then
+        assertEquals("67%", resultSetDto.getData().get(0).get("DELAY"));
     }
 
     private ChessPuzzleDto getPuzzleDto(UUID puzzleId) throws ScriptException, NoSuchMethodException, IOException {

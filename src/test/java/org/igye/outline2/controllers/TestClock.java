@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalUnit;
 
 public class TestClock extends Clock {
     private ZonedDateTime fixedTime;
@@ -14,6 +15,10 @@ public class TestClock extends Clock {
 
     public void setFixedTime(ZonedDateTime fixedTime) {
         this.fixedTime = fixedTime;
+    }
+
+    public void plus(long amountToAdd, TemporalUnit unit) {
+        this.fixedTime = fixedTime.plus(amountToAdd, unit);
     }
 
     public void setFixedTime(Instant instant) {

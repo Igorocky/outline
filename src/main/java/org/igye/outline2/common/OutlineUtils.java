@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,16 @@ public class OutlineUtils {
     public static final long MILLIS_IN_DAY = MILLIS_IN_HOUR * HOURS_IN_DAY;
     public static final long MILLIS_IN_MONTH = MILLIS_IN_DAY * DAYS_IN_MONTH;
     private static final char[] DURATION_UNITS = new char[]{'M','d','h','m'};
+
+    private static Clock clock = Clock.systemUTC();
+
+    public static Clock getClock() {
+        return clock;
+    }
+
+    public static void setClock(Clock clock) {
+        OutlineUtils.clock = clock;
+    }
 
     public static <T> T getSingleValue(List<T> values) {
         if (values.size() > 1) {
@@ -336,7 +347,7 @@ public class OutlineUtils {
     }
 
     public static long nowMillis() {
-        return instantToMillis(Instant.now());
+        return instantToMillis(clock.instant());
     }
 
     public static String millisToDurationStr(Long millis) {

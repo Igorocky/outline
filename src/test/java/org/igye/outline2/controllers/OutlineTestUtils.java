@@ -32,8 +32,12 @@ public class OutlineTestUtils {
     public static final String CREATED_WHEN = "CREATED_WHEN";
     public static final Calendar UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-    public static void saveNodeTreeToDatabase(NodeRepository nodeRepository, ObjectHolder<List<Node>> rootNodes) {
+    public static void deleteAllNodes(NodeRepository nodeRepository) {
         nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
+    }
+
+    public static void saveNodeTreeToDatabase(NodeRepository nodeRepository, ObjectHolder<List<Node>> rootNodes) {
+        deleteAllNodes(nodeRepository);
         rootNodes.get().forEach(nodeRepository::save);
     }
 
