@@ -44,6 +44,29 @@ order by sort_by desc
 
 /*columns
 [
-
+  {
+    "name": "rn",
+    "title": "#"
+  },
+  {
+    "name": "delay",
+    "title": "Overdue%/Wait"
+  },
+  {
+    "name": "id",
+    "title": "",
+    "componentName": "IconButtonReportCmp",
+    "componentConfig": {
+      "onClickAction":"navigateToPuzzle",
+      "iconName":"open_in_new",
+      "style": {"color":"grey"},
+      "hoverStyle": {"color":"blue"}}
+  },
+  {
+    "name": "url",
+    "title": "",
+    "renderFunction": "renderStartPuzzle",
+    "renderFunctionArgs": ["id", "url"]
+  }
 ]
 columns*/

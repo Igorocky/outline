@@ -40,13 +40,14 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
     }
 
     function renderUrl() {
+        const puzzleUrl = getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl);
         return RE.Container.row.left.center({},{},
             renderPaused(),
             "URL",
             re(EditableTextField,{
                 key:"puzzle-url-" + curNode[NODE.id],
                 inlineActions: true,
-                initialValue:getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl),
+                initialValue: puzzleUrl,
                 spanStyle: {margin:"0px 10px", fontSize:"18px"},
                 textFieldStyle: {width:"600px", margin:"0px 10px"},
                 onSave: ({newValue, onSaved}) =>
@@ -61,9 +62,9 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                     ),
                 placeholder: "URL",
                 popupActions: RE.Fragment({},
-                    iconButton({iconName: "open_in_new",
-                        onClick: () => window.open(getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl))
-                    })
+                    (puzzleUrl && puzzleUrl.length > 0)?iconButton({iconName: "open_in_new",
+                        onClick: () => window.open(puzzleUrl)
+                    }):null
                 )
             })
         )

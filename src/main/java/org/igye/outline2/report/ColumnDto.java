@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -18,4 +19,6 @@ public class ColumnDto {
     private String title;
     private String componentName;
     private Map<String,?> componentConfig;
+    private String renderFunction;
+    private List<String> renderFunctionArgs;
 }

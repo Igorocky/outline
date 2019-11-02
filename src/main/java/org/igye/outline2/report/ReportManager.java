@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.igye.outline2.common.OutlineUtils.UTC;
+import static org.igye.outline2.common.OutlineUtils.map;
 
 @Component
 @RpcMethodsCollection
@@ -69,6 +70,9 @@ public class ReportManager {
         reportConfig.setColumns(mapper.readValue(columnsConfigStr, new TypeReference<List<ColumnDto>>(){}));
         for (ColumnDto column : reportConfig.getColumns()) {
             column.setName(column.getName().toUpperCase());
+            if (column.getRenderFunctionArgs() != null) {
+                column.setRenderFunctionArgs(map(column.getRenderFunctionArgs(), str -> str.toUpperCase()));
+            }
         }
         reportConfig.setSqlQuery(queryStr);
         return reportConfig;
