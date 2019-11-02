@@ -30,7 +30,7 @@ public class FeController {
         return new ResponseEntity<>(
                 readFileToString("/index.html")
                         .replaceAll("@app\\.version@", appVersion)
-                        .replaceAll("@config\\.name@", configName)
+                        .replaceAll("@config\\.name@", configName + " " + appVersion)
                         .getBytes(StandardCharsets.UTF_8),
                 HttpStatus.OK
         );
