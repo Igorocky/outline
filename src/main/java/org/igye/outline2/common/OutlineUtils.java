@@ -333,7 +333,12 @@ public class OutlineUtils {
         int prevEnd = 0;
         while (matcher.find()) {
             newContent.append(content, prevEnd, matcher.start());
-            newContent.append(replacement.apply(matcher));
+            final String replacementValue = replacement.apply(matcher);
+            if (replacementValue != null) {
+                newContent.append(replacementValue);
+            } else {
+                newContent.append(matcher.group(0));
+            }
             prevEnd = matcher.end();
         }
         newContent.append(content, prevEnd, content.length());

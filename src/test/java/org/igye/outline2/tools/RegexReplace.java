@@ -38,7 +38,7 @@ public class RegexReplace {
                     }
                     return "url(" + urlMap.get(oldUrl) + ")";
                 },
-                localVersionDir + cssFileName
+                new File(localVersionDir + cssFileName)
         );
     }
 
@@ -50,11 +50,10 @@ public class RegexReplace {
         }
     }
 
-    public void replace(File srcFile, Pattern pattern, Function<Matcher, String> replacement, String dstFile) throws IOException {
+    public static void replace(File srcFile, Pattern pattern, Function<Matcher, String> replacement, File dstFile) throws IOException {
         String content = FileUtils.readFileToString(srcFile, StandardCharsets.UTF_8);
         String newContent = OutlineUtils.replace(content, pattern, replacement);
-        File dstFileF = new File(dstFile);
-        dstFileF.getParentFile().mkdirs();
-        FileUtils.writeStringToFile(dstFileF, newContent, StandardCharsets.UTF_8);
+        dstFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(dstFile, newContent, StandardCharsets.UTF_8);
     }
 }
