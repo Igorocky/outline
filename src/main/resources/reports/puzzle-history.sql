@@ -1,4 +1,8 @@
-select a.ID, a.CREATED_WHEN, passed.VALUE PASSED, delay.VALUE DELAY
+select
+    case when NOW_MILLIS() - TIMESTAMP_TO_MILLIS(a.CREATED_WHEN) < 3600000 then a.ID end id,
+    a.CREATED_WHEN,
+    passed.VALUE PASSED,
+    delay.VALUE DELAY
 from NODE p
          inner join NODE a on p.ID = a.PARENT_NODE_ID and a.CLAZZ = 'CHESS_PUZZLE_ATTEMPT'
          left join TAG passed on a.ID = passed.NODE_ID and passed.TAG_ID = 'chess_puzzle_passed'
@@ -16,7 +20,9 @@ order by a.CREATED_WHEN desc
         "onClickAction":"deleteHistoryRecord",
         "iconName":"delete_forever",
         "style": {"color":"grey"},
-        "hoverStyle": {"color":"red"}}
+        "hoverStyle": {"color":"red"},
+        "hideOnNull": true
+    }
   },
   {
     "name": "CREATED_WHEN",

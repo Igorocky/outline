@@ -10,8 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -336,6 +338,13 @@ public class OutlineUtils {
         }
         newContent.append(content, prevEnd, content.length());
         return newContent.toString();
+    }
+
+    public static Long timestampToMillis(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return instantToMillis(timestamp.toLocalDateTime().toInstant(ZoneOffset.UTC));
     }
 
     public static Long instantToMillis(Instant instant) {

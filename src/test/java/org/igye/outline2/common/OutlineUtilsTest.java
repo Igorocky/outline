@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import static org.igye.outline2.common.OutlineUtils.instantToMillis;
 import static org.igye.outline2.common.OutlineUtils.millisToDurationStr;
 import static org.igye.outline2.common.OutlineUtils.strInstantToMillis;
+import static org.igye.outline2.common.OutlineUtils.timestampToMillis;
 
 public class OutlineUtilsTest {
     @Test
@@ -93,6 +94,11 @@ public class OutlineUtilsTest {
         );
 
         Assert.assertNull(strInstantToMillis(null));
+    }
+
+    @Test
+    public void timestampToMillis_returns_expected_results() {
+        Assert.assertNull(timestampToMillis(null));
     }
 
 }
