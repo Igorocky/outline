@@ -47,7 +47,10 @@ public class AdminOperations {
         OutlineUtils.getCurrentSession(entityManager).doWork(connection ->
                 connection.prepareStatement("BACKUP TO '" + backupZipPath + "'").executeUpdate()
         );
-        addDirToZip(new File(imagesDirPath).getAbsoluteFile().toPath(), Paths.get(backupZipPath));
+        final File imgDir = new File(imagesDirPath);
+        if (imgDir.exists()) {
+            addDirToZip(imgDir.getAbsoluteFile().toPath(), Paths.get(backupZipPath));
+        }
     }
 
     private void addDirToZip(Path srcDir, Path zipPath) throws IOException {
