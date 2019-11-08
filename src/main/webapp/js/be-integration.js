@@ -17,6 +17,7 @@ const OBJECT_CLASS = {
     image: "IMAGE",
     chessPuzzle: "CHESS_PUZZLE",
     CHESS_PUZZLE_COMMENT: "CHESS_PUZZLE_COMMENT",
+    CHESS_GAME: "CHESS_GAME",
 }
 
 const TAG = {
@@ -34,6 +35,7 @@ const TAG_ID = {
     chessPuzzleUrl: "chess_puzzle_url",
     CHESS_PUZZLE_PAUSED: "chess_puzzle_paused",
     CHESS_PUZZLE_COMMENT_TEXT: "chess_puzzle_comment_text",
+    CHESS_GAME_URL: "chess_game_url",
 }
 
 const CHESS_PUZZLE_DTO = {

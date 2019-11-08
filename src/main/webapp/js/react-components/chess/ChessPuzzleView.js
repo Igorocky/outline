@@ -45,19 +45,19 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
             renderPaused(),
             "URL",
             re(EditableTextField,{
-                key:"puzzle-url-" + curNode[NODE.id],
+                key:"puzzle-url-" + getCurrPuzzleId(),
                 inlineActions: true,
                 initialValue: puzzleUrl,
                 spanStyle: {margin:"0px 10px", fontSize:"18px"},
                 textFieldStyle: {width:"600px", margin:"0px 10px"},
                 onSave: ({newValue, onSaved}) =>
                     setSingleTagForNode(
-                        curNode[NODE.id],
+                        getCurrPuzzleId(),
                         TAG_ID.chessPuzzleUrl,
                         newValue,
                         () => {
                             onSaved()
-                            navigateToNodeId(curNode[NODE.id])
+                            navigateToNodeId(getCurrPuzzleId())
                         }
                     ),
                 placeholder: "URL",

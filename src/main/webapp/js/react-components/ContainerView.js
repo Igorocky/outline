@@ -13,6 +13,7 @@ const OBJECT_CLASS_TO_SHORT_VIEW_MAP = {
     [OBJECT_CLASS.text]: TextShortView,
     [OBJECT_CLASS.image]: ImageShortView,
     [OBJECT_CLASS.chessPuzzle]: ChessPuzzleShortView,
+    [OBJECT_CLASS.CHESS_GAME]: ChessGameShortView,
 }
 
 const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
@@ -236,23 +237,20 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         setReorderMode(false)
     }
 
+    const defaultAction = {text: "New Folder", onClick: () => createChildNode(curNode, OBJECT_CLASS.container, navigateToNodeId)}
+    const actions = [
+        defaultAction,
+        {text: "New Sibling Folder", onClick: () => null},
+        {text: "New Chess Puzzle", onClick: () => createChildNode(curNode, OBJECT_CLASS.chessPuzzle, navigateToNodeId)},
+        {text: "New Chess Game", onClick: () => createChildNode(curNode, OBJECT_CLASS.CHESS_GAME, navigateToNodeId)},
+        {text: "Select items", onClick: () => {cancelReordering(); unselectAllItems();}},
+        {text: "Reorder items", onClick: () => {cancelSelection();setReorderMode(true);}},
+        {text: "Import", onClick: openImportDialog},
+        {text: "Export", onClick: ()=>openExportDialog(getCurrNodeId())},
+    ]
     function renderActions() {
         return RE.Fragment({},
-            re(ContainerFullViewActions,{key:"ContainerFullViewActions",
-                onNewNode: () => createChildNode(curNode, OBJECT_CLASS.container, navigateToNodeId),
-                onNewSiblingNode: () => null,
-                onNewChessPuzzle: () => createChildNode(curNode, OBJECT_CLASS.chessPuzzle, navigateToNodeId),
-                onSelect: () => {
-                    cancelReordering()
-                    unselectAllItems()
-                },
-                onReorder: () => {
-                    cancelSelection()
-                    setReorderMode(true)
-                },
-                onImport: openImportDialog,
-                onExport: ()=>openExportDialog(getCurrNodeId())
-            }),
+            re(ContainerFullViewActions,{defaultAction: defaultAction, actions: actions}),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
             renderCancelSelectionBtnIfNecessary(),
             renderCancelReorderingBtnIfNecessary(),

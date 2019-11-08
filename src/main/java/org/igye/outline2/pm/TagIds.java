@@ -13,4 +13,6 @@ public final class TagIds {
     public final static String CHESS_PUZZLE_DELAY = "chess_puzzle_delay";
     public final static String CHESS_PUZZLE_DELAY_MS = "chess_puzzle_delay_ms";
     public final static String CHESS_PUZZLE_ACTIVATION = "chess_puzzle_activation";
+
+    public final static String CHESS_GAME_URL = "chess_game_url";
 }

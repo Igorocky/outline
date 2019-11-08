@@ -4,6 +4,7 @@ const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
     [OBJECT_CLASS.topContainer]: ContainerFullView,
     [OBJECT_CLASS.container]: ContainerFullView,
     [OBJECT_CLASS.chessPuzzle]: ChessPuzzleFullView,
+    [OBJECT_CLASS.CHESS_GAME]: ChessGameFullView,
 }
 
 const NodeCommonView = ({actionsContainerRef, match}) => {
