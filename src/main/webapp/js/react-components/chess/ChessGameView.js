@@ -19,7 +19,14 @@ const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode}) => {
     })
 }
 
+const TABS = {
+    pgn:{title: "PGN", id: "PGN"},
+    moves:{title: "Moves", id: "Moves"},
+    practice:{title: "Practice", id: "Practice"},
+}
+
 const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
+    const [currTabId, setCurrTabId] = useState(TABS.pgn.id)
 
     function getCurrGameId() {
         return curNode[NODE.id]
@@ -59,7 +66,39 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
+    function renderCurrentTabContent() {
+        if (TABS.pgn.id == currTabId) {
+            return renderUrl()
+        } else if (TABS.moves.id == currTabId) {
+            return "moves"
+        } else if (TABS.practice.id == currTabId) {
+            return "practice"
+        }
+    }
+
+    function handleTabChange(event, newTabId) {
+        setCurrTabId(newTabId)
+    }
+    
+    function renderTabs() {
+        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
+            RE.Paper({square:true},
+                RE.Tabs({value:currTabId,
+                        indicatorColor:"primary",
+                        textColor:"primary",
+                        onChange:handleTabChange},
+                    RE.Tab({label:TABS.pgn.title, value:TABS.pgn.id}),
+                    RE.Tab({label:TABS.moves.title, value:TABS.moves.id}),
+                    RE.Tab({label:TABS.practice.title, value:TABS.practice.id}),
+                )
+            ),
+            renderCurrentTabContent()
+        )
+    }
+
     return RE.Container.col.top.left({},{},
-        renderUrl(),
+        RE.Container.row.left.top({},{},
+            renderTabs()
+        )
     )
 }

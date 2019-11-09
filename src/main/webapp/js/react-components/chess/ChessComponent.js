@@ -56,13 +56,13 @@ const ChessComponent = () => {
     function renderRightPanel() {
         return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
             re(Paper, {square:true},
-                re(Tabs,{value:state.tab,
+                RE.Tabs({value:state.tab,
                         indicatorColor:"primary",
                         textColor:"primary",
                         onChange:handleTabChange},
-                    re(Tab,{label:"Initial position", value:CHESS_COMPONENT_STAGE.initialPosition}),
-                    re(Tab,{label:"Moves", value:CHESS_COMPONENT_STAGE.moves}),
-                    re(Tab,{label:"Practice", value:CHESS_COMPONENT_STAGE.exercise}),
+                    RE.Tab({label:"Initial position", value:CHESS_COMPONENT_STAGE.initialPosition}),
+                    RE.Tab({label:"Moves", value:CHESS_COMPONENT_STAGE.moves}),
+                    RE.Tab({label:"Practice", value:CHESS_COMPONENT_STAGE.exercise}),
                 )
             ),
             renderCurrentTabContent()

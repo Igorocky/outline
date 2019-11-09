@@ -15,4 +15,6 @@ public final class TagIds {
     public final static String CHESS_PUZZLE_ACTIVATION = "chess_puzzle_activation";
 
     public final static String CHESS_GAME_URL = "chess_game_url";
+    public final static String CHESS_GAME_PGN = "chess_game_pgn";
+    public final static String CHESS_GAME_PARSED_PGN = "chess_game_parsed_pgn";
 }

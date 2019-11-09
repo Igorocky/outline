@@ -48,6 +48,14 @@ public class ChessPuzzleManager {
         attempt.setTagSingleValue(TagIds.CHESS_PUZZLE_DELAY, pauseDuration);
     }
 
+    @RpcMethod
+    @Transactional
+    public void rpcSavePgn(UUID gameId, String pgn) {
+        Node game = nodeRepository.getOne(gameId);
+        game.setTagSingleValue(TagIds.CHESS_GAME_PGN, pgn);
+    }
+
+
     private Long calculateDelaySeconds(String pauseDuration) {
         if (StringUtils.isBlank(pauseDuration)) {
             return null;

@@ -1,0 +1,28 @@
+[Event "Live Chess"]
+[Site "Chess.com"]
+[Date "2019.10.23"]
+[Round "-"]
+[White "player111"]
+[Black "player222"]
+[Result "0-1"]
+[ECO "C22"]
+[ECOUrl "https://www.chess.com/openings/C22-Center-Game-Accepted-Normal-Variation"]
+[CurrentPosition "r3r1k1/1pp1qppp/1p2b3/4P3/1P5P/1P3P1N/2P1Q1P1/1K1R1B1R w - -"]
+[Timezone "UTC"]
+[UTCDate "2019.10.23"]
+[UTCTime "22:05:06"]
+[WhiteElo "813"]
+[BlackElo "819"]
+[TimeControl "1800"]
+[Termination "player222 won by resignation"]
+[StartTime "22:05:06"]
+[EndDate "2019.10.23"]
+[EndTime "22:52:21"]
+[Link "https://www.chess.com/live/game/82342635423789"]
+
+1. e4 e5 2. d4 exd4 3. Qxd4 Nc6 4. Qd2 Nf6 5. Nc3 Bc5 6. Qe2 O-O 7. Be3 Bb4 8.
+O-O-O Re8 9. f3 d5 10. Nxd5 Be6 11. Nxf6+ Qxf6 12. a3 Na5 13. axb4 Nc4 14. Bd4
+Qf4+ 15. Kb1 Qg5 16. h4 Qe7 17. b3 Nb6 18. Bxb6 axb6 19. Nh3 Qf6 20. e5 Qe7 {<br
+/><br /><em>Game may have continued...</em>} (20... Qe7 21. Qe4 Bxh3 22. Rxh3
+Qxe5 23. Qxe5 Rxe5 24. Kb2 Kf8 25. Bd3 h5 26. Rhh1 c6 27. b5 cxb5 28. Be4 Ke7
+29. Bxb7 Rd8 30. f4 Re2 31. Bf3 Rxd1 32. Rxd1 Rf2 33. Re1+ Kf8 34. Kc3) 0-1

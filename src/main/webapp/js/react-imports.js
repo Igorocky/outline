@@ -6,8 +6,6 @@ const useEffect = React.useEffect
 const Fragment = React.Fragment
 
 const {
-    Tabs,
-    Tab,
     Paper,
     colors,
     createMuiTheme,
@@ -79,6 +77,8 @@ const RE = {
     TableBody: reFactory(MaterialUI.TableBody),
     TableRow: reFactory(MaterialUI.TableRow),
     TableCell: reFactory(MaterialUI.TableCell),
+    Tabs: reFactory(MaterialUI.Tabs),
+    Tab: reFactory(MaterialUI.Tab),
     IconButton: reFactory(MaterialUI.IconButton),
     Icon: reFactory(MaterialUI.Icon),
     InputBase: reFactory(MaterialUI.InputBase),
