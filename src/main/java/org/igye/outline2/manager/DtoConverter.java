@@ -1,24 +1,34 @@
 package org.igye.outline2.manager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.igye.outline2.chess.dto.ChessGameDto;
 import org.igye.outline2.chess.dto.ChessPuzzleCommentDto;
 import org.igye.outline2.chess.dto.ChessPuzzleDto;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagDto;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
 import org.igye.outline2.pm.TagIds;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.igye.outline2.common.OutlineUtils.map;
 import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
+@Component
 public class DtoConverter {
+    @Autowired
+    protected ObjectMapper objectMapper;
 
-    public static NodeDto toDto(Node node, int depth) {
+    public NodeDto toDto(Node node, int depth, boolean includeTags) {
         NodeDto nodeDto = createNodeDto(node.getClazz());
         nodeDto.setId(node.getId());
         nodeDto.setClazz(new OptVal<>(node.getClazz()));
@@ -27,22 +37,28 @@ public class DtoConverter {
                 node.getParentNode(),
                 parentNode -> new OptVal<>(parentNode.getId())
         ));
-        nodeDto.setTags(map(node.getTags(), DtoConverter::toDto));
+        if (includeTags) {
+            nodeDto.setTags(map(node.getTags(), this::toDto));
+        }
 
 
         if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
-                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1)));
+                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1,includeTags)));
             } else {
                 nodeDto.setChildNodes(Collections.emptyList());
             }
         }
-        enrich(nodeDto, node);
+        try {
+            enrich(nodeDto, node);
+        } catch (IOException ex) {
+            throw new OutlineException(ex);
+        }
 
         return nodeDto;
     }
 
-    public static TagDto toDto(Tag tag) {
+    public TagDto toDto(Tag tag) {
         return TagDto.builder()
                 .id(tag.getId())
                 .node(tag.getNode().getId())
@@ -51,27 +67,42 @@ public class DtoConverter {
                 .build();
     }
 
-    private static NodeDto createNodeDto(String clazz) {
+    private NodeDto createNodeDto(String clazz) {
         if (NodeClasses.CHESS_PUZZLE.equals(clazz)) {
             return new ChessPuzzleDto();
+        } else if (NodeClasses.CHESS_GAME.equals(clazz)) {
+            return new ChessGameDto();
         } else {
             return new NodeDto();
         }
     }
 
-    private static void enrich(NodeDto nodeDto, Node node) {
+    private void enrich(NodeDto nodeDto, Node node) throws IOException {
         if (nodeDto instanceof ChessPuzzleDto) {
             enrich((ChessPuzzleDto) nodeDto, node);
+        } else if (nodeDto instanceof ChessGameDto) {
+            enrich((ChessGameDto) nodeDto, node);
         }
     }
 
-    private static void enrich(ChessPuzzleDto chessPuzzleDto, Node node) {
+    private void enrich(ChessPuzzleDto chessPuzzleDto, Node node) {
         for (Node childNode : node.getChildNodes()) {
             if (NodeClasses.CHESS_PUZZLE_COMMENT.equals(childNode.getClazz())) {
                 chessPuzzleDto.getComments().add(ChessPuzzleCommentDto.builder()
                         .id(childNode.getId())
                         .text(childNode.getTagSingleValue(TagIds.CHESS_PUZZLE_COMMENT_TEXT))
                         .build());
+            }
+        }
+    }
+
+    private void enrich(ChessGameDto chessGameDto, Node node) throws IOException {
+        if (chessGameDto.getTags() != null) {
+            final String parsedPgnStr = chessGameDto.getTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN);
+            if (parsedPgnStr != null) {
+                ParsedPgnDto parsedPgnDto = objectMapper.readValue(parsedPgnStr, ParsedPgnDto.class);
+                chessGameDto.setParsedPgn(parsedPgnDto);
+                chessGameDto.removeTags(TagIds.CHESS_GAME_PARSED_PGN);
             }
         }
     }

@@ -28,6 +28,8 @@ public class ImageManager {
 
     @Value("${images.location}")
     private String imagesLocation;
+    @Autowired
+    private DtoConverter dtoConverter;
 
     @Transactional
     public NodeDto createImage(UUID parentId, MultipartFile file) throws IOException {
@@ -40,7 +42,7 @@ public class ImageManager {
         }
         file.transferTo(new File(imgFile.getAbsolutePath()));
 
-        return DtoConverter.toDto(image, 0);
+        return dtoConverter.toDto(image, 0, true);
     }
 
     @Transactional

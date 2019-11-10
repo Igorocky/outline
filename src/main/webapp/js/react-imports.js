@@ -6,7 +6,6 @@ const useEffect = React.useEffect
 const Fragment = React.Fragment
 
 const {
-    Paper,
     colors,
     createMuiTheme,
     CssBaseline,
@@ -119,7 +118,7 @@ const SVG = {
 }
 
 function paper(children) {
-    return re(Paper,{},children)
+    return RE.Paper({},children)
 }
 
 function iconButton({onClick, iconName}) {

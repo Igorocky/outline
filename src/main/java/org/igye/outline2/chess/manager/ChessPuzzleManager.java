@@ -1,6 +1,10 @@
 package org.igye.outline2.chess.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
@@ -14,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.UUID;
@@ -28,6 +31,8 @@ public class ChessPuzzleManager {
     private NodeRepository nodeRepository;
     @Autowired(required = false)
     private Clock clock = Clock.systemUTC();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @RpcMethod
     @Transactional
@@ -50,9 +55,11 @@ public class ChessPuzzleManager {
 
     @RpcMethod
     @Transactional
-    public void rpcSavePgn(UUID gameId, String pgn) {
+    public void rpcSavePgn(UUID gameId, String pgn) throws JsonProcessingException {
         Node game = nodeRepository.getOne(gameId);
         game.setTagSingleValue(TagIds.CHESS_GAME_PGN, pgn);
+        ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
+        game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));
     }
 
 

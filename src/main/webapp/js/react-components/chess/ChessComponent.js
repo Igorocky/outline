@@ -55,7 +55,7 @@ const ChessComponent = () => {
 
     function renderRightPanel() {
         return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
-            re(Paper, {square:true},
+            RE.Paper({square:true},
                 RE.Tabs({value:state.tab,
                         indicatorColor:"primary",
                         textColor:"primary",

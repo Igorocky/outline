@@ -9,7 +9,7 @@ public interface HasTagDtos {
     List<TagDto> getTags();
 
     default String getTagSingleValue(String tagId) {
-        return OutlineUtils.getSingleValue(getTagsValues(tagId));
+        return OutlineUtils.getSingleValueOrNull(getTagsValues(tagId));
     }
 
     default List<String> getTagsValues(String tagId) {
@@ -31,5 +31,9 @@ public interface HasTagDtos {
             }
         });
         return tags;
+    }
+
+    default void removeTags(String tagId) {
+        getTags().removeIf(tag -> tagId.equals(tag.getTagId().getVal()));
     }
 }

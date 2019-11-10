@@ -248,7 +248,7 @@ public final class Move {
     }
 
     public Move makeMove(CellCoords from, CellCoords to, PieceShape promotion) {
-        return OutlineUtils.getSingleValue(
+        return OutlineUtils.getSingleValueOrNull(
                 getPossibleNextMoves(from).stream()
                         .filter(
                                 mv -> mv.getTo().equals(to)

@@ -40,6 +40,8 @@ public class NodeManager {
     private Clock clock = Clock.systemUTC();
     @Autowired
     private Clipboard clipboard;
+    @Autowired
+    private DtoConverter dtoConverter;
 
     @RpcMethod
     @Transactional
@@ -79,9 +81,9 @@ public class NodeManager {
         } else {
             result = nodeRepository.getOne(id);
         }
-        NodeDto resultDto = DtoConverter.toDto(result, depth);
+        NodeDto resultDto = dtoConverter.toDto(result, depth, true);
         if (includePath) {
-            resultDto.setPath(map(result.getPath(), n -> DtoConverter.toDto(n, 0)));
+            resultDto.setPath(map(result.getPath(), n -> dtoConverter.toDto(n, 0, false)));
         }
         if (includeCanPaste) {
             resultDto.setCanPaste(validateMoveOfNodesFromClipboard(resultDto.getId()));

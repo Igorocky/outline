@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.igye.outline2.common.OutlineUtils.getSingleValue;
+import static org.igye.outline2.common.OutlineUtils.getSingleValueOrNull;
 
 public interface HasTags {
     List<Tag> getTags();
@@ -27,7 +27,7 @@ public interface HasTags {
                 values.add(tag.getValue());
             }
         });
-        return getSingleValue(values);
+        return getSingleValueOrNull(values);
     }
 
     default List<Tag> getTags(String tagId) {
@@ -41,7 +41,7 @@ public interface HasTags {
     }
 
     default Tag getTagSingle(String tagId) {
-        return getSingleValue(getTags(tagId));
+        return getSingleValueOrNull(getTags(tagId));
     }
 
     default void setTagSingleValue(String tagId, String value) {

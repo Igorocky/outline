@@ -50,6 +50,8 @@ public class ComponentTestBase {
     protected NodeManager nodeManager;
     @Autowired
     protected NodeRepository nodeRepository;
+    @Autowired
+    private DtoConverter dtoConverter;
 
     protected TransactionTemplate transactionTemplate;
 
@@ -65,7 +67,7 @@ public class ComponentTestBase {
 
     protected void printNode(Node node) {
         try {
-            System.out.println(objectMapper.writeValueAsString(DtoConverter.toDto(node, Integer.MAX_VALUE)));
+            System.out.println(objectMapper.writeValueAsString(dtoConverter.toDto(node, Integer.MAX_VALUE, true)));
         } catch (JsonProcessingException e) {
             throw new OutlineException(e);
         }
@@ -73,7 +75,9 @@ public class ComponentTestBase {
 
     protected void printNodes(ObjectHolder<List<Node>> nodes) {
         try {
-            System.out.println(objectMapper.writeValueAsString(map(nodes.get(), n -> DtoConverter.toDto(n,Integer.MAX_VALUE))));
+            System.out.println(objectMapper.writeValueAsString(
+                    map(nodes.get(), n -> dtoConverter.toDto(n,Integer.MAX_VALUE, true))
+            ));
         } catch (JsonProcessingException e) {
             throw new OutlineException(e);
         }

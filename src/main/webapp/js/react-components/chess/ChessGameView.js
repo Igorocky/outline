@@ -26,7 +26,8 @@ const TABS = {
 }
 
 const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
-    const [currTabId, setCurrTabId] = useState(TABS.pgn.id)
+    const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? TABS.moves.id : TABS.pgn.id)
+    const [selectedMove, setSelectedMove] = useState({})
 
     function getCurrGameId() {
         return curNode[NODE.id]
@@ -66,11 +67,71 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
+    function renderPgn() {
+        return paper(re(TextNodeEditable, {
+            key: getCurrGameId() + "-PGN",
+            value:getTagSingleValue(curNode, TAG_ID.CHESS_GAME_PGN),
+            textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+            onSave: ({newValue, onSaved}) => doRpcCall(
+                "rpcSavePgn",
+                {gameId:getCurrGameId(), pgn:newValue},
+                () => {
+                    onSaved()
+                    reloadCurrNode()
+                }
+            ),
+        }))
+    }
+
+    function renderPgnTab() {
+        return RE.Fragment({},
+            renderUrl(),
+            renderPgn()
+        )
+    }
+
+    function renderChessBoard() {
+        return re(ChessBoardFromFen, {fen:selectedMove.fen})
+    }
+
+    function renderMovesTab() {
+        return RE.Container.row.left.top({},{},
+            renderChessBoard(),
+            renderTableWithMoves()
+        )
+    }
+
+    function renderTableWithMoves() {
+        return RE.Paper({style:{maxHeight:"450px", overflow: "scroll"}},RE.Table({size:"small"},
+            RE.TableBody({},
+                RE.TableRow({key: "-1"}, RE.TableCell({
+                        colSpan: 3,
+                        style: {backgroundColor: !selectedMove.fen ? "yellow" : null},
+                        className: "grey-background-on-hover pointer-on-hover",
+                        onClick: () => setSelectedMove({})
+                    },
+                    "Start"
+                )),
+                curNode.parsedPgn.positions.map((fullMove,rowIdx) => RE.TableRow({key:rowIdx},
+                    RE.TableCell({key:"-1"}, rowIdx),
+                    fullMove.map((halfMove,cellIdx) => RE.TableCell({
+                            key:cellIdx,
+                            style: {backgroundColor: selectedMove.fen == halfMove.fen ? "yellow" : null},
+                            className:"grey-background-on-hover pointer-on-hover",
+                            onClick: () => setSelectedMove(halfMove),
+                        },
+                        halfMove.notation
+                    ))
+                ))
+            )
+        ))
+    }
+
     function renderCurrentTabContent() {
         if (TABS.pgn.id == currTabId) {
-            return renderUrl()
+            return renderPgnTab()
         } else if (TABS.moves.id == currTabId) {
-            return "moves"
+            return renderMovesTab()
         } else if (TABS.practice.id == currTabId) {
             return "practice"
         }

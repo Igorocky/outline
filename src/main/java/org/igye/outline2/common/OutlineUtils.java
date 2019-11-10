@@ -54,7 +54,7 @@ public class OutlineUtils {
         OutlineUtils.clock = clock;
     }
 
-    public static <T> T getSingleValue(List<T> values) {
+    public static <T> T getSingleValueOrNull(List<T> values) {
         if (values.size() > 1) {
             throw new OutlineException("values.size() > 1");
         } else if (values.isEmpty()) {
