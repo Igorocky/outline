@@ -1,6 +1,7 @@
 package org.igye.outline2.chess.model;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.common.OutlineUtils;
@@ -17,12 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.common.OutlineUtils.listOf;
-import static org.igye.outline2.common.OutlineUtils.map;
-import static org.igye.outline2.common.OutlineUtils.mapOf;
-import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
-import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
-import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.chess.manager.ChessUtils.X_NAMES;
 import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
 import static org.igye.outline2.chess.manager.ChessUtils.strCoordToInt;
@@ -38,9 +33,16 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
+import static org.igye.outline2.common.OutlineUtils.listOf;
+import static org.igye.outline2.common.OutlineUtils.map;
+import static org.igye.outline2.common.OutlineUtils.mapOf;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 
 public final class Move {
-    private static final Pattern MOVE_COMMAND_PATTERN = Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?([A-H])([1-8])([NBRQ]?)$");
+    private static final Pattern MOVE_COMMAND_PATTERN =
+            Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?(?:X)?([A-H])([1-8])([NBRQ+#]?)$");
     @Getter
     private final Move prevMove;
     @Getter
@@ -52,13 +54,22 @@ public final class Move {
     private boolean whiteQueenCastleAvailable = true;
     private boolean blackKingCastleAvailable = true;
     private boolean blackQueenCastleAvailable = true;
+    private final int halfmoveClock;
+    private final int fullmoveNumber;
     private String shortNotation;
 
     public Move(CellCoords to, ChessBoard resultPosition) {
+        this(to, resultPosition, 0, 1);
+    }
+
+    public Move(CellCoords to, ChessBoard resultPosition, int halfmoveClock, int fullmoveNumber) {
         prevMove=null;
         from = null;
         this.to = to;
         this.resultPosition = resultPosition.clone();
+        this.halfmoveClock = halfmoveClock;
+        this.fullmoveNumber = fullmoveNumber;
+        copyCastlingAbilities(prevMove, this);
     }
 
     private Move(Move prevMove, CellCoords from, CellCoords to, ChessBoard resultPosition) {
@@ -66,6 +77,8 @@ public final class Move {
         this.from = from;
         this.to = to;
         this.resultPosition = resultPosition.clone();
+        halfmoveClock = calcHalfmoveClock(prevMove, to, this.resultPosition);
+        fullmoveNumber = calcFullmoveNumber(prevMove, to, this.resultPosition);
         copyCastlingAbilities(prevMove, this);
     }
 
@@ -78,6 +91,10 @@ public final class Move {
 
     public ChessmanColor getColorOfWhoMadeMove() {
         return resultPosition.getPieceAt(to).getPieceColor();
+    }
+
+    public ChessmanColor getColorOfWhoToMove() {
+        return getColorOfWhoMadeMove().invert();
     }
 
     public ChessBoard getResultPosition() {
@@ -139,60 +156,90 @@ public final class Move {
     }
 
     public Move makeMove(String notation) throws ParseMoveException {
-        String upperCaseNotation = notation.trim().toUpperCase();
-        Matcher matcher = MOVE_COMMAND_PATTERN.matcher(upperCaseNotation);
-        if (!matcher.matches()) {
-            throw new ParseMoveException("'" + notation + "' - move notation format is incorrect.");
+        MoveNotationParts moveNotationParts = new MoveNotationParts();
+        moveNotationParts.setNotation(notation);
+        if ("O-O".equals(notation)) {
+            moveNotationParts.setPieceShape(PieceShape.KING);
+            if (getColorOfWhoToMove() == ChessmanColor.WHITE) {
+                moveNotationParts.setCellToMoveTo(G1);
+            } else {
+                moveNotationParts.setCellToMoveTo(G8);
+            }
+        } else if ("O-O-O".equals(notation)) {
+            moveNotationParts.setPieceShape(PieceShape.KING);
+            if (getColorOfWhoToMove() == ChessmanColor.WHITE) {
+                moveNotationParts.setCellToMoveTo(C1);
+            } else {
+                moveNotationParts.setCellToMoveTo(C8);
+            }
+        } else {
+            String upperCaseNotation = notation.trim().toUpperCase();
+            Matcher matcher = MOVE_COMMAND_PATTERN.matcher(upperCaseNotation);
+            if (!matcher.matches()) {
+                throw new ParseMoveException("'" + notation + "' - could not recognize move notation format.");
+            }
+            moveNotationParts.setPieceShape(
+                    nullSafeGetterWithDefault(
+                            matcher.group(1),
+                            s-> StringUtils.isBlank(s)?null:s,
+                            PieceShape::fromSymbol,
+                            PieceShape.PAWN
+                    )
+            );
+            moveNotationParts.setCoordFromX(strCoordToInt(matcher.group(2)));
+            moveNotationParts.setCoordFromY(strCoordToInt(matcher.group(3)));
+            moveNotationParts.setCellToMoveTo(
+                    new CellCoords(
+                            strCoordToInt(matcher.group(4)),
+                            strCoordToInt(matcher.group(5))
+                    )
+            );
+            moveNotationParts.setReplacement(
+                    nullSafeGetter(
+                            matcher.group(6),
+                            s-> (StringUtils.isBlank(s) || "+".equals(s) || "#".equals(s))?null:s,
+                            PieceShape::fromSymbol
+                    )
+            );
         }
-        PieceShape pieceShape = nullSafeGetterWithDefault(
-                matcher.group(1),
-                s-> StringUtils.isBlank(s)?null:s,
-                PieceShape::fromSymbol,
-                PieceShape.PAWN
-        );
-        Integer coordFromX = strCoordToInt(matcher.group(2));
-        Integer coordFromY = strCoordToInt(matcher.group(3));
-        CellCoords cellToMoveTo = new CellCoords(
-                strCoordToInt(matcher.group(4)),
-                strCoordToInt(matcher.group(5))
-        );
-        PieceShape replacement = nullSafeGetter(
-                matcher.group(6),
-                s-> StringUtils.isBlank(s)?null:s,
-                PieceShape::fromSymbol
-        );
+        return makeMove(moveNotationParts);
+    }
 
+    private Move makeMove(MoveNotationParts mnp) {
         ChessmanColor colorToMove = getColorOfWhoMadeMove().invert();
         Set<CellCoords> availableCellsFrom = findAll(c ->
-                c.getPieceShape() == pieceShape && c.getPieceColor() == colorToMove
+                c.getPieceShape() == mnp.getPieceShape() && c.getPieceColor() == colorToMove
         );
         availableCellsFrom.removeIf(c ->
-                coordFromX != null && c.getX() != coordFromX
-                        || coordFromY != null && c.getY() != coordFromY
+                mnp.getCoordFromX() != null && c.getX() != mnp.getCoordFromX()
+                        || mnp.getCoordFromY() != null && c.getY() != mnp.getCoordFromY()
         );
         if (availableCellsFrom.isEmpty()) {
-            throw new ParseMoveException("'" + notation + "' - cannot find specified piece to move.");
+            throw new ParseMoveException("'" + mnp.getNotation() + "' - cannot find specified piece to move.");
         }
         List<Pair<CellCoords, List<Move>>> possibleMoves = availableCellsFrom.stream()
                 .map(c -> Pair.of(c, this.getPossibleNextMoves(c)))
                 .map(p -> Pair.of(p, p.getRight().stream().map(Move::getTo).collect(Collectors.toSet())))
-                .filter(p -> p.getRight().contains(cellToMoveTo))
+                .filter(p -> p.getRight().contains(mnp.getCellToMoveTo()))
                 .map(pp -> pp.getLeft())
                 .collect(Collectors.toList());
         if (possibleMoves.isEmpty()) {
-            throw new ParseMoveException("'" + notation + "' - move is not possible.");
+            throw new ParseMoveException("'" + mnp.getNotation() + "' - move is not possible.");
         }
         if (possibleMoves.size() > 1) {
             throw new ParseMoveException("Move is ambiguously specified.");
         }
         List<Move> result = possibleMoves.get(0).getRight().stream()
-                .filter(m -> m.getTo().equals(cellToMoveTo))
+                .filter(m -> m.getTo().equals(mnp.getCellToMoveTo()))
                 .collect(Collectors.toList());
-        if (pieceShape == PieceShape.PAWN && (cellToMoveTo.getY() == 0 || cellToMoveTo.getY() == 7)) {
-            if (replacement == null) {
-                throw new ParseMoveException("'" + notation + "' - replacement is not specified.");
+        if (mnp.getPieceShape() == PieceShape.PAWN
+                && (mnp.getCellToMoveTo().getY() == 0 || mnp.getCellToMoveTo().getY() == 7)) {
+            if (mnp.getReplacement() == null) {
+                throw new ParseMoveException("'" + mnp.getNotation() + "' - replacement is not specified.");
             }
-            result.removeIf(m->m.resultPosition.getPieceAt(cellToMoveTo).getPieceShape() != replacement);
+            result.removeIf(
+                    m->m.resultPosition.getPieceAt(mnp.getCellToMoveTo()).getPieceShape() != mnp.getReplacement()
+            );
         }
         if (result.size() != 1) {
             throw new OutlineException("result.size() != 1");
@@ -225,8 +272,6 @@ public final class Move {
         String activeColor = getColorOfWhoMadeMove().invert() == ChessmanColor.WHITE ? "w" : "b";
         String castlingAvailability = getCastlingAvailability();
         String enPassantTargetSquare = getEnPassantTargetSquare();
-        String halfmoveClock = "0";
-        String fullmoveNumber = "1";
 
         StringBuilder sb = new StringBuilder();
         return sb.append(piecePlacement).append(" ")
@@ -248,16 +293,16 @@ public final class Move {
 
     private String getCastlingAvailability() {
         StringBuilder sb = new StringBuilder();
-        if (isCastlingPossible(WHITE_KING)) {
+        if (whiteKingCastleAvailable) {
             sb.append("K");
         }
-        if (isCastlingPossible(WHITE_QUEEN)) {
+        if (whiteQueenCastleAvailable) {
             sb.append("Q");
         }
-        if (isCastlingPossible(BLACK_KING)) {
+        if (blackKingCastleAvailable) {
             sb.append("k");
         }
-        if (isCastlingPossible(BLACK_QUEEN)) {
+        if (blackQueenCastleAvailable) {
             sb.append("q");
         }
         if (sb.length() == 0) {
@@ -477,19 +522,19 @@ public final class Move {
     }
 
     private void copyCastlingAbilities(Move prevMove, Move newMove) {
-        newMove.whiteQueenCastleAvailable = prevMove.whiteQueenCastleAvailable
+        newMove.whiteQueenCastleAvailable = (prevMove == null || prevMove.whiteQueenCastleAvailable)
                         && isWhiteARookOnInitialCell(newMove)
                         && isWhiteKingOnInitialCell(newMove);
 
-        newMove.whiteKingCastleAvailable = prevMove.whiteKingCastleAvailable
+        newMove.whiteKingCastleAvailable = (prevMove == null || prevMove.whiteKingCastleAvailable)
                         && isWhiteHRookOnInitialCell(newMove)
                         && isWhiteKingOnInitialCell(newMove);
 
-        newMove.blackQueenCastleAvailable = prevMove.blackQueenCastleAvailable
+        newMove.blackQueenCastleAvailable = (prevMove == null || prevMove.blackQueenCastleAvailable)
                         && isBlackARookOnInitialCell(newMove)
                         && isBlackKingOnInitialCell(newMove);
 
-        newMove.blackKingCastleAvailable = prevMove.blackKingCastleAvailable
+        newMove.blackKingCastleAvailable = (prevMove == null || prevMove.blackKingCastleAvailable)
                         && isBlackHRookOnInitialCell(newMove)
                         && isBlackKingOnInitialCell(newMove);
 
@@ -636,6 +681,22 @@ public final class Move {
                 .count();
     }
 
+    private int calcHalfmoveClock(Move prevMove, CellCoords to, ChessBoard resultPosition) {
+        if (resultPosition.getPieceAt(to).getPieceShape() == PieceShape.PAWN || prevMove.getPieceAt(to) != null) {
+            return 0;
+        } else {
+            return prevMove.halfmoveClock + 1;
+        }
+    }
+
+    private int calcFullmoveNumber(Move prevMove, CellCoords to, ChessBoard resultPosition) {
+        if (resultPosition.getPieceAt(to).getPieceColor() == ChessmanColor.BLACK) {
+            return prevMove.fullmoveNumber + 1;
+        } else {
+            return prevMove.fullmoveNumber;
+        }
+    }
+
     private static final CellCoords A1 = new CellCoords(0, 0);
     private static final CellCoords B1 = new CellCoords(1, 0);
     private static final CellCoords C1 = new CellCoords(2, 0);
@@ -661,4 +722,15 @@ public final class Move {
             .checkPossibleCastlings(false)
             .performSelfCheckValidation(false)
             .build();
+
+    @Getter
+    @Setter
+    private static class MoveNotationParts {
+        private String notation;
+        private PieceShape pieceShape;
+        private Integer coordFromX;
+        private Integer coordFromY;
+        private CellCoords cellToMoveTo;
+        private PieceShape replacement;
+    }
 }

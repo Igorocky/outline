@@ -13,7 +13,7 @@ import lombok.Setter;
 @Builder
 public class MoveDto {
     private String notation;
-    private String board;
+    private String fen;
     private int cellFrom;
     private int cellTo;
 }

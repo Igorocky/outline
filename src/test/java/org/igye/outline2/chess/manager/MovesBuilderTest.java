@@ -1192,7 +1192,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "k");
-        assertEquals("'k' - move notation format is incorrect.", view.getCommandErrorMsg());
+        assertEquals("'k' - could not recognize move notation format.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b

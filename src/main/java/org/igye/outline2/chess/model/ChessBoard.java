@@ -26,10 +26,6 @@ public class ChessBoard {
         }
     }
 
-    public ChessmanType[][] getBoard() {
-        return board;
-    }
-
     public void placePiece(CellCoords coords, ChessmanType chessman) {
         placePiece(coords.getX(), coords.getY(), chessman);
     }
