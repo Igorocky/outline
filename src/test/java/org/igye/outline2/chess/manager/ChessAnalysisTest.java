@@ -4,8 +4,6 @@ import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.Node;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.*;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;

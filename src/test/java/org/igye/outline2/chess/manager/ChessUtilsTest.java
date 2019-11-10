@@ -4,7 +4,6 @@ import org.igye.outline2.common.Randoms;
 import org.junit.Test;
 
 import static org.igye.outline2.common.Randoms.integer;
-import static org.junit.Assert.*;
 
 public class ChessUtilsTest {
 
