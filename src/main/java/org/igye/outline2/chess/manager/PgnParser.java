@@ -34,10 +34,14 @@ public class PgnParser {
         for (String movePairStr : movesArr) {
             if (!StringUtils.isBlank(movePairStr)) {
                 String[] singleMoves = movePairStr.split("\\s+");
-                parsedPgnDto.getMoves().add(Arrays.asList(
-                        MoveDto.builder().notation(singleMoves[0]).build(),
-                        MoveDto.builder().notation(singleMoves[1]).build()
-                ));
+                final String wMove = singleMoves[0];
+                final String bMove = singleMoves[1];
+                final ArrayList<MoveDto> movePair = new ArrayList<>();
+                parsedPgnDto.getMoves().add(movePair);
+                movePair.add(MoveDto.builder().notation(wMove).build());
+                if (!("1-0".equals(bMove) || "0-1".equals(bMove) || "1/2-1/2".equals(bMove))) {
+                    movePair.add(MoveDto.builder().notation(bMove).build());
+                }
             }
         }
         setFen(parsedPgnDto);

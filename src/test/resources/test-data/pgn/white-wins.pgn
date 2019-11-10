@@ -1,0 +1,29 @@
+[Event "Live Chess"]
+[Site "Chess.com"]
+[Date "2019.10.22"]
+[Round "-"]
+[White "asdgd"]
+[Black "kuibvgads"]
+[Result "1-0"]
+[ECO "C20"]
+[ECOUrl "https://www.chess.com/openings/C20-Kings-Pawn-Opening-Leonardis-Variation-2...Nf6"]
+[CurrentPosition "6k1/1p2qppp/1R6/8/3pPPb1/r7/2BK2PP/7R b - -"]
+[Timezone "UTC"]
+[UTCDate "2019.10.22"]
+[UTCTime "00:20:45"]
+[WhiteElo "777"]
+[BlackElo "711"]
+[TimeControl "600"]
+[Termination "asdgd won on time"]
+[StartTime "00:20:45"]
+[EndDate "2019.10.22"]
+[EndTime "00:36:23"]
+[Link "https://www.chess.com/live/game/5334232321423"]
+
+1. e4 e5 2. d3 Nf6 3. Nf3 Bb4+ 4. c3 Ba5 5. Nxe5 d5 6. Bg5 O-O 7. b4 Bb6 8. Bxf6
+Qxf6 9. Ng4 Qd8 10. Nd2 d4 11. c4 Nc6 12. c5 Nxb4 13. cxb6 axb6 14. Qb3 Be6 15.
+Qxb4 Bxg4 16. Nf3 c5 17. Qc4 Be6 18. Qc2 c4 19. Ne5 cxd3 20. Bxd3 Qd6 21. f4
+Qb4+ 22. Ke2 Rfc8 23. Rab1 Rxc2+ 24. Bxc2 Qd6 25. Ng6 Rxa2 26. Ne7+ Qxe7 27.
+Rxb6 Bg4+ 28. Kd3 Ra3+ 29. Kd2 {<br /><br /><em>Game may have continued...</em>}
+(29. Kd2 Qc5 30. Rb3 Rxb3 31. Rd1 Rd3+ 32. Ke1 Qxc2 33. Rd2 Rxd2 34. Kf1 Qc1#)
+1-0

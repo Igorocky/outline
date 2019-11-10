@@ -93,4 +93,20 @@ public class PgnParserTest {
                 parsedPgnDto.getMoves().get(19).get(1).getFen()
         );
     }
+
+    @Test
+    public void parsePgn_doesnt_fail_when_white_wins() throws IOException {
+        //given
+        String pgnStr = OutlineUtils.readStringFromClasspath("/test-data/pgn/white-wins.pgn");
+
+        //when
+        ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgnStr);
+
+        //then
+        assertEquals(1, parsedPgnDto.getMoves().get(28).size());
+        assertEquals(
+                "6k1/1p2qppp/1R6/8/3pPPb1/r7/2BK2PP/7R b - - 4 29",
+                parsedPgnDto.getMoves().get(28).get(0).getFen()
+        );
+    }
 }
