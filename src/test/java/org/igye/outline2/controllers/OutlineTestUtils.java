@@ -31,6 +31,8 @@ public class OutlineTestUtils {
     public static final String NODE = "NODE";
     public static final String CREATED_WHEN = "CREATED_WHEN";
     public static final Calendar UTC_CALENDAR = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    public static final String STOCKFISH_CMD = "D:/Install/chess/stockfish-10-win/Windows/stockfish_10_x64.exe";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static void deleteAllNodes(NodeRepository nodeRepository) {
         nodeRepository.findByParentNodeId(null).forEach(nodeRepository::delete);
@@ -187,5 +189,9 @@ public class OutlineTestUtils {
             }
         }
         return false;
+    }
+
+    public static String toJson(Object obj) throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(obj);
     }
 }

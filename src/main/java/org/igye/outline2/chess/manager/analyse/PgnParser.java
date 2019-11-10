@@ -1,7 +1,7 @@
-package org.igye.outline2.chess.manager;
+package org.igye.outline2.chess.manager.analyse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline2.chess.dto.MoveDto;
+import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
@@ -9,10 +9,11 @@ import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.exceptions.OutlineException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
 
 public class PgnParser {
 
@@ -22,7 +23,7 @@ public class PgnParser {
         ParsedPgnDto parsedPgnDto = new ParsedPgnDto();
         parsedPgnDto.setWPlayer(getAttrValue(pgn, "White"));
         parsedPgnDto.setBPlayer(getAttrValue(pgn, "Black"));
-        parsedPgnDto.setMoves(new ArrayList<>());
+        parsedPgnDto.setPositions(new ArrayList<>());
 
         Matcher emptyLineMatcher = Pattern.compile("(\r?\n){2,}").matcher(pgn);
         emptyLineMatcher.find();
@@ -36,11 +37,11 @@ public class PgnParser {
                 String[] singleMoves = movePairStr.split("\\s+");
                 final String wMove = singleMoves[0];
                 final String bMove = singleMoves[1];
-                final ArrayList<MoveDto> movePair = new ArrayList<>();
-                parsedPgnDto.getMoves().add(movePair);
-                movePair.add(MoveDto.builder().notation(wMove).build());
+                final ArrayList<PositionDto> movePair = new ArrayList<>();
+                parsedPgnDto.getPositions().add(movePair);
+                movePair.add(PositionDto.builder().notation(wMove).build());
                 if (!("1-0".equals(bMove) || "0-1".equals(bMove) || "1/2-1/2".equals(bMove))) {
-                    movePair.add(MoveDto.builder().notation(bMove).build());
+                    movePair.add(PositionDto.builder().notation(bMove).build());
                 }
             }
         }
@@ -50,18 +51,13 @@ public class PgnParser {
 
     private static void setFen(ParsedPgnDto parsedPgnDto) {
         Move currMove = new Move(new CellCoords(0,7), new ChessBoard(START_POSITION_FEN));
-        for (List<MoveDto> movePair : parsedPgnDto.getMoves()) {
-            for (MoveDto moveDto : movePair) {
-                currMove = currMove.makeMove(moveDto.getNotation());
-                moveDto.setFen(currMove.toFen());
-                moveDto.setCellFrom(cellCoordsToAbsNum(currMove.getFrom()));
-                moveDto.setCellTo(cellCoordsToAbsNum(currMove.getTo()));
+        for (List<PositionDto> movePair : parsedPgnDto.getPositions()) {
+            for (PositionDto positionDto : movePair) {
+                currMove = currMove.makeMove(positionDto.getNotation());
+                positionDto.setFen(currMove.toFen());
+                positionDto.setMove(coordsToString(currMove.getFrom()) + coordsToString(currMove.getTo()));
             }
         }
-    }
-
-    private static int cellCoordsToAbsNum(CellCoords coords) {
-        return coords.getY()*8 + coords.getX();
     }
 
     private static String removeCurlyBraces(String pgn) {

@@ -6,14 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MoveDto {
-    private String notation;
-    private String fen;
-    private int cellFrom;
-    private int cellTo;
+public class PositionAnalysisDto {
+    private List<MoveAnalysisDto> possibleMoves;
 }

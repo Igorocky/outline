@@ -400,4 +400,8 @@ public class OutlineUtils {
         }
         return sb.toString();
     }
+
+    public static Function<String, Boolean> contains(String subStr) {
+        return str -> str.contains(subStr);
+    }
 }

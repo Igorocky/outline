@@ -10,5 +10,6 @@ import java.util.List;
 public class ParsedPgnDto {
     private String wPlayer;
     private String bPlayer;
-    private List<List<MoveDto>> moves;
+    private List<List<PositionDto>> positions;
+    private String analysisInfo;
 }

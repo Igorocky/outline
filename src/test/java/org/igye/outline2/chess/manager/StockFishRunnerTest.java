@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
+import static org.igye.outline2.controllers.OutlineTestUtils.STOCKFISH_CMD;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a2;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a3;
@@ -76,9 +77,6 @@ import static org.igye.outline2.controllers.chess.CellCoordsConstants.h8;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
 
 public class StockFishRunnerTest {
-
-    private static final String STOCKFISH_CMD = "D:/Install/chess/stockfish-10-win/Windows/stockfish_10_x64.exe";
-
     @Test
     public void getNextMove_parsesResponseWithoutPawnPromotion() throws IOException {
         //given
