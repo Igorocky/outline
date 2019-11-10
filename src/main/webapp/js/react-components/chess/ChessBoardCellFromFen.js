@@ -34,7 +34,7 @@ const ChessBoardCellFromFen = ({chCode,x,y,selected}) => {
         selected
             ?SVG.rect({
                 x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,
-                style:{fill:"green", fillOpacity:"0.6"},
+                style:{fill:"green", fillOpacity:"0.4"},
             })
             :null,
         chCode

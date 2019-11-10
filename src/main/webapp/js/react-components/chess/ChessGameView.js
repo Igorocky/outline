@@ -91,7 +91,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     }
 
     function renderChessBoard() {
-        return re(ChessBoardFromFen, {fen:selectedMove.fen})
+        return re(ChessBoardFromFen, {fen:selectedMove.fen, moveFromTo:selectedMove.move})
     }
 
     function renderMovesTab() {

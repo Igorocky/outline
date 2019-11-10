@@ -1,7 +1,13 @@
 
 const ChessBoardFromFen = React.memo( ({fen, moveFromTo}) => {
 
-    const board = _.map(_.range(0, 8), x => _.map(_.range(0, 8), y => ({x:x,y:y})))
+    const fromX = moveFromTo?moveFromTo.charCodeAt(0)-97:null
+    const fromY = moveFromTo?moveFromTo.charCodeAt(1)-49:null
+    const toX = moveFromTo?moveFromTo.charCodeAt(2)-97:null
+    const toY = moveFromTo?moveFromTo.charCodeAt(3)-49:null
+    const board = _.map(_.range(0, 8), x => _.map(_.range(0, 8), y => ({
+        x:x,y:y,selected: x==fromX && y==fromY || x==toX && y==toY
+    })))
 
     if (fen) {
         decodeFen(fen)
