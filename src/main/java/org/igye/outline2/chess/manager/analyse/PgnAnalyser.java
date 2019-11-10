@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.igye.outline2.chess.manager.StockFishRunner.BEST_MOVE_ANS_PATTERN;
 import static org.igye.outline2.common.OutlineUtils.contains;
 
 public class PgnAnalyser {
@@ -53,6 +54,7 @@ public class PgnAnalyser {
             stockfish.send("uci");
             stockfish.readTill(contains("uciok"));
             stockfish.send("setoption name MultiPV value 5");
+            stockfish.send("setoption name UCI_AnalyseMode value true");
             stockfish.send("ucinewgame");
 
             for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
@@ -73,17 +75,17 @@ public class PgnAnalyser {
                         + (depth != null?(" depth " + depth):"")
                         + (moveTimeSec != null?(" movetime " + moveTimeSec*1000):"")
         );
-        return collectAnalysisData(stockfish, isWhite(fen));
+        return collectAnalysisData(stockfish);
     }
 
     protected static List<StockfishInfoOption> parseInfo(String info) {
         return parseLine(1, info.split("\\s+"));
     }
 
-    private static PositionAnalysisDto collectAnalysisData(ConsoleAppRunner stockfish,
-                                                           boolean isWhite) throws IOException {
+    private static PositionAnalysisDto collectAnalysisData(ConsoleAppRunner stockfish) throws IOException {
         PositionAnalysisDto result = new PositionAnalysisDto();
         HashMap<String, MoveAnalysisDto> foundMoves = new HashMap<>();
+        final String[] bestMove = new String[1];
         stockfish.read(line -> {
             if (line.startsWith("info ")) {
                 Map<String, List<StockfishInfoOption>> options = parseInfo(line).stream()
@@ -113,6 +115,10 @@ public class PgnAnalyser {
                     );
                 }
             } else if (line.startsWith("bestmove ")) {
+                Matcher bestMoveMatcher = BEST_MOVE_ANS_PATTERN.matcher(line);
+                if (bestMoveMatcher.find()) {
+                    bestMove[0] = bestMoveMatcher.group(1);
+                }
                 return false;
             }
             return true;
@@ -123,44 +129,41 @@ public class PgnAnalyser {
             result.setPossibleMoves(
                     possibleMoves.stream()
                             .filter(mv -> mv.getDepth() == maxDepth)
-                            .sorted((m1,m2) -> compareMoves(m1,m2,isWhite))
+                            .sorted(PgnAnalyser::compareMoves)
                             .collect(Collectors.toList())
             );
+            if (!bestMove[0].equals(result.getPossibleMoves().get(0).getMove())) {
+                throw new OutlineException("!bestMove[0].equals(result.getPossibleMoves().get(0).getMove())");
+            }
         } else {
+            if (bestMove[0] != null) {
+                throw new OutlineException("bestMove[0] != null: bestMove[0] == " + bestMove[0]);
+            }
             result.setPossibleMoves(Collections.emptyList());
         }
         return result;
     }
 
-    protected static int compareMoves(MoveAnalysisDto m1, MoveAnalysisDto m2, boolean isWhite) {
-        int result;
+    protected static int compareMoves(MoveAnalysisDto m1, MoveAnalysisDto m2) {
         if (m1.getMate() != null) {
             if (m2.getMate() != null) {
-                double mate1 = 1.0 / m1.getMate();
-                double mate2 = 1.0 / m2.getMate();
-                result = mate1 >= mate2 ? -1 : 1;
+                if (m1.getMate().equals(m2.getMate())) {
+                    return 0;
+                } else {
+                    return m1.getMate() < m2.getMate() ? -1 : 1;
+                }
             } else {
-                result = m1.getMate() > 0 ? -1 : 1;
+                return -1;
             }
         } else {
             if (m2.getMate() != null) {
-                result = m2.getMate() > 0 ? 1 : -1;
+                return 1;
             } else if (m1.getScore().equals(m2.getScore())) {
-                result = 0;
-            } else if (m1.getScore() > m2.getScore()) {
-                result = -1;
+                return  0;
             } else {
-                result = 1;
+                return m1.getScore() > m2.getScore() ? -1 : 1;
             }
         }
-        if (!isWhite) {
-            result *= -1;
-        }
-        return result;
-    }
-
-    private static boolean isWhite(String fen) {
-        return "w".equals(fen.split("\\s")[1]);
     }
 
     private static List<StockfishInfoOption> parseLine(int idx, String[] args) {

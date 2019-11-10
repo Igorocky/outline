@@ -16,7 +16,7 @@ import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
 public class StockFishRunner {
 
-    public static final Pattern BEST_MOVE_ANS_PATTERN = Pattern.compile("^bestmove ([a-h])([1-8])([a-h])([1-8])([nbrq]?).*");
+    public static final Pattern BEST_MOVE_ANS_PATTERN = Pattern.compile("^bestmove (([a-h])([1-8])([a-h])([1-8])([nbrq]?)).*");
 
     public static Move getNextMove(String runStockfishCmd, Move currPosition, int depth, int seconds) throws IOException {
         ConsoleAppRunner stockfish = new ConsoleAppRunner(runStockfishCmd);
@@ -27,11 +27,11 @@ public class StockFishRunner {
         stockfish.send("position fen " + currPosition.toFen());
         stockfish.send("go depth " + depth + " movetime " + seconds*1000);
         Matcher matcher = stockfish.readTill(BEST_MOVE_ANS_PATTERN);
-        CellCoords from = new CellCoords(strCoordToInt(matcher.group(1)), strCoordToInt(matcher.group(2)));
-        CellCoords to = new CellCoords(strCoordToInt(matcher.group(3)), strCoordToInt(matcher.group(4)));
+        CellCoords from = new CellCoords(strCoordToInt(matcher.group(2)), strCoordToInt(matcher.group(3)));
+        CellCoords to = new CellCoords(strCoordToInt(matcher.group(4)), strCoordToInt(matcher.group(5)));
         PieceShape replacement = nullSafeGetter(
-                matcher.group(5),
-                s-> StringUtils.isBlank(s)?null:s.toUpperCase(),
+                matcher.group(6),
+                s -> StringUtils.isBlank(s)?null:s.toUpperCase(),
                 PieceShape::fromSymbol
         );
         Move result = currPosition.makeMove(from, to, replacement);

@@ -223,15 +223,13 @@ public class PgnAnalyserTest {
         //then
         int halfMoveCnt = 0;
         for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
-            boolean isWhite = true;
             for (PositionDto halfMove : fullMove) {
                 halfMoveCnt++;
-                isWhite = !isWhite;
                 List<MoveAnalysisDto> moves = halfMove.getAnalysis().getPossibleMoves();
                 for (int i = 0; i < moves.size() - 1; i++) {
-                    int cmpSgn = compareMoves(moves.get(i), moves.get(i + 1), isWhite);
+                    int cmpSgn = compareMoves(moves.get(i), moves.get(i + 1));
                     assertTrue(
-                            "error for i = " + i + ", isWhite = " + isWhite + ", cmpSgn = " + cmpSgn + ":\n" + toJson(halfMove),
+                            "error for i = " + i + ", cmpSgn = " + cmpSgn + ":\n" + toJson(halfMove),
                             cmpSgn == -1 || cmpSgn == 0
                     );
                 }
@@ -244,60 +242,26 @@ public class PgnAnalyserTest {
     public void compareMoves_compares_moves_correctly() {
         MoveAnalysisDto m1 = move(null, 58);
         MoveAnalysisDto m2 = move(null, 65);
-        assertTrue(compareMoves(m1,m2,true) == -compareMoves(m2,m1,true));
-        assertTrue(compareMoves(m1,m2,false) == -compareMoves(m2,m1,false));
+        assertTrue(compareMoves(m1,m2) == -compareMoves(m2,m1));
+        assertTrue(compareMoves(m1,m2) == -compareMoves(m2,m1));
 
         m1 = move(null, -150);
         m2 = move(null, -150);
-        assertTrue(compareMoves(m1,m2,true) == -compareMoves(m2,m1,true));
-        assertTrue(compareMoves(m1,m2,false) == -compareMoves(m2,m1,false));
+        assertTrue(compareMoves(m1,m2) == -compareMoves(m2,m1));
+        assertTrue(compareMoves(m1,m2) == -compareMoves(m2,m1));
 
-        assertMovesOrder(true, move(1,null), move(3,null));
-        assertMovesOrder(false, move(3,null), move(1,null));
-
-        assertMovesOrder(true, move(1,null), move(-3,null));
-        assertMovesOrder(false, move(-3,null), move(1,null));
-
-        assertMovesOrder(true, move(3,null), move(-1,null));
-        assertMovesOrder(false, move(-1,null), move(3,null));
-
-        assertMovesOrder(true, move(-3,null), move(-1,null));
-        assertMovesOrder(false, move(-1,null), move(-3,null));
-
-
-        assertMovesOrder(true, move(2,null), move(null,5));
-        assertMovesOrder(false, move(null,5), move(2,null));
-
-        assertMovesOrder(true, move(2,null), move(null,-5));
-        assertMovesOrder(false, move(null,-5), move(2,null));
-
-        assertMovesOrder(true, move(null,5), move(-2,null));
-        assertMovesOrder(false, move(-2,null), move(null,5));
-
-        assertMovesOrder(true, move(null,-5), move(-2,null));
-        assertMovesOrder(false, move(-2,null), move(null,-5));
-
-
-        assertMovesOrder(true, move(null,7), move(null,4));
-        assertMovesOrder(false, move(null,4), move(null,7));
-
-        assertMovesOrder(true, move(null,4), move(null,-7));
-        assertMovesOrder(false, move(null,-7), move(null,4));
-
-        assertMovesOrder(true, move(null,7), move(null,-4));
-        assertMovesOrder(false, move(null,-4), move(null,7));
-
-        assertMovesOrder(true, move(null,-4), move(null,-7));
-        assertMovesOrder(false, move(null,-7), move(null,-4));
+        assertMovesOrder(move(1,null), move(3,null));
+        assertMovesOrder(move(2,null), move(null,5));
+        assertMovesOrder(move(null,7), move(null,4));
     }
 
-    private void assertMovesOrder(boolean isWhite, MoveAnalysisDto m1, MoveAnalysisDto m2) {
+    private void assertMovesOrder(MoveAnalysisDto m1, MoveAnalysisDto m2) {
         ArrayList<MoveAnalysisDto> moves1 = new ArrayList<>(listOf(m1,m2));
-        Collections.sort(moves1, (a,b) -> compareMoves(a,b,isWhite));
+        Collections.sort(moves1, PgnAnalyser::compareMoves);
         assertTrue(moves1.get(0) == m1);
 
         ArrayList<MoveAnalysisDto> moves2 = new ArrayList<>(listOf(m2,m1));
-        Collections.sort(moves2, (a,b) -> compareMoves(a,b,isWhite));
+        Collections.sort(moves2, PgnAnalyser::compareMoves);
         assertTrue(moves2.get(0) == m1);
     }
 
