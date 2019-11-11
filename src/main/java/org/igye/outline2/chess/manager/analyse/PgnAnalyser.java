@@ -90,14 +90,14 @@ public class PgnAnalyser {
                         + (depth != null?(" depth " + depth):"")
                         + (moveTimeSec != null?(" movetime " + moveTimeSec*1000):"")
         );
-        return collectAnalysisData(stockfish);
+        return collectAnalysisData(stockfish, isBlackToMove(fen));
     }
 
     protected static List<StockfishInfoOption> parseInfo(String info) {
         return parseLine(1, info.split("\\s+"));
     }
 
-    private static PositionAnalysisDto collectAnalysisData(ConsoleAppRunner stockfish) throws IOException {
+    private static PositionAnalysisDto collectAnalysisData(ConsoleAppRunner stockfish, boolean isBlackToMove) throws IOException {
         PositionAnalysisDto result = new PositionAnalysisDto();
         HashMap<String, MoveAnalysisDto> foundMoves = new HashMap<>();
         final String[] bestMove = new String[1];
@@ -152,6 +152,16 @@ public class PgnAnalyser {
             result.setPossibleMoves(Collections.emptyList());
         }
         checkBestMove(bestMove[0], result.getPossibleMoves());
+        if (isBlackToMove) {
+            for (MoveAnalysisDto possibleMove : result.getPossibleMoves()) {
+                if (possibleMove.getMate() != null) {
+                    possibleMove.setMate(-possibleMove.getMate());
+                }
+                if (possibleMove.getScore() != null) {
+                    possibleMove.setScore(-possibleMove.getScore());
+                }
+            }
+        }
         return result;
     }
 
@@ -214,6 +224,10 @@ public class PgnAnalyser {
                 return m1.getScore() > m2.getScore() ? -1 : 1;
             }
         }
+    }
+
+    private static boolean isBlackToMove(String fen) {
+        return "b".equals(fen.split("\\s")[1]);
     }
 
     private static List<StockfishInfoOption> parseLine(int idx, String[] args) {

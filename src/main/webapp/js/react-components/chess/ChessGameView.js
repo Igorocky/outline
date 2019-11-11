@@ -139,6 +139,13 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     RE.Icon({}, "play_arrow")),
                 RE.Button({disabled:!last, onClick: () => setSelectedMove(last)},
                     RE.Icon({}, "fast_forward")),
+                RE.Button({
+                        disabled:!selectedMove.fen,
+                        onClick: () => window.open(
+                            "https://lichess.org/analysis/standard/" + selectedMove.fen.replace(" ","_")
+                        )
+                    },
+                    RE.Icon({}, "equalizer")),
             )
         )
     }
@@ -149,6 +156,19 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             renderTableWithMoves(),
             RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse")
         )
+    }
+
+    function getAnalysisInfo(halfMove) {
+        if (halfMove.analysis && halfMove.analysis.possibleMoves && halfMove.analysis.possibleMoves.length > 0) {
+            const bestMove = halfMove.analysis.possibleMoves[0]
+            if (bestMove.mate) {
+                return "(#" + bestMove.mate + ")"
+            } else {
+                return "(" + bestMove.score + ")"
+            }
+        } else {
+            return ""
+        }
     }
 
     function renderTableWithMoves() {
@@ -170,7 +190,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                             className:"grey-background-on-hover pointer-on-hover",
                             onClick: () => setSelectedMove(halfMove),
                         },
-                        halfMove.notation
+                        halfMove.notation + getAnalysisInfo(halfMove)
                     ))
                 ))
             )
