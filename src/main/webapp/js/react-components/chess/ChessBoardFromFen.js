@@ -1,12 +1,12 @@
 
-const ChessBoardFromFen = React.memo( ({fen, moveFromTo}) => {
+const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipped}) => {
 
     const fromX = moveFromTo?moveFromTo.charCodeAt(0)-97:null
     const fromY = moveFromTo?moveFromTo.charCodeAt(1)-49:null
     const toX = moveFromTo?moveFromTo.charCodeAt(2)-97:null
     const toY = moveFromTo?moveFromTo.charCodeAt(3)-49:null
     const board = _.map(_.range(0, 8), x => _.map(_.range(0, 8), y => ({
-        x:x,y:y,selected: x==fromX && y==fromY || x==toX && y==toY
+        x:flipped?7-x:x,y:flipped?7-y:y,selected: x==fromX && y==fromY || x==toX && y==toY
     })))
 
     if (fen) {
@@ -37,14 +37,21 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo}) => {
         }
     }
 
-    return RE.svg({width:cellSize*8, height:cellSize*8},
-        _.range(7, -1, -1).map(y =>
-            _.range(0, 8).map(x => re(ChessBoardCellFromFen, {
-                key:x+"-"+y,
-                chCode:board[x][y].chCode,
-                x:x,y:y,
-                selected:board[x][y].selected
-            }))
-        )
+    const upperPlayer = !flipped?wPlayer:bPlayer
+    const lowerPlayer = !flipped?bPlayer:wPlayer
+    return RE.Container.col.top.left({},{},
+        upperPlayer,
+        RE.svg({width:cellSizeFromFen*8, height:cellSizeFromFen*8},
+            _.range(7, -1, -1).map(y =>
+                _.range(0, 8).map(x => re(ChessBoardCellFromFen, {
+                    key:x+"-"+y,
+                    chCode:board[x][y].chCode,
+                    x:board[x][y].x,
+                    y:board[x][y].y,
+                    selected:board[x][y].selected
+                }))
+            )
+        ),
+        lowerPlayer,
     )
-}, (o,n) => o.fen == n.fen)
+}, (o,n) => o.fen == n.fen && o.flipped == n.flipped)

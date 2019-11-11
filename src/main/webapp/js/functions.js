@@ -125,3 +125,9 @@ function getTagSingleValue(node, tagId, defaultValue) {
         return defaultValue
     }
 }
+
+function flatMap(list, func) {
+    const res = []
+    _.each(list, elem=>res.push(...func(elem)))
+    return res
+}

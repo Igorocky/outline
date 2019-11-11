@@ -28,6 +28,7 @@ const TABS = {
 const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
     const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? TABS.moves.id : TABS.pgn.id)
     const [selectedMove, setSelectedMove] = useState({})
+    const [flipped, setFlipped] = useState(false)
 
     function getCurrGameId() {
         return curNode[NODE.id]
@@ -90,8 +91,55 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
+    function findPositionsToNavigateTo() {
+        let result = {}
+        const allHalfMoves = flatMap(curNode.parsedPgn.positions, fullMove => fullMove);
+        if (!selectedMove.fen) {
+            result = {next: allHalfMoves[0]}
+        } else {
+            result = {...result, prev: {}}
+            allHalfMoves.forEach(halfMove => {
+                if (!result.next) {
+                    if (halfMove.fen == selectedMove.fen) {
+                        result = {...result, current: halfMove}
+                    } else if (result.current) {
+                        result = {...result, next: halfMove}
+                    } else {
+                        result = {...result, prev: halfMove}
+                    }
+                }
+            })
+        }
+        result = {
+            ...result,
+            first: result.prev?{}:null,
+            last: result.next?allHalfMoves[allHalfMoves.length-1]:null
+        }
+        return result
+    }
+
     function renderChessBoard() {
-        return re(ChessBoardFromFen, {fen:selectedMove.fen, moveFromTo:selectedMove.move})
+        const {first, prev, next, last} = findPositionsToNavigateTo()
+        return RE.Container.col.top.center({},{},
+            re(ChessBoardFromFen, {
+                fen:selectedMove.fen,
+                moveFromTo:selectedMove.move,
+                wPlayer:curNode.parsedPgn.wplayer,
+                bPlayer:curNode.parsedPgn.bplayer,
+                flipped: flipped
+            }),
+            RE.ButtonGroup({variant:"contained", size:"small"},
+                RE.Button({},RE.Icon({onClick: () => setFlipped(!flipped)}, "cached")),
+                RE.Button({disabled:!first, onClick: () => setSelectedMove(first)},
+                    RE.Icon({}, "fast_rewind")),
+                RE.Button({disabled:!prev, onClick: () => setSelectedMove(prev)},
+                    RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow")),
+                RE.Button({disabled:!next, onClick: () => setSelectedMove(next)},
+                    RE.Icon({}, "play_arrow")),
+                RE.Button({disabled:!last, onClick: () => setSelectedMove(last)},
+                    RE.Icon({}, "fast_forward")),
+            )
+        )
     }
 
     function renderMovesTab() {
@@ -113,7 +161,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     "Start"
                 )),
                 curNode.parsedPgn.positions.map((fullMove,rowIdx) => RE.TableRow({key:rowIdx},
-                    RE.TableCell({key:"-1"}, rowIdx),
+                    RE.TableCell({key:"-1"}, rowIdx+1),
                     fullMove.map((halfMove,cellIdx) => RE.TableCell({
                             key:cellIdx,
                             style: {backgroundColor: selectedMove.fen == halfMove.fen ? "yellow" : null},
