@@ -1,5 +1,7 @@
 package org.igye.outline2.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.hibernate.Session;
 import org.igye.outline2.dto.OptVal;
@@ -43,6 +45,7 @@ public class OutlineUtils {
     public static final long MILLIS_IN_DAY = MILLIS_IN_HOUR * HOURS_IN_DAY;
     public static final long MILLIS_IN_MONTH = MILLIS_IN_DAY * DAYS_IN_MONTH;
     private static final char[] DURATION_UNITS = new char[]{'M','d','h','m'};
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static Clock clock = Clock.systemUTC();
 
@@ -403,5 +406,13 @@ public class OutlineUtils {
 
     public static Function<String, Boolean> contains(String subStr) {
         return str -> str.contains(subStr);
+    }
+
+    public static String toJson(Object obj) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new OutlineException(e);
+        }
     }
 }

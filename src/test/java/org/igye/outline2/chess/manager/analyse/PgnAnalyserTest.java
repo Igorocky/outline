@@ -2,9 +2,9 @@ package org.igye.outline2.chess.manager.analyse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.MoveAnalysisDto;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.dto.PositionAnalysisDto;
 import org.igye.outline2.chess.dto.PositionDto;
-import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.model.stockfish.CpuloadStockfishInfoOption;
 import org.igye.outline2.chess.model.stockfish.CurrlineStockfishInfoOption;
 import org.igye.outline2.chess.model.stockfish.CurrmoveStockfishInfoOption;
@@ -36,8 +36,8 @@ import java.util.List;
 import static org.igye.outline2.chess.manager.analyse.PgnAnalyser.compareMoves;
 import static org.igye.outline2.common.OutlineUtils.contains;
 import static org.igye.outline2.common.OutlineUtils.listOf;
+import static org.igye.outline2.common.OutlineUtils.toJson;
 import static org.igye.outline2.controllers.OutlineTestUtils.STOCKFISH_CMD;
-import static org.igye.outline2.controllers.OutlineTestUtils.toJson;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -192,6 +192,7 @@ public class PgnAnalyserTest {
             stockfish.send("uci");
             stockfish.readTill(contains("uciok"));
             stockfish.send("setoption name MultiPV value 5");
+//            stockfish.send("setoption name Threads value 8");
             stockfish.send("ucinewgame");
 
             //when
@@ -203,7 +204,6 @@ public class PgnAnalyserTest {
             );
 
             //then
-            System.out.println("++++++++++" + toJson(positionAnalysisDto));
             Assert.assertEquals("d2e1", positionAnalysisDto.getPossibleMoves().get(0).getMove());
             Assert.assertEquals("c1b1", positionAnalysisDto.getPossibleMoves().get(1).getMove());
             Assert.assertEquals("c2c3", positionAnalysisDto.getPossibleMoves().get(2).getMove());
@@ -218,7 +218,7 @@ public class PgnAnalyserTest {
         String pgnStr = OutlineUtils.readStringFromClasspath("/test-data/pgn/test-analysis.pgn");
 
         //when
-        ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(STOCKFISH_CMD, pgnStr, 5, 300);
+        ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(STOCKFISH_CMD, pgnStr, 5, 300, null);
 
         //then
         int halfMoveCnt = 0;

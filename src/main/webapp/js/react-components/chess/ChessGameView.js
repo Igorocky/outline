@@ -29,6 +29,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? TABS.moves.id : TABS.pgn.id)
     const [selectedMove, setSelectedMove] = useState({})
     const [flipped, setFlipped] = useState(false)
+    const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
 
     function getCurrGameId() {
         return curNode[NODE.id]
@@ -145,7 +146,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     function renderMovesTab() {
         return RE.Container.row.left.top({},{},
             renderChessBoard(),
-            renderTableWithMoves()
+            renderTableWithMoves(),
+            RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse")
         )
     }
 
@@ -207,7 +209,34 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     return RE.Container.col.top.left({},{},
         RE.Container.row.left.top({},{},
-            renderTabs()
+            renderTabs(),
+            analysisWindowIsOpened
+                ?re(GameAnalysisWindow, {gameId:getCurrGameId(), onDone: () => setAnalysisWindowIsOpened(false)})
+                :null
+        )
+    )
+}
+
+const GameAnalysisWindow = ({gameId, onDone}) => {
+    const [analysisProgressInfo, setAnalysisProgressInfo] = useState({})
+    const backend = useBackend({
+        stateType: "PgnAnalyser",
+        onBackendStateCreated: backend => backend.call("analyseGame", {gameId:gameId}),
+        onMessageFromBackend: resp => {
+            if ("done" == resp) {
+                onDone()
+            } else {
+                setAnalysisProgressInfo(resp)
+            }
+        }
+    })
+
+    return RE.Dialog({open:true},
+        RE.DialogTitle({},
+            "Analysis is in progress..."
+        ),
+        RE.DialogContent({},
+            JSON.stringify(analysisProgressInfo)
         )
     )
 }

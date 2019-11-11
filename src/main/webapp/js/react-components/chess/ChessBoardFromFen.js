@@ -37,8 +37,8 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipp
         }
     }
 
-    const upperPlayer = !flipped?wPlayer:bPlayer
-    const lowerPlayer = !flipped?bPlayer:wPlayer
+    const upperPlayer = flipped?wPlayer:bPlayer
+    const lowerPlayer = flipped?bPlayer:wPlayer
     return RE.Container.col.top.left({},{},
         upperPlayer,
         RE.svg({width:cellSizeFromFen*8, height:cellSizeFromFen*8},

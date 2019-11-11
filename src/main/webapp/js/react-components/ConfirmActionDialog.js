@@ -33,8 +33,8 @@ const ConfirmActionDialog = ({pConfirmText, pOnCancel, pStartActionBtnText, pSta
         }
     }
 
-    return re(Dialog, {open:true},
-        re(DialogContent, {}, drawContent()),
-        re(DialogActions, {}, drawActionButtons())
+    return RE.Dialog({open:true},
+        RE.DialogContent({}, drawContent()),
+        RE.DialogActions({}, drawActionButtons())
     )
 }

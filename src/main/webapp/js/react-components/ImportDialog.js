@@ -8,17 +8,17 @@ const ImportDialog = props => {
         uploadImportFile({file: fileInputRef.current.files[0], parentId:props.parentId, onSuccess: props.onImported})
     }
 
-    return re(Dialog, {open:true},
-        re(DialogTitle, {},
+    return RE.Dialog({open:true},
+        RE.DialogTitle({},
             "Import"
         ),
-        re(DialogContent, {},
-            re(DialogContentText, {},
+        RE.DialogContent({},
+            RE.DialogContentText({},
                 "Select file with data to import:"
             ),
             re('input', {type:"file", ref:fileInputRef})
         ),
-        re(DialogActions, {},
+        RE.DialogActions({},
             !isImporting
                 ?[
                     RE.Button({key:"ImportDialog-cancel-btn", onClick: props.onCancel}, "Cancel"),

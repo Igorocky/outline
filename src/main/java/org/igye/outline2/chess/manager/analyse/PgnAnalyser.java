@@ -32,12 +32,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.chess.manager.StockFishRunner.BEST_MOVE_ANS_PATTERN;
 import static org.igye.outline2.common.OutlineUtils.contains;
+import static org.igye.outline2.common.OutlineUtils.toJson;
 
 public class PgnAnalyser {
 
@@ -46,7 +49,9 @@ public class PgnAnalyser {
     private static final String DEPTH_OPTION = DepthStockfishInfoOption.class.getSimpleName();
     private static final String PV_OPTION = PvStockfishInfoOption.class.getSimpleName();
 
-    public static ParsedPgnDto analysePgn(String runStockfishCmd, String pgn, Integer depth, Integer moveTimeSec) throws IOException {
+    public static ParsedPgnDto analysePgn(String runStockfishCmd, String pgn,
+                                          Integer depth, Integer moveTimeSec,
+                                          Consumer<AnalysisProgressInfo> progressCallback) throws IOException {
         try (ConsoleAppRunner stockfish = new ConsoleAppRunner(runStockfishCmd)) {
             ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
 
@@ -57,8 +62,18 @@ public class PgnAnalyser {
             stockfish.send("setoption name UCI_AnalyseMode value true");
             stockfish.send("ucinewgame");
 
+            AnalysisProgressInfo progressInfo = AnalysisProgressInfo.builder()
+                    .halfMovesToAnalyse(
+                            parsedPgnDto.getPositions().stream().map(List::size).reduce(0, (a,b)->a+b)
+                    )
+                    .currHalfMove(0)
+                    .build();
             for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
                 for (PositionDto halfMove : fullMove) {
+                    if (progressCallback != null) {
+                        progressInfo = progressInfo.withCurrHalfMove(progressInfo.getCurrHalfMove()+1);
+                        progressCallback.accept(progressInfo);
+                    }
                     halfMove.setAnalysis(analyseFen(stockfish, halfMove.getFen(), depth, moveTimeSec));
                 }
             }
@@ -124,6 +139,7 @@ public class PgnAnalyser {
             return true;
         });
         final ArrayList<MoveAnalysisDto> possibleMoves = new ArrayList<>(foundMoves.values());
+
         if (!possibleMoves.isEmpty()) {
             Long maxDepth = possibleMoves.stream().map(MoveAnalysisDto::getDepth).max(Long::compareTo).get();
             result.setPossibleMoves(
@@ -132,16 +148,50 @@ public class PgnAnalyser {
                             .sorted(PgnAnalyser::compareMoves)
                             .collect(Collectors.toList())
             );
-            if (!bestMove[0].equals(result.getPossibleMoves().get(0).getMove())) {
-                throw new OutlineException("!bestMove[0].equals(result.getPossibleMoves().get(0).getMove())");
-            }
         } else {
-            if (bestMove[0] != null) {
-                throw new OutlineException("bestMove[0] != null: bestMove[0] == " + bestMove[0]);
-            }
             result.setPossibleMoves(Collections.emptyList());
         }
+        checkBestMove(bestMove[0], result.getPossibleMoves());
         return result;
+    }
+
+    protected static void checkBestMove(String bestMove, List<MoveAnalysisDto> possibleMoves) {
+        if (bestMove == null) {
+            if (possibleMoves.isEmpty()) {
+                return;
+            } else {
+                throw new OutlineException("bestMove == null && !possibleMoves.isEmpty(): possibleMoves = "
+                        + toJson(possibleMoves));
+            }
+        }
+        if (bestMove != null) {
+            if (possibleMoves.isEmpty()) {
+                throw new OutlineException("bestMove != null && possibleMoves.isEmpty(): bestMove = " + bestMove);
+            }
+            if (bestMove.equals(possibleMoves.get(0).getMove())) {
+                return;
+            }
+            Set<String> bestMoves;
+            if (possibleMoves.get(0).getMate() != null) {
+                Long bestMate = possibleMoves.get(0).getMate();
+                bestMoves = possibleMoves.stream()
+                        .filter(mv -> mv.getMate().equals(bestMate))
+                        .map(MoveAnalysisDto::getMove)
+                        .collect(Collectors.toSet());
+            } else {
+                Long bestScore = possibleMoves.get(0).getScore();
+                bestMoves = possibleMoves.stream()
+                        .filter(mv -> mv.getScore().equals(bestScore))
+                        .map(MoveAnalysisDto::getMove)
+                        .collect(Collectors.toSet());
+            }
+            if (!bestMoves.contains(bestMove)) {
+                throw new OutlineException(
+                        "!bestMoves.contains(bestMove): bestMove = " + bestMove
+                                + ", possibleMoves = " + toJson(possibleMoves)
+                );
+            }
+        }
     }
 
     protected static int compareMoves(MoveAnalysisDto m1, MoveAnalysisDto m2) {
