@@ -191,14 +191,17 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderMoveInfo(halfMove) {
         let score
+        let scoreStr
         let delta
         if (halfMove.analysis) {
             if (halfMove.analysis.possibleMoves && halfMove.analysis.possibleMoves.length > 0) {
                 const bestMove = halfMove.analysis.possibleMoves[0]
                 if (bestMove.mate) {
-                    score = "#" + bestMove.mate
+                    score = bestMove.mate
+                    scoreStr = "#" + bestMove.mate
                 } else {
                     score = bestMove.score
+                    scoreStr = parseFloat(bestMove.score / 100).toFixed(2)
                 }
             }
             delta = halfMove.analysis.delta
@@ -206,7 +209,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         let scoreInfo = (score || score==0 || delta || delta==0) ? RE.span({},
             (score || score == 0)
                 ? RE.span({style: {...getStyleForScore(score), padding: "0px 5px", border: "1px solid grey"}},
-                    parseFloat(score / 100).toFixed(2)
+                    scoreStr
                 )
                 : "-",
             (delta||delta==0)
