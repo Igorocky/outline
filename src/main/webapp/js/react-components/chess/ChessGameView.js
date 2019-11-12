@@ -158,6 +158,24 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
+    function getColorForDelta(delta) {
+        if (delta > 0) {
+            return "green"
+        } else if (Math.abs(delta) < 100) {
+            return null
+        } else {
+            return "red"
+        }
+    }
+
+    function getStyleForScore(score) {
+        if (score >= 0) {
+            return {backgroundColor: "white", color:"black"}
+        } else {
+            return {backgroundColor: "grey", color:"white"}
+        }
+    }
+
     function renderMoveInfo(halfMove) {
         let score
         let delta
@@ -173,8 +191,12 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             delta = halfMove.analysis.delta
         }
         let scoreInfo = (score || score==0 || delta || delta==0) ? RE.span({},
-            "[" + ((score || score == 0) ? score : "-") + "|",
-            (delta||delta==0) ? RE.span({style:{color:delta > 0?"green":"red"}}, delta) : "-",
+            "[",
+            (score || score == 0)
+                ? RE.span({style:{...getStyleForScore(score),padding:"0px 5px", border:"1px solid grey"}}, score)
+                : "-",
+            "|",
+            (delta||delta==0) ? RE.span({style:{color:getColorForDelta(delta), padding:"0px 5px"}}, delta) : "-",
             "]"
         ) : null
         return RE.Fragment({},
