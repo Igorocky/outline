@@ -33,7 +33,7 @@ public class PgnAnalyserState extends State {
         ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(
                 stockfishCmd,
                 game.getTagSingleValue(TagIds.CHESS_GAME_PGN),
-                15,
+                20,
                 null,
                 analysisProgressInfo -> sendMessageToFe(analysisProgressInfo)
         );

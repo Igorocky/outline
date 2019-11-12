@@ -61,6 +61,7 @@ public class PgnAnalyser {
             stockfish.readTill(contains("uciok"));
             stockfish.send("setoption name MultiPV value 5");
             stockfish.send("setoption name UCI_AnalyseMode value true");
+            stockfish.send("setoption name Threads value 8");
             stockfish.send("ucinewgame");
 
             AnalysisProgressInfo progressInfo = AnalysisProgressInfo.builder()

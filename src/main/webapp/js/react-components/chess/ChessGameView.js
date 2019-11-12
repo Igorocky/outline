@@ -205,9 +205,15 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
         let scoreInfo = (score || score==0 || delta || delta==0) ? RE.span({},
             (score || score == 0)
-                ? RE.span({style:{...getStyleForScore(score),padding:"0px 5px", border:"1px solid grey"}}, score)
+                ? RE.span({style: {...getStyleForScore(score), padding: "0px 5px", border: "1px solid grey"}},
+                    parseFloat(score / 100).toFixed(2)
+                )
                 : "-",
-            (delta||delta==0) ? RE.span({style:{...getStyleForDelta(delta), padding:"0px 5px"}}, delta) : "-",
+            (delta||delta==0)
+                ? RE.span({style:{...getStyleForDelta(delta), padding:"0px 5px"}},
+                    parseFloat(delta / 100).toFixed(2)
+                )
+                : "-",
         ) : null
         return RE.Fragment({},
             RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
@@ -226,7 +232,9 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                             onMouseLeave: () => setShowArrow(null)
                         },
                         RE.TableCell({},
-                            (possMove.mate || possMove.mate==0)?('#'+possMove.mate):possMove.score
+                            (possMove.mate || possMove.mate==0)
+                                ?('#'+possMove.mate)
+                                :parseFloat(possMove.score / 100).toFixed(2)
                         ),
                         RE.TableCell({}, possMove.move),
                     ))
