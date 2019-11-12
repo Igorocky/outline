@@ -1,4 +1,12 @@
 const cellSizeFromFen = 45;
+function xCoordFromChessboardToSvg(x) {
+    return x*cellSizeFromFen
+}
+
+function yCoordFromChessboardToSvg(y) {
+    return (7-y)*cellSizeFromFen
+}
+
 const chCodeToImg = {
     ["P".charCodeAt(0)]:"Chess_plt45",
     ["N".charCodeAt(0)]:"Chess_nlt45",
@@ -24,8 +32,8 @@ const ChessBoardCellFromFen = ({chCode,x,y,selected}) => {
         }
     }
 
-    const cellXPos = x*cellSizeFromFen
-    const cellYPos = (7-y)*cellSizeFromFen
+    const cellXPos = xCoordFromChessboardToSvg(x)
+    const cellYPos = yCoordFromChessboardToSvg(y)
     return RE.Fragment({},
         SVG.rect({
             x:cellXPos, y:cellYPos, width:cellSizeFromFen, height:cellSizeFromFen,

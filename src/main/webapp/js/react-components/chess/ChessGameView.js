@@ -30,6 +30,9 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [selectedMove, setSelectedMove] = useState({})
     const [flipped, setFlipped] = useState(false)
     const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
+    const [showArrow, setShowArrow] = useState(null)
+
+    useEffect(() => setShowArrow(null),[selectedMove])
 
     function getCurrGameId() {
         return curNode[NODE.id]
@@ -127,7 +130,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 moveFromTo:selectedMove.move,
                 wPlayer:curNode.parsedPgn.wplayer,
                 bPlayer:curNode.parsedPgn.bplayer,
-                flipped: flipped
+                flipped: flipped,
+                arrow: showArrow
             }),
             RE.ButtonGroup({variant:"contained", size:"small"},
                 RE.Button({},RE.Icon({onClick: () => setFlipped(!flipped)}, "cached")),
@@ -154,7 +158,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         return RE.Container.row.left.top({},{},
             renderChessBoard(),
             renderTableWithMoves(),
-            RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse")
+            RE.Container.col.top.left({},{},
+                RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
+                renderPossibleMoves()
+            )
         )
     }
 
@@ -191,18 +198,35 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             delta = halfMove.analysis.delta
         }
         let scoreInfo = (score || score==0 || delta || delta==0) ? RE.span({},
-            "[",
             (score || score == 0)
                 ? RE.span({style:{...getStyleForScore(score),padding:"0px 5px", border:"1px solid grey"}}, score)
                 : "-",
-            "|",
             (delta||delta==0) ? RE.span({style:{color:getColorForDelta(delta), padding:"0px 5px"}}, delta) : "-",
-            "]"
         ) : null
         return RE.Fragment({},
             RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
             scoreInfo
         )
+    }
+
+    function renderPossibleMoves() {
+        if (selectedMove.analysis && selectedMove.analysis.possibleMoves) {
+            return RE.Paper({},RE.Table({size:"small"},
+                RE.TableBody({},
+                    selectedMove.analysis.possibleMoves.map((possMove,rowIdx) => RE.TableRow({
+                            key:rowIdx,
+                            className: "grey-background-on-hover pointer-on-hover",
+                            onMouseEnter: () => setShowArrow(possMove.move),
+                            onMouseLeave: () => setShowArrow(null)
+                        },
+                        RE.TableCell({},
+                            (possMove.mate || possMove.mate==0)?('#'+possMove.mate):possMove.score
+                        ),
+                        RE.TableCell({}, possMove.move),
+                    ))
+                )
+            ))
+        }
     }
 
     function renderTableWithMoves() {

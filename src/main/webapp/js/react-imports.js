@@ -116,6 +116,7 @@ const RE = {
 
 const SVG = {
     rect: reFactory('rect'),
+    line: reFactory('line'),
     image: reFactory('image'),
 }
 
