@@ -30,9 +30,11 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.igye.outline2.chess.manager.analyse.PgnAnalyser.calcDelta;
 import static org.igye.outline2.chess.manager.analyse.PgnAnalyser.compareMoves;
 import static org.igye.outline2.common.OutlineUtils.contains;
 import static org.igye.outline2.common.OutlineUtils.listOf;
@@ -251,8 +253,110 @@ public class PgnAnalyserTest {
         assertTrue(compareMoves(m1,m2) == -compareMoves(m2,m1));
 
         assertMovesOrder(move(1,null), move(3,null));
+        assertMovesOrder(move(-3,null), move(-1,null));
+        assertMovesOrder(move(2,null), move(-3,null));
         assertMovesOrder(move(2,null), move(null,5));
+        assertMovesOrder(move(null,5), move(-2,null));
         assertMovesOrder(move(null,7), move(null,4));
+    }
+
+    @Test
+    public void calcDelta_calculates_delta_correctly() {
+        assertEquals(
+                25,
+                calcDelta(
+                        analysisRes(move(null, 23)),
+                        analysisRes(move(null, 48)),
+                        true
+                ).intValue()
+        );
+
+        assertEquals(
+                -25,
+                calcDelta(
+                        analysisRes(move(null, 23)),
+                        analysisRes(move(null, 48)),
+                        false
+                ).intValue()
+        );
+
+        assertEquals(
+                -25,
+                calcDelta(
+                        analysisRes(move(null, -23)),
+                        analysisRes(move(null, -48)),
+                        true
+                ).intValue()
+        );
+
+        assertEquals(
+                25,
+                calcDelta(
+                        analysisRes(move(null, -23)),
+                        analysisRes(move(null, -48)),
+                        false
+                ).intValue()
+        );
+
+        assertEquals(
+                -9999,
+                calcDelta(
+                        analysisRes(move(3, null)),
+                        analysisRes(move(null, 658)),
+                        true
+                ).intValue()
+        );
+
+        assertEquals(
+                -9999,
+                calcDelta(
+                        analysisRes(move(-3, null)),
+                        analysisRes(move(null, 658)),
+                        false
+                ).intValue()
+        );
+
+        assertEquals(
+                9999,
+                calcDelta(
+                        analysisRes(move(-3, null)),
+                        analysisRes(move(null, 658)),
+                        true
+                ).intValue()
+        );
+
+        assertEquals(
+                9999,
+                calcDelta(
+                        analysisRes(move(3, null)),
+                        analysisRes(move(null, 658)),
+                        false
+                ).intValue()
+        );
+
+        assertEquals(
+                -9999,
+                calcDelta(
+                        analysisRes(move(null, -276)),
+                        analysisRes(move(-1, null)),
+                        true
+                ).intValue()
+        );
+
+        assertEquals(
+                -9999,
+                calcDelta(
+                        analysisRes(move(null, -276)),
+                        analysisRes(move(1, null)),
+                        false
+                ).intValue()
+        );
+    }
+
+    private PositionAnalysisDto analysisRes(MoveAnalysisDto... possibleMoves) {
+        return PositionAnalysisDto.builder()
+                .possibleMoves(Arrays.asList(possibleMoves))
+                .build();
     }
 
     private void assertMovesOrder(MoveAnalysisDto m1, MoveAnalysisDto m2) {

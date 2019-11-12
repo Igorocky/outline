@@ -15,4 +15,5 @@ import java.util.List;
 @Builder
 public class PositionAnalysisDto {
     private List<MoveAnalysisDto> possibleMoves;
+    private Long delta;
 }

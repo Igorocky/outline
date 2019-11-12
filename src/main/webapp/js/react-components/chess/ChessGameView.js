@@ -158,17 +158,29 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
-    function getAnalysisInfo(halfMove) {
-        if (halfMove.analysis && halfMove.analysis.possibleMoves && halfMove.analysis.possibleMoves.length > 0) {
-            const bestMove = halfMove.analysis.possibleMoves[0]
-            if (bestMove.mate) {
-                return "(#" + bestMove.mate + ")"
-            } else {
-                return "(" + bestMove.score + ")"
+    function renderMoveInfo(halfMove) {
+        let score
+        let delta
+        if (halfMove.analysis) {
+            if (halfMove.analysis.possibleMoves && halfMove.analysis.possibleMoves.length > 0) {
+                const bestMove = halfMove.analysis.possibleMoves[0]
+                if (bestMove.mate) {
+                    score = "#" + bestMove.mate
+                } else {
+                    score = bestMove.score
+                }
             }
-        } else {
-            return ""
+            delta = halfMove.analysis.delta
         }
+        let scoreInfo = (score || score==0 || delta || delta==0) ? RE.span({},
+            "[" + ((score || score == 0) ? score : "-") + "|",
+            (delta||delta==0) ? RE.span({style:{color:delta > 0?"green":"red"}}, delta) : "-",
+            "]"
+        ) : null
+        return RE.Fragment({},
+            RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
+            scoreInfo
+        )
     }
 
     function renderTableWithMoves() {
@@ -190,7 +202,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                             className:"grey-background-on-hover pointer-on-hover",
                             onClick: () => setSelectedMove(halfMove),
                         },
-                        halfMove.notation + getAnalysisInfo(halfMove)
+                        renderMoveInfo(halfMove)
                     ))
                 ))
             )
@@ -231,7 +243,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         RE.Container.row.left.top({},{},
             renderTabs(),
             analysisWindowIsOpened
-                ?re(GameAnalysisWindow, {gameId:getCurrGameId(), onDone: () => setAnalysisWindowIsOpened(false)})
+                ?re(GameAnalysisWindow, {gameId:getCurrGameId(), onDone: () => {
+                    setAnalysisWindowIsOpened(false)
+                    reloadCurrNode()
+                }})
                 :null
         )
     )
@@ -239,7 +254,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
 const GameAnalysisWindow = ({gameId, onDone}) => {
     const [analysisProgressInfo, setAnalysisProgressInfo] = useState({})
-    const backend = useBackend({
+    useBackend({
         stateType: "PgnAnalyser",
         onBackendStateCreated: backend => backend.call("analyseGame", {gameId:gameId}),
         onMessageFromBackend: resp => {

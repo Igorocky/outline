@@ -48,6 +48,7 @@ public class PgnAnalyser {
     private static final String SCORE_OPTION = ScoreStockfishInfoOption.class.getSimpleName();
     private static final String DEPTH_OPTION = DepthStockfishInfoOption.class.getSimpleName();
     private static final String PV_OPTION = PvStockfishInfoOption.class.getSimpleName();
+    public static final long MAX_DELTA = 9999;
 
     public static ParsedPgnDto analysePgn(String runStockfishCmd, String pgn,
                                           Integer depth, Integer moveTimeSec,
@@ -68,17 +69,60 @@ public class PgnAnalyser {
                     )
                     .currHalfMove(0)
                     .build();
+            PositionAnalysisDto prevAnalysisResults = null;
             for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
                 for (PositionDto halfMove : fullMove) {
                     if (progressCallback != null) {
                         progressInfo = progressInfo.withCurrHalfMove(progressInfo.getCurrHalfMove()+1);
                         progressCallback.accept(progressInfo);
                     }
-                    halfMove.setAnalysis(analyseFen(stockfish, halfMove.getFen(), depth, moveTimeSec));
+                    final PositionAnalysisDto analysisResults = analyseFen(stockfish, halfMove.getFen(), depth, moveTimeSec);
+                    analysisResults.setDelta(calcDelta(prevAnalysisResults, analysisResults, isBlackToMove(halfMove.getFen())));
+                    halfMove.setAnalysis(analysisResults);
+                    prevAnalysisResults = analysisResults;
                 }
             }
 
             return parsedPgnDto;
+        }
+    }
+
+    protected static Long calcDelta(PositionAnalysisDto prevAnalysisResults,
+                                       PositionAnalysisDto curAnalysisResults,
+                                       boolean isBlackToMove) {
+        if (prevAnalysisResults == null) {
+            return null;
+        }
+        MoveAnalysisDto prevBestMove = getBestMove(prevAnalysisResults);
+        MoveAnalysisDto curBestMove = getBestMove(curAnalysisResults);
+        if (prevBestMove != null && curBestMove != null) {
+            if (prevBestMove.getMate() != null && curBestMove.getMate() == null) {
+                if (prevBestMove.getMate() > 0) {
+                    return -MAX_DELTA * (isBlackToMove?1:-1);
+                } else {
+                    return MAX_DELTA * (isBlackToMove?1:-1);
+                }
+            }
+            if (prevBestMove.getMate() == null && curBestMove.getMate() != null) {
+                if (curBestMove.getMate() > 0) {
+                    return MAX_DELTA * (isBlackToMove?1:-1);
+                } else {
+                    return -MAX_DELTA * (isBlackToMove?1:-1);
+                }
+            }
+
+            if (prevBestMove.getScore() != null && curBestMove.getScore() != null) {
+                return (curBestMove.getScore() - prevBestMove.getScore()) * (isBlackToMove?1:-1);
+            }
+        }
+        return null;
+    }
+
+    private static MoveAnalysisDto getBestMove(PositionAnalysisDto analysisResults) {
+        if (!analysisResults.getPossibleMoves().isEmpty()) {
+            return analysisResults.getPossibleMoves().get(0);
+        } else {
+            return null;
         }
     }
 
@@ -185,12 +229,14 @@ public class PgnAnalyser {
             if (possibleMoves.get(0).getMate() != null) {
                 Long bestMate = possibleMoves.get(0).getMate();
                 bestMoves = possibleMoves.stream()
+                        .filter(mv -> mv.getMate() != null)
                         .filter(mv -> mv.getMate().equals(bestMate))
                         .map(MoveAnalysisDto::getMove)
                         .collect(Collectors.toSet());
             } else {
                 Long bestScore = possibleMoves.get(0).getScore();
                 bestMoves = possibleMoves.stream()
+                        .filter(mv -> mv.getScore() != null)
                         .filter(mv -> mv.getScore().equals(bestScore))
                         .map(MoveAnalysisDto::getMove)
                         .collect(Collectors.toSet());
@@ -209,15 +255,19 @@ public class PgnAnalyser {
             if (m2.getMate() != null) {
                 if (m1.getMate().equals(m2.getMate())) {
                     return 0;
+                } else if (m1.getMate() > 0 && m2.getMate() < 0) {
+                    return -1;
+                } else if (m1.getMate() < 0 && m2.getMate() > 0) {
+                    return 1;
                 } else {
                     return m1.getMate() < m2.getMate() ? -1 : 1;
                 }
             } else {
-                return -1;
+                return m1.getMate() > 0 ? -1 : 1;
             }
         } else {
             if (m2.getMate() != null) {
-                return 1;
+                return m2.getMate() > 0 ? 1 : -1;
             } else if (m1.getScore().equals(m2.getScore())) {
                 return  0;
             } else {
