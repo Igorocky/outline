@@ -202,15 +202,24 @@ public class PgnAnalyserTest {
                     stockfish,
                     "rn3rk1/p4ppp/2p4n/8/1p1q1P2/1P1P2P1/P1PQR1BP/2KR4 w - - 0 18",
                     5,
-                    300
+                    null
             );
 
             //then
             Assert.assertEquals("d2e1", positionAnalysisDto.getPossibleMoves().get(0).getMove());
+            Assert.assertEquals(-183, positionAnalysisDto.getPossibleMoves().get(0).getScore().intValue());
+
             Assert.assertEquals("c1b1", positionAnalysisDto.getPossibleMoves().get(1).getMove());
+            Assert.assertEquals(-190, positionAnalysisDto.getPossibleMoves().get(1).getScore().intValue());
+
             Assert.assertEquals("c2c3", positionAnalysisDto.getPossibleMoves().get(2).getMove());
+            Assert.assertEquals(-395, positionAnalysisDto.getPossibleMoves().get(2).getScore().intValue());
+
             Assert.assertEquals("d2e3", positionAnalysisDto.getPossibleMoves().get(3).getMove());
+            Assert.assertEquals(-423, positionAnalysisDto.getPossibleMoves().get(3).getScore().intValue());
+
             Assert.assertEquals("c2c4", positionAnalysisDto.getPossibleMoves().get(4).getMove());
+            Assert.assertEquals(-542, positionAnalysisDto.getPossibleMoves().get(4).getScore().intValue());
         }
     }
 
@@ -225,14 +234,16 @@ public class PgnAnalyserTest {
         //then
         int halfMoveCnt = 0;
         for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
+            boolean isWhite = false;
             for (PositionDto halfMove : fullMove) {
+                isWhite = !isWhite;
                 halfMoveCnt++;
                 List<MoveAnalysisDto> moves = halfMove.getAnalysis().getPossibleMoves();
                 for (int i = 0; i < moves.size() - 1; i++) {
                     int cmpSgn = compareMoves(moves.get(i), moves.get(i + 1));
                     assertTrue(
                             "error for i = " + i + ", cmpSgn = " + cmpSgn + ":\n" + toJson(halfMove),
-                            cmpSgn == -1 || cmpSgn == 0
+                            cmpSgn == (isWhite?1:-1) || cmpSgn == 0
                     );
                 }
             }
