@@ -19,14 +19,14 @@ const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode}) => {
     })
 }
 
-const TABS = {
+const CHESS_GAME_FULL_VIEW_TABS = {
     pgn:{title: "PGN", id: "PGN"},
     moves:{title: "Moves", id: "Moves"},
     practice:{title: "Practice", id: "Practice"},
 }
 
 const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
-    const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? TABS.moves.id : TABS.pgn.id)
+    const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? CHESS_GAME_FULL_VIEW_TABS.moves.id : CHESS_GAME_FULL_VIEW_TABS.pgn.id)
     const [selectedMove, setSelectedMove] = useState({})
     const [flipped, setFlipped] = useState(false)
     const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
@@ -273,11 +273,11 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     }
 
     function renderCurrentTabContent() {
-        if (TABS.pgn.id == currTabId) {
+        if (CHESS_GAME_FULL_VIEW_TABS.pgn.id == currTabId) {
             return renderPgnTab()
-        } else if (TABS.moves.id == currTabId) {
+        } else if (CHESS_GAME_FULL_VIEW_TABS.moves.id == currTabId) {
             return renderMovesTab()
-        } else if (TABS.practice.id == currTabId) {
+        } else if (CHESS_GAME_FULL_VIEW_TABS.practice.id == currTabId) {
             return "practice"
         }
     }
@@ -293,9 +293,9 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                         indicatorColor:"primary",
                         textColor:"primary",
                         onChange:handleTabChange},
-                    RE.Tab({label:TABS.pgn.title, value:TABS.pgn.id}),
-                    RE.Tab({label:TABS.moves.title, value:TABS.moves.id}),
-                    RE.Tab({label:TABS.practice.title, value:TABS.practice.id}),
+                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.pgn.title, value:CHESS_GAME_FULL_VIEW_TABS.pgn.id}),
+                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.moves.title, value:CHESS_GAME_FULL_VIEW_TABS.moves.id}),
+                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.practice.title, value:CHESS_GAME_FULL_VIEW_TABS.practice.id}),
                 )
             ),
             renderCurrentTabContent()

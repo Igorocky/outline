@@ -25,14 +25,20 @@ const PuzzlesToRepeatReport_IconButtonWithMemory = ({onClick}) => {
     )
 }
 
+const PUZZLES_TO_REPEAT_TABS = {
+    puzzles:{title: "Puzzles To Repeat", id: "puzzles"},
+    comments:{title: "Comments", id: "comments"},
+}
+
 const PuzzlesToRepeatReport = () => {
     const [reportData, setReportData] = useState(null)
+    const [currTabId, setCurrTabId] = useState(PUZZLES_TO_REPEAT_TABS.puzzles.id)
 
     useEffect(() => doRpcCall(
         "rpcRunReport",
-        {name:"puzzles-to-repeat"},
+        {name:currTabId == PUZZLES_TO_REPEAT_TABS.puzzles.id?"puzzles-to-repeat":"puzzle-comments"},
         res => setReportData(res)
-    ),[])
+    ),[currTabId])
 
     function navigateToPuzzle(puzzleId) {
         window.open(PATH.createNodeWithIdPath(puzzleId))
@@ -52,10 +58,28 @@ const PuzzlesToRepeatReport = () => {
         }})
     }
 
-    return RE.Container.col.top.left({},{style: {marginBottom:"10px"}},
-        RE.span({style:{fontSize:"30px"}}, "Puzzles To Repeat"),
-        reportData
-            ?renderReport()
-            :RE.CircularProgress({})
-    )
+    function renderCurrReport() {
+        if (reportData) {
+            return renderReport()
+        } else {
+            return RE.CircularProgress({})
+        }
+    }
+
+    function renderTabs() {
+        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
+            RE.Paper({square:true},
+                RE.Tabs({value:currTabId,
+                        indicatorColor:"primary",
+                        textColor:"primary",
+                        onChange: (event, newTabId) => setCurrTabId(newTabId)},
+                    RE.Tab({label:PUZZLES_TO_REPEAT_TABS.puzzles.title, value:PUZZLES_TO_REPEAT_TABS.puzzles.id}),
+                    RE.Tab({label:PUZZLES_TO_REPEAT_TABS.comments.id, value:PUZZLES_TO_REPEAT_TABS.comments.id}),
+                )
+            ),
+            renderCurrReport()
+        )
+    }
+
+    return renderTabs()
 }
