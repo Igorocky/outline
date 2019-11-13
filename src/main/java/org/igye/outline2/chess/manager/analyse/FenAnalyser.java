@@ -26,6 +26,7 @@ import org.igye.outline2.exceptions.OutlineException;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +69,7 @@ public class FenAnalyser implements Closeable {
                         + (depth != null?(" depth " + depth):"")
                         + (moveTimeSec != null?(" movetime " + moveTimeSec*1000):"")
         );
-        return collectAnalysisData(isBlackToMove(fen));
+        return collectAnalysisData(isBlackToMove(fen), progressCallback);
     }
 
     @Override
@@ -76,15 +77,23 @@ public class FenAnalyser implements Closeable {
         stockfish.close();
     }
 
-    private PositionAnalysisDto collectAnalysisData(boolean isBlackToMove) throws IOException {
+    private PositionAnalysisDto collectAnalysisData(boolean isBlackToMove,
+                                                    Consumer<FenAnalysisProgressInfo> progressCallback
+    ) throws IOException {
         PositionAnalysisDto result = new PositionAnalysisDto();
         HashMap<String, MoveAnalysisDto> foundMoves = new HashMap<>();
         final String[] bestMove = new String[1];
+        FenAnalysisProgressInfo progressInfo = FenAnalysisProgressInfo.builder()
+                .lastUpdated(Instant.now())
+                .build();
         stockfish.read(line -> {
             if (line.startsWith("info ")) {
                 MoveAnalysisDto moveInfo = parseMoveInfo(line);
                 if (moveInfo != null) {
                     foundMoves.put(moveInfo.getMove(), moveInfo);
+                    if (progressCallback != null) {
+                        progressCallback.accept(progressInfo.withLastUpdated(Instant.now()));
+                    }
                 }
             } else if (line.startsWith("bestmove ")) {
                 Matcher bestMoveMatcher = BEST_MOVE_ANS_PATTERN.matcher(line);

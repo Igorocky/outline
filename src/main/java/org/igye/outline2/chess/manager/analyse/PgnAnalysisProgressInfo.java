@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Wither;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,4 +21,5 @@ public class PgnAnalysisProgressInfo {
     private int halfMovesToAnalyse;
     private int currHalfMove;
     private int procNumber;
+    private Map<String,FenAnalysisProgressInfo> threadsInfo;
 }

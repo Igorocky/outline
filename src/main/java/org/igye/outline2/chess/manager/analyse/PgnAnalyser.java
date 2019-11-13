@@ -9,6 +9,7 @@ import org.igye.outline2.exceptions.OutlineException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -50,11 +51,12 @@ public class PgnAnalyser {
                 fensToAnalyse.add(halfMove.getFen());
             }
         }
-        AtomicReference<PgnAnalysisProgressInfo> progressInfo = new AtomicReference(
+        AtomicReference<PgnAnalysisProgressInfo> pgnProgressInfo = new AtomicReference(
                 PgnAnalysisProgressInfo.builder()
                         .halfMovesToAnalyse(fensToAnalyse.size())
                         .currHalfMove(0)
                         .procNumber(0)
+                        .threadsInfo(new TreeMap<>())
                         .build()
         );
         AtomicInteger actualProcNumber = new AtomicInteger(0);
@@ -63,8 +65,14 @@ public class PgnAnalyser {
                 try (FenAnalyser fenAnalyser = new FenAnalyser(runStockfishCmd)) {
                     updateProgressInfo(
                             progressCallback,
-                            progressInfo,
-                            progress -> progress.withProcNumber(actualProcNumber.addAndGet(1))
+                            pgnProgressInfo,
+                            progress -> {
+                                Map<String,FenAnalysisProgressInfo> ti = new TreeMap<>(progress.getThreadsInfo());
+                                ti.put(Thread.currentThread().getName(), null);
+                                return progress
+                                        .withProcNumber(actualProcNumber.addAndGet(1))
+                                        .withThreadsInfo(ti);
+                            }
 
                     );
                     String fenToAnalyse = fensToAnalyse.poll();
@@ -72,11 +80,26 @@ public class PgnAnalyser {
                         System.out.println(Thread.currentThread().getName() + " analysing: " + fenToAnalyse);
                         result.put(
                                 fenToAnalyse,
-                                fenAnalyser.analyseFen(fenToAnalyse, depth, moveTimeSec, null)
+                                fenAnalyser.analyseFen(
+                                        fenToAnalyse,
+                                        depth,
+                                        moveTimeSec,
+                                        fenProgress -> updateProgressInfo(
+                                                progressCallback,
+                                                pgnProgressInfo,
+                                                pgnProgress -> {
+                                                    Map<String,FenAnalysisProgressInfo> ti =
+                                                            new TreeMap<>(pgnProgress.getThreadsInfo());
+                                                    ti.put(Thread.currentThread().getName(), fenProgress);
+                                                    return pgnProgress.withThreadsInfo(ti);
+                                                }
+
+                                        )
+                                )
                         );
                         updateProgressInfo(
                                 progressCallback,
-                                progressInfo,
+                                pgnProgressInfo,
                                 progress -> progress
                                                 .withCurrHalfMove(progress.getCurrHalfMove()+1)
                                                 .withProcNumber(actualProcNumber.get())
@@ -90,8 +113,14 @@ public class PgnAnalyser {
                 } finally {
                     updateProgressInfo(
                             progressCallback,
-                            progressInfo,
-                            progress -> progress.withProcNumber(actualProcNumber.addAndGet(-1))
+                            pgnProgressInfo,
+                            progress -> {
+                                Map<String,FenAnalysisProgressInfo> ti = new TreeMap<>(progress.getThreadsInfo());
+                                ti.remove(Thread.currentThread().getName());
+                                return progress
+                                        .withProcNumber(actualProcNumber.addAndGet(-1))
+                                        .withThreadsInfo(ti);
+                            }
 
                     );
                 }
