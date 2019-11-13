@@ -70,6 +70,31 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function renderFen() {
+        const puzzleFen = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_FEN);
+        return RE.Container.row.left.center({},{},
+            "FEN",
+            re(EditableTextField,{
+                key:"puzzle-fen-" + getCurrPuzzleId(),
+                inlineActions: true,
+                initialValue: puzzleFen,
+                spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                textFieldStyle: {width:"600px", margin:"0px 10px"},
+                onSave: ({newValue, onSaved}) =>
+                    setSingleTagForNode(
+                        getCurrPuzzleId(),
+                        TAG_ID.CHESS_PUZZLE_FEN,
+                        newValue,
+                        () => {
+                            onSaved()
+                            navigateToNodeId(getCurrPuzzleId())
+                        }
+                    ),
+                placeholder: "FEN",
+            })
+        )
+    }
+
     function saveHistoryRecord() {
         doRpcCall(
             "rpcSaveChessPuzzleAttempt",
@@ -254,6 +279,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     return RE.Container.col.top.left({},{},
         renderUrl(),
+        renderFen(),
         renderComments(),
         renderHistory(),
         renderConfirmActionDialog()

@@ -7,6 +7,7 @@ public final class TagIds {
     public final static String TEXT = "text";
 
     public final static String CHESS_PUZZLE_URL = "chess_puzzle_url";
+    public final static String CHESS_PUZZLE_FEN = "chess_puzzle_fen";
     public final static String CHESS_PUZZLE_PAUSED = "chess_puzzle_paused";
     public final static String CHESS_PUZZLE_COMMENT_TEXT = "chess_puzzle_comment_text";
     public final static String CHESS_PUZZLE_PASSED = "chess_puzzle_passed";

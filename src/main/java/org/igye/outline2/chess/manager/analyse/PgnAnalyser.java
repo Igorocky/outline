@@ -108,9 +108,9 @@ public class PgnAnalyser {
                         fenToAnalyse = fensToAnalyse.poll();
                     }
                 } catch (IOException e) {
-                    waitAllThreadsCompleted.countDown();
                     throw new OutlineException(e);
                 } finally {
+                    waitAllThreadsCompleted.countDown();
                     updateProgressInfo(
                             progressCallback,
                             pgnProgressInfo,
@@ -124,7 +124,6 @@ public class PgnAnalyser {
 
                     );
                 }
-                waitAllThreadsCompleted.countDown();
             }).start();
         }
         try {
