@@ -15,7 +15,7 @@ import lombok.experimental.Wither;
 @Builder
 @Immutable
 @Wither
-public class AnalysisProgressInfo {
+public class PgnAnalysisProgressInfo {
     private int halfMovesToAnalyse;
     private int currHalfMove;
 }

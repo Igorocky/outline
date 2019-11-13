@@ -35,6 +35,7 @@ public class PgnAnalyserState extends State {
                 game.getTagSingleValue(TagIds.CHESS_GAME_PGN),
                 20,
                 null,
+                4,
                 analysisProgressInfo -> sendMessageToFe(analysisProgressInfo)
         );
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));

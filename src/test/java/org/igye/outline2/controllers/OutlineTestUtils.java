@@ -3,6 +3,7 @@ package org.igye.outline2.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
+import org.igye.outline2.chess.dto.MoveAnalysisDto;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeRepository;
 import org.igye.outline2.pm.Node;
@@ -188,5 +189,16 @@ public class OutlineTestUtils {
             }
         }
         return false;
+    }
+
+    public static MoveAnalysisDto move(Integer mate, Integer score) {
+        MoveAnalysisDto moveAnalysisDto = new MoveAnalysisDto();
+        if (mate != null) {
+            moveAnalysisDto.setMate(Long.valueOf(mate));
+        }
+        if (score != null) {
+            moveAnalysisDto.setScore(Long.valueOf(score));
+        }
+        return moveAnalysisDto;
     }
 }
