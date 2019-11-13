@@ -77,7 +77,6 @@ public class PgnAnalyser {
                     );
                     String fenToAnalyse = fensToAnalyse.poll();
                     while (fenToAnalyse != null) {
-                        System.out.println(Thread.currentThread().getName() + " analysing: " + fenToAnalyse);
                         result.put(
                                 fenToAnalyse,
                                 fenAnalyser.analyseFen(

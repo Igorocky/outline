@@ -21,6 +21,10 @@ import java.util.UUID;
 public class PgnAnalyserState extends State {
     @Value("${chess.stockfish.cmd:null}")
     private String stockfishCmd;
+    @Value("${chess.stockfish.proc-num}")
+    private int stockfishProcNum;
+    @Value("${chess.stockfish.depth}")
+    private int stockfishDepth;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
@@ -33,9 +37,9 @@ public class PgnAnalyserState extends State {
         ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(
                 stockfishCmd,
                 game.getTagSingleValue(TagIds.CHESS_GAME_PGN),
-                20,
+                stockfishDepth,
                 null,
-                4,
+                stockfishProcNum,
                 analysisProgressInfo -> sendMessageToFe(analysisProgressInfo)
         );
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));

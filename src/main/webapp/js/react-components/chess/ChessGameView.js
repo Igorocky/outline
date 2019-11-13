@@ -240,6 +240,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                                 :parseFloat(possMove.score / 100).toFixed(2)
                         ),
                         RE.TableCell({}, possMove.move),
+                        RE.TableCell({}, "depth = " + possMove.depth),
                     ))
                 )
             ))
