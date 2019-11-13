@@ -18,4 +18,5 @@ import lombok.experimental.Wither;
 public class PgnAnalysisProgressInfo {
     private int halfMovesToAnalyse;
     private int currHalfMove;
+    private int procNumber;
 }

@@ -57,7 +57,6 @@ public class FenAnalyser implements Closeable {
         stockfish.readTill(contains("uciok"));
         stockfish.send("setoption name MultiPV value 5");
         stockfish.send("setoption name UCI_AnalyseMode value true");
-        stockfish.send("setoption name Threads value 8");
     }
 
     public synchronized PositionAnalysisDto analyseFen(String fen, Integer depth, Integer moveTimeSec,

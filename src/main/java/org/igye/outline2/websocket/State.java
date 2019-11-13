@@ -44,7 +44,7 @@ public abstract class State {
         session = null;
     }
 
-    protected void sendMessageToFe(Object msg) {
+    protected synchronized void sendMessageToFe(Object msg) {
         if (session != null && session.isOpen()) {
             try {
                 session.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
