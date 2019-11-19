@@ -8,6 +8,7 @@ import org.igye.outline2.chess.model.ChessmanType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.igye.outline2.common.OutlineUtils.setOf;
@@ -109,14 +110,18 @@ public class MovesBuilderTest {
         view = movesBuilder.cellLeftClicked(e4);
         //then
         assertNoCellPreparedToMove(view);
-        assertCellsAvailableToMoveTo(view, setOf(a1));
+        assertCellsAvailableToMoveTo(view, Collections.EMPTY_SET);
     }
     @Test public void test_highlightingDisappearsIfNextClickOnTheCellNotAvailableToMoveTo() {
         //given
-        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b.N(e4).n(a1)));
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b.N(e4).n(b3).P(a1)));
+        movesBuilder.cellLeftClicked(b3);
+        ChessComponentView view = movesBuilder.cellLeftClicked(a1);
+        assertCellPreparedToMove(view, b3);
+        assertCellsAvailableToMoveTo(view, setOf(a1));
 
         //when
-        ChessComponentView view = movesBuilder.cellLeftClicked(e4);
+        view = movesBuilder.cellLeftClicked(e4);
         //then
         assertCellPreparedToMove(view, e4);
         assertCellsAvailableToMoveTo(view, setOf(c3,c5,d6,d2,f6,f2,g3,g5));
@@ -124,7 +129,7 @@ public class MovesBuilderTest {
         //when
         view = movesBuilder.cellLeftClicked(c2);
         //then
-        assertNoCellPreparedToMove(view);
+        assertCellPreparedToMove(view, b3);
         assertCellsAvailableToMoveTo(view, setOf(a1));
     }
     @Test public void test_knightMovesFromCenter() {

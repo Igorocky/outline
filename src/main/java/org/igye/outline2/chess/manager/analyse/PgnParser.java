@@ -1,10 +1,10 @@
 package org.igye.outline2.chess.manager.analyse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
-import org.igye.outline2.chess.model.CellCoords;
+import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.model.ChessBoard;
+import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.exceptions.OutlineException;
 
@@ -50,7 +50,7 @@ public class PgnParser {
     }
 
     private static void setFen(ParsedPgnDto parsedPgnDto) {
-        Move currMove = new Move(new CellCoords(0,7), new ChessBoard(START_POSITION_FEN));
+        Move currMove = new Move(ChessmanColor.WHITE, new ChessBoard(START_POSITION_FEN));
         for (List<PositionDto> movePair : parsedPgnDto.getPositions()) {
             for (PositionDto positionDto : movePair) {
                 currMove = currMove.makeMove(positionDto.getNotation());

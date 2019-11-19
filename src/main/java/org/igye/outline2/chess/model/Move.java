@@ -49,6 +49,7 @@ public final class Move {
     private final CellCoords from;
     @Getter
     private final CellCoords to;
+    private final ChessmanColor colorToMove;
     private final ChessBoard resultPosition;
     private boolean whiteKingCastleAvailable = true;
     private boolean whiteQueenCastleAvailable = true;
@@ -58,14 +59,15 @@ public final class Move {
     private final int fullmoveNumber;
     private String shortNotation;
 
-    public Move(CellCoords to, ChessBoard resultPosition) {
-        this(to, resultPosition, 0, 1);
+    public Move(ChessmanColor colorToMove, ChessBoard resultPosition) {
+        this(colorToMove, resultPosition, 0, 1);
     }
 
-    public Move(CellCoords to, ChessBoard resultPosition, int halfmoveClock, int fullmoveNumber) {
+    public Move(ChessmanColor colorToMove, ChessBoard resultPosition, int halfmoveClock, int fullmoveNumber) {
         prevMove=null;
         from = null;
-        this.to = to;
+        to = null;
+        this.colorToMove = colorToMove;
         this.resultPosition = resultPosition.clone();
         this.halfmoveClock = halfmoveClock;
         this.fullmoveNumber = fullmoveNumber;
@@ -76,6 +78,7 @@ public final class Move {
         this.prevMove = prevMove;
         this.from = from;
         this.to = to;
+        this.colorToMove = prevMove.getColorOfWhoToMove().invert();
         this.resultPosition = resultPosition.clone();
         halfmoveClock = calcHalfmoveClock(prevMove, to, this.resultPosition);
         fullmoveNumber = calcFullmoveNumber(prevMove, to, this.resultPosition);
@@ -90,11 +93,11 @@ public final class Move {
     }
 
     public ChessmanColor getColorOfWhoMadeMove() {
-        return resultPosition.getPieceAt(to).getPieceColor();
+        return getColorOfWhoToMove().invert();
     }
 
     public ChessmanColor getColorOfWhoToMove() {
-        return getColorOfWhoMadeMove().invert();
+        return colorToMove;
     }
 
     public ChessBoard getResultPosition() {

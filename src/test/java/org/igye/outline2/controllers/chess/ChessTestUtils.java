@@ -74,11 +74,7 @@ public class ChessTestUtils {
         final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
         chessBoardBuilderConsumer.accept(chessBoardBuilder);
         ChessBoard initialBoard = chessBoardBuilder.build();
-        ChessmanColor colorOfWhoMadePreviousMove = whoToMove.invert();
-        return new Move(
-                initialBoard.findFirstCoords(cm -> cm.getPieceColor().equals(colorOfWhoMadePreviousMove)),
-                initialBoard
-        );
+        return new Move(whoToMove, initialBoard);
     }
 
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {

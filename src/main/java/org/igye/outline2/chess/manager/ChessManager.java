@@ -52,14 +52,9 @@ public class ChessManager extends State implements ChessComponentStateManager {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
-                ChessmanColor colorOfWhoMadePreviousMove = positionBuilder.getNextMoveColor().invert();
+                ChessmanColor colorToMove = positionBuilder.getColorToMove();
                 ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
-                Move initialMove = new Move(
-                        initialPosition.findFirstCoords(
-                                cm->cm.getPieceColor().equals(colorOfWhoMadePreviousMove)
-                        ),
-                        initialPosition
-                );
+                Move initialMove = new Move(colorToMove, initialPosition);
                 stateManager = new MovesBuilder(stockfishCmd, initialMove);
             }
         } else if (stateManager instanceof MovesBuilder) {
