@@ -2,6 +2,7 @@ package org.igye.outline2.chess.model;
 
 import org.junit.Test;
 
+import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a2;
@@ -102,5 +103,10 @@ public class MoveTest {
 
         //then
         assertEquals("r3k3/8/8/8/8/8/8/4K2R w Kq - 0 1", move.toFen());
+    }
+    @Test public void moveConstructor_correctly_determines_color_to_move() {
+        //then
+        assertEquals(WHITE, new Move("r3k3/8/8/8/8/8/8/4K2R w Kq - 0 1").getColorOfWhoToMove());
+        assertEquals(BLACK, new Move("r3k3/8/8/r3k3/8/8/8/4K2R b Kq - 0 1").getColorOfWhoToMove());
     }
 }

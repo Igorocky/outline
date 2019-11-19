@@ -59,6 +59,10 @@ public final class Move {
     private final int fullmoveNumber;
     private String shortNotation;
 
+    public Move(String fen) {
+        this(getColorToMove(fen), new ChessBoard(fen));
+    }
+
     public Move(ChessmanColor colorToMove, ChessBoard resultPosition) {
         this(colorToMove, resultPosition, 0, 1);
     }
@@ -272,7 +276,7 @@ public final class Move {
 
     public String toFen() {
         String piecePlacement = resultPosition.toFen();
-        String activeColor = getColorOfWhoMadeMove().invert() == ChessmanColor.WHITE ? "w" : "b";
+        String activeColor = getColorOfWhoToMove() == ChessmanColor.WHITE ? "w" : "b";
         String castlingAvailability = getCastlingAvailability();
         String enPassantTargetSquare = getEnPassantTargetSquare();
 
@@ -698,6 +702,10 @@ public final class Move {
         } else {
             return prevMove.fullmoveNumber;
         }
+    }
+
+    private static ChessmanColor getColorToMove(String fen) {
+        return "w".equals(fen.split("\\s")[1]) ? ChessmanColor.WHITE : ChessmanColor.BLACK;
     }
 
     private static final CellCoords A1 = new CellCoords(0, 0);
