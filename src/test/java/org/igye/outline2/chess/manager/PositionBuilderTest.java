@@ -75,7 +75,7 @@ public class PositionBuilderTest {
     @Test
     public void secondClickOnTheSameCellWithTheSamePieceRemovesThisPieceFromTheCell() {
         //given
-        PositionBuilder positionBuilder = new PositionBuilder("");
+        PositionBuilder positionBuilder = new PositionBuilder("8/8/8/8/8/8/8/8 w - -");
 
         positionBuilder.cellLeftClicked(new CellCoords(11,1));
         ChessComponentView view = positionBuilder.cellLeftClicked(f6);

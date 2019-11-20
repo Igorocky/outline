@@ -8,6 +8,7 @@ import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
+import org.igye.outline2.chess.model.Move;
 
 import java.util.function.Consumer;
 
@@ -31,13 +32,15 @@ public class PositionBuilder implements ChessComponentStateManager {
     private static final String NOT_SELECTED_CELL_BACKGROUND_COLOR = "white";
 
     private ChessBoard chessBoard;
-    private ChessmanColor colorToMove = ChessmanColor.WHITE;
+    private ChessmanColor colorToMove;
 
     private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
 
-    public PositionBuilder(String initialPosition) {
-        chessBoard = new ChessBoard(initialPosition);
+    public PositionBuilder(String initialPositionFen) {
+        Move initialPosition = new Move(initialPositionFen);
+        chessBoard = initialPosition.getResultPosition();
+        colorToMove = initialPosition.getColorOfWhoToMove();
         initAvailablePieces();
         unhighlightAvailablePieces();
         availablePieces[6][1] = createCell(6,1, RECYCLE_BIN_CODE);
@@ -54,7 +57,7 @@ public class PositionBuilder implements ChessComponentStateManager {
         result.setTab(ChessComponentStage.INITIAL_POSITION);
         result.setAvailableChessmanTypes(InitialPositionView.builder()
                 .availableChessmanTypes(availablePieces)
-                .nextMove(colorToMove)
+                .colorToMove(colorToMove)
                 .build()
         );
         return result;
@@ -92,8 +95,14 @@ public class PositionBuilder implements ChessComponentStateManager {
         return null;
     }
 
-    public String getPosition() {
-        return chessBoard.toFen();
+    @Override
+    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+        this.colorToMove = colorToMove;
+        return toView();
+    }
+
+    public Move getInitialPosition() {
+        return new Move(colorToMove, chessBoard);
     }
 
     public ChessmanColor getColorToMove() {

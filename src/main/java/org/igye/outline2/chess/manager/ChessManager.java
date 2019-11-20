@@ -2,12 +2,10 @@ package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentView;
-import org.igye.outline2.websocket.State;
 import org.igye.outline2.chess.model.CellCoords;
-import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
-import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.RpcMethod;
+import org.igye.outline2.websocket.State;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @PostConstruct
     public void postConstruct() {
-        stateManager = new PositionBuilder(StringUtils.EMPTY);
+        stateManager = new PositionBuilder("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
     }
 
     @RpcMethod
@@ -48,14 +46,17 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
+    @Override
+    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+        return stateManager.setColorToMove(colorToMove);
+    }
+
+    @RpcMethod
     public ChessComponentView chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
-                ChessmanColor colorToMove = positionBuilder.getColorToMove();
-                ChessBoard initialPosition = new ChessBoard(positionBuilder.getPosition());
-                Move initialMove = new Move(colorToMove, initialPosition);
-                stateManager = new MovesBuilder(stockfishCmd, initialMove);
+                stateManager = new MovesBuilder(stockfishCmd, positionBuilder.getInitialPosition());
             }
         } else if (stateManager instanceof MovesBuilder) {
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {

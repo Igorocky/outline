@@ -269,6 +269,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         return toView();
     }
 
+    @Override
+    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+        notSupported();
+        return null;
+    }
+
     private boolean canMakeMove() {
         return state.getCurrPosition().getChildren().isEmpty()
                 && !state.isChoseChessmanTypeDialogOpened();
@@ -340,7 +346,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     public String getInitialPosition() {
-        return state.getInitialPosition().getMove().getResultPosition().toFen();
+        return state.getInitialPosition().getMove().toFen();
     }
 
     private ChessBoard getCurrentPosition() {
