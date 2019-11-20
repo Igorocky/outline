@@ -275,6 +275,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         return null;
     }
 
+    @Override
+    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+        notSupported();
+        return null;
+    }
+
     private boolean canMakeMove() {
         return state.getCurrPosition().getChildren().isEmpty()
                 && !state.isChoseChessmanTypeDialogOpened();

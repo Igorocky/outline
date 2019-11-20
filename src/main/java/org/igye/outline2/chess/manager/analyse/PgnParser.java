@@ -50,7 +50,7 @@ public class PgnParser {
     }
 
     private static void setFen(ParsedPgnDto parsedPgnDto) {
-        Move currMove = new Move(ChessmanColor.WHITE, new ChessBoard(START_POSITION_FEN));
+        Move currMove = new Move(new ChessBoard(START_POSITION_FEN), ChessmanColor.WHITE);
         for (List<PositionDto> movePair : parsedPgnDto.getPositions()) {
             for (PositionDto positionDto : movePair) {
                 currMove = currMove.makeMove(positionDto.getNotation());

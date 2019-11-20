@@ -15,4 +15,8 @@ import org.igye.outline2.chess.model.ChessmanColor;
 public class InitialPositionView {
     private ChessBoardCellView[][] availableChessmanTypes;
     private ChessmanColor colorToMove;
+    private boolean whiteLongCastlingIsAvailable = true;
+    private boolean whiteShortCastlingIsAvailable = true;
+    private boolean blackLongCastlingIsAvailable = true;
+    private boolean blackShortCastlingIsAvailable = true;
 }

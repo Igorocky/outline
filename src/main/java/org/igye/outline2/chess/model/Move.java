@@ -51,23 +51,40 @@ public final class Move {
     private final CellCoords to;
     private final ChessmanColor colorToMove;
     private final ChessBoard resultPosition;
+    @Getter
     private boolean whiteKingCastleAvailable = true;
+    @Getter
     private boolean whiteQueenCastleAvailable = true;
+    @Getter
     private boolean blackKingCastleAvailable = true;
+    @Getter
     private boolean blackQueenCastleAvailable = true;
     private final int halfmoveClock;
     private final int fullmoveNumber;
     private String shortNotation;
 
     public Move(String fen) {
-        this(getColorToMove(fen), new ChessBoard(fen));
+        this(new ChessBoard(fen), getColorToMove(fen));
+        setCastlingAvailabilities(fen);
     }
 
-    public Move(ChessmanColor colorToMove, ChessBoard resultPosition) {
-        this(colorToMove, resultPosition, 0, 1);
+    public Move(ChessBoard resultPosition, ChessmanColor colorToMove) {
+        this(resultPosition, colorToMove, 0, 1);
     }
 
-    public Move(ChessmanColor colorToMove, ChessBoard resultPosition, int halfmoveClock, int fullmoveNumber) {
+    public Move(ChessBoard resultPosition, ChessmanColor colorToMove,
+                        boolean whiteKingCastleAvailable,
+                        boolean whiteQueenCastleAvailable,
+                        boolean blackKingCastleAvailable,
+                        boolean blackQueenCastleAvailable) {
+        this(resultPosition, colorToMove, 0, 1);
+        this.whiteKingCastleAvailable = whiteKingCastleAvailable;
+        this.whiteQueenCastleAvailable = whiteQueenCastleAvailable;
+        this.blackKingCastleAvailable = blackKingCastleAvailable;
+        this.blackQueenCastleAvailable = blackQueenCastleAvailable;
+    }
+
+    public Move(ChessBoard resultPosition, ChessmanColor colorToMove, int halfmoveClock, int fullmoveNumber) {
         prevMove=null;
         from = null;
         to = null;
@@ -212,6 +229,41 @@ public final class Move {
         return makeMove(moveNotationParts);
     }
 
+    public Move makeMove(CellCoords from, CellCoords to, PieceShape promotion) {
+        return OutlineUtils.getSingleValueOrNull(
+                getPossibleNextMoves(from).stream()
+                        .filter(
+                                mv -> mv.getTo().equals(to)
+                                        && (promotion == null
+                                        || promotion != null && mv.getPieceAt(to).getPieceShape() == promotion)
+                        )
+                        .collect(Collectors.toList())
+        );
+    }
+
+    public boolean isShortCastling() {
+        return isCastling() && to.getX() == 6;
+    }
+
+    public boolean isLongCastling() {
+        return isCastling() && to.getX() == 2;
+    }
+
+    public String toFen() {
+        String piecePlacement = resultPosition.toFen();
+        String activeColor = getColorOfWhoToMove() == ChessmanColor.WHITE ? "w" : "b";
+        String castlingAvailability = getCastlingAvailability();
+        String enPassantTargetSquare = getEnPassantTargetSquare();
+
+        StringBuilder sb = new StringBuilder();
+        return sb.append(piecePlacement).append(" ")
+        .append(activeColor).append(" ")
+        .append(castlingAvailability).append(" ")
+        .append(enPassantTargetSquare).append(" ")
+        .append(halfmoveClock).append(" ")
+        .append(fullmoveNumber).toString();
+    }
+
     private Move makeMove(MoveNotationParts mnp) {
         ChessmanColor colorToMove = getColorOfWhoMadeMove().invert();
         Set<CellCoords> availableCellsFrom = findAll(c ->
@@ -252,41 +304,6 @@ public final class Move {
             throw new OutlineException("result.size() != 1");
         }
         return result.get(0);
-    }
-
-    public Move makeMove(CellCoords from, CellCoords to, PieceShape promotion) {
-        return OutlineUtils.getSingleValueOrNull(
-                getPossibleNextMoves(from).stream()
-                        .filter(
-                                mv -> mv.getTo().equals(to)
-                                        && (promotion == null
-                                        || promotion != null && mv.getPieceAt(to).getPieceShape() == promotion)
-                        )
-                        .collect(Collectors.toList())
-        );
-    }
-
-    public boolean isShortCastling() {
-        return isCastling() && to.getX() == 6;
-    }
-
-    public boolean isLongCastling() {
-        return isCastling() && to.getX() == 2;
-    }
-
-    public String toFen() {
-        String piecePlacement = resultPosition.toFen();
-        String activeColor = getColorOfWhoToMove() == ChessmanColor.WHITE ? "w" : "b";
-        String castlingAvailability = getCastlingAvailability();
-        String enPassantTargetSquare = getEnPassantTargetSquare();
-
-        StringBuilder sb = new StringBuilder();
-        return sb.append(piecePlacement).append(" ")
-        .append(activeColor).append(" ")
-        .append(castlingAvailability).append(" ")
-        .append(enPassantTargetSquare).append(" ")
-        .append(halfmoveClock).append(" ")
-        .append(fullmoveNumber).toString();
     }
 
     private String getEnPassantTargetSquare() {
@@ -702,6 +719,14 @@ public final class Move {
         } else {
             return prevMove.fullmoveNumber;
         }
+    }
+
+    private void setCastlingAvailabilities(String fen) {
+        String castlings = fen.split("\\s")[2];
+        whiteKingCastleAvailable = castlings.contains("K");
+        whiteQueenCastleAvailable = castlings.contains("Q");
+        blackKingCastleAvailable = castlings.contains("k");
+        blackQueenCastleAvailable = castlings.contains("q");
     }
 
     private static ChessmanColor getColorToMove(String fen) {

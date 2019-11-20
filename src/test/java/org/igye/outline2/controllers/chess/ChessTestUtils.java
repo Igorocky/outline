@@ -74,7 +74,7 @@ public class ChessTestUtils {
         final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
         chessBoardBuilderConsumer.accept(chessBoardBuilder);
         ChessBoard initialBoard = chessBoardBuilder.build();
-        return new Move(whoToMove, initialBoard);
+        return new Move(initialBoard, whoToMove);
     }
 
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {

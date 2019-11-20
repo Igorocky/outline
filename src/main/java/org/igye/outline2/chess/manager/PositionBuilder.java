@@ -33,6 +33,10 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     private ChessBoard chessBoard;
     private ChessmanColor colorToMove;
+    private boolean whiteLongCastlingIsAvailable;
+    private boolean whiteShortCastlingIsAvailable;
+    private boolean blackLongCastlingIsAvailable;
+    private boolean blackShortCastlingIsAvailable;
 
     private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
@@ -41,6 +45,10 @@ public class PositionBuilder implements ChessComponentStateManager {
         Move initialPosition = new Move(initialPositionFen);
         chessBoard = initialPosition.getResultPosition();
         colorToMove = initialPosition.getColorOfWhoToMove();
+        whiteShortCastlingIsAvailable = initialPosition.isWhiteKingCastleAvailable();
+        whiteLongCastlingIsAvailable = initialPosition.isWhiteQueenCastleAvailable();
+        blackShortCastlingIsAvailable = initialPosition.isBlackKingCastleAvailable();
+        blackLongCastlingIsAvailable = initialPosition.isBlackQueenCastleAvailable();
         initAvailablePieces();
         unhighlightAvailablePieces();
         availablePieces[6][1] = createCell(6,1, RECYCLE_BIN_CODE);
@@ -58,6 +66,10 @@ public class PositionBuilder implements ChessComponentStateManager {
         result.setAvailableChessmanTypes(InitialPositionView.builder()
                 .availableChessmanTypes(availablePieces)
                 .colorToMove(colorToMove)
+                .whiteLongCastlingIsAvailable(whiteLongCastlingIsAvailable)
+                .whiteShortCastlingIsAvailable(whiteShortCastlingIsAvailable)
+                .blackLongCastlingIsAvailable(blackLongCastlingIsAvailable)
+                .blackShortCastlingIsAvailable(blackShortCastlingIsAvailable)
                 .build()
         );
         return result;
@@ -101,8 +113,33 @@ public class PositionBuilder implements ChessComponentStateManager {
         return toView();
     }
 
+    @Override
+    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+        if (color == ChessmanColor.WHITE) {
+            if (isLong) {
+                whiteLongCastlingIsAvailable = !whiteLongCastlingIsAvailable;
+            } else {
+                whiteShortCastlingIsAvailable = !whiteShortCastlingIsAvailable;
+            }
+        } else {
+            if (isLong) {
+                blackLongCastlingIsAvailable = !blackLongCastlingIsAvailable;
+            } else {
+                blackShortCastlingIsAvailable = !blackShortCastlingIsAvailable;
+            }
+        }
+        return toView();
+    }
+
     public Move getInitialPosition() {
-        return new Move(colorToMove, chessBoard);
+        return new Move(
+                chessBoard,
+                colorToMove,
+                whiteShortCastlingIsAvailable,
+                whiteLongCastlingIsAvailable,
+                blackShortCastlingIsAvailable,
+                blackLongCastlingIsAvailable
+        );
     }
 
     public ChessmanColor getColorToMove() {

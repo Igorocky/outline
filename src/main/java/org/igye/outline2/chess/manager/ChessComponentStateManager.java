@@ -10,6 +10,7 @@ public interface ChessComponentStateManager {
     ChessComponentView cellLeftClicked(CellCoords coords);
     ChessComponentView execChessCommand(String command);
     ChessComponentView setColorToMove(ChessmanColor colorToMove);
+    ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong);
 
     default void notSupported() {
         throw new OutlineException("Method not supported.");

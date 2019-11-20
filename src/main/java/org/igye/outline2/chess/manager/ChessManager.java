@@ -52,6 +52,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
+    @Override
+    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+        return stateManager.changeCastlingAvailability(color, isLong);
+    }
+
+    @RpcMethod
     public ChessComponentView chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
