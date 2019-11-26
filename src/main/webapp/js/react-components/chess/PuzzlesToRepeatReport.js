@@ -63,7 +63,7 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
     }
 
     if (!currTabId) {
-        redirect(PATH.createPuzzlesToRepeatPath(tabId))
+        redirect(PATH.createPuzzlesToRepeatPath(PUZZLES_TO_REPEAT_TABS.puzzles.id))
         return RE.LinearProgress({})
     } else {
         return renderTabs()
