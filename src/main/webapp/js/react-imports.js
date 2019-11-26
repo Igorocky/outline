@@ -203,18 +203,20 @@ function useConfirmActionDialog() {
     return [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog]
 }
 
-function reTabs({selectedTab,onTabSelected,tabs}) {
+function reTabs({selectedTab,onTabSelected,onTabMouseUp,tabs}) {
     return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
         RE.Paper({square:true},
             RE.Tabs({value:selectedTab,
                     indicatorColor:"primary",
                     textColor:"primary",
-                    onChange:(event,newTab)=>onTabSelected(newTab)},
+                    onChange:onTabSelected?(event,newTab)=>onTabSelected(newTab):null
+                },
                 _.pairs(tabs).map(([tabId,tabData]) => RE.Tab({
                     key:tabId,
                     label:tabData.label,
-                    value:tabId}
-                ))
+                    value:tabId,
+                    onMouseUp: onTabMouseUp?event=>onTabMouseUp(event,tabId):null
+                }))
             )
         ),
         tabs[selectedTab].render()

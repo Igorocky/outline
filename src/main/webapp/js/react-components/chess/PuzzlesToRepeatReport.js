@@ -45,14 +45,10 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
         }
     }
 
-    function redirectToTab(tabId) {
-        redirect(PATH.createPuzzlesToRepeatPath(tabId))
-    }
-
     function renderTabs() {
         return reTabs({
             selectedTab:currTabId,
-            onTabSelected: redirectToTab,
+            onTabMouseUp: (event,tabId) => link(redirect, PATH.createPuzzlesToRepeatPath(tabId)).onMouseUp(event),
             tabs: {
                 [PUZZLES_TO_REPEAT_TABS.puzzles.id]: {
                     label: PUZZLES_TO_REPEAT_TABS.puzzles.title,
@@ -67,7 +63,7 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
     }
 
     if (!currTabId) {
-        redirectToTab(PUZZLES_TO_REPEAT_TABS.puzzles.id)
+        redirect(PATH.createPuzzlesToRepeatPath(tabId))
         return RE.LinearProgress({})
     } else {
         return renderTabs()
