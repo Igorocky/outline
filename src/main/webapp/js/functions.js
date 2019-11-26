@@ -5,20 +5,13 @@ const CONTEXT_PATH = "/fe"
 const PATH = {
     stateWebSocketUrl: "/be/websocket/state",
     node: CONTEXT_PATH + "/node",
-    puzzlesToRepeat: CONTEXT_PATH + "/puzzlesToRepeat",
     nodeWithId: CONTEXT_PATH + "/node/:id",
     createNodeWithIdPath: id => CONTEXT_PATH + "/node/" + id,
+    puzzlesToRepeat: CONTEXT_PATH + "/puzzlesToRepeat",
+    puzzlesToRepeatWithTab: CONTEXT_PATH + "/puzzlesToRepeat/:tab",
+    createPuzzlesToRepeatPath: tab => CONTEXT_PATH + "/puzzlesToRepeat/" + tab,
     chessboard: CONTEXT_PATH + "/chessboard",
     admin: CONTEXT_PATH + "/admin",
-}
-
-function useRedirect() {
-    const [redirect, setRedirect] = useState(null)
-    return [redirect, setRedirect]
-}
-
-function redirectTo(to) {
-    return to ? re(Redirect,{key: to, to: to}) : null
 }
 
 function doPost({url, data, onSuccess}) {
@@ -108,7 +101,7 @@ function uploadFile({url, file, params, onSuccess}) {
 }
 
 function getByPath(obj, path, defaultValue) {
-    if (_.size(path) == 0) {
+    if (_.size(path) == 0 && obj) {
         return obj
     } else if(!obj) {
         return defaultValue

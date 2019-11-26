@@ -1,44 +1,23 @@
-const PuzzlesToRepeatReport_IconButtonWithMemory = ({onClick}) => {
-    const [clicked, setClicked] = useState(false)
-    const [hovered, setHovered] = useState(false);
-
-    function getColor() {
-        return clicked?"green":(hovered?"yellow":"grey")
-    }
-
-    function getIconName() {
-        return clicked?"play_circle_filled":"play_circle_outline"
-    }
-
-    return RE.IconButton({
-            size: "small",
-            color: "inherit",
-            onClick: () => {
-                setClicked(true)
-                onClick()
-            },
-            onMouseEnter: () => setHovered(true),
-            onMouseLeave: () => setHovered(false),
-            style: {color: getColor()}
-        },
-        RE.Icon({}, getIconName())
-    )
-}
-
 const PUZZLES_TO_REPEAT_TABS = {
     puzzles:{title: "Puzzles To Repeat", id: "puzzles"},
     comments:{title: "Comments", id: "comments"},
 }
 
-const PuzzlesToRepeatReport = () => {
+const PuzzlesToRepeatReport = ({match, redirect}) => {
     const [reportData, setReportData] = useState(null)
-    const [currTabId, setCurrTabId] = useState(PUZZLES_TO_REPEAT_TABS.puzzles.id)
+    const currTabId = getByPath(match, ["params", "tab"])
 
-    useEffect(() => doRpcCall(
-        "rpcRunReport",
-        {name:currTabId == PUZZLES_TO_REPEAT_TABS.puzzles.id?"puzzles-to-repeat":"puzzle-comments"},
-        res => setReportData(res)
-    ),[currTabId])
+    useEffect(() => {
+        if (currTabId) {
+            doRpcCall(
+                "rpcRunReport",
+                {name: currTabId == PUZZLES_TO_REPEAT_TABS.puzzles.id ? "puzzles-to-repeat" : "puzzle-comments"},
+                res => setReportData(res)
+            )
+        } else {
+            setReportData(undefined)
+        }
+    }, [currTabId])
 
     function navigateToPuzzle(puzzleId) {
         window.open(PATH.createNodeWithIdPath(puzzleId))
@@ -66,10 +45,14 @@ const PuzzlesToRepeatReport = () => {
         }
     }
 
+    function redirectToTab(tabId) {
+        redirect(PATH.createPuzzlesToRepeatPath(tabId))
+    }
+
     function renderTabs() {
         return reTabs({
             selectedTab:currTabId,
-            onTabSelected: newTabId => setCurrTabId(newTabId),
+            onTabSelected: redirectToTab,
             tabs: {
                 [PUZZLES_TO_REPEAT_TABS.puzzles.id]: {
                     label: PUZZLES_TO_REPEAT_TABS.puzzles.title,
@@ -83,5 +66,37 @@ const PuzzlesToRepeatReport = () => {
         })
     }
 
-    return renderTabs()
+    if (!currTabId) {
+        redirectToTab(PUZZLES_TO_REPEAT_TABS.puzzles.id)
+        return RE.LinearProgress({})
+    } else {
+        return renderTabs()
+    }
+}
+
+const PuzzlesToRepeatReport_IconButtonWithMemory = ({onClick}) => {
+    const [clicked, setClicked] = useState(false)
+    const [hovered, setHovered] = useState(false);
+
+    function getColor() {
+        return clicked?"green":(hovered?"yellow":"grey")
+    }
+
+    function getIconName() {
+        return clicked?"play_circle_filled":"play_circle_outline"
+    }
+
+    return RE.IconButton({
+            size: "small",
+            color: "inherit",
+            onClick: () => {
+                setClicked(true)
+                onClick()
+            },
+            onMouseEnter: () => setHovered(true),
+            onMouseLeave: () => setHovered(false),
+            style: {color: getColor()}
+        },
+        RE.Icon({}, getIconName())
+    )
 }

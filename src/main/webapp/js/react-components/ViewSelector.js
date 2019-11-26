@@ -1,19 +1,14 @@
 const VIEWS = [
     {name:"Nodes", component: NodeCommonView, path: [PATH.node, PATH.nodeWithId]},
-    {name:"Puzzles To Repeat", component: PuzzlesToRepeatReport, path: [PATH.puzzlesToRepeat]},
+    {name:"Puzzles To Repeat", component: PuzzlesToRepeatReport, path: [PATH.puzzlesToRepeat, PATH.puzzlesToRepeatWithTab]},
     {name:"Chessboard", component: ChessComponent, path: [PATH.chessboard]},
     {name:"Admin", component: AdminView, path: [PATH.admin]},
 ]
 
 const ViewSelector = () => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
-    const [redirect, setRedirect] = useRedirect()
+    const [redirect, setRedirect] = useState(null)
     const actionsContainerRef = React.useRef(null)
-
-    if (!redirect) {
-        setRedirect(window.location.pathname)
-        return redirectTo(window.location.pathname)
-    }
 
     function isTabOrShift(event) {
         return event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')
@@ -64,14 +59,27 @@ const ViewSelector = () => {
             key: view.path[0],
             path: view.path,
             exact: true,
-            render: props => re(view.component, {...props, actionsContainerRef: actionsContainerRef})
+            render: props => re(view.component, {
+                ...props,
+                actionsContainerRef: actionsContainerRef,
+                redirect: path => setRedirect(path)
+            })
         }))
     }
 
-    return re(BrowserRouter, {},
-        renderAppBar(),
-        renderDrawer(),
-        re(Switch, {}, ...getViewRoutes()),
-        redirectTo(redirect)
-    )
+    function redirectTo(to) {
+        return to ? re(Redirect,{key: to, to: to}) : null
+    }
+
+    if (!redirect) {
+        setRedirect(window.location.pathname)
+        return redirectTo(window.location.pathname)
+    } else {
+        return re(BrowserRouter, {},
+            renderAppBar(),
+            renderDrawer(),
+            re(Switch, {}, ...getViewRoutes()),
+            redirectTo(redirect)
+        )
+    }
 }

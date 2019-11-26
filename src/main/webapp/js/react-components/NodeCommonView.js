@@ -7,9 +7,8 @@ const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
     [OBJECT_CLASS.CHESS_GAME]: ChessGameFullView,
 }
 
-const NodeCommonView = ({actionsContainerRef, match}) => {
+const NodeCommonView = ({actionsContainerRef, match, redirect}) => {
     const [curNode, setCurNode] = useState(null)
-    const [redirect, setRedirect] = useRedirect()
 
     function loadNodeById(nodeId) {
         getNode({id:nodeId, depth: 1, includeCanPaste: true, includePath: true}, resp => setCurNode(resp))
@@ -32,7 +31,7 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
         if (getCurrNodeId() == nodeId) {
             reloadCurrNode()
         } else {
-            setRedirect(PATH.createNodeWithIdPath(nodeId))
+            redirect(PATH.createNodeWithIdPath(nodeId))
         }
     }
 
@@ -43,10 +42,10 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
     function renderPathToCurrNode() {
         return RE.Breadcrumbs({key:"path-to-cur-node"+getCurrNodeId()},
             RE.Link({key:"rootLink", color:"primary", className:"path-elem pointer-on-hover",
-                onClick: () => setRedirect(PATH.node)}, "root"),
+                onClick: () => redirect(PATH.node)}, "root"),
             curNode[NODE.path].map(pathElem =>
                     RE.Link({key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
-                        onClick: () => setRedirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
+                        onClick: () => redirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
                     getTagSingleValue(pathElem, TAG_ID.name, "[" + pathElem[NODE.objectClass] + "]")
                 )
             )
@@ -110,7 +109,6 @@ const NodeCommonView = ({actionsContainerRef, match}) => {
 
 
     return RE.Fragment({},
-        renderPageContent(),
-        redirectTo(redirect)
+        renderPageContent()
     )
 }
