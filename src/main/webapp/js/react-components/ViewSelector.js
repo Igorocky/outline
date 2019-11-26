@@ -46,7 +46,14 @@ const ViewSelector = () => {
             },
             RE.List({},
                 VIEWS.map((view,idx) =>
-                    RE.ListItem({button:true, key:idx, onClick:()=>setRedirect(VIEWS[idx].path[0])},
+                    RE.ListItem({
+                            button:true,
+                            key:idx,
+                            onMouseUp: event => {
+                                setSideMenuIsOpen(false)
+                                link(setRedirect, VIEWS[idx].path[0]).onMouseUp(event)
+                            }
+                        },
                         RE.ListItemText({},view.name)
                     )
                 )
@@ -62,7 +69,8 @@ const ViewSelector = () => {
             render: props => re(view.component, {
                 ...props,
                 actionsContainerRef: actionsContainerRef,
-                redirect: path => setRedirect(path)
+                redirect: path => setRedirect(path),
+                createLink: url => link(setRedirect, url)
             })
         }))
     }

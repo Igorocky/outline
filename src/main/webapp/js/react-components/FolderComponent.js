@@ -1,5 +1,5 @@
 
-const FolderComponent = ({text, onClick, icon, popupActions}) => {
+const FolderComponent = ({text, props, icon, popupActions}) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [iconIsHovered, setIconIsHovered] = useState(false);
 
@@ -10,9 +10,9 @@ const FolderComponent = ({text, onClick, icon, popupActions}) => {
 
     return RE.Container.row.left.center(
         {
-            onClick: onClick,
             className:"grey-background-on-hover pointer-on-hover",
-            style:{backgroundColor: anchorEl?"rgb(215, 215, 215)":"", padding:"5px 0px", height:"60px"}
+            style:{backgroundColor: anchorEl?"rgb(215, 215, 215)":"", padding:"5px 0px", height:"60px"},
+            ...props
         },
         {style: {marginRight:"7px"}},
         popupActions

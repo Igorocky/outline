@@ -124,3 +124,9 @@ function flatMap(list, func) {
     _.each(list, elem=>res.push(...func(elem)))
     return res
 }
+
+function disableScrollOnMouseDown(event) {
+    if(event.button==1){
+        event.preventDefault()
+    }
+}

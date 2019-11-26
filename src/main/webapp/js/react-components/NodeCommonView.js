@@ -7,7 +7,7 @@ const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
     [OBJECT_CLASS.CHESS_GAME]: ChessGameFullView,
 }
 
-const NodeCommonView = ({actionsContainerRef, match, redirect}) => {
+const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
     const [curNode, setCurNode] = useState(null)
 
     function loadNodeById(nodeId) {
@@ -41,11 +41,21 @@ const NodeCommonView = ({actionsContainerRef, match, redirect}) => {
 
     function renderPathToCurrNode() {
         return RE.Breadcrumbs({key:"path-to-cur-node"+getCurrNodeId()},
-            RE.Link({key:"rootLink", color:"primary", className:"path-elem pointer-on-hover",
-                onClick: () => redirect(PATH.node)}, "root"),
+            RE.Link({
+                    key: "rootLink",
+                    color: "primary",
+                    className: "path-elem pointer-on-hover",
+                    ...createLink(PATH.node)
+                },
+                "root"
+            ),
             curNode[NODE.path].map(pathElem =>
-                    RE.Link({key:pathElem[NODE.id], color:"primary", className:"path-elem pointer-on-hover",
-                        onClick: () => redirect(PATH.createNodeWithIdPath(pathElem[NODE.id]))},
+                RE.Link({
+                        key:pathElem[NODE.id],
+                        color:"primary",
+                        className:"path-elem pointer-on-hover",
+                        ...createLink(PATH.createNodeWithIdPath(pathElem[NODE.id]))
+                    },
                     getTagSingleValue(pathElem, TAG_ID.name, "[" + pathElem[NODE.objectClass] + "]")
                 )
             )
@@ -80,7 +90,8 @@ const NodeCommonView = ({actionsContainerRef, match, redirect}) => {
             return re(fullView,{
                 curNode: curNode,
                 actionsContainerRef: actionsContainerRef,
-                navigateToNodeId: navigateToNodeId
+                navigateToNodeId: navigateToNodeId,
+                createLink: createLink
             })
         } else {
             return RE.TextField({

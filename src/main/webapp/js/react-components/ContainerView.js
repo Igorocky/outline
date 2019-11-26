@@ -1,9 +1,9 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
-const ContainerShortView = ({node, navigateToNodeId, reloadParentNode}) => {
+const ContainerShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     return re(FolderComponent,{
         text:getTagSingleValue(node, TAG_ID.name),
-        onClick: () => navigateToNodeId(node[NODE.id]),
+        props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
         icon: RE.Icon({style: {fontSize: "24px", marginTop: "5px", marginLeft: "5px"}}, "folder")
     })
 }
@@ -66,7 +66,7 @@ const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
     )
 }
 
-const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
+const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, createLink}) => {
     const [checkedNodes, setCheckedNodes] = useState(null)
     const [reorderMode, setReorderMode] = useState(false)
     const [importDialogOpened, setImportDialogOpened] = useState(false)
@@ -118,11 +118,18 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     function renderChildNodeShortView(node) {
         const shortView = OBJECT_CLASS_TO_SHORT_VIEW_MAP[node[NODE.objectClass]]
         if (shortView) {
-            return re(shortView,{node:node, navigateToNodeId:navigateToNodeId, reloadParentNode:reloadCurrNode})
+            return re(shortView,{
+                node:node,
+                navigateToNodeId:navigateToNodeId,
+                reloadParentNode:reloadCurrNode,
+                createLink: createLink
+            })
         } else {
             return RE.Link({
-                    color:"primary", className:"path-elem pointer-on-hover",
-                    onClick: () => navigateToNodeId(node[NODE.id])},
+                    color:"primary",
+                    className:"path-elem pointer-on-hover",
+                    ...createLink(PATH.createNodeWithIdPath(node[NODE.id]))
+                },
                 "[" + node[NODE.objectClass] + "]"
             )
         }

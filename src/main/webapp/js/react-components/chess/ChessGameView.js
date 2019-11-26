@@ -1,9 +1,9 @@
 'use strict'
 
-const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode}) => {
+const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     return re(FolderComponent,{
         text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
-        onClick: () => navigateToNodeId(node[NODE.id]),
+        props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
         icon: RE.img({
             src:"/img/chess/Chess_ndt45.svg",
             style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}

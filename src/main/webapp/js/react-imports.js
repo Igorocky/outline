@@ -220,3 +220,22 @@ function reTabs({selectedTab,onTabSelected,tabs}) {
         tabs[selectedTab].render()
     )
 }
+
+function onMouseUpHandler({onLeftClick, onMiddleClick}) {
+    return event => {
+        if (event.nativeEvent.button == 0) {
+            onLeftClick()
+        } else if (event.nativeEvent.button == 1) {
+            onMiddleClick()
+        }
+    }
+}
+
+function link(redirect, url) {
+    return {
+        onMouseUp: onMouseUpHandler({
+            onLeftClick:() => redirect(url),
+            onMiddleClick: () => window.open(url)
+        })
+    }
+}
