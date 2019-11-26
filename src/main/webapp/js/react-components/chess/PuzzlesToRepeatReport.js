@@ -67,18 +67,20 @@ const PuzzlesToRepeatReport = () => {
     }
 
     function renderTabs() {
-        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
-            RE.Paper({square:true},
-                RE.Tabs({value:currTabId,
-                        indicatorColor:"primary",
-                        textColor:"primary",
-                        onChange: (event, newTabId) => setCurrTabId(newTabId)},
-                    RE.Tab({label:PUZZLES_TO_REPEAT_TABS.puzzles.title, value:PUZZLES_TO_REPEAT_TABS.puzzles.id}),
-                    RE.Tab({label:PUZZLES_TO_REPEAT_TABS.comments.id, value:PUZZLES_TO_REPEAT_TABS.comments.id}),
-                )
-            ),
-            renderCurrReport()
-        )
+        return reTabs({
+            selectedTab:currTabId,
+            onTabSelected: newTabId => setCurrTabId(newTabId),
+            tabs: {
+                [PUZZLES_TO_REPEAT_TABS.puzzles.id]: {
+                    label: PUZZLES_TO_REPEAT_TABS.puzzles.title,
+                    render: renderCurrReport
+                },
+                [PUZZLES_TO_REPEAT_TABS.comments.id]: {
+                    label: PUZZLES_TO_REPEAT_TABS.comments.title,
+                    render: renderCurrReport
+                },
+            }
+        })
     }
 
     return renderTabs()

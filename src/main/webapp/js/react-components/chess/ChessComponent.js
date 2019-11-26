@@ -23,19 +23,7 @@ const ChessComponent = () => {
         }
     }
 
-    function renderCurrentTabContent() {
-        if (state.availableChessmanTypes) {
-            return re(InitialPosition,{key:"InitialPosition", backend:backend,
-                ...state.availableChessmanTypes})
-        } else if (state.history) {
-            return re(History,{key:"History", backend:backend,
-                ...state.history})
-        } else {
-            return null;
-        }
-    }
-
-    function handleTabChange(event, newValue) {
+    function handleTabChange(newValue) {
         backend.call("chessTabSelected", {tab:newValue})
     }
 
@@ -54,19 +42,24 @@ const ChessComponent = () => {
     }
 
     function renderRightPanel() {
-        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
-            RE.Paper({square:true},
-                RE.Tabs({value:state.tab,
-                        indicatorColor:"primary",
-                        textColor:"primary",
-                        onChange:handleTabChange},
-                    RE.Tab({label:"Initial position", value:CHESS_COMPONENT_STAGE.initialPosition}),
-                    RE.Tab({label:"Moves", value:CHESS_COMPONENT_STAGE.moves}),
-                    RE.Tab({label:"Practice", value:CHESS_COMPONENT_STAGE.exercise}),
-                )
-            ),
-            renderCurrentTabContent()
-        )
+        return reTabs({
+            selectedTab:state.tab,
+            onTabSelected:handleTabChange,
+            tabs: {
+                [CHESS_COMPONENT_STAGE.initialPosition]: {
+                    label:"Initial position",
+                    render: () => re(InitialPosition,{backend:backend, ...state.availableChessmanTypes})
+                },
+                [CHESS_COMPONENT_STAGE.moves]: {
+                    label:"Moves",
+                    render: () => re(History,{backend:backend, ...state.history})
+                },
+                [CHESS_COMPONENT_STAGE.exercise]: {
+                    label:"Practice",
+                    render: () => null
+                },
+            },
+        })
     }
 
     function renderPageContent() {

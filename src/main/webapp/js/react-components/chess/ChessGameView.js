@@ -273,34 +273,25 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         ))
     }
 
-    function renderCurrentTabContent() {
-        if (CHESS_GAME_FULL_VIEW_TABS.pgn.id == currTabId) {
-            return renderPgnTab()
-        } else if (CHESS_GAME_FULL_VIEW_TABS.moves.id == currTabId) {
-            return renderMovesTab()
-        } else if (CHESS_GAME_FULL_VIEW_TABS.practice.id == currTabId) {
-            return "practice"
-        }
-    }
-
-    function handleTabChange(event, newTabId) {
-        setCurrTabId(newTabId)
-    }
-    
     function renderTabs() {
-        return RE.Container.col.top.left({}, {style:{marginBottom:"5px"}},
-            RE.Paper({square:true},
-                RE.Tabs({value:currTabId,
-                        indicatorColor:"primary",
-                        textColor:"primary",
-                        onChange:handleTabChange},
-                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.pgn.title, value:CHESS_GAME_FULL_VIEW_TABS.pgn.id}),
-                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.moves.title, value:CHESS_GAME_FULL_VIEW_TABS.moves.id}),
-                    RE.Tab({label:CHESS_GAME_FULL_VIEW_TABS.practice.title, value:CHESS_GAME_FULL_VIEW_TABS.practice.id}),
-                )
-            ),
-            renderCurrentTabContent()
-        )
+        return reTabs({
+            selectedTab:currTabId,
+            onTabSelected: setCurrTabId,
+            tabs: {
+                [CHESS_GAME_FULL_VIEW_TABS.pgn.id]: {
+                    label:CHESS_GAME_FULL_VIEW_TABS.pgn.title,
+                    render: renderPgnTab
+                },
+                [CHESS_GAME_FULL_VIEW_TABS.moves.id]: {
+                    label:CHESS_GAME_FULL_VIEW_TABS.moves.title,
+                    render: renderMovesTab
+                },
+                [CHESS_GAME_FULL_VIEW_TABS.practice.id]: {
+                    label:CHESS_GAME_FULL_VIEW_TABS.practice.title,
+                    render: () => "practice"
+                },
+            }
+        })
     }
 
     return RE.Container.col.top.left({},{},
