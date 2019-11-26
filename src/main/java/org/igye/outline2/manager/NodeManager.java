@@ -7,6 +7,7 @@ import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
+import org.igye.outline2.pm.TagIds;
 import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -81,9 +82,12 @@ public class NodeManager {
         } else {
             result = nodeRepository.getOne(id);
         }
-        NodeDto resultDto = dtoConverter.toDto(result, depth, true);
+        NodeDto resultDto = dtoConverter.toDto(result, depth, tag -> true);
         if (includePath) {
-            resultDto.setPath(map(result.getPath(), n -> dtoConverter.toDto(n, 0, false)));
+            resultDto.setPath(map(
+                    result.getPath(),
+                    n -> dtoConverter.toDto(n, 0, tag -> TagIds.NAME.equals(tag.getTagId()))
+            ));
         }
         if (includeCanPaste) {
             resultDto.setCanPaste(validateMoveOfNodesFromClipboard(resultDto.getId()));

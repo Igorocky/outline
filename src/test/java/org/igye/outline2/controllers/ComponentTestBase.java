@@ -67,7 +67,7 @@ public class ComponentTestBase {
 
     protected void printNode(Node node) {
         try {
-            System.out.println(objectMapper.writeValueAsString(dtoConverter.toDto(node, Integer.MAX_VALUE, true)));
+            System.out.println(objectMapper.writeValueAsString(dtoConverter.toDto(node, Integer.MAX_VALUE, tag -> true)));
         } catch (JsonProcessingException e) {
             throw new OutlineException(e);
         }
@@ -76,7 +76,7 @@ public class ComponentTestBase {
     protected void printNodes(ObjectHolder<List<Node>> nodes) {
         try {
             System.out.println(objectMapper.writeValueAsString(
-                    map(nodes.get(), n -> dtoConverter.toDto(n,Integer.MAX_VALUE, true))
+                    map(nodes.get(), n -> dtoConverter.toDto(n,Integer.MAX_VALUE, tag -> true))
             ));
         } catch (JsonProcessingException e) {
             throw new OutlineException(e);

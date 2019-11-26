@@ -42,7 +42,7 @@ public class ImageManager {
         }
         file.transferTo(new File(imgFile.getAbsolutePath()));
 
-        return dtoConverter.toDto(image, 0, true);
+        return dtoConverter.toDto(image, 0, tag -> true);
     }
 
     @Transactional

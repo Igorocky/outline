@@ -19,6 +19,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.igye.outline2.common.OutlineUtils.map;
 import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
@@ -28,7 +30,7 @@ public class DtoConverter {
     @Autowired
     protected ObjectMapper objectMapper;
 
-    public NodeDto toDto(Node node, int depth, boolean includeTags) {
+    public NodeDto toDto(Node node, int depth, Predicate<Tag> tagFilter) {
         NodeDto nodeDto = createNodeDto(node.getClazz());
         nodeDto.setId(node.getId());
         nodeDto.setClazz(new OptVal<>(node.getClazz()));
@@ -37,14 +39,13 @@ public class DtoConverter {
                 node.getParentNode(),
                 parentNode -> new OptVal<>(parentNode.getId())
         ));
-        if (includeTags) {
-            nodeDto.setTags(map(node.getTags(), this::toDto));
-        }
+        nodeDto.setTags(map(node.getTags(), this::toDto));
+        nodeDto.setTags(node.getTags().stream().filter(tagFilter).map(this::toDto).collect(Collectors.toList()));
 
 
         if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
-                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1,includeTags)));
+                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1,tagFilter)));
             } else {
                 nodeDto.setChildNodes(Collections.emptyList());
             }
