@@ -21,7 +21,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @PostConstruct
     public void postConstruct() {
-        stateManager = new PositionBuilder("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
+        stateManager = new PositionBuilder("8/8/8/8/8/8/8/8 w KQkq - 0 1");
     }
 
     @RpcMethod
@@ -55,6 +55,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @Override
     public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
         return stateManager.changeCastlingAvailability(color, isLong);
+    }
+
+    @RpcMethod
+    @Override
+    public ChessComponentView setPositionFromFen(String fen) {
+        return stateManager.setPositionFromFen(fen);
     }
 
     @RpcMethod

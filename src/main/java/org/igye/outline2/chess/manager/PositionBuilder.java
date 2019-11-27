@@ -1,5 +1,6 @@
 package org.igye.outline2.chess.manager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
@@ -70,6 +71,14 @@ public class PositionBuilder implements ChessComponentStateManager {
                 .whiteShortCastlingIsAvailable(whiteShortCastlingIsAvailable)
                 .blackLongCastlingIsAvailable(blackLongCastlingIsAvailable)
                 .blackShortCastlingIsAvailable(blackShortCastlingIsAvailable)
+                .fen(new Move(
+                        chessBoard,
+                        colorToMove,
+                        whiteShortCastlingIsAvailable,
+                        whiteLongCastlingIsAvailable,
+                        blackShortCastlingIsAvailable,
+                        blackLongCastlingIsAvailable
+                ).toFen())
                 .build()
         );
         return result;
@@ -128,6 +137,18 @@ public class PositionBuilder implements ChessComponentStateManager {
                 blackShortCastlingIsAvailable = !blackShortCastlingIsAvailable;
             }
         }
+        return toView();
+    }
+
+    @Override
+    public ChessComponentView setPositionFromFen(String fen) {
+        Move move = new Move(StringUtils.trim(fen));
+        chessBoard = move.getResultPosition();
+        colorToMove = move.getColorOfWhoToMove();
+        whiteShortCastlingIsAvailable = move.isWhiteKingCastleAvailable();
+        whiteLongCastlingIsAvailable = move.isWhiteQueenCastleAvailable();
+        blackShortCastlingIsAvailable = move.isBlackKingCastleAvailable();
+        blackLongCastlingIsAvailable = move.isBlackQueenCastleAvailable();
         return toView();
     }
 

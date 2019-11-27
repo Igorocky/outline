@@ -1,7 +1,6 @@
 const CHESS_COMPONENT_STAGE = {
     initialPosition: "INITIAL_POSITION",
     moves: "MOVES",
-    exercise: "EXERCISE",
 }
 
 const ChessComponent = () => {
@@ -53,10 +52,6 @@ const ChessComponent = () => {
                 [CHESS_COMPONENT_STAGE.moves]: {
                     label:"Moves",
                     render: () => re(History,{backend:backend, ...state.history})
-                },
-                [CHESS_COMPONENT_STAGE.exercise]: {
-                    label:"Practice",
-                    render: () => null
                 },
             },
         })

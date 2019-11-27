@@ -158,9 +158,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         return RE.Container.row.left.top({},{},
             renderChessBoard(),
             renderTableWithMoves(),
-            RE.Container.col.top.left({},{},
+            RE.Container.col.top.left({},{style:{marginTop: "10px"}},
                 RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
-                renderPossibleMoves()
+                renderPossibleMoves(),
+                renderCurrentPositionFen()
             )
         )
     }
@@ -222,6 +223,14 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
             scoreInfo
         )
+    }
+
+    function renderCurrentPositionFen() {
+        if (selectedMove && selectedMove.fen) {
+            return RE.span({}, "FEN: " + selectedMove.fen)
+        } else {
+            return null
+        }
     }
 
     function renderPossibleMoves() {

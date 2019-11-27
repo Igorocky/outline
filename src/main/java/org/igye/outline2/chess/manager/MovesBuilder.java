@@ -281,6 +281,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         return null;
     }
 
+    @Override
+    public ChessComponentView setPositionFromFen(String fen) {
+        notSupported();
+        return null;
+    }
+
     private boolean canMakeMove() {
         return state.getCurrPosition().getChildren().isEmpty()
                 && !state.isChoseChessmanTypeDialogOpened();

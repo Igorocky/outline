@@ -19,4 +19,5 @@ public class InitialPositionView {
     private boolean whiteShortCastlingIsAvailable = true;
     private boolean blackLongCastlingIsAvailable = true;
     private boolean blackShortCastlingIsAvailable = true;
+    private String fen;
 }

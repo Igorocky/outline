@@ -2,10 +2,26 @@ const InitialPosition = ({backend, availableChessmanTypes, colorToMove,
                              whiteLongCastlingIsAvailable,
                              whiteShortCastlingIsAvailable,
                              blackLongCastlingIsAvailable,
-                             blackShortCastlingIsAvailable,}) => {
+                             blackShortCastlingIsAvailable,
+                                fen,}) => {
 
     const width = _.size(availableChessmanTypes);
     const height = _.size(availableChessmanTypes[0]);
+
+    function renderInitialSetupButtons() {
+        return RE.Container.row.left.top({},{},
+            RE.Button({
+                onClick: () => backend.call("setPositionFromFen", {
+                    fen:"8/8/8/8/8/8/8/8 w KQkq - 0 1"
+                })
+            }, "Empty board"),
+            RE.Button({
+                onClick: () => backend.call("setPositionFromFen", {
+                    fen:"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                })
+            }, "Set initial position"),
+        )
+    }
 
     function renderPiecesToSelectFrom() {
         return RE.svg({
@@ -74,9 +90,39 @@ const InitialPosition = ({backend, availableChessmanTypes, colorToMove,
         )
     }
 
+    function renderFen() {
+        return "FEN: " + fen
+    }
+
+    const [fenTextFieldValue, setFenTextFieldValue] = useState(null)
+    function renderSetFromFenTextField() {
+        function onKeyDown(event) {
+            if (event.keyCode == 13){
+                backend.call("setPositionFromFen", {fen:fenTextFieldValue})
+            } else if (event.keyCode == 27) {
+                setFenTextFieldValue(null)
+            }
+        }
+        if (!fenTextFieldValue) {
+            return RE.Button({onClick: () => setFenTextFieldValue(" ")}, "Set position from FEN")
+        } else {
+            return RE.TextField({
+                autoFocus: true,
+                style: {width:"550px"},
+                onKeyDown: onKeyDown,
+                value: fenTextFieldValue?fenTextFieldValue:"",
+                variant: "outlined",
+                onChange: e => setFenTextFieldValue(e.target.value),
+            })
+        }
+    }
+
     return RE.Container.col.top.left({},{},
+        renderInitialSetupButtons(),
         renderPiecesToSelectFrom(),
         renderColorSelector(),
-        renderCastlingAvailability()
+        renderCastlingAvailability(),
+        renderFen(),
+        renderSetFromFenTextField(),
     )
 }

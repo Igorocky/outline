@@ -11,6 +11,7 @@ public interface ChessComponentStateManager {
     ChessComponentView execChessCommand(String command);
     ChessComponentView setColorToMove(ChessmanColor colorToMove);
     ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong);
+    ChessComponentView setPositionFromFen(String fen);
 
     default void notSupported() {
         throw new OutlineException("Method not supported.");
