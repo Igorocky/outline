@@ -1,9 +1,9 @@
 package org.igye.outline2.chess.manager;
 
 import org.igye.outline2.chess.dto.ChessBoardCellView;
+import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
-import org.igye.outline2.chess.dto.ChoseChessmanTypeDialogView;
 import org.igye.outline2.chess.dto.HistoryView;
 import org.igye.outline2.chess.dto.MoveView;
 import org.igye.outline2.chess.model.CellCoords;
@@ -25,13 +25,24 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.common.OutlineUtils.listOf;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
+import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
+import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_ROOK;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
+import static org.igye.outline2.common.OutlineUtils.listOf;
 
 public class MovesBuilder implements ChessComponentStateManager {
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
     private static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
+    private static final String CHOOSE_CHESSMAN_TYPE_COLOR = "#0000AA";
     private static final String PREV_POSITION_CMD = "p";
     private static final String NEXT_POSITION_CMD = "n";
     private static final String GO_TO_POSITION_CMD = "g";
@@ -62,7 +73,6 @@ public class MovesBuilder implements ChessComponentStateManager {
             renderChessboard(chessComponentView);
         }
         chessComponentView.setHistory(createHistoryView());
-        createChoseChessmanTypeDialogViewIfNecessary(chessComponentView);
         if (state.getCommandErrorMsg() != null) {
             chessComponentView.setCommandErrorMsg(state.getCommandErrorMsg());
         }
@@ -75,26 +85,44 @@ public class MovesBuilder implements ChessComponentStateManager {
     private void renderChessboard(ChessComponentView chessComponentView) {
         chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
         final Move currMove = state.getCurrPosition().getMove();
+        final ChessBoardView chessBoardView = chessComponentView.getChessBoard();
         if (/*state.getAutoResponseForColor() != null*/1 == 2) {
             state.getCurrPosition().getMove().getAllCellsAttackedBy(state.getAutoResponseForColor()).forEach(
-                    c->chessComponentView.getChessBoard().setBorderColorForCell(c, "#F08080")
+                    c-> chessBoardView.setBorderColorForCell(c, "#F08080")
             );
         }
         if (!CollectionUtils.isEmpty(state.getPreparedMoves())) {
-            chessComponentView.getChessBoard().setBorderColorForCell(
-                    state.getPreparedMoves().get(0).getFrom(), PREPARED_TO_MOVE_COLOR
-            );
-            state.getPreparedMoves().forEach(move ->
-                    chessComponentView.getChessBoard().setBorderColorForCell(move.getTo(), AVAILABLE_TO_MOVE_TO_COLOR)
-            );
+            if (state.isChoseChessmanTypeDialogOpened()) {
+                final Move preparedMove = state.getPreparedMoves().get(0);
+                final int x = preparedMove.getTo().getX();
+                final ChessmanColor side = preparedMove.getColorOfWhoMadeMove();
+                final int base = side == WHITE ? 7 : 3;
+                putChessmanTypeToChoose(chessBoardView, x, base, side == WHITE ? WHITE_QUEEN : BLACK_QUEEN);
+                putChessmanTypeToChoose(chessBoardView, x, base-1, side == WHITE ? WHITE_ROOK : BLACK_ROOK);
+                putChessmanTypeToChoose(chessBoardView, x, base-2, side == WHITE ? WHITE_BISHOP : BLACK_BISHOP);
+                putChessmanTypeToChoose(chessBoardView, x, base-3, side == WHITE ? WHITE_KNIGHT : BLACK_KNIGHT);
+            } else {
+                chessBoardView.setBorderColorForCell(
+                        state.getPreparedMoves().get(0).getFrom(), PREPARED_TO_MOVE_COLOR
+                );
+                state.getPreparedMoves().forEach(move ->
+                        chessBoardView.setBorderColorForCell(move.getTo(), AVAILABLE_TO_MOVE_TO_COLOR)
+                );
+            }
         } else {
             if (currMove.getFrom() != null) {
-                chessComponentView.getChessBoard().setBorderColorForCell(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
+                chessBoardView.setBorderColorForCell(currMove.getFrom(), PREPARED_TO_MOVE_COLOR);
             }
             if (currMove.getTo() != null) {
-                chessComponentView.getChessBoard().setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
+                chessBoardView.setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
             }
         }
+    }
+
+    private void putChessmanTypeToChoose(ChessBoardView chessBoard, int x, int y, ChessmanType chessmanType) {
+        ChessBoardCellView cell = chessBoard.getCell(x, y);
+        cell.setBorderColor(CHOOSE_CHESSMAN_TYPE_COLOR);
+        cell.setCode(chessmanType.getCode());
     }
 
     private void initCommandMap() {
@@ -111,9 +139,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             final String destination = args[1];
             goToPosition(
                     Integer.parseInt(destination.substring(0, destination.length()-1)),
-                    destination.charAt(destination.length()-1) == 'w'
-                            ? ChessmanColor.WHITE
-                            : ChessmanColor.BLACK
+                    destination.charAt(destination.length()-1) == 'w' ? WHITE : BLACK
             );
         });
         commands.put(SET_DEPTH_CMD, args -> {
@@ -197,14 +223,6 @@ public class MovesBuilder implements ChessComponentStateManager {
                 state.setAutoResponseForColor(state.getCurrPosition().getMove().getColorOfWhoMadeMove());
                 execChessCommand(GENERATE_NEXT_MOVE_CMD);
             }
-        }
-    }
-
-    private void createChoseChessmanTypeDialogViewIfNecessary(ChessComponentView chessComponentView) {
-        if (state.isChoseChessmanTypeDialogOpened()) {
-            chessComponentView.setChoseChessmanTypeDialogView(
-                    createChoseChessmanTypeDialogView(state.getPreparedMoves().get(0).getColorOfWhoMadeMove())
-            );
         }
     }
 
@@ -293,19 +311,26 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void processPawnOnLastLine(CellCoords coordsClicked) {
-        final int xCoord = coordsClicked.getX();
-        if (20 <= xCoord && xCoord <= 23) {
-            final PieceShape replacementShape =
-                    xCoord == 20 ? PieceShape.KNIGHT :
-                    xCoord == 21 ? PieceShape.BISHOP :
-                    xCoord == 22 ? PieceShape.ROOK :
-                    xCoord == 23 ? PieceShape.QUEEN : null;
-            if (replacementShape == null) {
-                throw new OutlineException("replacementShape == null");
+        final Move preparedMode = state.getPreparedMoves().get(0);
+        int expectedX = preparedMode.getTo().getX();
+        final int xCoordClicked = coordsClicked.getX();
+        if (expectedX == xCoordClicked) {
+            final int yCoordClicked = coordsClicked.getY();
+            int shapeCodeSelected = preparedMode.getColorOfWhoMadeMove() == WHITE
+                    ? yCoordClicked : (yCoordClicked + 4);
+            if (4 <= shapeCodeSelected && shapeCodeSelected <= 7) {
+                final PieceShape replacementShape =
+                        shapeCodeSelected == 7 ? PieceShape.QUEEN :
+                        shapeCodeSelected == 6 ? PieceShape.ROOK :
+                        shapeCodeSelected == 5 ? PieceShape.BISHOP :
+                        shapeCodeSelected == 4 ? PieceShape.KNIGHT : null;
+                if (replacementShape == null) {
+                    throw new OutlineException("replacementShape == null");
+                }
+                state.setPreparedMoves(listOf(findPreparedMoveByPawnReplacementType(replacementShape)));
+                state.appendPreparedMoveToHistory();
+                state.setChoseChessmanTypeDialogOpened(false);
             }
-            state.setPreparedMoves(listOf(findPreparedMoveByPawnReplacementType(replacementShape)));
-            state.appendPreparedMoveToHistory();
-            state.setChoseChessmanTypeDialogOpened(false);
         }
     }
 
@@ -314,47 +339,6 @@ public class MovesBuilder implements ChessComponentStateManager {
                 .filter(move -> move.getPieceAt(move.getTo()).getPieceShape() == pieceShape)
                 .findFirst()
                 .get();
-    }
-
-    private ChoseChessmanTypeDialogView createChoseChessmanTypeDialogView(ChessmanColor color) {
-        ChoseChessmanTypeDialogView result = new ChoseChessmanTypeDialogView();
-        result.getCellsToChoseFrom().add(
-                ChessBoardCellView.builder()
-                        .code(color.equals(ChessmanColor.WHITE)
-                                ? ChessmanType.WHITE_KNIGHT.getCode()
-                                : ChessmanType.BLACK_KNIGHT.getCode()
-                        )
-                        .coords(new CellCoords(20,0))
-                        .build()
-        );
-        result.getCellsToChoseFrom().add(
-                ChessBoardCellView.builder()
-                        .code(color.equals(ChessmanColor.WHITE)
-                                ? ChessmanType.WHITE_BISHOP.getCode()
-                                : ChessmanType.BLACK_BISHOP.getCode()
-                        )
-                        .coords(new CellCoords(21,0))
-                        .build()
-        );
-        result.getCellsToChoseFrom().add(
-                ChessBoardCellView.builder()
-                        .code(color.equals(ChessmanColor.WHITE)
-                                ? ChessmanType.WHITE_ROOK.getCode()
-                                : ChessmanType.BLACK_ROOK.getCode()
-                        )
-                        .coords(new CellCoords(22,0))
-                        .build()
-        );
-        result.getCellsToChoseFrom().add(
-                ChessBoardCellView.builder()
-                        .code(color.equals(ChessmanColor.WHITE)
-                                ? ChessmanType.WHITE_QUEEN.getCode()
-                                : ChessmanType.BLACK_QUEEN.getCode()
-                        )
-                        .coords(new CellCoords(23,0))
-                        .build()
-        );
-        return result;
     }
 
     public String getInitialPosition() {
@@ -386,7 +370,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             )) {
                 return;
             }
-            if (currPosition.getMove().getColorOfWhoMadeMove() == ChessmanColor.BLACK) {
+            if (currPosition.getMove().getColorOfWhoMadeMove() == BLACK) {
                 feMoveNumber++;
             }
             currPosition = getNextOnlyPosition(currPosition);
@@ -400,7 +384,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             moveView[0].setFeMoveNumber(feMoveNumber);
             if (feMoveNumber == 0) {
                 historyView.setStartPositionSelected(selected);
-            } else if (move.getColorOfWhoMadeMove() == ChessmanColor.WHITE) {
+            } else if (move.getColorOfWhoMadeMove() == WHITE) {
                 moveView[0].setWhitesMove(move.getShortNotation());
                 moveView[0].setWhitesMoveSelected(selected);
             } else {

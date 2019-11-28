@@ -12,7 +12,7 @@ const InitialPosition = ({backend, availableChessmanTypes, colorToMove,
         return RE.Container.row.left.top({},{},
             RE.Button({
                 onClick: () => backend.call("setPositionFromFen", {
-                    fen:"8/8/8/8/8/8/8/8 w KQkq - 0 1"
+                    fen:"8/8/8/8/8/8/8/8 w - - 0 1"
                 })
             }, "Empty board"),
             RE.Button({

@@ -1,19 +1,13 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessComponentView;
-import org.igye.outline2.chess.model.CellCoords;
-import org.igye.outline2.chess.model.ChessmanColor;
-import org.igye.outline2.chess.model.ChessmanType;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.List;
 
-import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
+import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a2;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a3;
@@ -90,7 +84,6 @@ import static org.igye.outline2.controllers.chess.ChessTestUtils.execCommand;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getLastMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getSelectedMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
-import static org.igye.outline2.controllers.chess.ChessTestUtils.makeMove;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -707,18 +700,17 @@ public class MovesBuilderTest {
 
         view = movesBuilder.cellLeftClicked(f8);
         assertBoardsEqual(chessBoardView(b -> b
-                .__(a8).__(b8).__(c8).__(d8).__(e8).g_(f8).__(g8).__(h8)
-                .__(a7).__(b7).__(c7).__(d7).__(e7).yP(f7).__(g7).__(h7)
-                .__(a6).__(b6).__(c6).__(d6)._p(e6).__(f6).__(g6).__(h6)
-                .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
+                .__(a8).__(b8).__(c8).__(d8).__(e8).bQ(f8).__(g8).__(h8)
+                .__(a7).__(b7).__(c7).__(d7).__(e7).bR(f7).__(g7).__(h7)
+                .__(a6).__(b6).__(c6).__(d6)._p(e6).bB(f6).__(g6).__(h6)
+                .__(a5).__(b5).__(c5).__(d5).__(e5).bN(f5).__(g5).__(h5)
                 .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
                 .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
                 .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).__(g2).__(h2)
                 .__(a1).__(b1).__(c1).__(d1).__(e1).__(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        assertChoseChessmanTypeDialogForColor(WHITE, view);
 
-        view = movesBuilder.cellLeftClicked(new CellCoords(20,0));
+        view = movesBuilder.cellLeftClicked(f5);
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).gN(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).y_(f7).__(g7).__(h7)
@@ -729,7 +721,6 @@ public class MovesBuilderTest {
                 .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).__(g2).__(h2)
                 .__(a1).__(b1).__(c1).__(d1).__(e1).__(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        Assert.assertNull(view.getChoseChessmanTypeDialogView());
 
         view = movesBuilder.cellLeftClicked(e6);
         assertBoardsEqual(chessBoardView(b -> b
@@ -814,14 +805,13 @@ public class MovesBuilderTest {
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)
                 .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
-                .__(a4).__(b4).__(c4).__(d4)._P(e4).__(f4).__(g4).__(h4)
-                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
-                .__(a2).__(b2).__(c2).__(d2).__(e2).yp(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1).g_(f1).__(g1).__(h1)
+                .__(a4).__(b4).__(c4).__(d4)._P(e4).bq(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).br(f3).__(g3).__(h3)
+                .__(a2).__(b2).__(c2).__(d2).__(e2).bb(f2).__(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1).__(e1).bn(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        assertChoseChessmanTypeDialogForColor(BLACK, view);
 
-        view = movesBuilder.cellLeftClicked(new CellCoords(23,0));
+        view = movesBuilder.cellLeftClicked(f4);
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
@@ -832,7 +822,6 @@ public class MovesBuilderTest {
                 .__(a2).__(b2).__(c2).__(d2).__(e2).y_(f2).__(g2).__(h2)
                 .__(a1).__(b1).__(c1).__(d1).__(e1).gq(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        Assert.assertNull(view.getChoseChessmanTypeDialogView());
 
         view = movesBuilder.cellLeftClicked(e4);
         assertBoardsEqual(chessBoardView(b -> b
@@ -845,9 +834,8 @@ public class MovesBuilderTest {
                 .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).__(g2).__(h2)
                 .__(a1).__(b1).__(c1).__(d1).__(e1)._q(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        Assert.assertNull(view.getChoseChessmanTypeDialogView());
     }
-    @Test public void test_ChoseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
+    @Test public void test_choseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
                 .p(f2).P(e2)
         ));
@@ -870,12 +858,11 @@ public class MovesBuilderTest {
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)
                 .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
-                .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
-                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
-                .__(a2).__(b2).__(c2).__(d2)._P(e2).yp(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1).g_(f1).__(g1).__(h1)
+                .__(a4).__(b4).__(c4).__(d4).__(e4).bq(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).br(f3).__(g3).__(h3)
+                .__(a2).__(b2).__(c2).__(d2)._P(e2).bb(f2).__(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1).__(e1).bn(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        assertChoseChessmanTypeDialogForColor(BLACK, view);
 
         view = movesBuilder.cellLeftClicked(e2);
         assertBoardsEqual(chessBoardView(b -> b
@@ -883,25 +870,23 @@ public class MovesBuilderTest {
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)
                 .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
-                .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
-                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
-                .__(a2).__(b2).__(c2).__(d2)._P(e2).yp(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1).g_(f1).__(g1).__(h1)
+                .__(a4).__(b4).__(c4).__(d4).__(e4).bq(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).br(f3).__(g3).__(h3)
+                .__(a2).__(b2).__(c2).__(d2)._P(e2).bb(f2).__(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1).__(e1).bn(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        assertChoseChessmanTypeDialogForColor(BLACK, view);
 
-        view = movesBuilder.cellLeftClicked(f1);
+        view = movesBuilder.cellLeftClicked(e3);
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
                 .__(a6).__(b6).__(c6).__(d6).__(e6).__(f6).__(g6).__(h6)
                 .__(a5).__(b5).__(c5).__(d5).__(e5).__(f5).__(g5).__(h5)
-                .__(a4).__(b4).__(c4).__(d4).__(e4).__(f4).__(g4).__(h4)
-                .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
-                .__(a2).__(b2).__(c2).__(d2)._P(e2).yp(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1).g_(f1).__(g1).__(h1)
+                .__(a4).__(b4).__(c4).__(d4).__(e4).bq(f4).__(g4).__(h4)
+                .__(a3).__(b3).__(c3).__(d3).__(e3).br(f3).__(g3).__(h3)
+                .__(a2).__(b2).__(c2).__(d2)._P(e2).bb(f2).__(g2).__(h2)
+                .__(a1).__(b1).__(c1).__(d1).__(e1).bn(f1).__(g1).__(h1)
         ), view.getChessBoard());
-        assertChoseChessmanTypeDialogForColor(BLACK, view);
     }
     @Test public void test_itIsNotPossibleToMoveKingToACellWhereItWillBeChecked() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1104,7 +1089,8 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        makeMove(movesBuilder, e2,e4);
+        movesBuilder.cellLeftClicked(e2);
+        movesBuilder.cellLeftClicked(e4);
         ChessComponentView view = execCommand(movesBuilder, "e3");
         assertEquals("e3e.p.", getLastMove(view));
     }
@@ -1541,34 +1527,4 @@ public class MovesBuilderTest {
                 .build(), view
         );
     }
-
-    private void assertChoseChessmanTypeDialogForColor(ChessmanColor color, ChessComponentView view) {
-        final List<ChessBoardCellView> cellsToChoseFrom = view.getChoseChessmanTypeDialogView().getCellsToChoseFrom();
-        assertEquals(4, cellsToChoseFrom.size());
-
-        assertEquals(new CellCoords(20,0), cellsToChoseFrom.get(0).getCoords());
-        assertEquals(
-                color.equals(WHITE) ? ChessmanType.WHITE_KNIGHT.getCode() : ChessmanType.BLACK_KNIGHT.getCode(),
-                cellsToChoseFrom.get(0).getCode()
-        );
-
-        assertEquals(new CellCoords(21,0), cellsToChoseFrom.get(1).getCoords());
-        assertEquals(
-                color.equals(WHITE) ? ChessmanType.WHITE_BISHOP.getCode() : ChessmanType.BLACK_BISHOP.getCode(),
-                cellsToChoseFrom.get(1).getCode()
-        );
-
-        assertEquals(new CellCoords(22,0), cellsToChoseFrom.get(2).getCoords());
-        assertEquals(
-                color.equals(WHITE) ? ChessmanType.WHITE_ROOK.getCode() : ChessmanType.BLACK_ROOK.getCode(),
-                cellsToChoseFrom.get(2).getCode()
-        );
-
-        assertEquals(new CellCoords(23,0), cellsToChoseFrom.get(3).getCoords());
-        assertEquals(
-                color.equals(WHITE) ? ChessmanType.WHITE_QUEEN.getCode() : ChessmanType.BLACK_QUEEN.getCode(),
-                cellsToChoseFrom.get(3).getCode()
-        );
-    }
-
 }

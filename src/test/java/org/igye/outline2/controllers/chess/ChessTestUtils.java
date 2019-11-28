@@ -12,7 +12,6 @@ import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function3;
-import org.igye.outline2.exceptions.OutlineException;
 import org.junit.Assert;
 
 import java.util.HashSet;
@@ -35,6 +34,7 @@ public class ChessTestUtils {
     public static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
     private static final Predicate<ChessBoardCellView> CELL_AVAILABLE_TO_MOVE_TO =
             cell -> AVAILABLE_TO_MOVE_TO_COLOR.equals(cell.getBorderColor());
+    public static final String CHOOSE_CHESSMAN_TYPE_COLOR = "#0000AA";
 
     public static void assertCellPreparedToMove(ChessComponentView view, CellCoords expectedCellCoords) {
         assertSetsEqual(
@@ -216,32 +216,12 @@ public class ChessTestUtils {
                 color ->
                         color.equals(PREPARED_TO_MOVE_COLOR) ? "y" :
                         color.equals(AVAILABLE_TO_MOVE_TO_COLOR) ? "g" :
+                        color.equals(CHOOSE_CHESSMAN_TYPE_COLOR) ? "b" :
                         "?",
                 "u"
         );
 
         return " " + borderColor + type;
-    }
-
-    public static ChessComponentView makeMove(MovesBuilder movesBuilder, CellCoords from, CellCoords to,
-                                              PieceShape pieceShape) {
-        ChessComponentView view = makeMove(movesBuilder, from, to);
-        if (view.getChoseChessmanTypeDialogView() != null) {
-            return movesBuilder.cellLeftClicked(new CellCoords(
-                    pieceShape == PieceShape.KNIGHT ? 20 :
-                            pieceShape == PieceShape.BISHOP ? 21 :
-                                    pieceShape == PieceShape.ROOK ? 22 :
-                                            pieceShape == PieceShape.QUEEN ? 23
-                                                    : 0,
-                    0
-            ));
-        } else {
-            throw new OutlineException("view.getChoseChessmanTypeDialogView() == null");
-        }
-    }
-    public static ChessComponentView makeMove(MovesBuilder movesBuilder, CellCoords from, CellCoords to) {
-        movesBuilder.cellLeftClicked(from);
-        return movesBuilder.cellLeftClicked(to);
     }
 
     public static ChessComponentView execCommand(MovesBuilder movesBuilder, String command) {

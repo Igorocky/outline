@@ -21,7 +21,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @PostConstruct
     public void postConstruct() {
-        stateManager = new PositionBuilder("8/8/8/8/8/8/8/8 w KQkq - 0 1");
+        stateManager = new PositionBuilder("8/8/8/8/8/8/8/8 w - - 0 1");
     }
 
     @RpcMethod
