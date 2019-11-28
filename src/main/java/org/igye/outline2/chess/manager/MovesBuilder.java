@@ -96,11 +96,12 @@ public class MovesBuilder implements ChessComponentStateManager {
                 final Move preparedMove = state.getPreparedMoves().get(0);
                 final int x = preparedMove.getTo().getX();
                 final ChessmanColor side = preparedMove.getColorOfWhoMadeMove();
-                final int base = side == WHITE ? 7 : 3;
+                final int base = side == WHITE ? 7 : 0;
+                final int delta = side == WHITE ? -1 : 1;
                 putChessmanTypeToChoose(chessBoardView, x, base, side == WHITE ? WHITE_QUEEN : BLACK_QUEEN);
-                putChessmanTypeToChoose(chessBoardView, x, base-1, side == WHITE ? WHITE_ROOK : BLACK_ROOK);
-                putChessmanTypeToChoose(chessBoardView, x, base-2, side == WHITE ? WHITE_BISHOP : BLACK_BISHOP);
-                putChessmanTypeToChoose(chessBoardView, x, base-3, side == WHITE ? WHITE_KNIGHT : BLACK_KNIGHT);
+                putChessmanTypeToChoose(chessBoardView, x, base+delta, side == WHITE ? WHITE_ROOK : BLACK_ROOK);
+                putChessmanTypeToChoose(chessBoardView, x, base+delta*2, side == WHITE ? WHITE_BISHOP : BLACK_BISHOP);
+                putChessmanTypeToChoose(chessBoardView, x, base+delta*3, side == WHITE ? WHITE_KNIGHT : BLACK_KNIGHT);
             } else {
                 chessBoardView.setBorderColorForCell(
                         state.getPreparedMoves().get(0).getFrom(), PREPARED_TO_MOVE_COLOR
