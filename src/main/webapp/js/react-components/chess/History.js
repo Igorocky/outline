@@ -8,7 +8,7 @@ const historyTableStyle = {
     ...historyTdStyle,
 }
 
-const History = ({backend, startPositionSelected, moves}) => {
+const History = ({backend, startPositionSelected, rows}) => {
 
     function getStyleForCell(selected) {
         return selected
@@ -23,7 +23,7 @@ const History = ({backend, startPositionSelected, moves}) => {
                     "Start"
                 )
             ),
-            moves.map(move =>
+            rows.map(move =>
                 re('tr',{key:move.feMoveNumber},
                     re('td',{key:"n", style:{...historyTdStyle}},
                         move.feMoveNumber

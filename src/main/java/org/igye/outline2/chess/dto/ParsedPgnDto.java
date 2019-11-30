@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ParsedPgnDto {
+    private String initialPositionFen;
     private String wPlayer;
     private String bPlayer;
     private List<List<PositionDto>> positions;

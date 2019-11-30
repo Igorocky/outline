@@ -42,7 +42,7 @@ import static org.igye.outline2.common.OutlineUtils.setOf;
 
 public final class Move {
     private static final Pattern MOVE_COMMAND_PATTERN =
-            Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?(?:X)?([A-H])([1-8])([NBRQ+#]?)$");
+            Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?(?:X)?([A-H])([1-8])(?:=?([NBRQ]))?([+#]?)$");
     @Getter
     private final Move prevMove;
     @Getter
@@ -627,8 +627,8 @@ public final class Move {
             sb.append("x");
         }
         sb.append(coordsToString(move.getTo()));
-        if (wasPawnChange(move)) {
-            sb.append(chessmanShapeToShortSymbol(move.getPieceAt(move.getTo())));
+        if (wasPawnPromotion(move)) {
+            sb.append("=").append(chessmanShapeToShortSymbol(move.getPieceAt(move.getTo())));
         }
         if (move.isEnPassant()) {
             sb.append("e.p.");
@@ -643,7 +643,7 @@ public final class Move {
         return sb.toString();
     }
 
-    private static boolean wasPawnChange(Move move) {
+    private static boolean wasPawnPromotion(Move move) {
         return move.getPrevMove().getPieceAt(move.getFrom()).getPieceShape() == PieceShape.PAWN
                 && move.getPieceAt(move.getTo()).getPieceShape() != PieceShape.PAWN;
     }
@@ -706,7 +706,10 @@ public final class Move {
     }
 
     private int calcHalfmoveClock(Move prevMove, CellCoords to, ChessBoard resultPosition) {
-        if (resultPosition.getPieceAt(to).getPieceShape() == PieceShape.PAWN || prevMove.getPieceAt(to) != null) {
+        if (
+                (prevMove != null && prevMove.resultPosition.getPieceAt(from).getPieceShape() == PieceShape.PAWN)
+                || resultPosition.getPieceAt(to).getPieceShape() == PieceShape.PAWN
+                        || prevMove.getPieceAt(to) != null) {
             return 0;
         } else {
             return prevMove.halfmoveClock + 1;

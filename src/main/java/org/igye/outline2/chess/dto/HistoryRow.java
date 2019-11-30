@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MoveView {
+public class HistoryRow {
     private int feMoveNumber;
 
     private String whitesMove;

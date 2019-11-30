@@ -45,17 +45,25 @@ public class PgnParser {
                 }
             }
         }
-        setFen(parsedPgnDto);
+        setFen(pgn, parsedPgnDto);
         return parsedPgnDto;
     }
 
-    private static void setFen(ParsedPgnDto parsedPgnDto) {
-        Move currMove = new Move(new ChessBoard(START_POSITION_FEN), ChessmanColor.WHITE);
+    private static void setFen(String pgnStr, ParsedPgnDto parsedPgnDto) {
+        String initialPositionFen = getAttrValue(pgnStr, "FEN");
+        initialPositionFen = initialPositionFen != null ? initialPositionFen : START_POSITION_FEN;
+        parsedPgnDto.setInitialPositionFen(initialPositionFen);
+        Move currMove = new Move(initialPositionFen);
         for (List<PositionDto> movePair : parsedPgnDto.getPositions()) {
             for (PositionDto positionDto : movePair) {
-                currMove = currMove.makeMove(positionDto.getNotation());
-                positionDto.setFen(currMove.toFen());
-                positionDto.setMove(coordsToString(currMove.getFrom()) + coordsToString(currMove.getTo()));
+                if ("...".equals(positionDto.getNotation()) && currMove.getColorOfWhoToMove() == ChessmanColor.BLACK) {
+                    positionDto.setFen(currMove.toFen());
+                    positionDto.setMove("...");
+                } else {
+                    currMove = currMove.makeMove(positionDto.getNotation());
+                    positionDto.setFen(currMove.toFen());
+                    positionDto.setMove(coordsToString(currMove.getFrom()) + coordsToString(currMove.getTo()));
+                }
             }
         }
     }
@@ -88,7 +96,10 @@ public class PgnParser {
     private static String getAttrValue(String pgn, String attrName) {
         final String regex = "\\[" + attrName + "\\s\"([^\"]*)\"\\]";
         final Matcher matcher = Pattern.compile(regex).matcher(pgn);
-        matcher.find();
-        return matcher.group(1);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
     }
 }

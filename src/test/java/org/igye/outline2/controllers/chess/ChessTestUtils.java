@@ -3,7 +3,7 @@ package org.igye.outline2.controllers.chess;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
-import org.igye.outline2.chess.dto.MoveView;
+import org.igye.outline2.chess.dto.HistoryRow;
 import org.igye.outline2.chess.manager.MovesBuilder;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
@@ -229,8 +229,8 @@ public class ChessTestUtils {
     }
 
     public static String getLastMove(ChessComponentView view) {
-        final List<MoveView> moves = view.getHistory().getMoves();
-        MoveView lastMove = moves.get(moves.size() - 1);
+        final List<HistoryRow> moves = view.getHistory().getRows();
+        HistoryRow lastMove = moves.get(moves.size() - 1);
         if (lastMove.getBlacksMove() != null) {
             return lastMove.getBlacksMove();
         } else {
@@ -239,11 +239,11 @@ public class ChessTestUtils {
     }
 
     public static String getSelectedMove(ChessComponentView view) {
-        for (MoveView moveView : view.getHistory().getMoves()) {
-            if (moveView.isWhitesMoveSelected()) {
-                return moveView.getWhitesMove();
-            } else if (moveView.isBlacksMoveSelected()) {
-                return moveView.getBlacksMove();
+        for (HistoryRow historyRow : view.getHistory().getRows()) {
+            if (historyRow.isWhitesMoveSelected()) {
+                return historyRow.getWhitesMove();
+            } else if (historyRow.isBlacksMoveSelected()) {
+                return historyRow.getBlacksMove();
             }
         }
         return null;

@@ -16,5 +16,5 @@ import java.util.List;
 @Builder
 public class HistoryView {
     private boolean startPositionSelected;
-    private List<MoveView> moves = new ArrayList<>();
+    private List<HistoryRow> rows = new ArrayList<>();
 }

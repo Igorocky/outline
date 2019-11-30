@@ -1,9 +1,13 @@
 package org.igye.outline2.chess.manager;
 
 import org.igye.outline2.chess.dto.ChessComponentView;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.dto.PositionDto;
+import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
@@ -820,7 +824,7 @@ public class MovesBuilderTest {
                 .__(a4).__(b4).__(c4).__(d4)._P(e4).__(f4).__(g4).__(h4)
                 .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
                 .__(a2).__(b2).__(c2).__(d2).__(e2).y_(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1).gq(f1).__(g1).__(h1)
+                .__(a1).__(b1).__(c1).__(d1).__(e1).gn(f1).__(g1).__(h1)
         ), view.getChessBoard());
 
         view = movesBuilder.cellLeftClicked(e4);
@@ -832,7 +836,7 @@ public class MovesBuilderTest {
                 .__(a4).__(b4).__(c4).__(d4).yP(e4).__(f4).__(g4).__(h4)
                 .__(a3).__(b3).__(c3).__(d3).__(e3).__(f3).__(g3).__(h3)
                 .__(a2).__(b2).__(c2).__(d2).__(e2).__(f2).__(g2).__(h2)
-                .__(a1).__(b1).__(c1).__(d1).__(e1)._q(f1).__(g1).__(h1)
+                .__(a1).__(b1).__(c1).__(d1).__(e1)._n(f1).__(g1).__(h1)
         ), view.getChessBoard());
     }
     @Test public void test_choseChessmanTypeDialogIsOpened_noMovesAreAccepted() {
@@ -1000,7 +1004,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "g8q");
-        assertEquals("g8Q", getLastMove(view));
+        assertEquals("g8=Q", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanEscape() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
@@ -1015,7 +1019,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "c1r");
-        assertEquals("c1R+", getLastMove(view));
+        assertEquals("c1=R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanBeProtected() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
@@ -1030,7 +1034,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "c1r");
-        assertEquals("c1R+", getLastMove(view));
+        assertEquals("c1=R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckMate() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
@@ -1045,7 +1049,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "c1r");
-        assertEquals("c1R#", getLastMove(view));
+        assertEquals("c1=R#", getLastMove(view));
     }
     @Test public void moveNotationForStalemate() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
@@ -1075,7 +1079,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "hg8q");
-        assertEquals("hxg8Q#", getLastMove(view));
+        assertEquals("hxg8=Q#", getLastMove(view));
     }
     @Test public void moveNotationForEnPassantPawnMove() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1259,7 +1263,7 @@ public class MovesBuilderTest {
 
         ChessComponentView view = execCommand(movesBuilder, "g8q");
         assertNull(view.getCommandErrorMsg());
-        assertEquals("g8Q+", getLastMove(view));
+        assertEquals("g8=Q+", getLastMove(view));
     }
     @Test public void historyNavigationWorksCorrectly() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1526,5 +1530,128 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
                 .build(), view
         );
+    }
+    @Test public void thePgnProducedByMovesBuilderIsParsableByPgnParser() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4).N(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3).p(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = movesBuilder.cellLeftClicked(d3);
+        view = movesBuilder.cellLeftClicked(d2);
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4).N(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2).p(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        movesBuilder.cellLeftClicked(e4);
+        view = movesBuilder.cellLeftClicked(c5);
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5).N(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2).p(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        movesBuilder.cellLeftClicked(d2);
+        view = movesBuilder.cellLeftClicked(d1);
+        view = movesBuilder.cellLeftClicked(d1);
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5).N(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1).q(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        movesBuilder.cellLeftClicked(c5);
+        view = movesBuilder.cellLeftClicked(b3);
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3).N(b3)._(c3)._(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1).q(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        movesBuilder.cellLeftClicked(d1);
+        view = movesBuilder.cellLeftClicked(b3);
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                .K(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3).q(b3)._(c3)._(d3)._(e3).p(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                .k(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+
+        //when
+        ParsedPgnDto pgnDto = PgnParser.parsePgn(movesBuilder.toPgn());
+
+        //then
+        assertEquals("white", pgnDto.getWPlayer());
+        assertEquals("black", pgnDto.getBPlayer());
+        assertEquals("K7/8/8/8/4N3/3p1p2/8/k7 b - - 0 1", pgnDto.getInitialPositionFen());
+        List<List<PositionDto>> positions = pgnDto.getPositions();
+
+        PositionDto positionDto = positions.get(0).get(0);
+        assertEquals("...", positionDto.getNotation());
+        assertEquals("...", positionDto.getMove());
+        assertEquals("K7/8/8/8/4N3/3p1p2/8/k7 b - - 0 1", positionDto.getFen());
+
+        positionDto = positions.get(0).get(1);
+        assertEquals("d2", positionDto.getNotation());
+        assertEquals("d3d2", positionDto.getMove());
+        assertEquals("K7/8/8/8/4N3/5p2/3p4/k7 w - - 0 2", positionDto.getFen());
+
+        positionDto = positions.get(1).get(0);
+        assertEquals("Nc5", positionDto.getNotation());
+        assertEquals("e4c5", positionDto.getMove());
+        assertEquals("K7/8/8/2N5/8/5p2/3p4/k7 b - - 1 2", positionDto.getFen());
+
+        positionDto = positions.get(1).get(1);
+        assertEquals("d1=Q", positionDto.getNotation());
+        assertEquals("d2d1", positionDto.getMove());
+        assertEquals("K7/8/8/2N5/8/5p2/8/k2q4 w - - 0 3", positionDto.getFen());
+
+        positionDto = positions.get(2).get(0);
+        assertEquals("Nb3+", positionDto.getNotation());
+        assertEquals("c5b3", positionDto.getMove());
+        assertEquals("K7/8/8/8/8/1N3p2/8/k2q4 b - - 1 3", positionDto.getFen());
+
+        positionDto = positions.get(2).get(1);
+        assertEquals("Qxb3", positionDto.getNotation());
+        assertEquals("d1b3", positionDto.getMove());
+        assertEquals("K7/8/8/8/8/1q3p2/8/k7 w - - 0 4", positionDto.getFen());
     }
 }

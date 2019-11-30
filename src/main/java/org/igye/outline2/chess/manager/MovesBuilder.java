@@ -5,7 +5,7 @@ import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.dto.HistoryView;
-import org.igye.outline2.chess.dto.MoveView;
+import org.igye.outline2.chess.dto.HistoryRow;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
@@ -66,6 +66,79 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
+    public ChessComponentView execChessCommand(String command) {
+        state.setCommandErrorMsg(null);
+        state.setCommandResponseMsg(null);
+        String[] parsedCommand = command.trim().split("\\s");
+        if (commands.containsKey(parsedCommand[0])) {
+            commands.get(parsedCommand[0]).accept(parsedCommand);
+        } else {
+            if (canMakeMove()) {
+                try {
+                    state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
+                    state.appendPreparedMoveToHistory();
+                    generateAutoresponseIfNecessary();
+                } catch (ParseMoveException ex) {
+                    state.setCommandErrorMsg(ex.getMessage());
+                }
+            }
+        }
+        return toView();
+    }
+
+    @Override
+    public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
+        if (state.isChoseChessmanTypeDialogOpened()) {
+            processPawnOnLastLine(coordsClicked);
+        } else if (canMakeMove()) {
+            final List<Move> preparedMoves = state.getPreparedMoves();
+            if (CollectionUtils.isEmpty(preparedMoves)) {
+                List<Move> possibleMoves = state.getCurrPosition().getMove().getPossibleNextMoves(coordsClicked);
+                if (!possibleMoves.isEmpty()) {
+                    state.setPreparedMoves(possibleMoves);
+                }
+            } else if (coordsClicked.equals(preparedMoves.get(0).getFrom())) {
+                state.setPreparedMoves(null);
+            } else {
+                List<Move> movesChosen = state.getPreparedMoves().stream()
+                        .filter(move -> move.getTo().equals(coordsClicked))
+                        .collect(Collectors.toList());
+                if (!movesChosen.isEmpty()) {
+                    state.setPreparedMoves(movesChosen);
+                    if (movesChosen.size() > 1) {
+                        state.setChoseChessmanTypeDialogOpened(true);
+                    } else {
+                        state.appendPreparedMoveToHistory();
+                        generateAutoresponseIfNecessary();
+                    }
+                } else {
+                    state.setPreparedMoves(null);
+                    cellLeftClicked(coordsClicked);
+                }
+            }
+        }
+        return toView();
+    }
+
+    @Override
+    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+        notSupported();
+        return null;
+    }
+
+    @Override
+    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+        notSupported();
+        return null;
+    }
+
+    @Override
+    public ChessComponentView setPositionFromFen(String fen) {
+        notSupported();
+        return null;
+    }
+
+    @Override
     public ChessComponentView toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(ChessComponentStage.MOVES);
@@ -80,6 +153,24 @@ public class MovesBuilder implements ChessComponentStateManager {
             chessComponentView.setCommandResponseMsg(state.getCommandResponseMsg());
         }
         return chessComponentView;
+    }
+
+    public String getInitialPosition() {
+        return state.getInitialPosition().getMove().toFen();
+    }
+
+    public String toPgn() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[FEN \"").append(state.getInitialPosition().getMove().toFen()).append("\"]\n");
+        sb.append("[White \"white\"]\n");
+        sb.append("[Black \"black\"]\n");
+        sb.append("\n\n");
+        for (HistoryRow row : createHistoryView().getRows()) {
+            sb.append(row.getFeMoveNumber()).append(". ")
+                    .append(row.getWhitesMove()).append(" ")
+                    .append(row.getBlacksMove()).append(" ");
+        }
+        return sb.toString();
     }
 
     private void renderChessboard(ChessComponentView chessComponentView) {
@@ -227,83 +318,10 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
     }
 
-    @Override
-    public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
-        if (state.isChoseChessmanTypeDialogOpened()) {
-            processPawnOnLastLine(coordsClicked);
-        } else if (canMakeMove()) {
-            final List<Move> preparedMoves = state.getPreparedMoves();
-            if (CollectionUtils.isEmpty(preparedMoves)) {
-                List<Move> possibleMoves = state.getCurrPosition().getMove().getPossibleNextMoves(coordsClicked);
-                if (!possibleMoves.isEmpty()) {
-                    state.setPreparedMoves(possibleMoves);
-                }
-            } else if (coordsClicked.equals(preparedMoves.get(0).getFrom())) {
-                state.setPreparedMoves(null);
-            } else {
-                List<Move> movesChosen = state.getPreparedMoves().stream()
-                        .filter(move -> move.getTo().equals(coordsClicked))
-                        .collect(Collectors.toList());
-                if (!movesChosen.isEmpty()) {
-                    state.setPreparedMoves(movesChosen);
-                    if (movesChosen.size() > 1) {
-                        state.setChoseChessmanTypeDialogOpened(true);
-                    } else {
-                        state.appendPreparedMoveToHistory();
-                        generateAutoresponseIfNecessary();
-                    }
-                } else {
-                    state.setPreparedMoves(null);
-                    cellLeftClicked(coordsClicked);
-                }
-            }
-        }
-        return toView();
-    }
-
     private void generateAutoresponseIfNecessary() {
         if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove()) {
             execChessCommand(GENERATE_NEXT_MOVE_CMD);
         }
-    }
-
-    @Override
-    public ChessComponentView execChessCommand(String command) {
-        state.setCommandErrorMsg(null);
-        state.setCommandResponseMsg(null);
-        String[] parsedCommand = command.trim().split("\\s");
-        if (commands.containsKey(parsedCommand[0])) {
-            commands.get(parsedCommand[0]).accept(parsedCommand);
-        } else {
-            if (canMakeMove()) {
-                try {
-                    state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
-                    state.appendPreparedMoveToHistory();
-                    generateAutoresponseIfNecessary();
-                } catch (ParseMoveException ex) {
-                    state.setCommandErrorMsg(ex.getMessage());
-                }
-            }
-        }
-        return toView();
-    }
-
-    @Override
-    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
-        notSupported();
-        return null;
-    }
-
-    @Override
-    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
-        notSupported();
-        return null;
-    }
-
-    @Override
-    public ChessComponentView setPositionFromFen(String fen) {
-        notSupported();
-        return null;
     }
 
     private boolean canMakeMove() {
@@ -317,14 +335,15 @@ public class MovesBuilder implements ChessComponentStateManager {
         final int xCoordClicked = coordsClicked.getX();
         if (expectedX == xCoordClicked) {
             final int yCoordClicked = coordsClicked.getY();
-            int shapeCodeSelected = preparedMode.getColorOfWhoMadeMove() == WHITE
+            final ChessmanColor whoMadeMove = preparedMode.getColorOfWhoMadeMove();
+            int shapeCodeSelected = whoMadeMove == WHITE
                     ? yCoordClicked : (yCoordClicked + 4);
             if (4 <= shapeCodeSelected && shapeCodeSelected <= 7) {
                 final PieceShape replacementShape =
-                        shapeCodeSelected == 7 ? PieceShape.QUEEN :
-                        shapeCodeSelected == 6 ? PieceShape.ROOK :
-                        shapeCodeSelected == 5 ? PieceShape.BISHOP :
-                        shapeCodeSelected == 4 ? PieceShape.KNIGHT : null;
+                        shapeCodeSelected == 7 ? (whoMadeMove == WHITE ? PieceShape.QUEEN : PieceShape.KNIGHT) :
+                        shapeCodeSelected == 6 ? (whoMadeMove == WHITE ? PieceShape.ROOK : PieceShape.BISHOP) :
+                        shapeCodeSelected == 5 ? (whoMadeMove == WHITE ? PieceShape.BISHOP : PieceShape.ROOK) :
+                        shapeCodeSelected == 4 ? (whoMadeMove == WHITE ? PieceShape.KNIGHT : PieceShape.QUEEN) : null;
                 if (replacementShape == null) {
                     throw new OutlineException("replacementShape == null");
                 }
@@ -340,10 +359,6 @@ public class MovesBuilder implements ChessComponentStateManager {
                 .filter(move -> move.getPieceAt(move.getTo()).getPieceShape() == pieceShape)
                 .findFirst()
                 .get();
-    }
-
-    public String getInitialPosition() {
-        return state.getInitialPosition().getMove().toFen();
     }
 
     private ChessBoard getCurrentPosition() {
@@ -380,25 +395,28 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private HistoryView createHistoryView() {
         HistoryView historyView = new HistoryView();
-        final MoveView[] moveView = {new MoveView()};
+        final HistoryRow[] historyRow = {new HistoryRow()};
         traverseHistory((position, feMoveNumber, move, selected) -> {
-            moveView[0].setFeMoveNumber(feMoveNumber);
+            historyRow[0].setFeMoveNumber(feMoveNumber);
             if (feMoveNumber == 0) {
                 historyView.setStartPositionSelected(selected);
             } else if (move.getColorOfWhoMadeMove() == WHITE) {
-                moveView[0].setWhitesMove(move.getShortNotation());
-                moveView[0].setWhitesMoveSelected(selected);
+                historyRow[0].setWhitesMove(move.getShortNotation());
+                historyRow[0].setWhitesMoveSelected(selected);
             } else {
-                moveView[0].setBlacksMove(move.getShortNotation());
-                moveView[0].setBlacksMoveSelected(selected);
+                if (historyRow[0].getWhitesMove() == null) {
+                    historyRow[0].setWhitesMove("...");
+                }
+                historyRow[0].setBlacksMove(move.getShortNotation());
+                historyRow[0].setBlacksMoveSelected(selected);
 
-                historyView.getMoves().add(moveView[0]);
-                moveView[0] = new MoveView();
+                historyView.getRows().add(historyRow[0]);
+                historyRow[0] = new HistoryRow();
             }
             return true;
         });
-        if (moveView[0].getWhitesMove() != null) {
-            historyView.getMoves().add(moveView[0]);
+        if (historyRow[0].getWhitesMove() != null) {
+            historyView.getRows().add(historyRow[0]);
         }
         return historyView;
     }
