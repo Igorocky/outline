@@ -252,13 +252,21 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     }
 
     function renderTableWithMoves() {
-        return RE.Paper({style:{maxHeight:"450px", overflow: "scroll"}},RE.Table({size:"small"},
+        return RE.Paper({style:{maxHeight:"450px", overflow: "scroll"}},RE.Table(
+            {size:"small", stickyHeader:true},
+            RE.TableHead({},
+                RE.TableRow({},
+                    RE.TableCell({}, ""),
+                    RE.TableCell({}, curNode.parsedPgn.wplayer),
+                    RE.TableCell({}, curNode.parsedPgn.bplayer)
+                )
+            ),
             RE.TableBody({},
                 RE.TableRow({key: "-1"}, RE.TableCell({
                         colSpan: 3,
                         style: {backgroundColor: selectedMoveIdx==-1 ? "yellow" : null},
                         className: "grey-background-on-hover pointer-on-hover",
-                        onClick: () => setSelectedMove({})
+                        onClick: () => setSelectedMoveIdx(-1)
                     },
                     "Start"
                 )),
