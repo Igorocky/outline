@@ -1,6 +1,7 @@
 const CHESS_COMPONENT_STAGE = {
     initialPosition: "INITIAL_POSITION",
     moves: "MOVES",
+    practice: "PRACTICE_SEQUENCE",
 }
 
 const ChessComponent = () => {
@@ -36,7 +37,7 @@ const ChessComponent = () => {
     function renderLeftPanel() {
         return RE.Container.col.top.left({},{style:{marginBottom:"5px"}},
             renderChessBoard(),
-            renderCommandInputField()
+            state.tab==CHESS_COMPONENT_STAGE.moves?renderCommandInputField():null
         )
     }
 
@@ -52,6 +53,10 @@ const ChessComponent = () => {
                 [CHESS_COMPONENT_STAGE.moves]: {
                     label:"Moves",
                     render: () => re(History,{backend:backend, ...state.history})
+                },
+                [CHESS_COMPONENT_STAGE.practice]: {
+                    label:"Practice",
+                    render: () => re(SequencePractice,{backend:backend, ...state.practiseState})
                 },
             },
         })

@@ -9,4 +9,5 @@ public class PracticeStateView {
     private boolean waitingForNextMove;
     private boolean incorrectMove;
     private boolean failed;
+    private String colorToMove;
 }

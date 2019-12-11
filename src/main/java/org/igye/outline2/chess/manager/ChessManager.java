@@ -74,6 +74,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
+    @Override
+    public ChessComponentView showCorrectMove() {
+        return stateManager.showCorrectMove();
+    }
+
+    @RpcMethod
     public ChessComponentView chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
@@ -84,7 +90,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
             final MovesBuilder movesBuilder = (MovesBuilder) this.stateManager;
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {
                 stateManager = new PositionBuilder(movesBuilder.getInitialPosition());
-            } else if (tab.equals(ChessComponentStage.PRACTISE_SEQUENCE)) {
+            } else if (tab.equals(ChessComponentStage.PRACTICE_SEQUENCE)) {
                 movesBuilder.setPracticeMode(true);
             } else if (tab.equals(ChessComponentStage.MOVES)) {
                 movesBuilder.setPracticeMode(false);

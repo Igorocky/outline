@@ -152,6 +152,12 @@ public class PositionBuilder implements ChessComponentStateManager {
         return toView();
     }
 
+    @Override
+    public ChessComponentView showCorrectMove() {
+        notSupported();
+        return null;
+    }
+
     public Move getInitialPosition() {
         return new Move(
                 chessBoard,

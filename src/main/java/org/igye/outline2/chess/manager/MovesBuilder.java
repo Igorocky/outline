@@ -147,9 +147,23 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
+    public ChessComponentView showCorrectMove() {
+        List<GamePosition> expectedNextMoves = state.getCurrPosition().getChildren();
+        if (!expectedNextMoves.isEmpty()) {
+            state.setCurrPosition(expectedNextMoves.get(0));
+            state.getPracticeState().setFailed(true);
+            state.getPracticeState().setLastMoveWasIncorrect(false);
+            state.setPreparedMoves(null);
+            state.setChoseChessmanTypeDialogOpened(false);
+        }
+        return toView();
+    }
+
+    @Override
     public ChessComponentView toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
-        chessComponentView.setTab(ChessComponentStage.MOVES);
+        chessComponentView.setTab(state.getPracticeState() == null
+                ? ChessComponentStage.MOVES : ChessComponentStage.PRACTICE_SEQUENCE);
         if (!state.isChessbordIsHidden()) {
             renderChessboard(chessComponentView);
         }
@@ -253,6 +267,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         practiceStateView.setFailed(
                 state.getPracticeState().isFailed()
         );
+        practiceStateView.setColorToMove(state.getCurrPosition().getMove().getColorOfWhoToMove().toString());
     }
 
     private void renderChessboard(ChessComponentView chessComponentView) {
