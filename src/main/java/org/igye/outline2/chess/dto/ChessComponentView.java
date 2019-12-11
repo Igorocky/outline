@@ -19,4 +19,5 @@ public class ChessComponentView {
     private HistoryView history;
     private String commandErrorMsg;
     private String commandResponseMsg;
+    private PracticeStateView practiseState;
 }

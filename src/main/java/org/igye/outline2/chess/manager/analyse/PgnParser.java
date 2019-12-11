@@ -36,11 +36,11 @@ public class PgnParser {
             if (!StringUtils.isBlank(movePairStr)) {
                 String[] singleMoves = movePairStr.split("\\s+");
                 final String wMove = singleMoves[0];
-                final String bMove = singleMoves[1];
+                final String bMove = singleMoves.length > 1 ? singleMoves[1] : null;
                 final ArrayList<PositionDto> movePair = new ArrayList<>();
                 parsedPgnDto.getPositions().add(movePair);
                 movePair.add(PositionDto.builder().notation(wMove).build());
-                if (!("1-0".equals(bMove) || "0-1".equals(bMove) || "1/2-1/2".equals(bMove))) {
+                if (!(bMove == null || "1-0".equals(bMove) || "0-1".equals(bMove) || "1/2-1/2".equals(bMove))) {
                     movePair.add(PositionDto.builder().notation(bMove).build());
                 }
             }

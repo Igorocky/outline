@@ -25,19 +25,21 @@ public class MovesBuilderState {
     private boolean chessbordIsHidden;
     private int depth = MAX_DEPTH;
     private int movetimeSec = MAX_MOVE_TIME;
+    private MovesBuilderPracticeState practiceState;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);
         currPosition = this.initialPosition;
     }
 
-    public void appendPreparedMoveToHistory() {
-        if (preparedMoves == null || preparedMoves.size() != 1) {
-            throw new OutlineException("preparedMoves == null || preparedMoves.size() != 1");
+    public void appendSelectedMoveToHistory(Move selectedMove) {
+        if (selectedMove == null) {
+            throw new OutlineException("selectedMove == null");
         }
-        GamePosition newPosition = new GamePosition(currPosition, preparedMoves.get(0));
+        GamePosition newPosition = new GamePosition(currPosition, selectedMove);
         currPosition.getChildren().add(newPosition);
         currPosition = newPosition;
         preparedMoves = null;
+        choseChessmanTypeDialogOpened = false;
     }
 }

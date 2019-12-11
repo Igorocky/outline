@@ -1,11 +1,16 @@
 package org.igye.outline2.chess.manager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
-import org.igye.outline2.chess.dto.HistoryView;
 import org.igye.outline2.chess.dto.HistoryRow;
+import org.igye.outline2.chess.dto.HistoryView;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.dto.PositionDto;
+import org.igye.outline2.chess.dto.PracticeStateView;
+import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
@@ -37,7 +42,6 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
-import static org.igye.outline2.common.OutlineUtils.listOf;
 
 public class MovesBuilder implements ChessComponentStateManager {
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
@@ -75,8 +79,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             if (canMakeMove()) {
                 try {
-                    state.setPreparedMoves(listOf(state.getCurrPosition().getMove().makeMove(command)));
-                    state.appendPreparedMoveToHistory();
+                    state.appendSelectedMoveToHistory(state.getCurrPosition().getMove().makeMove(command));
                     generateAutoresponseIfNecessary();
                 } catch (ParseMoveException ex) {
                     state.setCommandErrorMsg(ex.getMessage());
@@ -89,8 +92,11 @@ public class MovesBuilder implements ChessComponentStateManager {
     @Override
     public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
         if (state.isChoseChessmanTypeDialogOpened()) {
-            processPawnOnLastLine(coordsClicked);
-        } else if (canMakeMove()) {
+            Move selectedMove = processPawnOnLastLine(coordsClicked);
+            if (selectedMove != null) {
+                processSelectedMove(selectedMove);
+            }
+        } else {
             final List<Move> preparedMoves = state.getPreparedMoves();
             if (CollectionUtils.isEmpty(preparedMoves)) {
                 List<Move> possibleMoves = state.getCurrPosition().getMove().getPossibleNextMoves(coordsClicked);
@@ -104,12 +110,14 @@ public class MovesBuilder implements ChessComponentStateManager {
                         .filter(move -> move.getTo().equals(coordsClicked))
                         .collect(Collectors.toList());
                 if (!movesChosen.isEmpty()) {
-                    state.setPreparedMoves(movesChosen);
                     if (movesChosen.size() > 1) {
+                        state.setPreparedMoves(movesChosen);
                         state.setChoseChessmanTypeDialogOpened(true);
                     } else {
-                        state.appendPreparedMoveToHistory();
-                        generateAutoresponseIfNecessary();
+                        processSelectedMove(movesChosen.get(0));
+                        if (state.getPracticeState() == null) {
+                            generateAutoresponseIfNecessary();
+                        }
                     }
                 } else {
                     state.setPreparedMoves(null);
@@ -152,6 +160,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (state.getCommandResponseMsg() != null) {
             chessComponentView.setCommandResponseMsg(state.getCommandResponseMsg());
         }
+        if (state.getPracticeState() != null) {
+            setPracticeState(chessComponentView);
+        }
         return chessComponentView;
     }
 
@@ -167,10 +178,81 @@ public class MovesBuilder implements ChessComponentStateManager {
         sb.append("\n\n");
         for (HistoryRow row : createHistoryView().getRows()) {
             sb.append(row.getFeMoveNumber()).append(". ")
-                    .append(row.getWhitesMove()).append(" ")
-                    .append(row.getBlacksMove()).append(" ");
+                    .append(row.getWhitesMove()).append(" ");
+            if (row.getBlacksMove() != null) {
+                sb.append(row.getBlacksMove()).append(" ");
+            }
         }
         return sb.toString();
+    }
+
+    public void loadFromPgn(String pgn) {
+        state.setChoseChessmanTypeDialogOpened(false);
+        state.setPracticeState(null);
+        ParsedPgnDto parsedPgn = PgnParser.parsePgn(pgn);
+        state.setInitialPosition(new GamePosition(new Move(parsedPgn.getInitialPositionFen())));
+        state.setCurrPosition(state.getInitialPosition());
+        for (List<PositionDto> fullMove : parsedPgn.getPositions()) {
+            for (PositionDto halfMove : fullMove) {
+                if (!"...".equals(halfMove)) {
+                    execChessCommand(halfMove.getNotation());
+                    if (!StringUtils.isBlank(state.getCommandErrorMsg())) {
+                        throw new OutlineException(state.getCommandErrorMsg());
+                    }
+                }
+            }
+        }
+    }
+
+    public void setPracticeMode(boolean isPracticeMode) {
+        if (isPracticeMode) {
+            state.setPracticeState(new MovesBuilderPracticeState());
+        } else {
+            state.setPracticeState(null);
+        }
+        state.setCurrPosition(state.getInitialPosition());
+    }
+
+    private void processSelectedMove(Move selectedMove) {
+        if (state.getPracticeState() != null) {
+            List<GamePosition> expectedNextMoves = state.getCurrPosition().getChildren();
+            if (expectedNextMoves.size() == 1) {
+                final GamePosition expectedNextGamePosition = expectedNextMoves.get(0);
+                ChessBoard expectedNextResultPosition = expectedNextGamePosition.getMove().getResultPosition();
+                if (selectedMove.getResultPosition().equalsTo(expectedNextResultPosition)) {
+                    state.getPracticeState().setLastMoveWasIncorrect(false);
+                    state.setCurrPosition(expectedNextGamePosition);
+                } else {
+                    state.getPracticeState().setLastMoveWasIncorrect(true);
+                    state.getPracticeState().setFailed(true);
+                    state.setPreparedMoves(null);
+                    state.setChoseChessmanTypeDialogOpened(false);
+                }
+            } else if (expectedNextMoves.size() > 1) {
+                throw new OutlineException("expectedNextMoves.size() > 1");
+            }
+        } else {
+            if (state.getCurrPosition().getChildren().isEmpty()) {
+                state.appendSelectedMoveToHistory(selectedMove);
+            } else {
+                state.setPreparedMoves(null);
+                state.setChoseChessmanTypeDialogOpened(false);
+            }
+        }
+    }
+
+    private void setPracticeState(ChessComponentView chessComponentView) {
+        chessComponentView.setPractiseState(new PracticeStateView());
+        final PracticeStateView practiceStateView = chessComponentView.getPractiseState();
+        practiceStateView.setWaitingForNextMove(
+                !state.getCurrPosition().getChildren().isEmpty()
+        );
+        practiceStateView.setIncorrectMove(
+                state.getPracticeState().isLastMoveWasIncorrect()
+        );
+        practiceStateView.setFailed(
+                state.getPracticeState().isFailed()
+        );
     }
 
     private void renderChessboard(ChessComponentView chessComponentView) {
@@ -252,6 +334,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             }
             return true;
         });
+        state.setPreparedMoves(null);
     }
 
     private void hideShowChessboard() {
@@ -284,8 +367,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 } catch (IOException ex) {
                     throw new OutlineException(ex);
                 }
-                state.setPreparedMoves(listOf(nextMove));
-                state.appendPreparedMoveToHistory();
+                state.appendSelectedMoveToHistory(nextMove);
                 state.setCommandResponseMsg(state.getCurrPosition().getMove().getShortNotation());
             }
         }
@@ -297,10 +379,12 @@ public class MovesBuilder implements ChessComponentStateManager {
             currPosition = getNextOnlyPosition(currPosition);
         }
         state.setCurrPosition(currPosition);
+        state.setPreparedMoves(null);
     }
 
     private void goToStartPosition() {
         state.setCurrPosition(state.getInitialPosition());
+        state.setPreparedMoves(null);
     }
 
     private void deleteAllToTheRight() {
@@ -326,10 +410,12 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private boolean canMakeMove() {
         return state.getCurrPosition().getChildren().isEmpty()
-                && !state.isChoseChessmanTypeDialogOpened();
+                && !state.isChoseChessmanTypeDialogOpened()
+                && state.getPracticeState() == null
+                ;
     }
 
-    private void processPawnOnLastLine(CellCoords coordsClicked) {
+    private Move processPawnOnLastLine(CellCoords coordsClicked) {
         final Move preparedMode = state.getPreparedMoves().get(0);
         int expectedX = preparedMode.getTo().getX();
         final int xCoordClicked = coordsClicked.getX();
@@ -347,11 +433,10 @@ public class MovesBuilder implements ChessComponentStateManager {
                 if (replacementShape == null) {
                     throw new OutlineException("replacementShape == null");
                 }
-                state.setPreparedMoves(listOf(findPreparedMoveByPawnReplacementType(replacementShape)));
-                state.appendPreparedMoveToHistory();
-                state.setChoseChessmanTypeDialogOpened(false);
+                return findPreparedMoveByPawnReplacementType(replacementShape);
             }
         }
+        return null;
     }
 
     private Move findPreparedMoveByPawnReplacementType(PieceShape pieceShape) {

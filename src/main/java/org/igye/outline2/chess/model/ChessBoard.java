@@ -309,4 +309,25 @@ public class ChessBoard {
         return chessmanTypeAtDestination != null
                 && !chessmanTypeAtDestination.getPieceColor().equals(colorOfWhoIsMoving);
     }
+
+    public boolean equalsTo(ChessBoard other) {
+        if (board.length != other.board.length) {
+            return false;
+        }
+        for (int x = 0; x < board.length; x++) {
+            ChessmanType[] thisCol = board[x];
+            ChessmanType[] otherCol = other.board[x];
+            if (thisCol.length != otherCol.length) {
+                return false;
+            }
+            for (int y = 0; y < thisCol.length; y++) {
+                ChessmanType thisCell = thisCol[y];
+                ChessmanType otherCell = otherCol[y];
+                if (thisCell != otherCell) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
+import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.websocket.State;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import javax.annotation.PostConstruct;
 @Component("chessboard")
 @Scope("prototype")
 public class ChessManager extends State implements ChessComponentStateManager {
+    public static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
     @Value("${chess.stockfish.cmd:null}")
     private String stockfishCmd;
     private ChessComponentStateManager stateManager;
@@ -27,6 +29,14 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @RpcMethod
     public ChessComponentView getCurrentState() {
         return stateManager.toView();
+    }
+
+    @RpcMethod
+    public ChessComponentView loadFromPgn(String pgn, ChessComponentStage tabToOpen) {
+        final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
+        this.stateManager = movesBuilder;
+        movesBuilder.loadFromPgn(pgn);
+        return chessTabSelected(tabToOpen);
     }
 
     @Override
@@ -71,9 +81,13 @@ public class ChessManager extends State implements ChessComponentStateManager {
                 stateManager = new MovesBuilder(stockfishCmd, positionBuilder.getInitialPosition());
             }
         } else if (stateManager instanceof MovesBuilder) {
+            final MovesBuilder movesBuilder = (MovesBuilder) this.stateManager;
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {
-                final MovesBuilder movesBuilder = (MovesBuilder) this.stateManager;
                 stateManager = new PositionBuilder(movesBuilder.getInitialPosition());
+            } else if (tab.equals(ChessComponentStage.PRACTISE_SEQUENCE)) {
+                movesBuilder.setPracticeMode(true);
+            } else if (tab.equals(ChessComponentStage.MOVES)) {
+                movesBuilder.setPracticeMode(false);
             }
         }
         return stateManager.toView();
