@@ -225,7 +225,7 @@ public class ChessTestUtils {
     }
 
     public static ChessComponentView execCommand(MovesBuilder movesBuilder, String command) {
-        return movesBuilder.execChessCommand(command);
+        return movesBuilder.execChessCommand(command).getChessComponentView();
     }
 
     public static String getLastMove(ChessComponentView view) {

@@ -78,7 +78,7 @@ public class PositionBuilderTest {
         PositionBuilder positionBuilder = new PositionBuilder("8/8/8/8/8/8/8/8 w - -");
 
         positionBuilder.cellLeftClicked(new CellCoords(11,1));
-        ChessComponentView view = positionBuilder.cellLeftClicked(f6);
+        ChessComponentView view = positionBuilder.cellLeftClicked(f6).getChessComponentView();
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
@@ -91,7 +91,7 @@ public class PositionBuilderTest {
         ), view.getChessBoard());
 
         positionBuilder.cellLeftClicked(new CellCoords(12,1));
-        view = positionBuilder.cellLeftClicked(f6);
+        view = positionBuilder.cellLeftClicked(f6).getChessComponentView();
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)
@@ -103,7 +103,7 @@ public class PositionBuilderTest {
                 .__(a1).__(b1).__(c1).__(d1).__(e1).__(f1).__(g1).__(h1)
         ), view.getChessBoard());
 
-        view = positionBuilder.cellLeftClicked(f6);
+        view = positionBuilder.cellLeftClicked(f6).getChessComponentView();
         assertBoardsEqual(chessBoardView(b -> b
                 .__(a8).__(b8).__(c8).__(d8).__(e8).__(f8).__(g8).__(h8)
                 .__(a7).__(b7).__(c7).__(d7).__(e7).__(f7).__(g7).__(h7)

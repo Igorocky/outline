@@ -2,6 +2,7 @@ package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
+import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.dto.InitialPositionView;
@@ -60,7 +61,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView toView() {
+    public ChessComponentResponse toView() {
         ChessComponentView result = new ChessComponentView();
         result.setChessBoard(ChessViewConverter.toDto(chessBoard));
         result.setTab(ChessComponentStage.INITIAL_POSITION);
@@ -81,11 +82,11 @@ public class PositionBuilder implements ChessComponentStateManager {
                 ).toFen())
                 .build()
         );
-        return result;
+        return ChessComponentResponse.builder().chessComponentView(result).build();
     }
 
     @Override
-    public ChessComponentView cellLeftClicked(CellCoords coords) {
+    public ChessComponentResponse cellLeftClicked(CellCoords coords) {
         if (coords.getX() >= 10) {
             ChessBoardCellView availablePiece = findAvailablePiece(coords);
             if (availablePiece.getCode() > 0) {
@@ -111,19 +112,19 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command) {
         notImplemented();
         return null;
     }
 
     @Override
-    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+    public ChessComponentResponse setColorToMove(ChessmanColor colorToMove) {
         this.colorToMove = colorToMove;
         return toView();
     }
 
     @Override
-    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+    public ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong) {
         if (color == ChessmanColor.WHITE) {
             if (isLong) {
                 whiteLongCastlingIsAvailable = !whiteLongCastlingIsAvailable;
@@ -141,7 +142,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView setPositionFromFen(String fen) {
+    public ChessComponentResponse setPositionFromFen(String fen) {
         Move move = new Move(StringUtils.trim(fen));
         chessBoard = move.getResultPosition();
         colorToMove = move.getColorOfWhoToMove();
@@ -153,7 +154,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView showCorrectMove() {
+    public ChessComponentResponse showCorrectMove() {
         notSupported();
         return null;
     }

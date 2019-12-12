@@ -4,7 +4,7 @@ const CHESS_COMPONENT_STAGE = {
     practice: "PRACTICE_SEQUENCE",
 }
 
-const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated}) => {
+const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel}) => {
 
     const [state, setChessComponentState] = useState(null)
 
@@ -13,7 +13,13 @@ const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated}
         onBackendStateCreated: backend => onBackendCreated
             ? onBackendCreated(backend)
             : backend.call("getCurrentState", {}),
-        onMessageFromBackend: newState => setChessComponentState(newState)
+        onMessageFromBackend: chessComponentResponse => {
+            if (chessComponentResponse.chessComponentView) {
+                setChessComponentState(chessComponentResponse.chessComponentView)
+            } else if (chessComponentResponse.savePgn) {
+                onSave(chessComponentResponse.savePgn)
+            }
+        }
     })
 
     function renderChessBoard() {
@@ -66,14 +72,25 @@ const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated}
         return reTabs({selectedTab:state.tab, onTabSelected:handleTabChange, tabs:tabs})
     }
 
+    function renderSaveCancelButtons() {
+        return RE.Container.row.right.top({},{style:{marginRight: "10px"}},
+            onSave?RE.Button({color:"primary", variant:"contained",
+                onClick: ()=>backend.call("getPgnToSave", {})}, "Save"):null,
+            onCancel?RE.Button({variant:"contained", onClick:onCancel}, "Cancel"):null,
+        )
+    }
+
     function renderPageContent() {
         if (state) {
-            return RE.Container.row.left.top({},{style:{marginLeft:"5px",marginTop:"5px"}},
-                renderLeftPanel(),
-                renderRightPanel()
+            return RE.Container.col.top.left({},{},
+                RE.Container.row.left.top({},{style:{marginLeft:"5px",marginTop:"5px"}},
+                    renderLeftPanel(),
+                    renderRightPanel()
+                ),
+                renderSaveCancelButtons()
             )
         } else {
-            return RE.LinearProgress({key:"LinearProgress",color:"secondary"})
+            return RE.CircularProgress({key:"LinearProgress",color:"primary"})
         }
     }
 

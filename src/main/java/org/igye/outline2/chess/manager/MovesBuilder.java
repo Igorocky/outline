@@ -3,6 +3,7 @@ package org.igye.outline2.chess.manager;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
+import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
 import org.igye.outline2.chess.dto.HistoryRow;
@@ -70,7 +71,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command) {
         state.setCommandErrorMsg(null);
         state.setCommandResponseMsg(null);
         String[] parsedCommand = command.trim().split("\\s");
@@ -90,7 +91,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView cellLeftClicked(CellCoords coordsClicked) {
+    public ChessComponentResponse cellLeftClicked(CellCoords coordsClicked) {
         if (state.isChoseChessmanTypeDialogOpened()) {
             Move selectedMove = processPawnOnLastLine(coordsClicked);
             if (selectedMove != null) {
@@ -129,25 +130,25 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+    public ChessComponentResponse setColorToMove(ChessmanColor colorToMove) {
         notSupported();
         return null;
     }
 
     @Override
-    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+    public ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong) {
         notSupported();
         return null;
     }
 
     @Override
-    public ChessComponentView setPositionFromFen(String fen) {
+    public ChessComponentResponse setPositionFromFen(String fen) {
         notSupported();
         return null;
     }
 
     @Override
-    public ChessComponentView showCorrectMove() {
+    public ChessComponentResponse showCorrectMove() {
         List<GamePosition> expectedNextMoves = state.getCurrPosition().getChildren();
         if (!expectedNextMoves.isEmpty()) {
             state.setCurrPosition(expectedNextMoves.get(0));
@@ -160,7 +161,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView toView() {
+    public ChessComponentResponse toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(state.getPracticeState() == null
                 ? ChessComponentStage.MOVES : ChessComponentStage.PRACTICE_SEQUENCE);
@@ -177,7 +178,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (state.getPracticeState() != null) {
             setPracticeState(chessComponentView);
         }
-        return chessComponentView;
+        return ChessComponentResponse.builder().chessComponentView(chessComponentView).build();
     }
 
     public String getInitialPosition() {
@@ -208,7 +209,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         state.setCurrPosition(state.getInitialPosition());
         for (List<PositionDto> fullMove : parsedPgn.getPositions()) {
             for (PositionDto halfMove : fullMove) {
-                if (!"...".equals(halfMove)) {
+                if (!"...".equals(halfMove.getNotation())) {
                     execChessCommand(halfMove.getNotation());
                     if (!StringUtils.isBlank(state.getCommandErrorMsg())) {
                         throw new OutlineException(state.getCommandErrorMsg());

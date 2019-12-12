@@ -1,7 +1,7 @@
 package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.igye.outline2.chess.dto.ChessComponentView;
+import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
@@ -28,12 +28,28 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public ChessComponentView getCurrentState() {
+    public ChessComponentResponse getCurrentState() {
         return stateManager.toView();
     }
 
     @RpcMethod
-    public ChessComponentView loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen) {
+    public ChessComponentResponse getPgnToSave() {
+        if (stateManager instanceof PositionBuilder) {
+            return ChessComponentResponse.builder()
+                    .savePgn(
+                            new MovesBuilder(
+                                    stockfishCmd,
+                                    ((PositionBuilder) stateManager).getInitialPosition()
+                            ).toPgn()
+                    )
+                    .build();
+        } else {
+            return ChessComponentResponse.builder().savePgn(((MovesBuilder)stateManager).toPgn()).build();
+        }
+    }
+
+    @RpcMethod
+    public ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen) {
         final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
         this.stateManager = movesBuilder;
         if (!StringUtils.isBlank(pgn)) {
@@ -44,13 +60,13 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @Override
     @RpcMethod
-    public ChessComponentView cellLeftClicked(CellCoords coords) {
+    public ChessComponentResponse cellLeftClicked(CellCoords coords) {
         return stateManager.cellLeftClicked(coords);
     }
 
     @RpcMethod
     @Override
-    public ChessComponentView execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command) {
         if (!StringUtils.isBlank(command)) {
             return stateManager.execChessCommand(command);
         } else {
@@ -60,30 +76,30 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @RpcMethod
     @Override
-    public ChessComponentView setColorToMove(ChessmanColor colorToMove) {
+    public ChessComponentResponse setColorToMove(ChessmanColor colorToMove) {
         return stateManager.setColorToMove(colorToMove);
     }
 
     @RpcMethod
     @Override
-    public ChessComponentView changeCastlingAvailability(ChessmanColor color, boolean isLong) {
+    public ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong) {
         return stateManager.changeCastlingAvailability(color, isLong);
     }
 
     @RpcMethod
     @Override
-    public ChessComponentView setPositionFromFen(String fen) {
+    public ChessComponentResponse setPositionFromFen(String fen) {
         return stateManager.setPositionFromFen(fen);
     }
 
     @RpcMethod
     @Override
-    public ChessComponentView showCorrectMove() {
+    public ChessComponentResponse showCorrectMove() {
         return stateManager.showCorrectMove();
     }
 
     @RpcMethod
-    public ChessComponentView chessTabSelected(ChessComponentStage tab) {
+    public ChessComponentResponse chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {
                 final PositionBuilder positionBuilder = (PositionBuilder) this.stateManager;
@@ -103,7 +119,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentView toView() {
+    public ChessComponentResponse toView() {
         return stateManager.toView();
     }
 }

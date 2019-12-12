@@ -41,77 +41,83 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderUrl() {
         const puzzleUrl = getTagSingleValue(curNode, TAG_ID.chessPuzzleUrl);
-        return RE.Container.row.left.center({},{},
+        return RE.Container.row.left.center({style:{marginBottom:"10px"}},{},
             renderPaused(),
-            "URL",
-            re(EditableTextField,{
-                key:"puzzle-url-" + getCurrPuzzleId(),
-                inlineActions: true,
-                initialValue: puzzleUrl,
-                spanStyle: {margin:"0px 10px", fontSize:"18px"},
-                textFieldStyle: {width:"600px", margin:"0px 10px"},
-                onSave: ({newValue, onSaved}) =>
-                    setSingleTagForNode(
-                        getCurrPuzzleId(),
-                        TAG_ID.chessPuzzleUrl,
-                        newValue,
-                        () => {
-                            onSaved()
-                            navigateToNodeId(getCurrPuzzleId())
-                        }
-                    ),
-                placeholder: "URL",
-                popupActions: RE.Fragment({},
-                    (puzzleUrl && puzzleUrl.length > 0)?iconButton({iconName: "open_in_new",
-                        onClick: () => window.open(puzzleUrl)
-                    }):null
-                )
-            })
+            RE.Paper({style:{paddingLeft:"10px"}},
+                "URL",
+                re(EditableTextField,{
+                    key:"puzzle-url-" + getCurrPuzzleId(),
+                    inlineActions: true,
+                    initialValue: puzzleUrl,
+                    spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                    textFieldStyle: {width:"600px", margin:"0px 10px"},
+                    onSave: ({newValue, onSaved}) =>
+                        setSingleTagForNode(
+                            getCurrPuzzleId(),
+                            TAG_ID.chessPuzzleUrl,
+                            newValue,
+                            () => {
+                                onSaved()
+                                navigateToNodeId(getCurrPuzzleId())
+                            }
+                        ),
+                    placeholder: "URL",
+                    popupActions: RE.Fragment({},
+                        (puzzleUrl && puzzleUrl.length > 0)?iconButton({iconName: "open_in_new",
+                            onClick: () => window.open(puzzleUrl)
+                        }):null
+                    )
+                })
+            )
         )
     }
 
     function renderFen() {
         const puzzleFen = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_FEN);
-        return RE.Container.row.left.center({},{},
-            "FEN",
-            re(EditableTextField,{
-                key:"puzzle-fen-" + getCurrPuzzleId(),
-                inlineActions: true,
-                initialValue: puzzleFen,
-                spanStyle: {margin:"0px 10px", fontSize:"18px"},
-                textFieldStyle: {width:"600px", margin:"0px 10px"},
-                onSave: ({newValue, onSaved}) =>
-                    setSingleTagForNode(
+        return RE.Paper({style:{paddingLeft:"10px", marginBottom:"10px"}},
+            RE.Container.row.left.center({},{},
+                "FEN",
+                re(EditableTextField,{
+                    key:"puzzle-fen-" + getCurrPuzzleId(),
+                    inlineActions: true,
+                    initialValue: puzzleFen,
+                    spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                    textFieldStyle: {width:"600px", margin:"0px 10px"},
+                    onSave: ({newValue, onSaved}) =>
+                        setSingleTagForNode(
+                            getCurrPuzzleId(),
+                            TAG_ID.CHESS_PUZZLE_FEN,
+                            newValue,
+                            () => {
+                                onSaved()
+                                navigateToNodeId(getCurrPuzzleId())
+                            }
+                        ),
+                    placeholder: "FEN",
+                })
+            )
+        )
+    }
+
+    function renderPgn() {
+        const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
+        return RE.Paper({style:{paddingRight:"10px", marginBottom:"10px"}},
+            RE.Container.row.left.center({style:{padding:"5px"}},{},
+                "PGN",
+                re(EditablePgnViewer, {
+                    value:puzzlePgn,
+                    textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                    onSave: ({newValue, onSaved}) => setSingleTagForNode(
                         getCurrPuzzleId(),
-                        TAG_ID.CHESS_PUZZLE_FEN,
+                        TAG_ID.CHESS_PUZZLE_PGN,
                         newValue,
                         () => {
                             onSaved()
                             navigateToNodeId(getCurrPuzzleId())
                         }
                     ),
-                placeholder: "FEN",
-            })
-        )
-    }
-
-    function renderPgn() {
-        const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
-        return RE.Container.row.left.center({},{},
-            "PGN",
-            re(EditablePgnViewer, {
-                value:puzzlePgn,
-                textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
-                onSave: ({newValue, onSaved}) => setSingleTagForNode(
-                    getCurrPuzzleId(),
-                    TAG_ID.CHESS_PUZZLE_PGN,
-                    newValue,
-                    () => {
-                        onSaved()
-                        navigateToNodeId(getCurrPuzzleId())
-                    }
-                ),
-            })
+                })
+            )
         )
     }
 
