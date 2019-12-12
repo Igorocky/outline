@@ -236,9 +236,11 @@ public class MovesBuilder implements ChessComponentStateManager {
                 if (selectedMove.getResultPosition().equalsTo(expectedNextResultPosition)) {
                     state.getPracticeState().setLastMoveWasIncorrect(false);
                     state.setCurrPosition(expectedNextGamePosition);
+                    state.setPreparedMoves(null);
+                    state.setChoseChessmanTypeDialogOpened(false);
                 } else {
-                    state.getPracticeState().setLastMoveWasIncorrect(true);
                     state.getPracticeState().setFailed(true);
+                    state.getPracticeState().setLastMoveWasIncorrect(true);
                     state.setPreparedMoves(null);
                     state.setChoseChessmanTypeDialogOpened(false);
                 }
