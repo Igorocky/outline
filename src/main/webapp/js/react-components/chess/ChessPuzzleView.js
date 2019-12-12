@@ -94,6 +94,12 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                             }
                         ),
                     placeholder: "FEN",
+                    popupActions: puzzleFen?RE.Fragment({},
+                        iconButton({iconName: "equalizer", onClick: () => window.open(
+                                "https://lichess.org/analysis/standard/" + puzzleFen.replace(" ","_")
+                            )
+                        }),
+                    ):null,
                 })
             )
         )
@@ -101,16 +107,15 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderPgn() {
         const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
-        return RE.Paper({style:{paddingRight:"10px", marginBottom:"10px"}},
+        return RE.Paper({style:{paddingLeft:"5px", paddingRight:"5px", marginBottom:"10px"}},
             RE.Container.row.left.center({style:{padding:"5px"}},{},
                 "PGN",
                 re(EditablePgnViewer, {
                     value:puzzlePgn,
                     textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
-                    onSave: ({newValue, onSaved}) => setSingleTagForNode(
-                        getCurrPuzzleId(),
-                        TAG_ID.CHESS_PUZZLE_PGN,
-                        newValue,
+                    onSave: ({newValue, onSaved}) => doRpcCall(
+                        "rpcSavePgnForPuzzle",
+                        {puzzleId:getCurrPuzzleId(), pgn:newValue},
                         () => {
                             onSaved()
                             navigateToNodeId(getCurrPuzzleId())

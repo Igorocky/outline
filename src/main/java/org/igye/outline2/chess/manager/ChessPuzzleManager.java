@@ -62,6 +62,15 @@ public class ChessPuzzleManager {
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));
     }
 
+    @RpcMethod
+    @Transactional
+    public void rpcSavePgnForPuzzle(UUID puzzleId, String pgn) {
+        Node puzzle = nodeRepository.getOne(puzzleId);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PGN, pgn);
+        ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_FEN, parsedPgnDto.getInitialPositionFen());
+    }
+
 
     private Long calculateDelaySeconds(String pauseDuration) {
         if (StringUtils.isBlank(pauseDuration)) {
