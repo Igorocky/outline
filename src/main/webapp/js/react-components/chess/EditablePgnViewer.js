@@ -36,7 +36,7 @@ const EditablePgnViewer = ({value, textAreaStyle, onSave, popupActions}) => {
                     style: textAreaStyle,
                     multiline: true,
                     rowsMax: 3000,
-                    value: value,
+                    value: value?value:"",
                     disabled: true,
                     variant: "standard",
                 })

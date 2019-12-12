@@ -66,11 +66,15 @@ public class ChessPuzzleManager {
     @Transactional
     public void rpcSavePgnForPuzzle(UUID puzzleId, String pgn) {
         Node puzzle = nodeRepository.getOne(puzzleId);
-        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PGN, pgn);
-        ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
-        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_FEN, parsedPgnDto.getInitialPositionFen());
+        if (!StringUtils.isBlank(pgn)) {
+            puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PGN, pgn);
+            ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
+            puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_FEN, parsedPgnDto.getInitialPositionFen());
+        } else {
+            puzzle.removeTags(TagIds.CHESS_PUZZLE_PGN);
+            puzzle.removeTags(TagIds.CHESS_PUZZLE_FEN);
+        }
     }
-
 
     private Long calculateDelaySeconds(String pauseDuration) {
         if (StringUtils.isBlank(pauseDuration)) {

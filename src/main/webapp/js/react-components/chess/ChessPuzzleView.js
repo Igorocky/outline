@@ -121,6 +121,9 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                             navigateToNodeId(getCurrPuzzleId())
                         }
                     ),
+                    popupActions: puzzlePgn?RE.Fragment({},
+                        iconButton({iconName: "delete", onClick: deletePgn}),
+                    ):null,
                 })
             )
         )
@@ -270,6 +273,25 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 closeConfirmActionDialog()
                 reloadCurrNode()
             }),
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
+        })
+    }
+
+    function deletePgn() {
+        openConfirmActionDialog({
+            pConfirmText: "Delete PGN?",
+            pOnCancel: closeConfirmActionDialog,
+            pStartActionBtnText: "Delete",
+            pStartAction: ({onDone}) => doRpcCall(
+                "rpcSavePgnForPuzzle",
+                {puzzleId:getCurrPuzzleId(), pgn:""},
+                () => {
+                    closeConfirmActionDialog()
+                    reloadCurrNode()
+                }
+            ),
             pActionDoneText: "not used",
             pActionDoneBtnText: "not used",
             pOnActionDoneBtnClick: closeConfirmActionDialog

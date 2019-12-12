@@ -11,6 +11,8 @@ const PATH = {
     puzzlesToRepeatWithTab: CONTEXT_PATH + "/puzzlesToRepeat/:tab",
     createPuzzlesToRepeatPath: tab => CONTEXT_PATH + "/puzzlesToRepeat/" + tab,
     chessboard: CONTEXT_PATH + "/chessboard",
+    chessboardWithPractice: CONTEXT_PATH + "/chessboard/practice/:puzzleId",
+    createChessboardWithPractice: puzzleId => CONTEXT_PATH + "/chessboard/practice/" + puzzleId,
     admin: CONTEXT_PATH + "/admin",
 }
 

@@ -4,7 +4,7 @@ const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMo
 
     function renderNextActionDescription() {
         if (waitingForNextMove) {
-            return RE.Container.row.left.top({},{},
+            return RE.Container.row.left.center({},{},
                 "Make next move for " + colorToMove + ".",
                 RE.Button({onClick: () => backend.call("showCorrectMove", {})}, "Show move")
             )

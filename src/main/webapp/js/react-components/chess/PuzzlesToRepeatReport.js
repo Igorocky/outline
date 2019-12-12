@@ -23,10 +23,14 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
         window.open(PATH.createNodeWithIdPath(puzzleId))
     }
 
-    function renderStartPuzzle(puzzleId, url) {
+    function renderStartPuzzle(puzzleId, url, hasPgn) {
         return re(PuzzlesToRepeatReport_IconButtonWithMemory,{onClick: () => {
                 window.open(PATH.createNodeWithIdPath(puzzleId))
-                window.open(url)
+                if (hasPgn == 1) {
+                    window.open(PATH.createChessboardWithPractice(puzzleId))
+                } else {
+                    window.open(url)
+                }
         }})
     }
 

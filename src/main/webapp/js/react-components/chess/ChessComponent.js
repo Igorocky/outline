@@ -4,15 +4,27 @@ const CHESS_COMPONENT_STAGE = {
     practice: "PRACTICE_SEQUENCE",
 }
 
-const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel}) => {
-
+const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel}) => {
     const [state, setChessComponentState] = useState(null)
+    const puzzleId = getByPath(match, ["params", "puzzleId"])
+
+    function processBackendStateCreated(backend) {
+        if (onBackendCreated) {
+            onBackendCreated(backend)
+        } else if (puzzleId) {
+            getNode({id:puzzleId}, puzzle =>
+                backend.call("loadFromPgn", {
+                    pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
+                    tabToOpen:"PRACTICE_SEQUENCE"
+                }))
+        } else {
+            backend.call("getCurrentState", {})
+        }
+    }
 
     const backend = useBackend({
         stateType: "chessboard",
-        onBackendStateCreated: backend => onBackendCreated
-            ? onBackendCreated(backend)
-            : backend.call("getCurrentState", {}),
+        onBackendStateCreated: processBackendStateCreated,
         onMessageFromBackend: chessComponentResponse => {
             if (chessComponentResponse.chessComponentView) {
                 setChessComponentState(chessComponentResponse.chessComponentView)
