@@ -95,6 +95,26 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function renderPgn() {
+        const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
+        return RE.Container.row.left.center({},{},
+            "PGN",
+            re(EditablePgnViewer, {
+                value:puzzlePgn,
+                textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                onSave: ({newValue, onSaved}) => setSingleTagForNode(
+                    getCurrPuzzleId(),
+                    TAG_ID.CHESS_PUZZLE_PGN,
+                    newValue,
+                    () => {
+                        onSaved()
+                        navigateToNodeId(getCurrPuzzleId())
+                    }
+                ),
+            })
+        )
+    }
+
     function saveHistoryRecord() {
         doRpcCall(
             "rpcSaveChessPuzzleAttempt",
@@ -280,6 +300,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
     return RE.Container.col.top.left({},{},
         renderUrl(),
         renderFen(),
+        renderPgn(),
         renderComments(),
         renderHistory(),
         renderConfirmActionDialog()

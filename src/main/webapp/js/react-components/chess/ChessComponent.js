@@ -4,13 +4,15 @@ const CHESS_COMPONENT_STAGE = {
     practice: "PRACTICE_SEQUENCE",
 }
 
-const ChessComponent = () => {
+const ChessComponent = ({showPracticeTab, showOnlyPracticeTab, onBackendCreated}) => {
 
     const [state, setChessComponentState] = useState(null)
 
     const backend = useBackend({
         stateType: "chessboard",
-        onBackendStateCreated: backend => backend.call("getCurrentState", {}),
+        onBackendStateCreated: backend => onBackendCreated
+            ? onBackendCreated(backend)
+            : backend.call("getCurrentState", {}),
         onMessageFromBackend: newState => setChessComponentState(newState)
     })
 
@@ -42,24 +44,26 @@ const ChessComponent = () => {
     }
 
     function renderRightPanel() {
-        return reTabs({
-            selectedTab:state.tab,
-            onTabSelected:handleTabChange,
-            tabs: {
-                [CHESS_COMPONENT_STAGE.initialPosition]: {
-                    label:"Initial position",
-                    render: () => re(InitialPosition,{backend:backend, ...state.availableChessmanTypes})
-                },
-                [CHESS_COMPONENT_STAGE.moves]: {
-                    label:"Moves",
-                    render: () => re(History,{backend:backend, ...state.history})
-                },
-                [CHESS_COMPONENT_STAGE.practice]: {
-                    label:"Practice",
-                    render: () => re(SequencePractice,{backend:backend, ...state.practiseState})
-                },
-            },
-        })
+        const tabs = {}
+        if (_.size(getByPath(state, ["history", "rows"], [])) == 0 && !showOnlyPracticeTab) {
+            tabs[CHESS_COMPONENT_STAGE.initialPosition] = {
+                label:"Initial position",
+                render: () => re(InitialPosition,{backend:backend, ...state.availableChessmanTypes})
+            }
+        }
+        if (!showOnlyPracticeTab) {
+            tabs[CHESS_COMPONENT_STAGE.moves] = {
+                label:"Moves",
+                render: () => re(History,{backend:backend, ...state.history})
+            }
+        }
+        if (showPracticeTab) {
+            tabs[CHESS_COMPONENT_STAGE.practice] = {
+                label:"Practice",
+                render: () => re(SequencePractice,{backend:backend, ...state.practiseState})
+            }
+        }
+        return reTabs({selectedTab:state.tab, onTabSelected:handleTabChange, tabs:tabs})
     }
 
     function renderPageContent() {

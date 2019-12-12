@@ -5,6 +5,7 @@ import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
+import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.websocket.State;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,10 +33,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public ChessComponentView loadFromPgn(String pgn, ChessComponentStage tabToOpen) {
+    public ChessComponentView loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen) {
         final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
         this.stateManager = movesBuilder;
-        movesBuilder.loadFromPgn(pgn);
+        if (!StringUtils.isBlank(pgn)) {
+            movesBuilder.loadFromPgn(pgn);
+        }
         return chessTabSelected(tabToOpen);
     }
 

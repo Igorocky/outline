@@ -31,7 +31,7 @@ const ContainerFullViewActions = ({defaultAction, actions}) => {
     return RE.Fragment({},
         RE.ButtonGroup({variant:"contained"},
             RE.Button({variant:"contained", onClick: ()=>processAction(defaultAction)}, defaultAction.text),
-            RE.Button({variant:"open-dropdown-btn", size:"small", onClick: openDropdown, onKeyDown: onKeyDown},
+            RE.Button({variant:"contained", size:"small", onClick: openDropdown, onKeyDown: onKeyDown},
                 RE.Icon({style: {fontSize: "24px"}}, "arrow_drop_down")
             )
         ),
