@@ -1,11 +1,15 @@
 
-const FolderComponent = ({text, props, icon, popupActions}) => {
+const FolderComponent = ({text, props, textProps, icon, popupActions}) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [iconIsHovered, setIconIsHovered] = useState(false);
 
+    function stopPropagation(e) {
+        e.stopPropagation()
+    }
+
     function openPopup(e) {
         setAnchorEl(e.currentTarget)
-        e.stopPropagation()
+        stopPropagation(e)
     }
 
     return RE.Container.row.left.center(
@@ -16,19 +20,19 @@ const FolderComponent = ({text, props, icon, popupActions}) => {
         },
         {style: {marginRight:"7px"}},
         popupActions
-            ?RE.IconButton({edge: "start", color: "inherit", onClick: openPopup,
+            ?RE.IconButton({edge: "start", color: "inherit", onClick: openPopup, onMouseUp: stopPropagation,
                 style:{marginLeft: "15px"},
                 onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
             iconIsHovered
                 ?RE.Icon({style: {fontSize: "24px"}}, "more_vert")
                 :icon
         ):icon,
-        RE.Typography({key: "folder-name", variant: "body1"}, text),
+        RE.Typography({key: "folder-name", variant: "body1", ...textProps}, text),
         anchorEl
             ? clickAwayListener({
                 onClickAway: () => setAnchorEl(null),
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
-                    paper(popupActions)
+                    RE.Paper({onMouseUp: stopPropagation}, popupActions)
                 )
             })
             : null
