@@ -245,6 +245,15 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                         ),
                         RE.TableCell({}, possMove.move),
                         RE.TableCell({}, "depth = " + possMove.depth),
+                        RE.TableCell({},
+                            iconButton({iconName: "save",
+                                onClick: () => doRpcCall(
+                                    "rpcCreatePuzzleFromGame",
+                                    {gameId:getCurrGameId(), fen:getCurrentFen(), move:possMove.move},
+                                    puzzleId => window.open(PATH.createNodeWithIdPath(puzzleId))
+                                )
+                            })
+                        ),
                     ))
                 )
             ))

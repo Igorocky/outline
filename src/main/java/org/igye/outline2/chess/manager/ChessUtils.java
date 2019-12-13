@@ -55,13 +55,16 @@ public class ChessUtils {
         if (strCoord == null) {
             return null;
         }
-        int coordCode = strCoord.charAt(0);
-        if (coordCode >= 97) {
-            return coordCode - 97;
-        } else if (coordCode >= 65) {
-            return coordCode - 65;
+        return strCoordToInt(strCoord.charAt(0));
+    }
+
+    public static int strCoordToInt(char ch) {
+        if (ch >= 97) {
+            return ch - 97;
+        } else if (ch >= 65) {
+            return ch - 65;
         } else {
-            return coordCode - 49;
+            return ch - 49;
         }
     }
 }

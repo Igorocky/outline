@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.manager.analyse.PgnParser;
+import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
@@ -14,6 +15,7 @@ import org.igye.outline2.pm.TagIds;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,8 @@ public class ChessPuzzleManager {
     private Clock clock = Clock.systemUTC();
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @RpcMethod
     @Transactional
@@ -60,6 +64,26 @@ public class ChessPuzzleManager {
         game.setTagSingleValue(TagIds.CHESS_GAME_PGN, pgn);
         ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));
+    }
+
+    @RpcMethod
+    @Transactional
+    public UUID rpcCreatePuzzleFromGame(UUID gameId, String fen, String move) {
+        Node game = nodeRepository.getOne(gameId);
+        UUID puzzleId = nodeManager.rpcCreateNode(game.getParentNode().getId(), NodeClasses.CHESS_PUZZLE);
+        ChessManager chessManager = (ChessManager) applicationContext.getBean(ChessManager.CHESSBOARD);
+        chessManager.setPositionFromFen(fen);
+        chessManager.chessTabSelected(ChessComponentStage.MOVES);
+        chessManager.cellLeftClicked(new CellCoords(
+                ChessUtils.strCoordToInt(move.charAt(0)),
+                ChessUtils.strCoordToInt(move.charAt(1))
+        ));
+        chessManager.cellLeftClicked(new CellCoords(
+                ChessUtils.strCoordToInt(move.charAt(2)),
+                ChessUtils.strCoordToInt(move.charAt(3))
+        ));
+        rpcSavePgnForPuzzle(puzzleId, chessManager.getPgnToSave().getSavePgn());
+        return puzzleId;
     }
 
     @RpcMethod

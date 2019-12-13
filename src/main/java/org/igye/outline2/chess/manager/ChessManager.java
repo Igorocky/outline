@@ -14,10 +14,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-@Component("chessboard")
+@Component(ChessManager.CHESSBOARD)
 @Scope("prototype")
 public class ChessManager extends State implements ChessComponentStateManager {
     public static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
+    public static final String CHESSBOARD = "chessboard";
     @Value("${chess.stockfish.cmd:null}")
     private String stockfishCmd;
     private ChessComponentStateManager stateManager;
