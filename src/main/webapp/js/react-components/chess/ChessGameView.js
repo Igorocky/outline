@@ -31,7 +31,25 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [flipped, setFlipped] = useState(false)
     const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
     const [showArrow, setShowArrow] = useState(null)
+    const [selectedPuzzleIdx, setSelectedPuzzleIdx] = useState(0)
+
     const allHalfMoves = flatMap(curNode.parsedPgn.positions, fullMove => fullMove)
+    const allPuzzles = {
+        whiteToMove: [],
+        blackToMove: [],
+    }
+    if (currTabId == CHESS_GAME_FULL_VIEW_TABS.practice.id) {
+        curNode.parsedPgn.positions.forEach(fullMove => {
+            const whiteHalfMove = fullMove[0]
+            const blackHalfMove = fullMove[1]
+            if (whiteHalfMove) {
+                allPuzzles.whiteToMove = allPuzzles.whiteToMove.concat(blackHalfMove.puzzleIds)
+            }
+            if (blackHalfMove) {
+                allPuzzles.blackToMove = allPuzzles.blackToMove.concat(whiteHalfMove.puzzleIds)
+            }
+        })
+    }
 
     useEffect(() => setShowArrow(null),[selectedMoveIdx])
 
@@ -346,6 +364,44 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         ))
     }
 
+    function renderPracticeTab() {
+        const whiteToMoveSize = _.size(allPuzzles.whiteToMove)
+        const selectedPuzzleId = selectedPuzzleIdx < whiteToMoveSize
+            ? allPuzzles.whiteToMove[selectedPuzzleIdx]
+            : allPuzzles.blackToMove[selectedPuzzleIdx - whiteToMoveSize]
+        return RE.Container.row.left.top({},{},
+            RE.Container.col.top.left({},{},
+                "White to move:",
+                RE.ButtonGroup({orientation:"vertical"},
+                    allPuzzles.whiteToMove.map((puzzleId,idx) => RE.Button(
+                        {
+                            key: puzzleId,
+                            style:{backgroundColor:idx==selectedPuzzleIdx?"blue":null},
+                            onClick: () => setSelectedPuzzleIdx(idx),
+                        },
+                        idx+1
+                    ))
+                ),
+                "Black to move:",
+                RE.ButtonGroup({orientation:"vertical"},
+                    allPuzzles.blackToMove.map((puzzleId,idx) => RE.Button(
+                        {
+                            key: puzzleId,
+                            style:{backgroundColor:(idx+whiteToMoveSize)==selectedPuzzleIdx?"blue":null},
+                            onClick: () => setSelectedPuzzleIdx(whiteToMoveSize+idx),
+                        },
+                        idx+1
+                    ))
+                )
+            ),
+            re(ChessComponent, {
+                key: selectedPuzzleId,
+                match:{params: {puzzleId: selectedPuzzleId}},
+                showPracticeTab:true
+            })
+        )
+    }
+
     function renderTabs() {
         return reTabs({
             selectedTab:currTabId,
@@ -361,7 +417,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 },
                 [CHESS_GAME_FULL_VIEW_TABS.practice.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.practice.title,
-                    render: () => "practice"
+                    render: renderPracticeTab
                 },
             }
         })
