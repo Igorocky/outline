@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +117,7 @@ public class DtoConverter {
                 Map<String, PositionDto> fens = new HashMap();
                 for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
                     for (PositionDto halfMove : fullMove) {
+                        halfMove.setPuzzleIds(new ArrayList<>());
                         fens.put(halfMove.getFen(), halfMove);
                     }
                 }
