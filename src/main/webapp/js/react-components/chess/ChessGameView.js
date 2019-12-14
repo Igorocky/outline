@@ -167,10 +167,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     }
 
     function renderMovesTab() {
-        return RE.Container.row.left.top({},{},
+        return RE.Container.row.left.top({},{style:{marginRight: "10px"}},
             renderChessBoard(),
             renderTableWithMoves(),
-            RE.Container.col.top.left({},{style:{marginTop: "10px"}},
+            RE.Container.col.top.left({},{style:{marginBottom: "10px"}},
                 RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
                 renderPossibleMoves(),
                 renderCurrentPositionFen(),
@@ -203,7 +203,18 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
-    function renderMoveInfo(halfMove) {
+    function isBestMove(halfMove, moveIdx) {
+        const prevMoveIdx = moveIdx - 1
+        if (prevMoveIdx >= 0) {
+            const prevHalfMove = getHalfMove(prevMoveIdx)
+            const possibleMoves = getByPath(prevHalfMove, ["analysis", "possibleMoves"], [])
+            return possibleMoves && _.size(possibleMoves) > 0 && possibleMoves[0].move == halfMove.move
+        } else {
+            return false
+        }
+    }
+
+    function renderMoveInfo(halfMove, moveIdx) {
         let score
         let scoreStr
         let delta
@@ -237,7 +248,12 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 // "\u22C6" /*star*/
                 "\u229A" /*circle in circle*/
             ),
-            RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
+            RE.span(
+                {
+                    style:{fontWeight:"bold", color:isBestMove(halfMove, moveIdx)?"limegreen":"black"}
+                },
+                halfMove.notation + " "
+            ),
             scoreInfo
         )
     }
@@ -312,15 +328,19 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 )),
                 curNode.parsedPgn.positions.map((fullMove,rowIdx) => RE.TableRow({key:rowIdx},
                     RE.TableCell({key:"-1"}, rowIdx+1),
-                    fullMove.map((halfMove,cellIdx) => RE.TableCell({
-                            key:cellIdx,
-                            padding:"none",
-                            style: {backgroundColor: selectedMoveIdx == rowIdx*2+cellIdx ? "yellow" : null},
-                            className:"grey-background-on-hover pointer-on-hover",
-                            onClick: () => setSelectedMoveIdx(rowIdx*2+cellIdx),
-                        },
-                        renderMoveInfo(halfMove)
-                    ))
+                    fullMove.map((halfMove,cellIdx) => {
+                        const moveIdx = rowIdx*2+cellIdx;
+                        return RE.TableCell(
+                            {
+                                key:cellIdx,
+                                padding:"none",
+                                style: {backgroundColor: selectedMoveIdx == moveIdx ? "yellow" : null},
+                                className:"grey-background-on-hover pointer-on-hover",
+                                onClick: () => setSelectedMoveIdx(moveIdx),
+                            },
+                            renderMoveInfo(halfMove, moveIdx)
+                        )
+                    })
                 ))
             )
         ))
