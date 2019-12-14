@@ -147,6 +147,25 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         )
     }
 
+    function renderRefsToPuzzles() {
+        const selectedHalfMove = getSelectedHalfMove();
+        if (selectedHalfMove && selectedHalfMove.puzzleIds) {
+            return RE.Container.row.left.top({}, {},
+                selectedHalfMove.puzzleIds.map(puzzleId => RE.IconButton(
+                    {
+                        key: puzzleId,
+                        color: "inherit",
+                        onClick: () => window.open(PATH.createNodeWithIdPath(puzzleId))
+                    },
+                    RE.img({
+                        src: "/img/chess/chess_puzzle.png",
+                        style: {width: "24px", height: "24px"/*, marginTop: "5px", marginLeft: "5px"*/}
+                    })
+                ))
+            )
+        }
+    }
+
     function renderMovesTab() {
         return RE.Container.row.left.top({},{},
             renderChessBoard(),
@@ -154,7 +173,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             RE.Container.col.top.left({},{style:{marginTop: "10px"}},
                 RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
                 renderPossibleMoves(),
-                renderCurrentPositionFen()
+                renderCurrentPositionFen(),
+                renderRefsToPuzzles()
             )
         )
     }
@@ -213,6 +233,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 : "-",
         ) : null
         return RE.Fragment({},
+            RE.span({style:{opacity:_.size(halfMove.puzzleIds)>0?1:0, color:"blue", fontWeight:"bold"}},
+                // "\u22C6" /*star*/
+                "\u229A" /*circle in circle*/
+            ),
             RE.span({style:{fontWeight:"bold"}}, halfMove.notation + " "),
             scoreInfo
         )
@@ -221,7 +245,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     function renderCurrentPositionFen() {
         const currentFen = getCurrentFen()
         if (currentFen) {
-            return RE.span({}, "FEN: " + currentFen)
+            return RE.span({style:{display:"block", width:"500px"}}, "FEN: " + currentFen)
         } else {
             return null
         }
@@ -246,13 +270,20 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                         RE.TableCell({}, possMove.move),
                         RE.TableCell({}, "depth = " + possMove.depth),
                         RE.TableCell({},
-                            iconButton({iconName: "save",
-                                onClick: () => doRpcCall(
-                                    "rpcCreatePuzzleFromGame",
-                                    {gameId:getCurrGameId(), fen:getCurrentFen(), move:possMove.move},
-                                    puzzleId => window.open(PATH.createNodeWithIdPath(puzzleId))
-                                )
-                            })
+                            RE.IconButton(
+                                {
+                                    key: "save", color: "inherit", onClick: () => doRpcCall(
+                                        "rpcCreatePuzzleFromGame",
+                                        {gameId: getCurrGameId(), fen: getCurrentFen(), move: possMove.move},
+                                        puzzleId => {
+                                            getSelectedHalfMove().puzzleIds.push[puzzleId]
+                                            window.open(PATH.createNodeWithIdPath(puzzleId))
+                                            reloadCurrNode()
+                                        }
+                                    )
+                                },
+                                RE.Icon({style: {fontSize: "16px"}}, "save")
+                            )
                         ),
                     ))
                 )
@@ -283,6 +314,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     RE.TableCell({key:"-1"}, rowIdx+1),
                     fullMove.map((halfMove,cellIdx) => RE.TableCell({
                             key:cellIdx,
+                            padding:"none",
                             style: {backgroundColor: selectedMoveIdx == rowIdx*2+cellIdx ? "yellow" : null},
                             className:"grey-background-on-hover pointer-on-hover",
                             onClick: () => setSelectedMoveIdx(rowIdx*2+cellIdx),

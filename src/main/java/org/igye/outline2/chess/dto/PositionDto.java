@@ -6,6 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -16,4 +20,5 @@ public class PositionDto {
     private String fen;
     private String move;
     private PositionAnalysisDto analysis;
+    private List<UUID> puzzleIds = new ArrayList<>();
 }

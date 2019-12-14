@@ -17,7 +17,7 @@ import static org.igye.outline2.chess.manager.ChessUtils.coordsToString;
 
 public class PgnParser {
 
-    public static final String START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
+    public static final String START_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public static ParsedPgnDto parsePgn(String pgn) {
         ParsedPgnDto parsedPgnDto = new ParsedPgnDto();

@@ -5,6 +5,7 @@ import org.igye.outline2.chess.dto.ChessGameDto;
 import org.igye.outline2.chess.dto.ChessPuzzleCommentDto;
 import org.igye.outline2.chess.dto.ChessPuzzleDto;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.dto.OptVal;
 import org.igye.outline2.dto.TagDto;
@@ -14,11 +15,16 @@ import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
 import org.igye.outline2.pm.TagIds;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -29,6 +35,8 @@ import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 public class DtoConverter {
     @Autowired
     protected ObjectMapper objectMapper;
+    @Autowired
+    protected NamedParameterJdbcTemplate jdbcTemplate;
 
     public NodeDto toDto(Node node, int depth, Predicate<Tag> tagFilter) {
         NodeDto nodeDto = createNodeDto(node.getClazz());
@@ -104,6 +112,25 @@ public class DtoConverter {
                 ParsedPgnDto parsedPgnDto = objectMapper.readValue(parsedPgnStr, ParsedPgnDto.class);
                 chessGameDto.setParsedPgn(parsedPgnDto);
                 chessGameDto.removeTags(TagIds.CHESS_GAME_PARSED_PGN);
+
+                Map<String, PositionDto> fens = new HashMap();
+                for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
+                    for (PositionDto halfMove : fullMove) {
+                        fens.put(halfMove.getFen(), halfMove);
+                    }
+                }
+                jdbcTemplate.query(
+                        "select fen.value fen, fen.NODE_ID puzzle_id\n" +
+                                " from tag fen\n" +
+                                " where fen.tag_id = 'chess_puzzle_fen'"
+                        + " and fen.value in (:fens)",
+                        Collections.singletonMap("fens", fens.keySet()),
+                        rs -> {
+                            fens.get(rs.getString("fen")).getPuzzleIds().add(UUID.fromString(
+                                    rs.getString("puzzle_id")
+                            ));
+                        }
+                );
             }
         }
     }

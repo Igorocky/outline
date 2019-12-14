@@ -39,6 +39,9 @@ public class PositionBuilder implements ChessComponentStateManager {
     private boolean whiteShortCastlingIsAvailable;
     private boolean blackLongCastlingIsAvailable;
     private boolean blackShortCastlingIsAvailable;
+    private String enPassantTargetSquare;
+    private int halfmoveClock;
+    private int fullmoveNumber;
 
     private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
@@ -51,6 +54,9 @@ public class PositionBuilder implements ChessComponentStateManager {
         whiteLongCastlingIsAvailable = initialPosition.isWhiteQueenCastleAvailable();
         blackShortCastlingIsAvailable = initialPosition.isBlackKingCastleAvailable();
         blackLongCastlingIsAvailable = initialPosition.isBlackQueenCastleAvailable();
+        enPassantTargetSquare = initialPosition.getEnPassantTargetSquare();
+        halfmoveClock = initialPosition.getHalfmoveClock();
+        fullmoveNumber = initialPosition.getFullmoveNumber();
         initAvailablePieces();
         unhighlightAvailablePieces();
         availablePieces[6][1] = createCell(6,1, RECYCLE_BIN_CODE);
@@ -72,14 +78,7 @@ public class PositionBuilder implements ChessComponentStateManager {
                 .whiteShortCastlingIsAvailable(whiteShortCastlingIsAvailable)
                 .blackLongCastlingIsAvailable(blackLongCastlingIsAvailable)
                 .blackShortCastlingIsAvailable(blackShortCastlingIsAvailable)
-                .fen(new Move(
-                        chessBoard,
-                        colorToMove,
-                        whiteShortCastlingIsAvailable,
-                        whiteLongCastlingIsAvailable,
-                        blackShortCastlingIsAvailable,
-                        blackLongCastlingIsAvailable
-                ).toFen())
+                .fen(getInitialPosition().toFen())
                 .build()
         );
         return ChessComponentResponse.builder().chessComponentView(result).build();
@@ -150,6 +149,9 @@ public class PositionBuilder implements ChessComponentStateManager {
         whiteLongCastlingIsAvailable = move.isWhiteQueenCastleAvailable();
         blackShortCastlingIsAvailable = move.isBlackKingCastleAvailable();
         blackLongCastlingIsAvailable = move.isBlackQueenCastleAvailable();
+        enPassantTargetSquare = move.getEnPassantTargetSquare();
+        halfmoveClock = move.getHalfmoveClock();
+        fullmoveNumber = move.getFullmoveNumber();
         return toView();
     }
 
@@ -166,7 +168,10 @@ public class PositionBuilder implements ChessComponentStateManager {
                 whiteShortCastlingIsAvailable,
                 whiteLongCastlingIsAvailable,
                 blackShortCastlingIsAvailable,
-                blackLongCastlingIsAvailable
+                blackLongCastlingIsAvailable,
+                enPassantTargetSquare,
+                halfmoveClock,
+                fullmoveNumber
         );
     }
 

@@ -59,32 +59,40 @@ public final class Move {
     private boolean blackKingCastleAvailable = true;
     @Getter
     private boolean blackQueenCastleAvailable = true;
+    private final String enPassantTargetSquare;
+    @Getter
     private final int halfmoveClock;
+    @Getter
     private final int fullmoveNumber;
     private String shortNotation;
 
     public Move(String fen) {
-        this(new ChessBoard(fen), getColorToMove(fen));
+        this(new ChessBoard(fen), getColorToMove(fen), getEnPassantTargetSquare(fen),
+                getHalfmoveClock(fen), getFullmoveClock(fen));
         setCastlingAvailabilities(fen);
     }
 
     public Move(ChessBoard resultPosition, ChessmanColor colorToMove) {
-        this(resultPosition, colorToMove, 0, 1);
+        this(resultPosition, colorToMove, "-", 0, 1);
     }
 
     public Move(ChessBoard resultPosition, ChessmanColor colorToMove,
                         boolean whiteKingCastleAvailable,
                         boolean whiteQueenCastleAvailable,
                         boolean blackKingCastleAvailable,
-                        boolean blackQueenCastleAvailable) {
-        this(resultPosition, colorToMove, 0, 1);
+                        boolean blackQueenCastleAvailable,
+                        String enPassantTargetSquare,
+                        int halfmoveClock,
+                        int fullmoveNumber) {
+        this(resultPosition, colorToMove, enPassantTargetSquare, halfmoveClock, fullmoveNumber);
         this.whiteKingCastleAvailable = whiteKingCastleAvailable;
         this.whiteQueenCastleAvailable = whiteQueenCastleAvailable;
         this.blackKingCastleAvailable = blackKingCastleAvailable;
         this.blackQueenCastleAvailable = blackQueenCastleAvailable;
     }
 
-    public Move(ChessBoard resultPosition, ChessmanColor colorToMove, int halfmoveClock, int fullmoveNumber) {
+    public Move(ChessBoard resultPosition, ChessmanColor colorToMove,
+                String enPassantTargetSquare, int halfmoveClock, int fullmoveNumber) {
         prevMove=null;
         from = null;
         to = null;
@@ -93,6 +101,7 @@ public final class Move {
         this.halfmoveClock = halfmoveClock;
         this.fullmoveNumber = fullmoveNumber;
         copyCastlingAbilities(prevMove, this);
+        this.enPassantTargetSquare = enPassantTargetSquare;
     }
 
     private Move(Move prevMove, CellCoords from, CellCoords to, ChessBoard resultPosition) {
@@ -104,6 +113,7 @@ public final class Move {
         halfmoveClock = calcHalfmoveClock(prevMove, to, this.resultPosition);
         fullmoveNumber = calcFullmoveNumber(prevMove, to, this.resultPosition);
         copyCastlingAbilities(prevMove, this);
+        enPassantTargetSquare = "-";
     }
 
     public String getShortNotation() {
@@ -306,12 +316,16 @@ public final class Move {
         return result.get(0);
     }
 
-    private String getEnPassantTargetSquare() {
-        if (prevMove != null && prevMove.isChessmanOnCell(PieceShape.PAWN, from) && 2 == Math.abs(from.getY() - to.getY())) {
-            int dy = getColorOfWhoMadeMove() == ChessmanColor.WHITE ? -1 : 1;
-            return coordsToString(to.plusY(dy));
+    public String getEnPassantTargetSquare() {
+        if (prevMove != null) {
+            if (prevMove.isChessmanOnCell(PieceShape.PAWN, from) && 2 == Math.abs(from.getY() - to.getY())) {
+                int dy = getColorOfWhoMadeMove() == ChessmanColor.WHITE ? -1 : 1;
+                return coordsToString(to.plusY(dy));
+            } else {
+                return "-";
+            }
         } else {
-            return "-";
+            return enPassantTargetSquare;
         }
     }
 
@@ -389,13 +403,13 @@ public final class Move {
                         && isChessmanOnCell((ChessmanType) null, B1)
                         && isChessmanOnCell((ChessmanType) null, C1)
                         && isChessmanOnCell((ChessmanType) null, D1)
-                        && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
+                        && isChessmanOnCell(WHITE_KING, E1)
                         && !cellsUnderAttack.contains(D1)
                         && !cellsUnderAttack.contains(C1)
                         && !cellsUnderAttack.contains(E1);
             } else if (castlingType == WHITE_KING) {
                 return whiteKingCastleAvailable
-                        && isChessmanOnCell(ChessmanType.WHITE_KING, E1)
+                        && isChessmanOnCell(WHITE_KING, E1)
                         && isChessmanOnCell((ChessmanType) null, F1)
                         && isChessmanOnCell((ChessmanType) null, G1)
                         && isChessmanOnCell(WHITE_ROOK, H1)
@@ -413,13 +427,13 @@ public final class Move {
                         && isChessmanOnCell((ChessmanType) null, B8)
                         && isChessmanOnCell((ChessmanType) null, C8)
                         && isChessmanOnCell((ChessmanType) null, D8)
-                        && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
+                        && isChessmanOnCell(BLACK_KING, E8)
                         && !cellsUnderAttack.contains(C8)
                         && !cellsUnderAttack.contains(D8)
                         && !cellsUnderAttack.contains(E8);
             } else if (castlingType == BLACK_KING) {
                 return blackKingCastleAvailable
-                        && isChessmanOnCell(ChessmanType.BLACK_KING, E8)
+                        && isChessmanOnCell(BLACK_KING, E8)
                         && isChessmanOnCell((ChessmanType) null, F8)
                         && isChessmanOnCell((ChessmanType) null, G8)
                         && isChessmanOnCell(BLACK_ROOK, H8)
@@ -434,14 +448,14 @@ public final class Move {
 
     private Set<CellCoords> getPossibleCastlings(ChessmanType selectedChessman) {
         Set<CellCoords> result = new HashSet<>();
-        if (selectedChessman.equals(ChessmanType.WHITE_KING)) {
+        if (selectedChessman.equals(WHITE_KING)) {
             if (isCastlingPossible(WHITE_QUEEN)) {
                 result.add(C1);
             }
             if (isCastlingPossible(WHITE_KING)) {
                 result.add(G1);
             }
-        } else if (selectedChessman.equals(ChessmanType.BLACK_KING)) {
+        } else if (selectedChessman.equals(BLACK_KING)) {
             if (isCastlingPossible(BLACK_QUEEN)) {
                 result.add(C8);
             }
@@ -459,7 +473,7 @@ public final class Move {
         final ChessmanType selectedPiece = resultPosition.getPieceAt(selectedCell);
         final ChessmanType lastMovedPiece = resultPosition.getPieceAt(to);
         if (selectedPiece == WHITE_PAWN
-                && lastMovedPiece == ChessmanType.BLACK_PAWN
+                && lastMovedPiece == BLACK_PAWN
                 && selectedCell.getY() == 4
                 && from.getY() == 6 && to.getY() == 4
         ) {
@@ -468,7 +482,7 @@ public final class Move {
             } else if (selectedCell.plusX(1).equals(to)) {
                 return setOf(selectedCell.plusXY(1, 1));
             }
-        } else if (selectedPiece == ChessmanType.BLACK_PAWN
+        } else if (selectedPiece == BLACK_PAWN
                 && lastMovedPiece == WHITE_PAWN
                 && selectedCell.getY() == 3
                 && from.getY() == 1 && to.getY() == 3
@@ -505,7 +519,7 @@ public final class Move {
     }
 
     private void processCastling(CellCoords from, CellCoords to, ChessBoard chessboardAfterMove) {
-        if (isChessmanOnCell(chessboardAfterMove, ChessmanType.WHITE_KING, to)) {
+        if (isChessmanOnCell(chessboardAfterMove, WHITE_KING, to)) {
             if (from.equals(E1) && to.equals(C1)) {
                 chessboardAfterMove.placePiece(D1, chessboardAfterMove.getPieceAt(A1));
                 chessboardAfterMove.placePiece(A1, null);
@@ -514,7 +528,7 @@ public final class Move {
                 chessboardAfterMove.placePiece(H1, null);
             }
         }
-        if (isChessmanOnCell(chessboardAfterMove, ChessmanType.BLACK_KING, to)) {
+        if (isChessmanOnCell(chessboardAfterMove, BLACK_KING, to)) {
             if (from.equals(E8) && to.equals(C8)) {
                 chessboardAfterMove.placePiece(D8, chessboardAfterMove.getPieceAt(A8));
                 chessboardAfterMove.placePiece(A8, null);
@@ -580,7 +594,7 @@ public final class Move {
     }
 
     private boolean isWhiteKingOnInitialCell(Move move) {
-        return isChessmanOnCell(move.resultPosition, ChessmanType.WHITE_KING, E1);
+        return isChessmanOnCell(move.resultPosition, WHITE_KING, E1);
     }
 
     private boolean isBlackARookOnInitialCell(Move move) {
@@ -592,7 +606,7 @@ public final class Move {
     }
 
     private boolean isBlackKingOnInitialCell(Move move) {
-        return isChessmanOnCell(move.resultPosition, ChessmanType.BLACK_KING, E8);
+        return isChessmanOnCell(move.resultPosition, BLACK_KING, E8);
     }
 
     private boolean isChessmanOnCell(PieceShape pieceShape, CellCoords coords) {
@@ -734,6 +748,18 @@ public final class Move {
 
     private static ChessmanColor getColorToMove(String fen) {
         return "w".equals(fen.split("\\s")[1]) ? ChessmanColor.WHITE : ChessmanColor.BLACK;
+    }
+
+    private static String getEnPassantTargetSquare(String fen) {
+        return fen.split("\\s")[3];
+    }
+
+    private static int getHalfmoveClock(String fen) {
+        return Integer.parseInt(fen.split("\\s")[4]);
+    }
+
+    private static int getFullmoveClock(String fen) {
+        return Integer.parseInt(fen.split("\\s")[5]);
     }
 
     private static final CellCoords A1 = new CellCoords(0, 0);
