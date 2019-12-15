@@ -1,6 +1,19 @@
 'use strict'
 
 const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
+    const popupActions = []
+    const chessPuzzleUrl = getTagSingleValue(node, TAG_ID.chessPuzzleUrl)
+    if (chessPuzzleUrl) {
+        popupActions.push(
+            iconButton({iconName: "open_in_new",
+                onClick: e => {
+                    window.open(chessPuzzleUrl)
+                    e.stopPropagation()
+                }
+            })
+        )
+    }
+    
     return re(FolderComponent,{
         text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
         props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
@@ -8,14 +21,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
             src:"/img/chess/chess_puzzle.png",
             style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
         }),
-        popupActions: RE.Fragment({},
-            iconButton({iconName: "open_in_new",
-                onClick: e => {
-                    window.open(getTagSingleValue(node, TAG_ID.chessPuzzleUrl))
-                    e.stopPropagation()
-                }
-            })
-        )
+        popupActions: _.size(popupActions)>0?RE.Fragment({},popupActions):null
     })
 }
 
