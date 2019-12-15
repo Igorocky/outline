@@ -4,15 +4,25 @@ const CHESS_COMPONENT_STAGE = {
     practice: "PRACTICE_SEQUENCE",
 }
 
-const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel, pageTitle}) => {
+const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel,
+                            setPageTitle}) => {
     const [state, setChessComponentState] = useState(null)
     const puzzleId = getByPath(match, ["params", "puzzleId"])
+    const [puzzleName, setPuzzleName] = useState(null)
 
     useEffect(() => {
-        if (pageTitle) {
-            document.title = pageTitle
+        if (setPageTitle) {
+            if (puzzleId) {
+                if (puzzleName) {
+                    document.title = "Solve puzzle: " + puzzleName
+                } else {
+                    document.title = "Solve Puzzle"
+                }
+            } else {
+                document.title = "Chessboard editor"
+            }
         }
-    }, [])
+    }, [puzzleId,puzzleName])
 
     function processBackendStateCreated(backend) {
         if (onBackendCreated) {
@@ -31,11 +41,13 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     }, [puzzleId])
 
     function loadPuzzle(puzzleId) {
-        getNode({id:puzzleId}, puzzle =>
+        getNode({id:puzzleId}, puzzle => {
+            setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
             backend.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:"PRACTICE_SEQUENCE"
-            }))
+            })
+        })
     }
 
     const backend = useBackend({
@@ -108,9 +120,18 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         )
     }
 
+    function renderTitle() {
+        if (puzzleName) {
+            return RE.span({style:{fontWeight:"bold", fontSize:"30px"}},puzzleName)
+        } else {
+            return null
+        }
+    }
+
     function renderPageContent() {
         if (state) {
             return RE.Container.col.top.left({},{},
+                renderTitle(),
                 RE.Container.row.left.top({},{style:{marginLeft:"5px",marginTop:"5px"}},
                     renderLeftPanel(),
                     renderRightPanel()
