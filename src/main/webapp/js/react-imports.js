@@ -121,6 +121,8 @@ const SVG = {
     rect: reFactory('rect'),
     line: reFactory('line'),
     image: reFactory('image'),
+    path: reFactory('path'),
+    g: reFactory('g'),
 }
 
 function paper(children) {

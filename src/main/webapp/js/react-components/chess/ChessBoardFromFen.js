@@ -43,9 +43,53 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipp
         }
     }
 
-    function renderArrow(fromTo) {
+    const triangleLength = 35
+    const triangleHeight = triangleLength
+    const lineWidth = 15
+    const halfLineWidth = Math.floor(lineWidth/2);
+    const halfTriangleHeight = Math.floor(triangleHeight/2);
+    function renderArrow({from, to}) {
+        const dx = from.x-to.x
+        const dy = from.y-to.y
+        const length = Math.floor(Math.sqrt(dx*dx+dy*dy))
+        const handleLength = length-triangleLength;
+        let angle = -Math.atan(dy/dx)*180/Math.PI
+        console.log("dx = " + JSON.stringify(dx));
+        console.log("dy = " + JSON.stringify(dy));
+        if (dx < 0) {
+            if (dy < 0) {//+-
+                angle = -angle
+            } else if (dy > 0) {//++
+                angle = angle - 90
+            } else {
+                // angle = -angle
+            }
+        } else if (dx > 0) {
+            if (dy < 0) {//--
+                angle = angle + 90
+            } else if (dy > 0)  {//-+
+                angle = -angle+180
+            } else {//-0
+                angle = angle+180
+            }
+        }
+        return SVG.g({transform:"translate(" + from.x + ", " + from.y + ") rotate(" + angle + ")"},
+            SVG.path({
+                d:"M0,0"
+                    +" L0,"+halfLineWidth
+                    +" L"+handleLength+","+halfLineWidth
+                    +" L"+handleLength+","+halfTriangleHeight
+                    +" L"+length+",0"
+                    +" L"+handleLength+","+(-halfTriangleHeight)
+                    +" L"+handleLength+","+(-halfLineWidth)
+                    +" L0,"+(-halfLineWidth)
+                    + " Z",
+                // style:"stroke:#006600; fill: #00cc00"
+            })
+        )
+
         return SVG.line({
-            x1:fromTo.from.x, x2:fromTo.to.x, y1:fromTo.from.y, y2:fromTo.to.y,
+            x1:from.x, x2:to.x, y1:from.y, y2:to.y,
             style:{stroke:"blue", strokeWidth:"10"}
         })
     }
