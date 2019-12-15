@@ -68,6 +68,17 @@ public class ChessPuzzleManager {
         if (url != null) {
             game.setTagSingleValue(TagIds.CHESS_GAME_URL, url);
         }
+        String gameName = game.getTagSingleValue(TagIds.NAME);
+        if (StringUtils.isBlank(gameName)) {
+            String wPlayer = PgnParser.getAttrValue(pgn, "White");
+            String bPlayer = PgnParser.getAttrValue(pgn, "Black");
+            game.setTagSingleValue(
+                    TagIds.NAME,
+                    (StringUtils.isBlank(wPlayer)?"???":wPlayer)
+                            + " vs "
+                            + (StringUtils.isBlank(bPlayer)?"???":bPlayer)
+            );
+        }
     }
 
     @RpcMethod
