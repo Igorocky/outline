@@ -194,7 +194,6 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             return re(GameAnalysisWindow, {
                 gameId: getCurrGameId(),
                 onPgnUpdated: newParsedPgn => {
-                    console.log("newParsedPgn = " + JSON.stringify(newParsedPgn))
                     setParsedPgnState(newParsedPgn)
                 },
                 onDone: () => {
@@ -472,8 +471,26 @@ const GameAnalysisWindow = ({gameId, onPgnUpdated, onDone}) => {
         }
     })
 
+    function renderProp(propName, propValue) {
+        return RE.span({style:{display:"block", width:"500px"}},
+            RE.span({style:{fontWeight:"bold"}}, propName),
+            RE.span({}, propValue),
+        )
+    }
+
+    function renderThreadInfo(threadName,threadInfo) {
+        return RE.Fragment({key:threadName},
+            renderProp(threadName, " last updated " + (threadInfo?threadInfo.lastUpdated:"-")),
+        )
+    }
+
     return RE.Container.col.top.left({},{},
         "Analysis is in progress...",
-        RE.span({style:{display:"block", width:"500px"}}, JSON.stringify(analysisProgressInfo))
+        renderProp("Overall number of positions: ", analysisProgressInfo.halfMovesToAnalyse),
+        renderProp("Processed: ", analysisProgressInfo.currHalfMove),
+        renderProp("Number of threads: ", analysisProgressInfo.procNumber),
+        _.pairs(analysisProgressInfo.threadsInfo).map(([threadName,threadInfo]) =>
+            renderThreadInfo(threadName,threadInfo)
+        )
     )
 }
