@@ -71,31 +71,33 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderUrl() {
         const gameUrl = getTagSingleValue(curNode, TAG_ID.CHESS_GAME_URL);
-        return RE.Container.row.left.center({},{},
-            "URL",
-            re(EditableTextField,{
-                key:"chess-game-url-" + getCurrGameId(),
-                inlineActions: true,
-                initialValue: gameUrl,
-                spanStyle: {margin:"0px 10px", fontSize:"18px"},
-                textFieldStyle: {width:"600px", margin:"0px 10px"},
-                onSave: ({newValue, onSaved}) =>
-                    setSingleTagForNode(
-                        getCurrGameId(),
-                        TAG_ID.CHESS_GAME_URL,
-                        newValue,
-                        () => {
-                            onSaved()
-                            navigateToNodeId(getCurrGameId())
-                        }
-                    ),
-                placeholder: "URL",
-                popupActions: RE.Fragment({},
-                    (gameUrl && gameUrl.length > 0)?iconButton({iconName: "open_in_new",
-                        onClick: () => window.open(gameUrl)
-                    }):null
-                )
-            })
+        return RE.Container.row.left.center({},{style:{marginBottom: "10px"}},
+            RE.Paper({style:{paddingLeft:"10px"}},
+                "URL",
+                re(EditableTextField,{
+                    key:"chess-game-url-" + getCurrGameId(),
+                    inlineActions: true,
+                    initialValue: gameUrl,
+                    spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                    textFieldStyle: {width:"600px", margin:"0px 10px"},
+                    onSave: ({newValue, onSaved}) =>
+                        setSingleTagForNode(
+                            getCurrGameId(),
+                            TAG_ID.CHESS_GAME_URL,
+                            newValue,
+                            () => {
+                                onSaved()
+                                navigateToNodeId(getCurrGameId())
+                            }
+                        ),
+                    placeholder: "URL",
+                    popupActions: RE.Fragment({},
+                        (gameUrl && gameUrl.length > 0)?iconButton({iconName: "open_in_new",
+                            onClick: () => window.open(gameUrl)
+                        }):null
+                    )
+                })
+            )
         )
     }
 
@@ -309,9 +311,14 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 : "-",
         ) : null
         return RE.Fragment({},
-            RE.span({style:{opacity:_.size(halfMove.puzzleIds)>0?1:0, color:"blue", fontWeight:"bold"}},
+            RE.span({style:{
+                opacity:_.size(halfMove.puzzleIds)>0?1:0, color:"blue", fontWeight:"bold", fontSize:"23px"
+            }},
                 // "\u22C6" /*star*/
-                "\u229A" /*circle in circle*/
+                // "\u229A" /*circle in circle*/
+                // "\u2316" /*target*/
+                // "\u2A01" /*cross in circle*/
+                "\u2315" /*magnifier*/
             ),
             RE.span(
                 {
