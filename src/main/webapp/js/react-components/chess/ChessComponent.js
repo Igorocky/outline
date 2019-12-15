@@ -9,6 +9,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     const [state, setChessComponentState] = useState(null)
     const puzzleId = getByPath(match, ["params", "puzzleId"])
     const [puzzleName, setPuzzleName] = useState(null)
+    const [initialPgnHashCode, setInitialPgnHashCode] = useState(null)
 
     useEffect(() => {
         if (setPageTitle) {
@@ -56,6 +57,13 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         onMessageFromBackend: chessComponentResponse => {
             if (chessComponentResponse.chessComponentView) {
                 setChessComponentState(chessComponentResponse.chessComponentView)
+                setInitialPgnHashCode(currPgnHashCode => {
+                    if (currPgnHashCode == null) {
+                        return chessComponentResponse.chessComponentView.pgnHashCode
+                    } else {
+                        return currPgnHashCode
+                    }
+                })
             } else if (chessComponentResponse.savePgn) {
                 onSave(chessComponentResponse.savePgn)
             }
@@ -114,8 +122,12 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
 
     function renderSaveCancelButtons() {
         return RE.Container.row.right.top({},{style:{marginRight: "10px"}},
-            onSave?RE.Button({color:"primary", variant:"contained",
-                onClick: ()=>backend.call("getPgnToSave", {})}, "Save"):null,
+            onSave?RE.Button({
+                color:"primary",
+                variant:"contained",
+                onClick: ()=>backend.call("getPgnToSave", {}),
+                disabled: initialPgnHashCode == state.pgnHashCode
+            }, "Save"):null,
             onCancel?RE.Button({variant:"contained", onClick:onCancel}, "Cancel"):null,
         )
     }

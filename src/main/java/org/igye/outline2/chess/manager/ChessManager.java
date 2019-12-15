@@ -30,23 +30,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @RpcMethod
     public ChessComponentResponse getCurrentState() {
-        return stateManager.toView();
+        return toView();
     }
 
     @RpcMethod
     public ChessComponentResponse getPgnToSave() {
-        if (stateManager instanceof PositionBuilder) {
-            return ChessComponentResponse.builder()
-                    .savePgn(
-                            new MovesBuilder(
-                                    stockfishCmd,
-                                    ((PositionBuilder) stateManager).getInitialPosition()
-                            ).toPgn()
-                    )
-                    .build();
-        } else {
-            return ChessComponentResponse.builder().savePgn(((MovesBuilder)stateManager).toPgn()).build();
-        }
+        return ChessComponentResponse.builder().savePgn(getPgn()).build();
     }
 
     @RpcMethod
@@ -62,41 +51,45 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @Override
     @RpcMethod
     public ChessComponentResponse cellLeftClicked(CellCoords coords) {
-        return stateManager.cellLeftClicked(coords);
+        stateManager.cellLeftClicked(coords);
+        return toView();
     }
 
     @RpcMethod
     @Override
     public ChessComponentResponse execChessCommand(String command) {
         if (!StringUtils.isBlank(command)) {
-            return stateManager.execChessCommand(command);
-        } else {
-            return stateManager.toView();
+            stateManager.execChessCommand(command);
         }
+        return toView();
     }
 
     @RpcMethod
     @Override
     public ChessComponentResponse setColorToMove(ChessmanColor colorToMove) {
-        return stateManager.setColorToMove(colorToMove);
+        stateManager.setColorToMove(colorToMove);
+        return toView();
     }
 
     @RpcMethod
     @Override
     public ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong) {
-        return stateManager.changeCastlingAvailability(color, isLong);
+        stateManager.changeCastlingAvailability(color, isLong);
+        return toView();
     }
 
     @RpcMethod
     @Override
     public ChessComponentResponse setPositionFromFen(String fen) {
-        return stateManager.setPositionFromFen(fen);
+        stateManager.setPositionFromFen(fen);
+        return toView();
     }
 
     @RpcMethod
     @Override
     public ChessComponentResponse showCorrectMove() {
-        return stateManager.showCorrectMove();
+        stateManager.showCorrectMove();
+        return toView();
     }
 
     @RpcMethod
@@ -116,11 +109,24 @@ public class ChessManager extends State implements ChessComponentStateManager {
                 movesBuilder.setPracticeMode(false);
             }
         }
-        return stateManager.toView();
+        return toView();
     }
 
     @Override
     public ChessComponentResponse toView() {
-        return stateManager.toView();
+        final ChessComponentResponse response = stateManager.toView();
+        response.getChessComponentView().setPgnHashCode(getPgn().hashCode());
+        return response;
+    }
+
+    private String getPgn() {
+        if (stateManager instanceof PositionBuilder) {
+            return new MovesBuilder(
+                    stockfishCmd,
+                    ((PositionBuilder) stateManager).getInitialPosition()
+            ).toPgn();
+        } else {
+            return ((MovesBuilder)stateManager).toPgn();
+        }
     }
 }

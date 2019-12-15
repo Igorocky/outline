@@ -2,7 +2,7 @@
 
 const PgnEditor = ({pgnStr, onSave, onCancel}) => {
     return re(ChessComponent, {
-        showPracticeTab:false,
+        showPracticeTab:true,
         onBackendCreated: backend => backend.call(
             "loadFromPgn", {
                 pgn:pgnStr,
