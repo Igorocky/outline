@@ -15,6 +15,7 @@ import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
 import org.igye.outline2.pm.TagIds;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -38,6 +39,10 @@ public class DtoConverter {
     protected ObjectMapper objectMapper;
     @Autowired
     protected NamedParameterJdbcTemplate jdbcTemplate;
+    @Value("${chess.stockfish.depth}")
+    private int initAnalysisDepth;
+    @Value("${chess.stockfish.proc-num}")
+    private int stockfishProcNum;
 
     public NodeDto toDto(Node node, int depth, Predicate<Tag> tagFilter) {
         NodeDto nodeDto = createNodeDto(node.getClazz());
@@ -130,6 +135,8 @@ public class DtoConverter {
 
     private void enrich(ChessGameDto chessGameDto, Node node) throws IOException {
         if (chessGameDto.getTags() != null) {
+            chessGameDto.setAnalysisInitDepth(initAnalysisDepth);
+            chessGameDto.setAnalysisInitNumberOfThreads(stockfishProcNum);
             final String parsedPgnStr = chessGameDto.getTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN);
             if (parsedPgnStr != null) {
                 ParsedPgnDto parsedPgnDto = objectMapper.readValue(parsedPgnStr, ParsedPgnDto.class);

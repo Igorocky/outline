@@ -22,10 +22,6 @@ import java.util.UUID;
 public class PgnAnalyserState extends State {
     @Value("${chess.stockfish.cmd:null}")
     private String stockfishCmd;
-    @Value("${chess.stockfish.proc-num}")
-    private int stockfishProcNum;
-    @Value("${chess.stockfish.depth}")
-    private int stockfishDepth;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
@@ -35,14 +31,14 @@ public class PgnAnalyserState extends State {
 
     @RpcMethod
     @Transactional
-    public void analyseGame(UUID gameId) throws IOException {
+    public void analyseGame(UUID gameId, int depth, int numberOfThreads) throws IOException {
         Node game = nodeRepository.getOne(gameId);
         ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(
                 stockfishCmd,
                 game.getTagSingleValue(TagIds.CHESS_GAME_PGN),
-                stockfishDepth,
+                depth,
                 null,
-                stockfishProcNum,
+                numberOfThreads,
                 dtoConverter,
                 analysisProgressInfo -> sendMessageToFe(analysisProgressInfo)
         );

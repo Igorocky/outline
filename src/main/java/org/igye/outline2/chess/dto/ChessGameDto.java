@@ -8,4 +8,6 @@ import org.igye.outline2.dto.NodeDto;
 @Setter
 public class ChessGameDto extends NodeDto {
     private ParsedPgnDto parsedPgn;
+    private int analysisInitDepth;
+    private int analysisInitNumberOfThreads;
 }

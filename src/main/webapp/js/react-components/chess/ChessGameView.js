@@ -29,10 +29,13 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [currTabId, setCurrTabId] = useState(curNode.parsedPgn ? CHESS_GAME_FULL_VIEW_TABS.moves.id : CHESS_GAME_FULL_VIEW_TABS.pgn.id)
     const [selectedMoveIdx, setSelectedMoveIdx] = useState(-1)
     const [flipped, setFlipped] = useState(false)
+    const [preAnalysisDialogIsOpened, setPreAnalysisDialogIsOpened] = useState(false)
     const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
     const [showArrow, setShowArrow] = useState(null)
     const [selectedPuzzleIdx, setSelectedPuzzleIdx] = useState(0)
     const [parsedPgnState, setParsedPgnState] = useState(curNode.parsedPgn)
+    const [analysisDepth, setAnalysisDepth] = useState(curNode.analysisInitDepth)
+    const [analysisNumberOfThreads, setAnalysisNumberOfThreads] = useState(curNode.analysisInitNumberOfThreads)
 
     useEffect(() => {
         setParsedPgnState(curNode.parsedPgn)
@@ -182,7 +185,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     },
                     RE.img({
                         src: "/img/chess/chess_puzzle.png",
-                        style: {width: "24px", height: "24px"/*, marginTop: "5px", marginLeft: "5px"*/}
+                        style: {width: "24px", height: "24px"}
                     })
                 ))
             )
@@ -193,6 +196,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         if (analysisWindowIsOpened) {
             return re(GameAnalysisWindow, {
                 gameId: getCurrGameId(),
+                depth: analysisDepth,
+                numberOfThreads: analysisNumberOfThreads,
                 onPgnUpdated: newParsedPgn => {
                     setParsedPgnState(newParsedPgn)
                 },
@@ -206,16 +211,35 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
+    function renderPreAnalysisDialogIfNecessary() {
+        if (preAnalysisDialogIsOpened) {
+            return re(StartGameAnalysisDialog, {
+                initDepth: analysisDepth,
+                initNumberOfThreads: analysisNumberOfThreads,
+                onCancel: () => setPreAnalysisDialogIsOpened(false),
+                onStartAnalysis: ({depth,numberOfThreads}) => {
+                    setAnalysisDepth(depth)
+                    setAnalysisNumberOfThreads(numberOfThreads)
+                    setPreAnalysisDialogIsOpened(false)
+                    setAnalysisWindowIsOpened(true)
+                }
+            })
+        } else {
+            return null
+        }
+    }
+
     function renderMovesTab() {
         return RE.Container.row.left.top({},{style:{marginRight: "10px"}},
             renderChessBoard(),
             renderTableWithMoves(),
             RE.Container.col.top.left({},{style:{marginBottom: "10px"}},
-                RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
+                RE.Button({onClick:()=>setPreAnalysisDialogIsOpened(true)}, "Analyse"),
                 renderPossibleMoves(),
                 renderCurrentPositionFen(),
                 renderRefsToPuzzles(),
-                renderAnalysisInfoIfNecessary()
+                renderPreAnalysisDialogIfNecessary(),
+                renderAnalysisInfoIfNecessary(),
             )
         )
     }
@@ -435,6 +459,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 [CHESS_GAME_FULL_VIEW_TABS.pgn.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.pgn.title,
                     render: renderPgnTab,
+                    disabled: analysisWindowIsOpened
                 },
                 [CHESS_GAME_FULL_VIEW_TABS.moves.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.moves.title,
@@ -444,7 +469,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 [CHESS_GAME_FULL_VIEW_TABS.practice.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.practice.title,
                     render: renderPracticeTab,
-                    disabled:!parsedPgnState
+                    disabled:!parsedPgnState || analysisWindowIsOpened
                 },
             }
         })
@@ -453,11 +478,15 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     return renderTabs()
 }
 
-const GameAnalysisWindow = ({gameId, onPgnUpdated, onDone}) => {
+const GameAnalysisWindow = ({gameId, depth, numberOfThreads, onPgnUpdated, onDone}) => {
     const [analysisProgressInfo, setAnalysisProgressInfo] = useState({})
     useBackend({
         stateType: "PgnAnalyser",
-        onBackendStateCreated: backend => backend.call("analyseGame", {gameId:gameId}),
+        onBackendStateCreated: backend => backend.call("analyseGame", {
+            gameId:gameId,
+            depth:depth,
+            numberOfThreads:numberOfThreads
+        }),
         onMessageFromBackend: resp => {
             if ("done" == resp) {
                 onDone()
