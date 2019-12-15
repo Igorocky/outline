@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Wither;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.dto.PositionAnalysisDto;
 
 import java.util.Map;
 
@@ -22,4 +24,6 @@ public class PgnAnalysisProgressInfo {
     private int currHalfMove;
     private int procNumber;
     private Map<String,FenAnalysisProgressInfo> threadsInfo;
+    private Map<String, PositionAnalysisDto> analysisResults;
+    private ParsedPgnDto parsedPgn;
 }

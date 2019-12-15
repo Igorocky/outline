@@ -2,6 +2,7 @@ package org.igye.outline2.chess.manager.analyse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.manager.DtoConverter;
 import org.igye.outline2.manager.NodeRepository;
 import org.igye.outline2.pm.Node;
 import org.igye.outline2.pm.TagIds;
@@ -29,6 +30,8 @@ public class PgnAnalyserState extends State {
     private NodeRepository nodeRepository;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private DtoConverter dtoConverter;
 
     @RpcMethod
     @Transactional
@@ -40,6 +43,7 @@ public class PgnAnalyserState extends State {
                 stockfishDepth,
                 null,
                 stockfishProcNum,
+                dtoConverter,
                 analysisProgressInfo -> sendMessageToFe(analysisProgressInfo)
         );
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));

@@ -5,6 +5,7 @@ import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.dto.PositionAnalysisDto;
 import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.exceptions.OutlineException;
+import org.igye.outline2.manager.DtoConverter;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,18 +24,53 @@ public class PgnAnalyser {
 
     public static ParsedPgnDto analysePgn(String runStockfishCmd, String pgn,
                                           Integer depth, Integer moveTimeSec, int numberOfProcesses,
-                                          Consumer<PgnAnalysisProgressInfo> progressCallback) throws IOException {
+                                          DtoConverter dtoConverter,
+                                          Consumer<PgnAnalysisProgressInfo> progressCallback) {
         ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
         Map<String, PositionAnalysisDto> analysisResults = analyseMovesInParallel(
-                parsedPgnDto, runStockfishCmd, depth, moveTimeSec, numberOfProcesses, progressCallback
+                parsedPgnDto, runStockfishCmd, depth, moveTimeSec, numberOfProcesses,
+                wrapProgressCallback(parsedPgnDto, dtoConverter, progressCallback)
         );
+        enrichPgnWithAnalysisInfo(parsedPgnDto, analysisResults);
+        return parsedPgnDto;
+    }
+
+    private static Consumer<PgnAnalysisProgressInfo> wrapProgressCallback(
+            ParsedPgnDto parsedPgnDto,
+            DtoConverter dtoConverter,
+            Consumer<PgnAnalysisProgressInfo> progressCallback) {
+        final long[] lastDtoSendTime = {System.currentTimeMillis()};
+        if (progressCallback == null) {
+            return null;
+        } else {
+            return analysisProgressInfo -> {
+                if (System.currentTimeMillis() - lastDtoSendTime[0] > 10000) {
+                    lastDtoSendTime[0] = System.currentTimeMillis();
+                    enrichPgnWithAnalysisInfo(parsedPgnDto, analysisProgressInfo.getAnalysisResults());
+                    dtoConverter.enrich(parsedPgnDto);
+                    progressCallback.accept(
+                            analysisProgressInfo
+                                    .withParsedPgn(parsedPgnDto)
+                                    .withAnalysisResults(null)
+                    );
+                } else {
+                    progressCallback.accept(
+                            analysisProgressInfo
+                                    .withAnalysisResults(null)
+                    );
+                }
+            };
+        }
+    }
+
+    private static void enrichPgnWithAnalysisInfo(ParsedPgnDto parsedPgnDto,
+                                                  Map<String, PositionAnalysisDto> analysisResults) {
         for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
             for (PositionDto halfMove : fullMove) {
                 halfMove.setAnalysis(analysisResults.get(halfMove.getFen()));
             }
         }
         calcDeltas(parsedPgnDto);
-        return parsedPgnDto;
     }
 
     private static Map<String, PositionAnalysisDto> analyseMovesInParallel(ParsedPgnDto parsedPgnDto,
@@ -42,7 +78,7 @@ public class PgnAnalyser {
                                                                            Integer depth,
                                                                            Integer moveTimeSec,
                                                                            int numberOfProcesses,
-                                                                           Consumer<PgnAnalysisProgressInfo> progressCallback) throws IOException {
+                                                                           Consumer<PgnAnalysisProgressInfo> progressCallback) {
         Map<String, PositionAnalysisDto> result = new ConcurrentHashMap<>();
         CountDownLatch waitAllThreadsCompleted = new CountDownLatch(numberOfProcesses);
         ConcurrentLinkedQueue<String> fensToAnalyse = new ConcurrentLinkedQueue<>();
@@ -56,6 +92,7 @@ public class PgnAnalyser {
                         .halfMovesToAnalyse(fensToAnalyse.size())
                         .currHalfMove(0)
                         .procNumber(0)
+                        .analysisResults(result)
                         .threadsInfo(new TreeMap<>())
                         .build()
         );
@@ -147,9 +184,11 @@ public class PgnAnalyser {
         for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
             for (PositionDto halfMove : fullMove) {
                 final PositionAnalysisDto currAnalysisResults = halfMove.getAnalysis();
-                currAnalysisResults.setDelta(calcDelta(
-                        prevAnalysisResults, currAnalysisResults, isBlackToMove(halfMove.getFen())
-                ));
+                if (currAnalysisResults != null) {
+                    currAnalysisResults.setDelta(calcDelta(
+                            prevAnalysisResults, currAnalysisResults, isBlackToMove(halfMove.getFen())
+                    ));
+                }
                 prevAnalysisResults = currAnalysisResults;
             }
         }
@@ -158,7 +197,7 @@ public class PgnAnalyser {
     protected static Long calcDelta(PositionAnalysisDto prevAnalysisResults,
                                        PositionAnalysisDto curAnalysisResults,
                                        boolean isBlackToMove) {
-        if (prevAnalysisResults == null) {
+        if (prevAnalysisResults == null || curAnalysisResults == null) {
             return null;
         }
         MoveAnalysisDto prevBestMove = getBestMove(prevAnalysisResults);

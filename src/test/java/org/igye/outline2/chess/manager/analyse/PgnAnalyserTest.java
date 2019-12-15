@@ -28,7 +28,7 @@ public class PgnAnalyserTest {
 
         //when
         ParsedPgnDto parsedPgnDto = PgnAnalyser.analysePgn(
-                STOCKFISH_CMD, pgnStr, 5, null, 4, null
+                STOCKFISH_CMD, pgnStr, 5, null, 4, null, null
         );
 
         //then

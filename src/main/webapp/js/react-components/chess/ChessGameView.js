@@ -32,14 +32,19 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [analysisWindowIsOpened, setAnalysisWindowIsOpened] = useState(false)
     const [showArrow, setShowArrow] = useState(null)
     const [selectedPuzzleIdx, setSelectedPuzzleIdx] = useState(0)
+    const [parsedPgnState, setParsedPgnState] = useState(curNode.parsedPgn)
 
-    const allHalfMoves = curNode.parsedPgn?flatMap(curNode.parsedPgn.positions, fullMove => fullMove):[]
+    useEffect(() => {
+        setParsedPgnState(curNode.parsedPgn)
+    }, [curNode.parsedPgn])
+
+    const allHalfMoves = parsedPgnState?flatMap(parsedPgnState.positions, fullMove => fullMove):[]
     const allPuzzles = {
         whiteToMove: [],
         blackToMove: [],
     }
     if (currTabId == CHESS_GAME_FULL_VIEW_TABS.practice.id) {
-        curNode.parsedPgn.positions.forEach(fullMove => {
+        parsedPgnState.positions.forEach(fullMove => {
             const whiteHalfMove = fullMove[0]
             const blackHalfMove = fullMove[1]
             if (blackHalfMove) {
@@ -127,7 +132,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     }
 
     function getCurrentFen() {
-        return getByPath(getSelectedHalfMove(), ["fen"], curNode.parsedPgn.initialPositionFen)
+        return getByPath(getSelectedHalfMove(), ["fen"], parsedPgnState.initialPositionFen)
     }
 
     function renderChessBoard() {
@@ -139,8 +144,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             re(ChessBoardFromFen, {
                 fen:currFen,
                 moveFromTo:getByPath(getSelectedHalfMove(), ["move"]),
-                wPlayer:curNode.parsedPgn.wplayer,
-                bPlayer:curNode.parsedPgn.bplayer,
+                wPlayer:parsedPgnState.wplayer,
+                bPlayer:parsedPgnState.bplayer,
                 flipped: flipped,
                 arrow: showArrow
             }),
@@ -184,6 +189,24 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         }
     }
 
+    function renderAnalysisInfoIfNecessary() {
+        if (analysisWindowIsOpened) {
+            return re(GameAnalysisWindow, {
+                gameId: getCurrGameId(),
+                onPgnUpdated: newParsedPgn => {
+                    console.log("newParsedPgn = " + JSON.stringify(newParsedPgn))
+                    setParsedPgnState(newParsedPgn)
+                },
+                onDone: () => {
+                    setAnalysisWindowIsOpened(false)
+                    reloadCurrNode()
+                }
+            })
+        } else {
+            return null
+        }
+    }
+
     function renderMovesTab() {
         return RE.Container.row.left.top({},{style:{marginRight: "10px"}},
             renderChessBoard(),
@@ -192,7 +215,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 RE.Button({onClick:()=>setAnalysisWindowIsOpened(true)}, "Analyse"),
                 renderPossibleMoves(),
                 renderCurrentPositionFen(),
-                renderRefsToPuzzles()
+                renderRefsToPuzzles(),
+                renderAnalysisInfoIfNecessary()
             )
         )
     }
@@ -310,7 +334,6 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                                         "rpcCreatePuzzleFromGame",
                                         {gameId: getCurrGameId(), fen: getCurrentFen(), move: possMove.move},
                                         puzzleId => {
-                                            getSelectedHalfMove().puzzleIds.push[puzzleId]
                                             window.open(PATH.createNodeWithIdPath(puzzleId))
                                             reloadCurrNode()
                                         }
@@ -331,8 +354,8 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             RE.TableHead({},
                 RE.TableRow({},
                     RE.TableCell({}, ""),
-                    RE.TableCell({}, curNode.parsedPgn.wplayer),
-                    RE.TableCell({}, curNode.parsedPgn.bplayer)
+                    RE.TableCell({}, parsedPgnState.wplayer),
+                    RE.TableCell({}, parsedPgnState.bplayer)
                 )
             ),
             RE.TableBody({},
@@ -344,7 +367,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     },
                     "Start"
                 )),
-                curNode.parsedPgn.positions.map((fullMove,rowIdx) => RE.TableRow({key:rowIdx},
+                parsedPgnState.positions.map((fullMove,rowIdx) => RE.TableRow({key:rowIdx},
                     RE.TableCell({key:"-1"}, rowIdx+1),
                     fullMove.map((halfMove,cellIdx) => {
                         const moveIdx = rowIdx*2+cellIdx;
@@ -398,7 +421,6 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     )
                 ),
                 re(ChessComponent, {
-                    key: selectedPuzzleId,
                     match:{params: {puzzleId: selectedPuzzleId}},
                     showPracticeTab:true
                 })
@@ -418,31 +440,21 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                 [CHESS_GAME_FULL_VIEW_TABS.moves.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.moves.title,
                     render: renderMovesTab,
-                    disabled:!curNode.parsedPgn
+                    disabled:!parsedPgnState
                 },
                 [CHESS_GAME_FULL_VIEW_TABS.practice.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.practice.title,
                     render: renderPracticeTab,
-                    disabled:!curNode.parsedPgn
+                    disabled:!parsedPgnState
                 },
             }
         })
     }
 
-    return RE.Container.col.top.left({},{},
-        RE.Container.row.left.top({},{},
-            renderTabs(),
-            analysisWindowIsOpened
-                ?re(GameAnalysisWindow, {gameId:getCurrGameId(), onDone: () => {
-                    setAnalysisWindowIsOpened(false)
-                    reloadCurrNode()
-                }})
-                :null
-        )
-    )
+    return renderTabs()
 }
 
-const GameAnalysisWindow = ({gameId, onDone}) => {
+const GameAnalysisWindow = ({gameId, onPgnUpdated, onDone}) => {
     const [analysisProgressInfo, setAnalysisProgressInfo] = useState({})
     useBackend({
         stateType: "PgnAnalyser",
@@ -451,17 +463,17 @@ const GameAnalysisWindow = ({gameId, onDone}) => {
             if ("done" == resp) {
                 onDone()
             } else {
+                if (resp.parsedPgn) {
+                    onPgnUpdated(resp.parsedPgn)
+                    resp.parsedPgn = undefined
+                }
                 setAnalysisProgressInfo(resp)
             }
         }
     })
 
-    return RE.Dialog({open:true},
-        RE.DialogTitle({},
-            "Analysis is in progress..."
-        ),
-        RE.DialogContent({},
-            JSON.stringify(analysisProgressInfo)
-        )
+    return RE.Container.col.top.left({},{},
+        "Analysis is in progress...",
+        RE.span({style:{display:"block", width:"500px"}}, JSON.stringify(analysisProgressInfo))
     )
 }

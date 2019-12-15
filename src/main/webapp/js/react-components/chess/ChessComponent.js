@@ -12,14 +12,24 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         if (onBackendCreated) {
             onBackendCreated(backend)
         } else if (puzzleId) {
-            getNode({id:puzzleId}, puzzle =>
-                backend.call("loadFromPgn", {
-                    pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
-                    tabToOpen:"PRACTICE_SEQUENCE"
-                }))
+            loadPuzzle(puzzleId)
         } else {
             backend.call("getCurrentState", {})
         }
+    }
+
+    useEffect(() => {
+        if (puzzleId) {
+            loadPuzzle(puzzleId)
+        }
+    }, [puzzleId])
+
+    function loadPuzzle(puzzleId) {
+        getNode({id:puzzleId}, puzzle =>
+            backend.call("loadFromPgn", {
+                pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
+                tabToOpen:"PRACTICE_SEQUENCE"
+            }))
     }
 
     const backend = useBackend({

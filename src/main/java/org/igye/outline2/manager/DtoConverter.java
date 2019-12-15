@@ -77,6 +77,28 @@ public class DtoConverter {
                 .build();
     }
 
+    public void enrich(ParsedPgnDto parsedPgnDto) {
+        Map<String, PositionDto> fens = new HashMap();
+        for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
+            for (PositionDto halfMove : fullMove) {
+                halfMove.setPuzzleIds(new ArrayList<>());
+                fens.put(halfMove.getFen(), halfMove);
+            }
+        }
+        jdbcTemplate.query(
+                "select fen.value fen, fen.NODE_ID puzzle_id\n" +
+                        " from tag fen\n" +
+                        " where fen.tag_id = 'chess_puzzle_fen'"
+                        + " and fen.value in (:fens)",
+                Collections.singletonMap("fens", fens.keySet()),
+                rs -> {
+                    fens.get(rs.getString("fen")).getPuzzleIds().add(UUID.fromString(
+                            rs.getString("puzzle_id")
+                    ));
+                }
+        );
+    }
+
     private NodeDto createNodeDto(String clazz) {
         if (NodeClasses.CHESS_PUZZLE.equals(clazz)) {
             return new ChessPuzzleDto();
@@ -113,26 +135,7 @@ public class DtoConverter {
                 ParsedPgnDto parsedPgnDto = objectMapper.readValue(parsedPgnStr, ParsedPgnDto.class);
                 chessGameDto.setParsedPgn(parsedPgnDto);
                 chessGameDto.removeTags(TagIds.CHESS_GAME_PARSED_PGN);
-
-                Map<String, PositionDto> fens = new HashMap();
-                for (List<PositionDto> fullMove : parsedPgnDto.getPositions()) {
-                    for (PositionDto halfMove : fullMove) {
-                        halfMove.setPuzzleIds(new ArrayList<>());
-                        fens.put(halfMove.getFen(), halfMove);
-                    }
-                }
-                jdbcTemplate.query(
-                        "select fen.value fen, fen.NODE_ID puzzle_id\n" +
-                                " from tag fen\n" +
-                                " where fen.tag_id = 'chess_puzzle_fen'"
-                        + " and fen.value in (:fens)",
-                        Collections.singletonMap("fens", fens.keySet()),
-                        rs -> {
-                            fens.get(rs.getString("fen")).getPuzzleIds().add(UUID.fromString(
-                                    rs.getString("puzzle_id")
-                            ));
-                        }
-                );
+                enrich(parsedPgnDto);
             }
         }
     }
