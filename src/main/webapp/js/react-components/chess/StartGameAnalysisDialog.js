@@ -9,7 +9,7 @@ const StartGameAnalysisDialog = ({initDepth, initNumberOfThreads, onCancel, onSt
         ),
         RE.DialogContent({},
             RE.Container.col.top.right({},{style:{marginBottom:"10px"}},
-                RE.Container.row.right.center({},{},
+                RE.Container.row.right.center({},{style:{marginLeft:"10px"}},
                     RE.span({}, "Depth: "),
                     RE.TextField({
                         autoFocus: true,
@@ -18,7 +18,7 @@ const StartGameAnalysisDialog = ({initDepth, initNumberOfThreads, onCancel, onSt
                         onChange: e => setDepth(e.target.value),
                     })
                 ),
-                RE.Container.row.right.center({},{},
+                RE.Container.row.right.center({},{style:{marginLeft:"10px"}},
                     RE.span({}, "Number of threads: "),
                     RE.TextField({
                         value: numberOfThreads,

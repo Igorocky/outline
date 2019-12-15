@@ -86,14 +86,9 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipp
                     +" L"+handleLength+","+(-halfLineWidth)
                     +" L0,"+(-halfLineWidth)
                     + " Z",
-                // style:"stroke:#006600; fill: #00cc00"
+                style:{stroke:"blue", fill:"blue", opacity:0.85}
             })
         )
-
-        return SVG.line({
-            x1:from.x, x2:to.x, y1:from.y, y2:to.y,
-            style:{stroke:"blue", strokeWidth:"10"}
-        })
     }
 
     function moveToArrowCoords(move,flipped) {
