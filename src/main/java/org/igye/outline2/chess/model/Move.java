@@ -42,7 +42,7 @@ import static org.igye.outline2.common.OutlineUtils.setOf;
 
 public final class Move {
     private static final Pattern MOVE_COMMAND_PATTERN =
-            Pattern.compile("^([NBRQK]?)(?:([A-H])|([1-8]))?(?:X)?([A-H])([1-8])(?:=?([NBRQ]))?([+#]?)$");
+            Pattern.compile("^([NBRQK]?)(?:([a-h])|([1-8]))?(?:x)?([a-h])([1-8])(?:=?([NBRQ]))?([+#]?)$");
     @Getter
     private final Move prevMove;
     @Getter
@@ -207,8 +207,8 @@ public final class Move {
                 moveNotationParts.setCellToMoveTo(C8);
             }
         } else {
-            String upperCaseNotation = notation.trim().toUpperCase();
-            Matcher matcher = MOVE_COMMAND_PATTERN.matcher(upperCaseNotation);
+            String trimmedNotation = notation.trim();
+            Matcher matcher = MOVE_COMMAND_PATTERN.matcher(trimmedNotation);
             if (!matcher.matches()) {
                 throw new ParseMoveException("'" + notation + "' - could not recognize move notation format.");
             }

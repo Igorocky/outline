@@ -33,7 +33,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
     const [showArrow, setShowArrow] = useState(null)
     const [selectedPuzzleIdx, setSelectedPuzzleIdx] = useState(0)
 
-    const allHalfMoves = flatMap(curNode.parsedPgn.positions, fullMove => fullMove)
+    const allHalfMoves = curNode.parsedPgn?flatMap(curNode.parsedPgn.positions, fullMove => fullMove):[]
     const allPuzzles = {
         whiteToMove: [],
         blackToMove: [],
@@ -409,15 +409,17 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
             tabs: {
                 [CHESS_GAME_FULL_VIEW_TABS.pgn.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.pgn.title,
-                    render: renderPgnTab
+                    render: renderPgnTab,
                 },
                 [CHESS_GAME_FULL_VIEW_TABS.moves.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.moves.title,
-                    render: renderMovesTab
+                    render: renderMovesTab,
+                    disabled:!curNode.parsedPgn
                 },
                 [CHESS_GAME_FULL_VIEW_TABS.practice.id]: {
                     label:CHESS_GAME_FULL_VIEW_TABS.practice.title,
-                    render: renderPracticeTab
+                    render: renderPracticeTab,
+                    disabled:!curNode.parsedPgn
                 },
             }
         })

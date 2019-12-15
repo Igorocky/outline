@@ -215,7 +215,8 @@ function reTabs({selectedTab,onTabSelected,onTabMouseUp,tabs}) {
                     key:tabId,
                     label:tabData.label,
                     value:tabId,
-                    onMouseUp: onTabMouseUp?event=>onTabMouseUp(event,tabId):null
+                    onMouseUp: onTabMouseUp?event=>onTabMouseUp(event,tabId):null,
+                    disabled:tabData.disabled
                 }))
             )
         ),

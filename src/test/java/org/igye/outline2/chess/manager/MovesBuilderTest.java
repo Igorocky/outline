@@ -1005,7 +1005,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "g8q");
+        ChessComponentView view = execCommand(movesBuilder, "g8Q");
         assertEquals("g8=Q", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanEscape() {
@@ -1020,7 +1020,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "c1r");
+        ChessComponentView view = execCommand(movesBuilder, "c1R");
         assertEquals("c1=R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckAndKingCanBeProtected() {
@@ -1035,7 +1035,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "c1r");
+        ChessComponentView view = execCommand(movesBuilder, "c1R");
         assertEquals("c1=R+", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnChangesWithCheckMate() {
@@ -1050,7 +1050,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "c1r");
+        ChessComponentView view = execCommand(movesBuilder, "c1R");
         assertEquals("c1=R#", getLastMove(view));
     }
     @Test public void moveNotationForStalemate() {
@@ -1065,7 +1065,7 @@ public class MovesBuilderTest {
                 .k(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "bc4");
+        ChessComponentView view = execCommand(movesBuilder, "Bc4");
         assertEquals("Bc4=", getLastMove(view));
     }
     @Test public void moveNotationForSimplePawnMoveWhenThePawnCapturesAndChangesWithCheckMate() {
@@ -1080,7 +1080,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "hg8q");
+        ChessComponentView view = execCommand(movesBuilder, "hg8Q");
         assertEquals("hxg8=Q#", getLastMove(view));
     }
     @Test public void moveNotationForEnPassantPawnMove() {
@@ -1112,7 +1112,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "ncd5");
+        ChessComponentView view = execCommand(movesBuilder, "Ncd5");
         assertNull(view.getCommandErrorMsg());
         assertEquals("Ncxd5", getLastMove(view));
     }
@@ -1128,7 +1128,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "n3d5");
+        ChessComponentView view = execCommand(movesBuilder, "N3d5");
         assertEquals("N3xd5", getLastMove(view));
     }
     @Test public void moveNotationDoesntIndicateCoordFromWhenThereAreFewPiecesButTheyAreOfDifferentTypes() {
@@ -1143,7 +1143,7 @@ public class MovesBuilderTest {
                 .K(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "qd5");
+        ChessComponentView view = execCommand(movesBuilder, "Qd5");
         assertEquals("Qxd5", getLastMove(view));
     }
     @Test public void moveNotationForShortCastling() {
@@ -1158,7 +1158,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1).R(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "kg1");
+        ChessComponentView view = execCommand(movesBuilder, "Kg1");
         assertEquals("0-0", getLastMove(view));
     }
     @Test public void moveNotationForLongCastling() {
@@ -1173,7 +1173,7 @@ public class MovesBuilderTest {
                 ._(a1).K(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "kc8");
+        ChessComponentView view = execCommand(movesBuilder, "Kc8");
         assertEquals("0-0-0", getLastMove(view));
     }
     @Test public void makeMoveFailsForIncorrecltyFormattedCommand() {
@@ -1188,8 +1188,8 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "k");
-        assertEquals("'k' - could not recognize move notation format.", view.getCommandErrorMsg());
+        ChessComponentView view = execCommand(movesBuilder, "K");
+        assertEquals("'K' - could not recognize move notation format.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsNotPresentOnTheBoard() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1203,8 +1203,8 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "ng4");
-        assertEquals("'ng4' - cannot find specified piece to move.", view.getCommandErrorMsg());
+        ChessComponentView view = execCommand(movesBuilder, "Ng4");
+        assertEquals("'Ng4' - cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfSpecifiedPieceIsPresentOnTheBoardButItsCoordinateIsSpecifiedIncorrectly() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1218,8 +1218,8 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "nbd6");
-        assertEquals("'nbd6' - cannot find specified piece to move.", view.getCommandErrorMsg());
+        ChessComponentView view = execCommand(movesBuilder, "Nbd6");
+        assertEquals("'Nbd6' - cannot find specified piece to move.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfThereAreMoreThanOnePieceAbleToDoSpecifiedMove() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
@@ -1233,7 +1233,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "nc6");
+        ChessComponentView view = execCommand(movesBuilder, "Nc6");
         assertEquals("Move is ambiguously specified.", view.getCommandErrorMsg());
     }
     @Test public void makeMoveFailsIfAPawnShouldBeReplacedButReplacementIsNotSpecified() {
@@ -1263,7 +1263,7 @@ public class MovesBuilderTest {
                 ._(a1)._(b1)._(c1)._(d1).K(e1)._(f1)._(g1)._(h1)
         ));
 
-        ChessComponentView view = execCommand(movesBuilder, "g8q");
+        ChessComponentView view = execCommand(movesBuilder, "g8Q");
         assertNull(view.getCommandErrorMsg());
         assertEquals("g8=Q+", getLastMove(view));
     }
@@ -1328,7 +1328,7 @@ public class MovesBuilderTest {
         );
 
         //2b
-        view = execCommand(movesBuilder, "ke7");
+        view = execCommand(movesBuilder, "Ke7");
         assertNull(view.getCommandErrorMsg());
         assertEquals("Ke7", getSelectedMove(view));
         assertEqualsByChessmenTypes(chessBoardBuilder()

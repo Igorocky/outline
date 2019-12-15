@@ -109,4 +109,32 @@ public class MoveTest {
         assertEquals(WHITE, new Move("r3k3/8/8/8/8/8/8/4K2R w Kq - 0 1").getColorOfWhoToMove());
         assertEquals(BLACK, new Move("r3k3/8/8/r3k3/8/8/8/4K2R b Kq - 0 1").getColorOfWhoToMove());
     }
+    @Test public void makeMove_distinguishesBPawnFromBishop() {
+        makeMove_distinguishesBPawnFromBishop(
+                "8/6r1/1kp4p/ppbb4/P7/6P1/5P1P/4R1K1 b - a3 0 37",
+                "bxa4",
+                "8/6r1/1kp4p/p1bb4/p7/6P1/5P1P/4R1K1 w - - 0 38"
+        );
+        makeMove_distinguishesBPawnFromBishop(
+                "7k/8/8/4b3/1p6/2P5/8/7K b - - 0 1",
+                "bxc3",
+                "7k/8/8/4b3/8/2p5/8/7K w - - 0 2"
+        );
+        makeMove_distinguishesBPawnFromBishop(
+                "7k/8/8/4b3/1p6/2P5/8/7K b - - 0 1",
+                "Bxc3",
+                "7k/8/8/8/1p6/2b5/8/7K w - - 0 2"
+        );
+    }
+
+    private void makeMove_distinguishesBPawnFromBishop(String startFen, String move, String expectedResultFen) {
+        //given
+        Move position = new Move(startFen);
+
+        //when
+        Move nextPosition = position.makeMove(move);
+
+        //then
+        assertEquals(expectedResultFen, nextPosition.toFen());
+    }
 }
