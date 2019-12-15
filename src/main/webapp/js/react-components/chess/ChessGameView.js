@@ -42,10 +42,10 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
         curNode.parsedPgn.positions.forEach(fullMove => {
             const whiteHalfMove = fullMove[0]
             const blackHalfMove = fullMove[1]
-            if (whiteHalfMove) {
+            if (blackHalfMove) {
                 allPuzzles.whiteToMove = allPuzzles.whiteToMove.concat(blackHalfMove.puzzleIds)
             }
-            if (blackHalfMove) {
+            if (whiteHalfMove) {
                 allPuzzles.blackToMove = allPuzzles.blackToMove.concat(whiteHalfMove.puzzleIds)
             }
         })
@@ -366,40 +366,44 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
     function renderPracticeTab() {
         const whiteToMoveSize = _.size(allPuzzles.whiteToMove)
-        const selectedPuzzleId = selectedPuzzleIdx < whiteToMoveSize
-            ? allPuzzles.whiteToMove[selectedPuzzleIdx]
-            : allPuzzles.blackToMove[selectedPuzzleIdx - whiteToMoveSize]
-        return RE.Container.row.left.top({},{},
-            RE.Container.col.top.left({},{},
-                "White to move:",
-                RE.ButtonGroup({orientation:"vertical"},
-                    allPuzzles.whiteToMove.map((puzzleId,idx) => RE.Button(
-                        {
-                            key: puzzleId,
-                            style:{backgroundColor:idx==selectedPuzzleIdx?"blue":null},
-                            onClick: () => setSelectedPuzzleIdx(idx),
-                        },
-                        idx+1
-                    ))
+        if (whiteToMoveSize == 0 && _.size(allPuzzles.blackToMove) == 0) {
+            return "This game doesn't have puzzles."
+        } else {
+            const selectedPuzzleId = selectedPuzzleIdx < whiteToMoveSize
+                ? allPuzzles.whiteToMove[selectedPuzzleIdx]
+                : allPuzzles.blackToMove[selectedPuzzleIdx - whiteToMoveSize]
+            return RE.Container.row.left.top({},{},
+                RE.Container.col.top.left({},{},
+                    "White to move:",
+                    RE.ButtonGroup({orientation:"vertical"},
+                        allPuzzles.whiteToMove.map((puzzleId,idx) => RE.Button(
+                            {
+                                key: puzzleId,
+                                style:{backgroundColor:idx==selectedPuzzleIdx?"blue":null},
+                                onClick: () => setSelectedPuzzleIdx(idx),
+                            },
+                            idx+1
+                        ))
+                    ),
+                    "Black to move:",
+                    RE.ButtonGroup({orientation:"vertical"},
+                        allPuzzles.blackToMove.map((puzzleId,idx) => RE.Button(
+                            {
+                                key: puzzleId,
+                                style:{backgroundColor:(idx+whiteToMoveSize)==selectedPuzzleIdx?"blue":null},
+                                onClick: () => setSelectedPuzzleIdx(whiteToMoveSize+idx),
+                            },
+                            idx+1
+                        ))
+                    )
                 ),
-                "Black to move:",
-                RE.ButtonGroup({orientation:"vertical"},
-                    allPuzzles.blackToMove.map((puzzleId,idx) => RE.Button(
-                        {
-                            key: puzzleId,
-                            style:{backgroundColor:(idx+whiteToMoveSize)==selectedPuzzleIdx?"blue":null},
-                            onClick: () => setSelectedPuzzleIdx(whiteToMoveSize+idx),
-                        },
-                        idx+1
-                    ))
-                )
-            ),
-            re(ChessComponent, {
-                key: selectedPuzzleId,
-                match:{params: {puzzleId: selectedPuzzleId}},
-                showPracticeTab:true
-            })
-        )
+                re(ChessComponent, {
+                    key: selectedPuzzleId,
+                    match:{params: {puzzleId: selectedPuzzleId}},
+                    showPracticeTab:true
+                })
+            )
+        }
     }
 
     function renderTabs() {

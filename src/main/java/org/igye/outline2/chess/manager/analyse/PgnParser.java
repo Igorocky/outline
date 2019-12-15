@@ -49,6 +49,16 @@ public class PgnParser {
         return parsedPgnDto;
     }
 
+    public static String getAttrValue(String pgn, String attrName) {
+        final String regex = "\\[" + attrName + "\\s\"([^\"]*)\"\\]";
+        final Matcher matcher = Pattern.compile(regex).matcher(pgn);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
+    }
+
     private static void setFen(String pgnStr, ParsedPgnDto parsedPgnDto) {
         String initialPositionFen = getAttrValue(pgnStr, "FEN");
         initialPositionFen = initialPositionFen != null ? initialPositionFen : START_POSITION_FEN;
@@ -91,15 +101,5 @@ public class PgnParser {
             idx++;
         }
         return sb.toString();
-    }
-
-    private static String getAttrValue(String pgn, String attrName) {
-        final String regex = "\\[" + attrName + "\\s\"([^\"]*)\"\\]";
-        final Matcher matcher = Pattern.compile(regex).matcher(pgn);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            return null;
-        }
     }
 }

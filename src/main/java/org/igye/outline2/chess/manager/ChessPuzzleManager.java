@@ -64,6 +64,10 @@ public class ChessPuzzleManager {
         game.setTagSingleValue(TagIds.CHESS_GAME_PGN, pgn);
         ParsedPgnDto parsedPgnDto = PgnParser.parsePgn(pgn);
         game.setTagSingleValue(TagIds.CHESS_GAME_PARSED_PGN, objectMapper.writeValueAsString(parsedPgnDto));
+        String url = PgnParser.getAttrValue(pgn, "Link");
+        if (url != null) {
+            game.setTagSingleValue(TagIds.CHESS_GAME_URL, url);
+        }
     }
 
     @RpcMethod
