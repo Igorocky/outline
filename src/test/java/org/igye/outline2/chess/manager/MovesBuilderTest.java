@@ -1159,7 +1159,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "Kg1");
-        assertEquals("0-0", getLastMove(view));
+        assertEquals("O-O", getLastMove(view));
     }
     @Test public void moveNotationForLongCastling() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(BLACK, b->b
@@ -1174,7 +1174,7 @@ public class MovesBuilderTest {
         ));
 
         ChessComponentView view = execCommand(movesBuilder, "Kc8");
-        assertEquals("0-0-0", getLastMove(view));
+        assertEquals("O-O-O", getLastMove(view));
     }
     @Test public void makeMoveFailsForIncorrecltyFormattedCommand() {
         MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b

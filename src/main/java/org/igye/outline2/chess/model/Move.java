@@ -192,14 +192,14 @@ public final class Move {
     public Move makeMove(String notation) throws ParseMoveException {
         MoveNotationParts moveNotationParts = new MoveNotationParts();
         moveNotationParts.setNotation(notation);
-        if ("O-O".equals(notation)) {
+        if ("0-0".equals(notation) || "O-O".equals(notation)) {
             moveNotationParts.setPieceShape(PieceShape.KING);
             if (getColorOfWhoToMove() == ChessmanColor.WHITE) {
                 moveNotationParts.setCellToMoveTo(G1);
             } else {
                 moveNotationParts.setCellToMoveTo(G8);
             }
-        } else if ("O-O-O".equals(notation)) {
+        } else if ("0-0-0".equals(notation) || "O-O-O".equals(notation)) {
             moveNotationParts.setPieceShape(PieceShape.KING);
             if (getColorOfWhoToMove() == ChessmanColor.WHITE) {
                 moveNotationParts.setCellToMoveTo(C1);
@@ -631,9 +631,9 @@ public final class Move {
         if (move.getFrom() == null) {
             return "start-position";
         } else if (move.isShortCastling()) {
-            return "0-0";
+            return "O-O";
         } else if (move.isLongCastling()) {
-            return "0-0-0";
+            return "O-O-O";
         }
         StringBuilder sb = new StringBuilder();
         sb.append(whatMoved(move));
