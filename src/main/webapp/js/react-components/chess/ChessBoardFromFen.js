@@ -53,23 +53,25 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipp
         const dy = from.y-to.y
         const length = Math.floor(Math.sqrt(dx*dx+dy*dy))
         const handleLength = length-triangleLength;
-        let angle = -Math.atan(dy/dx)*180/Math.PI
-        console.log("dx = " + JSON.stringify(dx));
-        console.log("dy = " + JSON.stringify(dy));
-        if (dx < 0) {
-            if (dy < 0) {//+-
-                angle = -angle
-            } else if (dy > 0) {//++
-                angle = angle - 90
-            } else {
-                // angle = -angle
-            }
-        } else if (dx > 0) {
-            if (dy < 0) {//--
-                angle = angle + 90
-            } else if (dy > 0)  {//-+
+        let angle = Math.atan(dy/dx)*180/Math.PI
+        // const possibleMoves = [
+        //     {depth: 1, move: "e4e6"},
+        //     {depth: 11, move: "e4f6"},
+        //     {depth: 12, move: "e4g5"},
+        //     {depth: 2, move: "e4g4"},
+        //     {depth: 21, move: "e4g3"},
+        //     {depth: 22, move: "e4f2"},
+        //     {depth: 3, move: "e4e2"},
+        //     {depth: 31, move: "e4d2"},
+        //     {depth: 32, move: "e4c3"},
+        //     {depth: 4, move: "e4c4"},
+        //     {depth: 41, move: "e4c5"},
+        //     {depth: 42, move: "e4d6"},
+        // ]
+        if (dx >= 0) {
+            if (dy == 0) {
                 angle = -angle+180
-            } else {//-0
+            } else {
                 angle = angle+180
             }
         }
