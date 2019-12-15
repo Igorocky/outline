@@ -14,8 +14,12 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
                 {name: currTabId == PUZZLES_TO_REPEAT_TABS.puzzles.id ? "puzzles-to-repeat" : "puzzle-comments"},
                 res => setReportData(res)
             )
+            document.title = currTabId == PUZZLES_TO_REPEAT_TABS.puzzles.id
+                ? "Puzzles to repeat"
+                : "Puzzle comments"
         } else {
             setReportData(undefined)
+            document.title = APP_CONFIG_NAME
         }
     }, [currTabId])
 

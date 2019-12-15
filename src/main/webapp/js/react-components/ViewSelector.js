@@ -4,12 +4,13 @@ const VIEWS = [
     {name:"Puzzles To Repeat",
         component: PuzzlesToRepeatReport, path: [PATH.puzzlesToRepeat, PATH.puzzlesToRepeatWithTab]},
     {name:"Chessboard",
-        component: ChessComponent, props:{showPracticeTab:true}, path: [PATH.chessboard, PATH.chessboardWithPractice]},
+        component: ChessComponent, props:{showPracticeTab:true, pageTitle: "Chessboard editor"},
+        path: [PATH.chessboard, PATH.chessboardWithPractice]},
     {name:"Admin",
         component: AdminView, path: [PATH.admin]},
 ]
 
-const ViewSelector = () => {
+const ViewSelector = ({}) => {
     const [sideMenuIsOpen, setSideMenuIsOpen] = useState(false)
     const [redirect, setRedirect] = useState(null)
     const actionsContainerRef = React.useRef(null)

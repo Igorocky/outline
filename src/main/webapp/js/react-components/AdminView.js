@@ -1,6 +1,10 @@
 
-const AdminView = () => {
+const AdminView = ({}) => {
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
+
+    useEffect(() => {
+        document.title = "Admin"
+    }, [])
 
     function doBackup() {
         openConfirmActionDialog({

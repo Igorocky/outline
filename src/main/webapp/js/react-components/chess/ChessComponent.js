@@ -4,9 +4,15 @@ const CHESS_COMPONENT_STAGE = {
     practice: "PRACTICE_SEQUENCE",
 }
 
-const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel}) => {
+const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendCreated, onSave, onCancel, pageTitle}) => {
     const [state, setChessComponentState] = useState(null)
     const puzzleId = getByPath(match, ["params", "puzzleId"])
+
+    useEffect(() => {
+        if (pageTitle) {
+            document.title = pageTitle
+        }
+    }, [])
 
     function processBackendStateCreated(backend) {
         if (onBackendCreated) {

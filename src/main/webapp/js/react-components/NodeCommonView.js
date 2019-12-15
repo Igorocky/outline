@@ -9,10 +9,14 @@ const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
 
 const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
     const [curNode, setCurNode] = useState(null)
+    const pageTitle = getPageTitle()
 
-    function loadNodeById(nodeId) {
-        getNode({id:nodeId, depth: 1, includeCanPaste: true, includePath: true}, resp => setCurNode(resp))
-    }
+    useEffect(() => {
+        document.title = pageTitle
+        return () => {
+            document.title = APP_CONFIG_NAME
+        }
+    }, [pageTitle])
 
     useEffect(() => {
         const nodeIdFromUrl = getByPath(match, ["params", "id"], null)
@@ -22,6 +26,22 @@ const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
             loadNodeById(null)
         }
     }, [match])
+
+    function getPageTitle() {
+        if (!curNode) {
+            return APP_CONFIG_NAME
+        } else {
+            if (!curNode.id) {
+                return "root"
+            } else {
+                return getTagSingleValue(curNode, TAG_ID.name, curNode[NODE.objectClass])
+            }
+        }
+    }
+
+    function loadNodeById(nodeId) {
+        getNode({id:nodeId, depth: 1, includeCanPaste: true, includePath: true}, resp => setCurNode(resp))
+    }
 
     function getCurrNodeId() {
         return curNode?curNode[NODE.id]:null
