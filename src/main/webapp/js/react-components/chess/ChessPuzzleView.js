@@ -30,6 +30,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
     const [newHistoryRecord, setNewHistoryRecord] = useState(null)
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [puzzleHistory, setPuzzleHistory] = useState(null)
+    const fenRef = useRef(null)
 
     useEffect(() => loadPuzzleHistory(),[])
 
@@ -80,7 +81,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderFen() {
         const puzzleFen = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_FEN);
-        return RE.Paper({style:{paddingLeft:"10px", marginBottom:"10px"}},
+        return RE.Paper({style:{paddingLeft:"10px", marginBottom:"10px"}, ref:fenRef},
             RE.Container.row.left.center({},{},
                 "FEN",
                 re(EditableTextField,{
@@ -113,7 +114,11 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderPgn() {
         const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
-        return RE.Paper({style:{paddingLeft:"5px", paddingRight:"5px", marginBottom:"10px"}},
+        return RE.Paper(
+            {
+                style:{paddingLeft:"5px", paddingRight:"5px", marginBottom:"10px"},
+                onDoubleClick: () => window.scrollTo(0, fenRef.current.offsetTop)
+            },
             RE.Container.row.left.center({style:{padding:"5px"}},{},
                 "PGN",
                 re(EditablePgnViewer, {
