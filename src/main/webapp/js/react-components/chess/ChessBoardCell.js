@@ -1,4 +1,4 @@
-const cellSize = 50;
+const cellSize = 60;
 const codeToImgArr = {
     9817:"Chess_plt45",
     9816:"Chess_nlt45",

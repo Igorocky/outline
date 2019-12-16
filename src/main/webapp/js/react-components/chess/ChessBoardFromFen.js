@@ -43,9 +43,10 @@ const ChessBoardFromFen = React.memo( ({fen, moveFromTo, wPlayer, bPlayer, flipp
         }
     }
 
-    const triangleLength = 35
+    const cellSizeFromFenCoeff = cellSizeFromFen/45
+    const triangleLength = 35*cellSizeFromFenCoeff
     const triangleHeight = triangleLength
-    const lineWidth = 15
+    const lineWidth = 15*cellSizeFromFenCoeff
     const halfLineWidth = Math.floor(lineWidth/2);
     const halfTriangleHeight = Math.floor(triangleHeight/2);
     function renderArrow({from, to}) {
