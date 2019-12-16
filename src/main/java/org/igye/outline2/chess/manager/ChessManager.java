@@ -115,7 +115,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @Override
     public ChessComponentResponse toView() {
         final ChessComponentResponse response = stateManager.toView();
-        response.getChessComponentView().setPgnHashCode(getPgn().hashCode());
+        response.getChessComponentView().setPgnHashCode(getPgn());
         return response;
     }
 
