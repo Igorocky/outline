@@ -117,6 +117,35 @@ const InitialPosition = ({backend, availableChessmanTypes, colorToMove,
         }
     }
 
+    const [pgnTextFieldValue, setPgnTextFieldValue] = useState(null)
+    function renderLoadPgnTextArea() {
+        function onKeyDown(event) {
+            if (event.keyCode == 27) {
+                setPgnTextFieldValue(null)
+            }
+        }
+        if (!pgnTextFieldValue) {
+            return RE.Button({onClick: () => setPgnTextFieldValue(" ")}, "Load PGN")
+        } else {
+            return RE.Container.col.top.right({},{style:{marginBottom:"5px"}},
+                RE.TextField({
+                    autoFocus: true,
+                    multiline: true,
+                    rowsMax: 30,
+                    style: {width:"550px"},
+                    onKeyDown: onKeyDown,
+                    value: pgnTextFieldValue?pgnTextFieldValue:"",
+                    variant: "outlined",
+                    onChange: e => setPgnTextFieldValue(e.target.value),
+                }),
+                RE.Button({color:"primary", variant:"contained", onClick: () => backend.call(
+                        "loadFromPgn",
+                        {pgn:pgnTextFieldValue, tabToOpen:CHESS_COMPONENT_STAGE.moves},
+                )}, "Load")
+            )
+        }
+    }
+
     return RE.Container.col.top.left({},{},
         renderInitialSetupButtons(),
         renderPiecesToSelectFrom(),
@@ -124,5 +153,6 @@ const InitialPosition = ({backend, availableChessmanTypes, colorToMove,
         renderCastlingAvailability(),
         renderFen(),
         renderSetFromFenTextField(),
+        renderLoadPgnTextArea(),
     )
 }
