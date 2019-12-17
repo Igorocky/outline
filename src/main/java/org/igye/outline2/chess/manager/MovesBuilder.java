@@ -24,10 +24,7 @@ import org.igye.outline2.exceptions.OutlineException;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -35,14 +32,7 @@ import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
-import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
-import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
-import static org.igye.outline2.chess.model.ChessmanType.BLACK_QUEEN;
-import static org.igye.outline2.chess.model.ChessmanType.BLACK_ROOK;
-import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
-import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
-import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
-import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
+import static org.igye.outline2.chess.model.ChessmanType.*;
 
 public class MovesBuilder implements ChessComponentStateManager {
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
@@ -59,6 +49,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
     private static final String SET_DEPTH_CMD = "d";
     private static final String SET_MOVE_TIME_CMD = "t";
+    private static final String TEXT_MODE_CMD = "tm";
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
@@ -274,6 +265,40 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void renderChessboard(ChessComponentView chessComponentView) {
+        if (state.isTextMode()) {
+            renderTextChessboard(chessComponentView);
+        } else {
+            renderGraphicalChessboard(chessComponentView);
+        }
+    }
+
+    private void renderTextChessboard(ChessComponentView chessComponentView) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("White:\n");
+        addLocationsOf(sb, "P", WHITE_PAWN);
+        addLocationsOf(sb, "N", WHITE_KNIGHT);
+        addLocationsOf(sb, "B", WHITE_BISHOP);
+        addLocationsOf(sb, "R", WHITE_ROOK);
+        addLocationsOf(sb, "Q", WHITE_QUEEN);
+        addLocationsOf(sb, "K", WHITE_KING);
+        sb.append("\n\nBlack:\n");
+        addLocationsOf(sb, "P", BLACK_PAWN);
+        addLocationsOf(sb, "N", BLACK_KNIGHT);
+        addLocationsOf(sb, "B", BLACK_BISHOP);
+        addLocationsOf(sb, "R", BLACK_ROOK);
+        addLocationsOf(sb, "Q", BLACK_QUEEN);
+        addLocationsOf(sb, "K", BLACK_KING);
+        chessComponentView.setChessBoardText(sb.toString());
+    }
+
+    private void addLocationsOf(StringBuilder sb, String prefix, ChessmanType chessmanType) {
+        sb.append("\n").append(prefix).append(":");
+        getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
+                .sorted(Comparator.comparingInt(c -> (c.getY() * 8 + c.getX())))
+                .forEach(cell -> sb.append(" ").append(ChessUtils.coordsToString(cell)));
+    }
+
+    private void renderGraphicalChessboard(ChessComponentView chessComponentView) {
         chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
         final Move currMove = state.getCurrPosition().getMove();
         final ChessBoardView chessBoardView = chessComponentView.getChessBoard();
@@ -341,6 +366,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands.put(SET_MOVE_TIME_CMD, args -> {
             final int moveTime = Integer.parseInt(args[1]);
             state.setMovetimeSec((1 <= moveTime && moveTime <= MAX_MOVE_TIME) ? moveTime : MAX_MOVE_TIME);
+        });
+        commands.put(TEXT_MODE_CMD, args -> {
+            state.setTextMode(!state.isTextMode());
         });
     }
 

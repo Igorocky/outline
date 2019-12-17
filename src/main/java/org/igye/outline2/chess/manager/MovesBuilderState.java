@@ -26,6 +26,7 @@ public class MovesBuilderState {
     private int depth = MAX_DEPTH;
     private int movetimeSec = MAX_MOVE_TIME;
     private MovesBuilderPracticeState practiceState;
+    private boolean textMode;
 
     public MovesBuilderState(Move initialPosition) {
         this.initialPosition = new GamePosition(initialPosition);

@@ -14,6 +14,7 @@ import org.igye.outline2.chess.manager.ChessComponentStage;
 @Builder
 public class ChessComponentView {
     private ChessBoardView chessBoard;
+    private String chessBoardText;
     private ChessComponentStage tab;
     private InitialPositionView availableChessmanTypes;
     private HistoryView history;
