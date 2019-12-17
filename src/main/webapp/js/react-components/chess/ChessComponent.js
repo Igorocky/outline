@@ -103,7 +103,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     function renderLeftPanel() {
         return RE.Container.col.top.left({},{style:{marginBottom:"5px"}},
             renderChessBoard(),
-            state.tab==CHESS_COMPONENT_STAGE.moves?renderCommandInputField():null
+            renderCommandInputField()
         )
     }
 

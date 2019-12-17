@@ -69,13 +69,10 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (commands.containsKey(parsedCommand[0])) {
             commands.get(parsedCommand[0]).accept(parsedCommand);
         } else {
-            if (canMakeMove()) {
-                try {
-                    state.appendSelectedMoveToHistory(state.getCurrPosition().getMove().makeMove(command));
-                    generateAutoresponseIfNecessary();
-                } catch (ParseMoveException ex) {
-                    state.setCommandErrorMsg(ex.getMessage());
-                }
+            try {
+                processSelectedMove(state.getCurrPosition().getMove().makeMove(command));
+            } catch (ParseMoveException ex) {
+                state.setCommandErrorMsg(ex.getMessage());
             }
         }
         return toView();
@@ -107,9 +104,6 @@ public class MovesBuilder implements ChessComponentStateManager {
                         state.setChoseChessmanTypeDialogOpened(true);
                     } else {
                         processSelectedMove(movesChosen.get(0));
-                        if (state.getPracticeState() == null) {
-                            generateAutoresponseIfNecessary();
-                        }
                     }
                 } else {
                     state.setPreparedMoves(null);
@@ -242,6 +236,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             if (state.getCurrPosition().getChildren().isEmpty()) {
                 state.appendSelectedMoveToHistory(selectedMove);
+                generateAutoresponseIfNecessary();
             } else {
                 state.setPreparedMoves(null);
                 state.setChoseChessmanTypeDialogOpened(false);
