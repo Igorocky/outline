@@ -274,6 +274,25 @@ public final class Move {
         .append(fullmoveNumber).toString();
     }
 
+    public boolean wasPawnPromotion() {
+        return getPrevMove() != null
+                && getPrevMove().getPieceAt(getFrom()).getPieceShape() == PieceShape.PAWN
+                && getPieceAt(getTo()).getPieceShape() != PieceShape.PAWN;
+    }
+
+    public String getEnPassantTargetSquare() {
+        if (prevMove != null) {
+            if (prevMove.isChessmanOnCell(PieceShape.PAWN, from) && 2 == Math.abs(from.getY() - to.getY())) {
+                int dy = getColorOfWhoMadeMove() == ChessmanColor.WHITE ? -1 : 1;
+                return coordsToString(to.plusY(dy));
+            } else {
+                return "-";
+            }
+        } else {
+            return enPassantTargetSquare;
+        }
+    }
+
     private Move makeMove(MoveNotationParts mnp) {
         ChessmanColor colorToMove = getColorOfWhoMadeMove().invert();
         Set<CellCoords> availableCellsFrom = findAll(c ->
@@ -314,19 +333,6 @@ public final class Move {
             throw new OutlineException("result.size() != 1");
         }
         return result.get(0);
-    }
-
-    public String getEnPassantTargetSquare() {
-        if (prevMove != null) {
-            if (prevMove.isChessmanOnCell(PieceShape.PAWN, from) && 2 == Math.abs(from.getY() - to.getY())) {
-                int dy = getColorOfWhoMadeMove() == ChessmanColor.WHITE ? -1 : 1;
-                return coordsToString(to.plusY(dy));
-            } else {
-                return "-";
-            }
-        } else {
-            return enPassantTargetSquare;
-        }
     }
 
     private String getCastlingAvailability() {
@@ -575,14 +581,6 @@ public final class Move {
         newMove.blackKingCastleAvailable = (prevMove == null || prevMove.blackKingCastleAvailable)
                         && isBlackHRookOnInitialCell(newMove)
                         && isBlackKingOnInitialCell(newMove);
-
-//        System.out.println("change of castling abilities ---------------------------------------------");
-//        System.out.print("prevMove = " + ChessUtils.moveToString(prevMove));
-//        System.out.println("   newMove = " + ChessUtils.moveToString(newMove));
-//        System.out.println("whiteQueenCastleAvailable: " + prevMove.whiteQueenCastleAvailable + " -> " + newMove.whiteQueenCastleAvailable);
-//        System.out.println("whiteKingCastleAvailable: " + prevMove.whiteKingCastleAvailable + " -> " + newMove.whiteKingCastleAvailable);
-//        System.out.println("blackQueenCastleAvailable: " + prevMove.blackQueenCastleAvailable + " -> " + newMove.blackQueenCastleAvailable);
-//        System.out.println("blackKingCastleAvailable: " + prevMove.blackKingCastleAvailable + " -> " + newMove.blackKingCastleAvailable);
     }
 
     private boolean isWhiteARookOnInitialCell(Move move) {
@@ -641,7 +639,7 @@ public final class Move {
             sb.append("x");
         }
         sb.append(coordsToString(move.getTo()));
-        if (wasPawnPromotion(move)) {
+        if (move.wasPawnPromotion()) {
             sb.append("=").append(chessmanShapeToShortSymbol(move.getPieceAt(move.getTo())));
         }
         if (move.isEnPassant()) {
@@ -655,11 +653,6 @@ public final class Move {
             sb.append("+");
         }
         return sb.toString();
-    }
-
-    private static boolean wasPawnPromotion(Move move) {
-        return move.getPrevMove().getPieceAt(move.getFrom()).getPieceShape() == PieceShape.PAWN
-                && move.getPieceAt(move.getTo()).getPieceShape() != PieceShape.PAWN;
     }
 
     private static boolean wasCapture(Move move) {

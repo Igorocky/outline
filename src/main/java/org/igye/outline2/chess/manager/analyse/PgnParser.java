@@ -72,7 +72,11 @@ public class PgnParser {
                 } else {
                     currMove = currMove.makeMove(positionDto.getNotation());
                     positionDto.setFen(currMove.toFen());
-                    positionDto.setMove(coordsToString(currMove.getFrom()) + coordsToString(currMove.getTo()));
+                    String moveAlgNotation = coordsToString(currMove.getFrom()) + coordsToString(currMove.getTo());
+                    if (currMove.wasPawnPromotion()) {
+                        moveAlgNotation += currMove.getPieceAt(currMove.getTo()).getSymbol().toLowerCase();
+                    }
+                    positionDto.setMove(moveAlgNotation);
                 }
             }
         }
