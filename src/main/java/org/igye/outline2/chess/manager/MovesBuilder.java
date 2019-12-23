@@ -146,6 +146,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
+    public ChessComponentResponse setAutoResponseForOpponent() {
+        state.setAutoResponseForColor(state.getCurrPosition().getMove().getColorOfWhoMadeMove());
+        return toView();
+    }
+
+    @Override
     public ChessComponentResponse toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(state.getPracticeState() == null
@@ -236,12 +242,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             if (state.getCurrPosition().getChildren().isEmpty()) {
                 state.appendSelectedMoveToHistory(selectedMove);
-                generateAutoresponseIfNecessary();
             } else {
                 state.setPreparedMoves(null);
                 state.setChoseChessmanTypeDialogOpened(false);
             }
         }
+        generateAutoresponseIfNecessary();
     }
 
     private void setPracticeState(ChessComponentView chessComponentView) {
@@ -444,8 +450,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void generateAutoresponseIfNecessary() {
-        if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove()) {
-            execChessCommand(GENERATE_NEXT_MOVE_CMD);
+        if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove().invert()) {
+            if (state.getPracticeState() != null && !state.getCurrPosition().getChildren().isEmpty()) {
+                processSelectedMove(state.getCurrPosition().getChildren().get(0).getMove());
+            } else {
+                execChessCommand(GENERATE_NEXT_MOVE_CMD);
+            }
         }
     }
 

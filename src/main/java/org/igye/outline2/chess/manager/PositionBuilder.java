@@ -161,6 +161,12 @@ public class PositionBuilder implements ChessComponentStateManager {
         return null;
     }
 
+    @Override
+    public ChessComponentResponse setAutoResponseForOpponent() {
+        notSupported();
+        return null;
+    }
+
     public Move getInitialPosition() {
         return new Move(
                 chessBoard,

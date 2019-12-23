@@ -46,7 +46,8 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
             backend.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
-                tabToOpen:"PRACTICE_SEQUENCE"
+                tabToOpen:"PRACTICE_SEQUENCE",
+                autoResponse:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE),
             })
         })
     }

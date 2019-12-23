@@ -195,7 +195,7 @@ public class ChessTestUtils {
                 chessman,
                 ChessmanType::getPieceShape,
                 PieceShape::getSymbol,
-                s -> "  "+s,
+                s -> "  "+(chessman.getPieceColor() == ChessmanColor.WHITE ? s.toUpperCase() : s.toLowerCase()),
                 "  ."
         );
     }

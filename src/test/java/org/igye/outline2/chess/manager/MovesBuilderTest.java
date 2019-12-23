@@ -1643,7 +1643,7 @@ public class MovesBuilderTest {
 
         positionDto = positions.get(1).get(1);
         assertEquals("d1=Q", positionDto.getNotation());
-        assertEquals("d2d1", positionDto.getMove());
+        assertEquals("d2d1q", positionDto.getMove());
         assertEquals("K7/8/8/2N5/8/5p2/8/k2q4 w - - 0 3", positionDto.getFen());
 
         positionDto = positions.get(2).get(0);
@@ -1710,7 +1710,8 @@ public class MovesBuilderTest {
         ChessManager chessManager = new ChessManager();
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
-                ChessComponentStage.PRACTICE_SEQUENCE
+                ChessComponentStage.PRACTICE_SEQUENCE,
+                false
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -1852,7 +1853,8 @@ public class MovesBuilderTest {
         ChessManager chessManager = new ChessManager();
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
-                ChessComponentStage.PRACTICE_SEQUENCE
+                ChessComponentStage.PRACTICE_SEQUENCE,
+                false
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -2006,12 +2008,13 @@ public class MovesBuilderTest {
         assertFalse(view.getPractiseState().isIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
-    @Test public void whenInPracticeModeAndSomeNonSelectedCellWasClickedThisDoenstFailTheSequence() {
+    @Test public void whenInPracticeModeAndSomeNonSelectedCellWasClickedThisDoesntFailTheSequence() {
         //given
         ChessManager chessManager = new ChessManager();
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
-                ChessComponentStage.PRACTICE_SEQUENCE
+                ChessComponentStage.PRACTICE_SEQUENCE,
+                false
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -2133,6 +2136,98 @@ public class MovesBuilderTest {
 
         chessManager.cellLeftClicked(d7);
         view = chessManager.cellLeftClicked(e7).getChessComponentView();
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6).R(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4).K(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+        assertFalse(view.getPractiseState().isFailed());
+        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertTrue(view.getPractiseState().isWaitingForNextMove());
+
+        chessManager.cellLeftClicked(f4);
+        view = chessManager.cellLeftClicked(f5).getChessComponentView();
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6).R(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5).K(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+        assertFalse(view.getPractiseState().isFailed());
+        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertFalse(view.getPractiseState().isWaitingForNextMove());
+    }
+    @Test public void whenInPracticeModeAutoresponseMakesMovesForTheOpponent() {
+        //given
+        ChessManager chessManager = new ChessManager();
+        ChessComponentView view = chessManager.loadFromPgn(
+                "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
+                ChessComponentStage.PRACTICE_SEQUENCE,
+                true
+        ).getChessComponentView();
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7).k(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3).R(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2).K(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+        assertFalse(view.getPractiseState().isFailed());
+        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertTrue(view.getPractiseState().isWaitingForNextMove());
+
+        //when/then
+        chessManager.cellLeftClicked(f3);
+        view = chessManager.cellLeftClicked(f6).getChessComponentView();
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7).k(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6).R(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2).K(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+        assertFalse(view.getPractiseState().isFailed());
+        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertTrue(view.getPractiseState().isWaitingForNextMove());
+
+        chessManager.cellLeftClicked(g2);
+        view = chessManager.cellLeftClicked(f3).getChessComponentView();
+        assertEqualsByChessmenTypes(chessBoardBuilder()
+                ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                ._(a7)._(b7)._(c7).k(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6).R(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3).K(f3)._(g3)._(h3)
+                ._(a2)._(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                ._(a1)._(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+                .build(), view
+        );
+        assertFalse(view.getPractiseState().isFailed());
+        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertTrue(view.getPractiseState().isWaitingForNextMove());
+
+        chessManager.cellLeftClicked(f3);
+        view = chessManager.cellLeftClicked(f4).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
                 ._(a7)._(b7)._(c7)._(d7).k(e7)._(f7)._(g7)._(h7)

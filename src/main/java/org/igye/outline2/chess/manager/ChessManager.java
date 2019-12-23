@@ -39,13 +39,18 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen) {
+    public ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen,
+                                              @Default("false") boolean autoResponse) {
         final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
         this.stateManager = movesBuilder;
         if (!StringUtils.isBlank(pgn)) {
             movesBuilder.loadFromPgn(pgn);
         }
-        return chessTabSelected(tabToOpen);
+        chessTabSelected(tabToOpen);
+        if (autoResponse) {
+            movesBuilder.setAutoResponseForOpponent();
+        }
+        return toView();
     }
 
     @Override
@@ -89,6 +94,12 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @Override
     public ChessComponentResponse showCorrectMove() {
         stateManager.showCorrectMove();
+        return toView();
+    }
+
+    @Override
+    public ChessComponentResponse setAutoResponseForOpponent() {
+        stateManager.setAutoResponseForOpponent();
         return toView();
     }
 

@@ -25,6 +25,20 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
     })
 }
 
+const AutoResponseSwitch = withStyles({
+    switchBase: {
+        color: "lightgrey",
+        '&$checked': {
+            color: "limegreen",
+        },
+        '&$checked + $track': {
+            backgroundColor: "limegreen",
+        },
+    },
+    checked: {},
+    track: {},
+})(RE.Switch)
+
 const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => {
     const [newCommentText, setNewCommentText] = useState(null)
     const [newHistoryRecord, setNewHistoryRecord] = useState(null)
@@ -44,6 +58,10 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function isPaused() {
         return "true" == getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PAUSED)
+    }
+
+    function isAutoResponseEnabled() {
+        return "true" == getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE)
     }
 
     function renderUrl() {
@@ -123,7 +141,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 "PGN",
                 re(EditablePgnViewer, {
                     value:puzzlePgn,
-                    textAreaStyle: {width:"1000px", margin:"0px 0px 10px 10px"},
+                    autoResponse:isAutoResponseEnabled(),
+                    textAreaStyle: {width:"600px", margin:"0px 0px 10px 10px"},
                     onSave: ({newValue, onSaved}) => doRpcCall(
                         "rpcSavePgnForPuzzle",
                         {puzzleId:getCurrPuzzleId(), pgn:newValue},
@@ -135,7 +154,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                     popupActions: puzzlePgn?RE.Fragment({},
                         iconButton({iconName: "delete", onClick: deletePgn}),
                     ):null,
-                })
+                }),
+                renderAutoResponseIsEnabled()
             )
         )
     }
@@ -330,6 +350,12 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function toggleAutoResponse() {
+        setSingleTagForNode(
+            getCurrPuzzleId(), TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE, !isAutoResponseEnabled(), reloadCurrNode
+        )
+    }
+
     function renderPaused() {
         return RE.Container.row.left.center({},{},
             RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}, onClick: togglePaused},
@@ -338,6 +364,19 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 checked: isPaused(),
                 onChange: togglePaused,
             })
+        )
+    }
+
+    function renderAutoResponseIsEnabled() {
+        return RE.Container.row.left.center({},{},
+            re(AutoResponseSwitch,{
+                checked: isAutoResponseEnabled(),
+                onChange: toggleAutoResponse,
+                style:{color:isAutoResponseEnabled()?"limegreen":"lightgrey"}
+            }),
+            RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey", cursor:"pointer"},
+                    onClick: toggleAutoResponse},
+                "Auto-response")
         )
     }
 

@@ -13,6 +13,7 @@ public interface ChessComponentStateManager {
     ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong);
     ChessComponentResponse setPositionFromFen(String fen);
     ChessComponentResponse showCorrectMove();
+    ChessComponentResponse setAutoResponseForOpponent();
 
     default void notSupported() {
         throw new OutlineException("Method not supported.");
