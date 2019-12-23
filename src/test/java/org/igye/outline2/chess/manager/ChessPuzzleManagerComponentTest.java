@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.igye.outline2.common.OutlineUtils.MILLIS_IN_DAY;
@@ -38,8 +40,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
     @Autowired
     private TestClock testClock;
 
-    @Test
-    public void it_is_possible_to_create_and_update_puzzle_comments() throws ScriptException, NoSuchMethodException, IOException {
+    @Test public void it_is_possible_to_create_and_update_puzzle_comments() throws ScriptException, NoSuchMethodException, IOException {
         //when
         UUID puzzleId = createNode(null, NodeClasses.CHESS_PUZZLE);
 
@@ -61,9 +62,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
 
 
     }
-
-    @Test
-    public void rpcSaveChessPuzzleAttempt_saves_and_updates_attempt_info() throws NoSuchMethodException, ScriptException, IOException {
+    @Test public void rpcSaveChessPuzzleAttempt_saves_and_updates_attempt_info() throws NoSuchMethodException, ScriptException, IOException {
         //given
         UUID puzzleId = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
 
@@ -143,9 +142,16 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals(Boolean.toString(passed1), resultSetDto.getData().get(2).get("PASSED"));
 
     }
-
-    @Test
-    public void puzzlesToRepeat_report_doesnt_return_paused_puzzles() throws IOException {
+    @Test public void calculateDelaySeconds_correctlyCalculatesWithRandomFactor() {
+        calculateDelaySeconds_correctlyCalculatesWithRandomFactor(
+                "1hr4", 4, ChronoUnit.HOURS.getDuration().getSeconds(), 120
+        );
+        calculateDelaySeconds_correctlyCalculatesWithRandomFactor(
+                "2dr", 3, ChronoUnit.DAYS.getDuration().getSeconds()*2,
+                2*60*18
+        );
+    }
+    @Test public void puzzlesToRepeat_report_doesnt_return_paused_puzzles() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
@@ -167,9 +173,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 mapToSet(resultSetDto.getData(), row -> row.get("ID"))
         );
     }
-
-    @Test
-    public void puzzlesToRepeat_report_puzzles_without_delay_are_shown_in_first_lines() throws IOException {
+    @Test public void puzzlesToRepeat_report_puzzles_without_delay_are_shown_in_first_lines() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
@@ -197,9 +201,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
                 )
         );
     }
-
-    @Test
-    public void puzzlesToRepeat_report_puzzles_are_sorted_by_delay_overdue_pct_desc() throws IOException {
+    @Test public void puzzlesToRepeat_report_puzzles_are_sorted_by_delay_overdue_pct_desc() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
@@ -224,9 +226,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals(puzzleId3, resultSetDto.getData().get(3).get("ID"));
         assertEquals(puzzleId5, resultSetDto.getData().get(4).get("ID"));
     }
-
-    @Test
-    public void puzzlesToRepeat_report_returns_row_numbers() throws IOException {
+    @Test public void puzzlesToRepeat_report_returns_row_numbers() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         UUID puzzleId1 = nodeManager.rpcCreateNode(null, NodeClasses.CHESS_PUZZLE);
@@ -251,9 +251,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         assertEquals(4L, resultSetDto.getData().get(3).get("RN"));
         assertEquals(5L, resultSetDto.getData().get(4).get("RN"));
     }
-
-    @Test
-    public void puzzlesToRepeat_report_shows_remaining_time_for_puzzles_without_overdue() throws IOException {
+    @Test public void puzzlesToRepeat_report_shows_remaining_time_for_puzzles_without_overdue() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         OutlineUtils.setClock(testClock);
@@ -268,9 +266,7 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         //then
         assertEquals("1M 5d", resultSetDto.getData().get(0).get("DELAY"));
     }
-
-    @Test
-    public void puzzlesToRepeat_report_shows_overdue_pct_for_puzzles_with_overdue() throws IOException {
+    @Test public void puzzlesToRepeat_report_shows_overdue_pct_for_puzzles_with_overdue() throws IOException {
         //given
         OutlineTestUtils.deleteAllNodes(nodeRepository);
         OutlineUtils.setClock(testClock);
@@ -300,5 +296,44 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         );
     }
 
+    private void calculateDelaySeconds_correctlyCalculatesWithRandomFactor(
+            String delayStr, int randomFactorPct, long baseDurationSeconds, int bucketWidthSeconds) {
+        //given
+        double proc = randomFactorPct / 10.0;
+        long left = (long) (baseDurationSeconds * (1.0 - proc));
+        long right = (long) (baseDurationSeconds * (1.0 + proc));
+        long range = right - left;
+        long expectedNumOfBuckets = range/bucketWidthSeconds;
+        Map<Integer,Integer> counts = new HashMap<>();
+        final long expectedAvg = 500;
+        final long numOfCalcs = expectedNumOfBuckets * expectedAvg;
 
+        //when
+        for (int i = 0; i < numOfCalcs; i++) {
+            final Long actualDelay = chessPuzzleManager.calculateDelaySeconds(delayStr);
+            long diff = actualDelay - left;
+            diff = right == actualDelay ? diff - 1 : diff;
+            int bucketNum = (int) (diff / bucketWidthSeconds);
+            inc(counts, bucketNum);
+        }
+
+        //then
+        assertEquals(expectedNumOfBuckets, counts.size());
+        for (Map.Entry<Integer, Integer> countsEntry : counts.entrySet()) {
+            final double deltaPct = Math.abs((expectedAvg - countsEntry.getValue()) / (expectedAvg * 1.0));
+            assertTrue(
+                    "bucketNum = " + countsEntry.getKey() + ", expectedAvg = " + expectedAvg
+                            + ", actualCount = " + countsEntry.getValue() + ", deltaPct = " + deltaPct,
+                    deltaPct < 0.2
+            );
+        }
+    }
+
+    private void inc(Map<Integer,Integer> counts, int key) {
+        Integer val = counts.get(key);
+        if (val == null) {
+            val = 0;
+        }
+        counts.put(key, val+1);
+    }
 }

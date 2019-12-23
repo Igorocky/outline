@@ -15,6 +15,7 @@ import org.igye.outline2.pm.TagIds;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RpcMethodsCollection
 @Component
@@ -37,6 +41,8 @@ public class ChessPuzzleManager {
     private ObjectMapper objectMapper;
     @Autowired
     private ApplicationContext applicationContext;
+    @Value("${random-factor-default-percent}")
+    private int randomFactorDefaultPercent;
 
     @RpcMethod
     @Transactional
@@ -115,17 +121,33 @@ public class ChessPuzzleManager {
         }
     }
 
-    private Long calculateDelaySeconds(String pauseDuration) {
+    private Pattern attemptDelayPattern = Pattern.compile("^(\\d+)(M|d|h|m)(r(\\d)?)?$");
+    protected Long calculateDelaySeconds(String pauseDuration) {
         if (StringUtils.isBlank(pauseDuration)) {
             return null;
         }
-        long amount = Long.parseLong(pauseDuration.substring(0,pauseDuration.length()-1));
-        String unit = pauseDuration.substring(pauseDuration.length()-1);
+        Matcher matcher = attemptDelayPattern.matcher(pauseDuration);
+        if(!matcher.matches()) {
+            throw new OutlineException("Pause duration '" + pauseDuration + "' is in incorrect format.");
+        }
+        long amount = Long.parseLong(matcher.group(1));
+        String unit = matcher.group(2);
         if ("M".equals(unit)) {
             amount *= 30;
             unit = "d";
         }
-        return getChronoUnit(unit).getDuration().getSeconds()*amount;
+        double randomFactor = 1.0;
+        if (matcher.group(3) != null) {
+            int randomFactorPercent = matcher.group(4) == null
+                    ? randomFactorDefaultPercent : Integer.parseInt(matcher.group(4));
+            double delta = randomFactorPercent/10.0;
+            randomFactor = randDoubleBetween(1.0-delta, 1.0+delta);
+        }
+        return Math.round(getChronoUnit(unit).getDuration().getSeconds()*amount*randomFactor);
+    }
+
+    private double randDoubleBetween(double left, double right) {
+        return left + (new Random()).nextDouble()*(right-left);
     }
 
     private TemporalUnit getChronoUnit(String unit) {
