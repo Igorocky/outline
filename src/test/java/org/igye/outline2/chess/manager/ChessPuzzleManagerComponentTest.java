@@ -10,6 +10,7 @@ import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.TagIds;
 import org.igye.outline2.report.ReportManager;
 import org.igye.outline2.report.ResultSetDto;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -303,30 +304,43 @@ public class ChessPuzzleManagerComponentTest extends ControllerComponentTestBase
         long left = (long) (baseDurationSeconds * (1.0 - proc));
         long right = (long) (baseDurationSeconds * (1.0 + proc));
         long range = right - left;
-        long expectedNumOfBuckets = range/bucketWidthSeconds;
+        int expectedNumOfBuckets = (int) (range/bucketWidthSeconds);
         Map<Integer,Integer> counts = new HashMap<>();
-        final long expectedAvg = 500;
-        final long numOfCalcs = expectedNumOfBuckets * expectedAvg;
+        final int expectedAvg = 500;
+        final int numOfCalcs = expectedNumOfBuckets * expectedAvg;
 
         //when
         for (int i = 0; i < numOfCalcs; i++) {
             final Long actualDelay = chessPuzzleManager.calculateDelaySeconds(delayStr);
             long diff = actualDelay - left;
-            diff = right == actualDelay ? diff - 1 : diff;
             int bucketNum = (int) (diff / bucketWidthSeconds);
+            if (bucketNum == expectedNumOfBuckets) {
+                bucketNum = expectedNumOfBuckets-1;
+            }
             inc(counts, bucketNum);
         }
 
         //then
+        if (expectedNumOfBuckets != counts.size()) {
+            printCounts(counts);
+        }
         assertEquals(expectedNumOfBuckets, counts.size());
         for (Map.Entry<Integer, Integer> countsEntry : counts.entrySet()) {
             final double deltaPct = Math.abs((expectedAvg - countsEntry.getValue()) / (expectedAvg * 1.0));
-            assertTrue(
-                    "bucketNum = " + countsEntry.getKey() + ", expectedAvg = " + expectedAvg
-                            + ", actualCount = " + countsEntry.getValue() + ", deltaPct = " + deltaPct,
-                    deltaPct < 0.2
-            );
+            if (deltaPct > 0.2) {
+                printCounts(counts);
+                Assert.fail(
+                        "bucketNum = " + countsEntry.getKey() + ", expectedAvg = " + expectedAvg
+                        + ", actualCount = " + countsEntry.getValue() + ", deltaPct = " + deltaPct
+                );
+            }
         }
+    }
+
+    private void printCounts(Map<Integer,Integer> counts) {
+        counts.keySet().stream().sorted().forEach(key ->
+                System.out.println(key + " -> " + counts.get(key))
+        );
     }
 
     private void inc(Map<Integer,Integer> counts, int key) {
