@@ -26,6 +26,8 @@ import org.springframework.util.CollectionUtils;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
@@ -50,6 +52,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String SET_DEPTH_CMD = "d";
     private static final String SET_MOVE_TIME_CMD = "t";
     private static final String TEXT_MODE_CMD = "tm";
+    private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
@@ -70,12 +73,31 @@ public class MovesBuilder implements ChessComponentStateManager {
             commands.get(parsedCommand[0]).accept(parsedCommand);
         } else {
             try {
-                processSelectedMove(state.getCurrPosition().getMove().makeMove(command));
+                processSelectedMove(state.getCurrPosition().getMove().makeMove(processCaseInsensitiveMove(command)));
             } catch (ParseMoveException ex) {
                 state.setCommandErrorMsg(ex.getMessage());
             }
         }
         return toView();
+    }
+
+    private final Pattern CASE_INSENSITIVE_MOVE_CMD_PATTERN = Pattern.compile("^([_kqrbn])([a-h][1-8])$");
+    private String processCaseInsensitiveMove(String moveCmd) {
+        if (state.isCaseInsensitiveMode()) {
+            Matcher matcher = CASE_INSENSITIVE_MOVE_CMD_PATTERN.matcher(moveCmd);
+            if (matcher.matches()) {
+                String firstChar = matcher.group(1);
+                if ("_".equals(firstChar)) {
+                    return "b" + matcher.group(2);
+                } else {
+                    return firstChar.toUpperCase() + matcher.group(2);
+                }
+            } else {
+                return moveCmd;
+            }
+        } else {
+            return moveCmd;
+        }
     }
 
     @Override
@@ -370,6 +392,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         });
         commands.put(TEXT_MODE_CMD, args -> {
             state.setTextMode(!state.isTextMode());
+        });
+        commands.put(CASE_INSENSITIVE_MODE_CMD, args -> {
+            state.setCaseInsensitiveMode(!state.isCaseInsensitiveMode());
         });
     }
 
