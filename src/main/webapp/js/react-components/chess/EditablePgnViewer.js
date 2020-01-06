@@ -1,6 +1,6 @@
 "use strict";
 
-const EditablePgnViewer = ({value, autoResponse, textAreaStyle, onSave, popupActions}) => {
+const EditablePgnViewer = ({value, textAreaStyle, onSave, popupActions}) => {
     const [editMode, setEditMode] = useState(false)
 
     function save(newValue) {
@@ -25,7 +25,6 @@ const EditablePgnViewer = ({value, autoResponse, textAreaStyle, onSave, popupAct
         if (editMode) {
             return re(PgnEditor, {
                 pgnStr:value,
-                autoResponse:autoResponse,
                 onSave:save,
                 onCancel:cancel
             })

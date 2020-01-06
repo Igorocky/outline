@@ -12,6 +12,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class ChessComponentResponse {
-    private String savePgn;
     private ChessComponentView chessComponentView;
 }

@@ -30,6 +30,7 @@ import static org.igye.outline2.dto.OptVal.ABSENT_OPT_VAL;
 @Service
 public class RpcDispatcher {
     private JavaType listOfUuidsJavaType;
+    private JavaType listOfObjectsJavaType;
     @Autowired
     protected ObjectMapper objectMapper;
 
@@ -42,6 +43,7 @@ public class RpcDispatcher {
     @PostConstruct
     public void init() {
         listOfUuidsJavaType = objectMapper.getTypeFactory().constructType(new TypeReference<List<UUID>>() {});
+        listOfObjectsJavaType = objectMapper.getTypeFactory().constructType(new TypeReference<List<Object>>() {});
         for (Object rpcMethodsCollection : rpcMethodsCollections) {
             methodMap.putAll(createMethodMap(rpcMethodsCollection));
         }
@@ -132,8 +134,7 @@ public class RpcDispatcher {
             if (typeArgument.equals(UUID.class)) {
                 return readValue(passedParam, listOfUuidsJavaType);
             } else {
-                throw new OutlineException("Cannot deserialize value for " + declaredParam.getName()
-                        + " rpc method parameter in " + methodName + " method.");
+                return readValue(passedParam, listOfObjectsJavaType);
             }
         } else if (declaredParamType.equals(OptVal.class)) {
             return objectMapper.treeToValue(passedParam, getTypeArgument(declaredParam));

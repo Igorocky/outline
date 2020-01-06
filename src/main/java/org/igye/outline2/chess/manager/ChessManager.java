@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Component(ChessManager.CHESSBOARD)
 @Scope("prototype")
@@ -34,13 +35,9 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public ChessComponentResponse getPgnToSave() {
-        return ChessComponentResponse.builder().savePgn(getPgn()).build();
-    }
-
-    @RpcMethod
     public ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen,
-                                              @Default("false") boolean autoResponse) {
+                                              @Default("false") boolean autoResponse,
+                                              @Default("null") List<String> commands) {
         final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
         this.stateManager = movesBuilder;
         if (!StringUtils.isBlank(pgn)) {
@@ -49,6 +46,9 @@ public class ChessManager extends State implements ChessComponentStateManager {
         chessTabSelected(tabToOpen);
         if (autoResponse) {
             movesBuilder.setAutoResponseForOpponent();
+        }
+        if (commands != null) {
+            commands.forEach(cmd -> execChessCommand(cmd));
         }
         return toView();
     }
@@ -126,7 +126,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
     @Override
     public ChessComponentResponse toView() {
         final ChessComponentResponse response = stateManager.toView();
-        response.getChessComponentView().setPgnHashCode(getPgn());
+        response.getChessComponentView().setPgn(getPgn());
         return response;
     }
 

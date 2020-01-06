@@ -181,7 +181,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (!state.isChessbordIsHidden()) {
             renderChessboard(chessComponentView);
         }
-        chessComponentView.setHistory(createHistoryView());
+        chessComponentView.setHistory(createHistoryView(state.getPracticeState() != null));
         chessComponentView.setNoMovesRecorded(CollectionUtils.isEmpty(state.getInitialPosition().getChildren()));
         if (state.getCommandErrorMsg() != null) {
             chessComponentView.setCommandErrorMsg(state.getCommandErrorMsg());
@@ -205,7 +205,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         sb.append("[White \"white\"]\n");
         sb.append("[Black \"black\"]\n");
         sb.append("\n\n");
-        for (HistoryRow row : createHistoryView().getRows()) {
+        for (HistoryRow row : createHistoryView(false).getRows()) {
             sb.append(row.getFeMoveNumber()).append(". ")
                     .append(row.getWhitesMove()).append(" ");
             if (row.getBlacksMove() != null) {
@@ -555,7 +555,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
     }
 
-    private HistoryView createHistoryView() {
+    private HistoryView createHistoryView(boolean isPracticeMode) {
         HistoryView historyView = new HistoryView();
         final HistoryRow[] historyRow = {new HistoryRow()};
         traverseHistory((position, feMoveNumber, move, selected) -> {
@@ -575,7 +575,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 historyView.getRows().add(historyRow[0]);
                 historyRow[0] = new HistoryRow();
             }
-            return state.getPracticeState() == null || !selected;
+            return !isPracticeMode || !selected;
         });
         if (historyRow[0].getWhitesMove() != null) {
             historyView.getRows().add(historyRow[0]);

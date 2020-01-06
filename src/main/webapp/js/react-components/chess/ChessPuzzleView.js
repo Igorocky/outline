@@ -25,7 +25,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
     })
 }
 
-const AutoResponseSwitch = withStyles({
+const RedGreenSwitch = withStyles({
     switchBase: {
         color: "lightgrey",
         '&$checked': {
@@ -62,6 +62,10 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function isAutoResponseEnabled() {
         return "true" == getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE)
+    }
+
+    function isTextModeEnabled() {
+        return "true" == getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_TEXT_MODE)
     }
 
     function renderUrl() {
@@ -141,7 +145,6 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 "PGN",
                 re(EditablePgnViewer, {
                     value:puzzlePgn,
-                    autoResponse:isAutoResponseEnabled(),
                     textAreaStyle: {width:"600px", margin:"0px 0px 10px 10px"},
                     onSave: ({newValue, onSaved}) => doRpcCall(
                         "rpcSavePgnForPuzzle",
@@ -155,7 +158,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                         iconButton({iconName: "delete", onClick: deletePgn}),
                     ):null,
                 }),
-                renderAutoResponseIsEnabled()
+                renderAutoResponseIsEnabled(),
+                renderTextModeIsEnabled(),
             )
         )
     }
@@ -356,6 +360,12 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function toggleTextMode() {
+        setSingleTagForNode(
+            getCurrPuzzleId(), TAG_ID.CHESS_PUZZLE_TEXT_MODE, !isTextModeEnabled(), reloadCurrNode
+        )
+    }
+
     function renderPaused() {
         return RE.Container.row.left.center({},{},
             RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}, onClick: togglePaused},
@@ -369,7 +379,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderAutoResponseIsEnabled() {
         return RE.Container.row.left.center({},{},
-            re(AutoResponseSwitch,{
+            re(RedGreenSwitch,{
                 checked: isAutoResponseEnabled(),
                 onChange: toggleAutoResponse,
                 style:{color:isAutoResponseEnabled()?"limegreen":"lightgrey"}
@@ -377,6 +387,19 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
             RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey", cursor:"pointer"},
                     onClick: toggleAutoResponse},
                 "Auto-response")
+        )
+    }
+
+    function renderTextModeIsEnabled() {
+        return RE.Container.row.left.center({},{},
+            re(RedGreenSwitch,{
+                checked: isTextModeEnabled(),
+                onChange: toggleTextMode,
+                style:{color:isTextModeEnabled()?"limegreen":"lightgrey"}
+            }),
+            RE.span({style:{color: isTextModeEnabled()?"limegreen":"lightgrey", cursor:"pointer"},
+                    onClick: toggleTextMode},
+                "Text-mode")
         )
     }
 

@@ -36,7 +36,7 @@ const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
             key: "CommandInput-TextField",
             type:"text",
             ref:ref,
-            // autoFocus: true,
+            autoFocus: true,
             style: {fontSize: fontSize},
             onKeyDown: onKeyDown,
             value: commandStr?commandStr:"",

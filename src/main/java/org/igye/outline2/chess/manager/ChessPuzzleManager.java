@@ -3,6 +3,7 @@ package org.igye.outline2.chess.manager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.chess.model.CellCoords;
@@ -99,11 +100,14 @@ public class ChessPuzzleManager {
                 ChessUtils.strCoordToInt(move.charAt(0)),
                 ChessUtils.strCoordToInt(move.charAt(1))
         ));
-        chessManager.cellLeftClicked(new CellCoords(
+        ChessComponentResponse resp = chessManager.cellLeftClicked(new CellCoords(
                 ChessUtils.strCoordToInt(move.charAt(2)),
                 ChessUtils.strCoordToInt(move.charAt(3))
         ));
-        rpcSavePgnForPuzzle(puzzleId, chessManager.getPgnToSave().getSavePgn());
+        rpcSavePgnForPuzzle(puzzleId, resp.getChessComponentView().getPgn());
+        Node puzzle = nodeRepository.getOne(puzzleId);
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_AUTO_RESPONSE, "true");
+        puzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_TEXT_MODE, "true");
         return puzzleId;
     }
 

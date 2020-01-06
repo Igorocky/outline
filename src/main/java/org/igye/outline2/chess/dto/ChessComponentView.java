@@ -22,5 +22,5 @@ public class ChessComponentView {
     private String commandErrorMsg;
     private String commandResponseMsg;
     private PracticeStateView practiseState;
-    private String pgnHashCode;
+    private String pgn;
 }

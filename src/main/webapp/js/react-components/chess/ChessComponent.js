@@ -9,7 +9,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     const [state, setChessComponentState] = useState(null)
     const puzzleId = getByPath(match, ["params", "puzzleId"])
     const [puzzleName, setPuzzleName] = useState(null)
-    const [initialPgnHashCode, setInitialPgnHashCode] = useState(null)
+    const [initialPgn, setInitialPgnHashCode] = useState(null)
 
     useEffect(() => {
         if (setPageTitle) {
@@ -44,10 +44,13 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     function loadPuzzle(puzzleId) {
         getNode({id:puzzleId}, puzzle => {
             setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
+            const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
+            const textModeEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_TEXT_MODE);
             backend.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:"PRACTICE_SEQUENCE",
-                autoResponse:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE),
+                autoResponse: autoResponseEnabled,
+                commands: textModeEnabled?["tm", "ci"]:null
             })
         })
     }
@@ -60,13 +63,11 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 setChessComponentState(chessComponentResponse.chessComponentView)
                 setInitialPgnHashCode(currPgnHashCode => {
                     if (currPgnHashCode == null) {
-                        return chessComponentResponse.chessComponentView.pgnHashCode
+                        return chessComponentResponse.chessComponentView.pgn
                     } else {
                         return currPgnHashCode
                     }
                 })
-            } else if (chessComponentResponse.savePgn) {
-                onSave(chessComponentResponse.savePgn)
             }
         }
     })
@@ -136,8 +137,8 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             onSave?RE.Button({
                 color:"primary",
                 variant:"contained",
-                onClick: ()=>backend.call("getPgnToSave", {}),
-                disabled: initialPgnHashCode == state.pgnHashCode
+                onClick: () => onSave(state.pgn),
+                disabled: initialPgn == state.pgn
             }, "Save"):null,
             onCancel?RE.Button({variant:"contained", onClick:onCancel}, "Cancel"):null,
         )
