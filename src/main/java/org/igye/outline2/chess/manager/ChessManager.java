@@ -35,20 +35,23 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen,
+    public synchronized ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen,
                                               @Default("false") boolean autoResponse,
                                               @Default("null") List<String> commands) {
-        final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
-        this.stateManager = movesBuilder;
-        if (!StringUtils.isBlank(pgn)) {
-            movesBuilder.loadFromPgn(pgn);
-        }
-        chessTabSelected(tabToOpen);
-        if (autoResponse) {
-            movesBuilder.setAutoResponseForOpponent();
-        }
-        if (commands != null) {
-            commands.forEach(cmd -> execChessCommand(cmd));
+        boolean samePgn = stateManager instanceof MovesBuilder && pgn.equals(((MovesBuilder) stateManager).toPgn());
+        if (!samePgn) {
+            final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
+            this.stateManager = movesBuilder;
+            if (!StringUtils.isBlank(pgn)) {
+                movesBuilder.loadFromPgn(pgn);
+            }
+            chessTabSelected(tabToOpen);
+            if (autoResponse) {
+                movesBuilder.setAutoResponseForOpponent();
+            }
+            if (commands != null) {
+                commands.forEach(cmd -> execChessCommand(cmd));
+            }
         }
         return toView();
     }
