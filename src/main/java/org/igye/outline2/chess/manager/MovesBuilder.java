@@ -182,6 +182,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             renderChessboard(chessComponentView);
         }
         chessComponentView.setHistory(createHistoryView());
+        chessComponentView.setNoMovesRecorded(CollectionUtils.isEmpty(state.getInitialPosition().getChildren()));
         if (state.getCommandErrorMsg() != null) {
             chessComponentView.setCommandErrorMsg(state.getCommandErrorMsg());
         }
@@ -574,7 +575,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 historyView.getRows().add(historyRow[0]);
                 historyRow[0] = new HistoryRow();
             }
-            return true;
+            return state.getPracticeState() == null || !selected;
         });
         if (historyRow[0].getWhitesMove() != null) {
             historyView.getRows().add(historyRow[0]);

@@ -1,6 +1,6 @@
 "use strict";
 
-const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMove, failed,}) => {
+const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMove, failed, history}) => {
 
     function renderNextActionDescription() {
         if (waitingForNextMove) {
@@ -34,5 +34,6 @@ const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMo
         renderProgressStatus(),
         renderNextActionDescription(),
         RE.span({style:{color:"red"}},incorrectMove?"Incorrect move!":""),
+        re(History,{backend:backend, ...history}),
     )
 }

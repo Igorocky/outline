@@ -18,6 +18,7 @@ public class ChessComponentView {
     private ChessComponentStage tab;
     private InitialPositionView availableChessmanTypes;
     private HistoryView history;
+    private boolean noMovesRecorded;
     private String commandErrorMsg;
     private String commandResponseMsg;
     private PracticeStateView practiseState;

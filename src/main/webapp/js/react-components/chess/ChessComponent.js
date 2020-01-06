@@ -110,7 +110,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
 
     function renderRightPanel() {
         const tabs = {}
-        if (_.size(getByPath(state, ["history", "rows"], [])) == 0 && !showOnlyPracticeTab) {
+        if (state.noMovesRecorded && !showOnlyPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.initialPosition] = {
                 label:"Initial position",
                 render: () => re(InitialPosition,{backend:backend, ...state.availableChessmanTypes})
@@ -125,7 +125,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         if (showPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.practice] = {
                 label:"Practice",
-                render: () => re(SequencePractice,{backend:backend, ...state.practiseState})
+                render: () => re(SequencePractice,{backend:backend, ...state.practiseState, history:state.history})
             }
         }
         return reTabs({selectedTab:state.tab, onTabSelected:handleTabChange, tabs:tabs})
