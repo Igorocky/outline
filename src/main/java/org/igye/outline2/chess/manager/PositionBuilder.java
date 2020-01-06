@@ -81,6 +81,7 @@ public class PositionBuilder implements ChessComponentStateManager {
                 .fen(getInitialPosition().toFen())
                 .build()
         );
+        result.setNoMovesRecorded(true);
         return ChessComponentResponse.builder().chessComponentView(result).build();
     }
 

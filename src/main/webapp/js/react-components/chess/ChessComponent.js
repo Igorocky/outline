@@ -35,26 +35,6 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         }
     }
 
-    useEffect(() => {
-        if (puzzleId) {
-            loadPuzzle(puzzleId)
-        }
-    }, [puzzleId])
-
-    function loadPuzzle(puzzleId) {
-        getNode({id:puzzleId}, puzzle => {
-            setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
-            const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
-            const textModeEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_TEXT_MODE);
-            backend.call("loadFromPgn", {
-                pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
-                tabToOpen:"PRACTICE_SEQUENCE",
-                autoResponse: autoResponseEnabled,
-                commands: textModeEnabled?["tm", "ci"]:null
-            })
-        })
-    }
-
     const backend = useBackend({
         stateType: "chessboard",
         onBackendStateCreated: processBackendStateCreated,
@@ -71,6 +51,26 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             }
         }
     })
+
+    function loadPuzzle(puzzleId) {
+        getNode({id:puzzleId}, puzzle => {
+            setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
+            const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
+            const textModeEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_TEXT_MODE);
+            backend.call("loadFromPgn", {
+                pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
+                tabToOpen:"PRACTICE_SEQUENCE",
+                autoResponse: autoResponseEnabled,
+                commands: textModeEnabled?["tm", "ci"]:null
+            })
+        })
+    }
+
+    useEffect(() => {
+        if (backend.isReady && puzzleId) {
+            loadPuzzle(puzzleId)
+        }
+    }, [backend.isReady, puzzleId])
 
     function renderChessBoard() {
         if (state.chessBoard) {

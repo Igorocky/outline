@@ -142,10 +142,13 @@ function clickAwayListener({onClickAway, children, key}) {
 
 function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
     const [stateId, setStateId] = useState(null)
+    const [isReady, setIsReady] = useState(false)
     const [webSocket, setWebSocket] = useState(null)
 
+    const isSocketReady = webSocket && webSocket.readyState == 1
+
     function callBackendStateMethod(methodName, params) {
-        if (!webSocket || webSocket.readyState != 1) {
+        if (!isSocketReady) {
             const newWebSocket = new WebSocket("ws://" + location.host + PATH.stateWebSocketUrl)
             newWebSocket.onmessage = event => onMessageFromBackend(JSON.parse(event.data))
             newWebSocket.onopen = () => {
@@ -162,7 +165,7 @@ function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
         webSocket.send(JSON.stringify({methodName:methodName, params:params}))
     }
 
-    const backend = {call: callBackendStateMethod}
+    const backend = {isReady: isSocketReady && isReady, call: callBackendStateMethod}
 
     useEffect(() => {
         if (!stateId) {
@@ -173,6 +176,7 @@ function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
             if (onBackendStateCreated) {
                 onBackendStateCreated(backend)
             }
+            setIsReady(true)
         }
         return () => {
             if (stateId) {
