@@ -155,6 +155,8 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                         }
                     ),
                     popupActions: puzzlePgn?RE.Fragment({},
+                        iconButton({iconName: "play_arrow",
+                            onClick: () => window.open(PATH.createChessboardWithPractice(getCurrPuzzleId()))}),
                         iconButton({iconName: "delete", onClick: deletePgn}),
                     ):null,
                 }),
