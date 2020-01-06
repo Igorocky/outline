@@ -53,6 +53,8 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String SET_MOVE_TIME_CMD = "t";
     private static final String TEXT_MODE_CMD = "tm";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
+    public static final Comparator<CellCoords> CELL_COMPARATOR =
+            Comparator.comparingInt(c -> (c.getX() * 8 + c.getY()));
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
@@ -318,7 +320,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private void addLocationsOf(StringBuilder sb, String prefix, ChessmanType chessmanType) {
         sb.append("\n").append(prefix).append(":");
         getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
-                .sorted(Comparator.comparingInt(c -> (c.getY() * 8 + c.getX())))
+                .sorted(CELL_COMPARATOR)
                 .forEach(cell -> sb.append(" ").append(ChessUtils.coordsToString(cell)));
     }
 
