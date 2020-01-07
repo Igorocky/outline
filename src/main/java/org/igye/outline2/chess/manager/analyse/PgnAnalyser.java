@@ -106,6 +106,8 @@ public class PgnAnalyser {
                             progress -> {
                                 Map<String,FenAnalysisProgressInfo> ti = new TreeMap<>(progress.getThreadsInfo());
                                 ti.put(Thread.currentThread().getName(), null);
+                                // TODO: 07.01.2020 this function should be side effect free,
+                                //  but it does actualProcNumber.addAndGet
                                 return progress
                                         .withProcNumber(actualProcNumber.addAndGet(1))
                                         .withThreadsInfo(ti);
