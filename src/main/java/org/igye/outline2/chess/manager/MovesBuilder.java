@@ -300,20 +300,21 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void renderTextChessboard(ChessComponentView chessComponentView) {
         StringBuilder sb = new StringBuilder();
-        sb.append("White:\n");
-        addLocationsOf(sb, "P", WHITE_PAWN);
-        addLocationsOf(sb, "N", WHITE_KNIGHT);
-        addLocationsOf(sb, "B", WHITE_BISHOP);
-        addLocationsOf(sb, "R", WHITE_ROOK);
-        addLocationsOf(sb, "Q", WHITE_QUEEN);
-        addLocationsOf(sb, "K", WHITE_KING);
-        sb.append("\n\nBlack:\n");
+        sb.append("Black:\n");
         addLocationsOf(sb, "P", BLACK_PAWN);
         addLocationsOf(sb, "N", BLACK_KNIGHT);
         addLocationsOf(sb, "B", BLACK_BISHOP);
         addLocationsOf(sb, "R", BLACK_ROOK);
         addLocationsOf(sb, "Q", BLACK_QUEEN);
         addLocationsOf(sb, "K", BLACK_KING);
+        sb.append("\n\nWhite:\n");
+        addLocationsOf(sb, "P", WHITE_PAWN);
+        addLocationsOf(sb, "N", WHITE_KNIGHT);
+        addLocationsOf(sb, "B", WHITE_BISHOP);
+        addLocationsOf(sb, "R", WHITE_ROOK);
+        addLocationsOf(sb, "Q", WHITE_QUEEN);
+        addLocationsOf(sb, "K", WHITE_KING);
+        sb.append("\n");
         chessComponentView.setChessBoardText(sb.toString());
     }
 
