@@ -12,9 +12,15 @@ import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
@@ -27,11 +33,13 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
+import static org.igye.outline2.common.OutlineUtils.nullSafeGetterWithDefault;
 
 public class PositionBuilder implements ChessComponentStateManager {
     public static final int RECYCLE_BIN_CODE = 10007;
     private static final String SELECTED_CELL_BACKGROUND_COLOR = "yellow";
     private static final String NOT_SELECTED_CELL_BACKGROUND_COLOR = "white";
+    private static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
     private ChessBoard chessBoard;
     private ChessmanColor colorToMove;
@@ -42,9 +50,20 @@ public class PositionBuilder implements ChessComponentStateManager {
     private String enPassantTargetSquare;
     private int halfmoveClock;
     private int fullmoveNumber;
+    private String commandResponseMsg;
+    private String commandErrorMsg;
 
     private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
+    private Map<Character,ChessmanType> chessmenTypesMap = Stream.of(ChessmanType.values())
+            .collect(Collectors.toMap(
+                    (ChessmanType ct) -> ct.getPieceColor() == ChessmanColor.WHITE
+                            ? ct.getPieceShape().getSymbol().toUpperCase().charAt(0)
+                            : ct.getPieceShape().getSymbol().toLowerCase().charAt(0),
+                    Function.identity()
+            ));
+    private Map<String, Consumer<String[]>> commands = new HashMap<>();
+    private static final String PLACE_PIECES_RANDOMLY_CMD = "rnd";
 
     public PositionBuilder(String initialPositionFen) {
         Move initialPosition = new Move(initialPositionFen);
@@ -64,6 +83,8 @@ public class PositionBuilder implements ChessComponentStateManager {
         ChessBoardCellView selectedPiece = availablePieces[0][1];
         selectedPiece.setBackgroundColor(SELECTED_CELL_BACKGROUND_COLOR);
         selectedCode = selectedPiece.getCode();
+
+        commands.put(PLACE_PIECES_RANDOMLY_CMD, args -> placePiecesRandomly(args[1]));
     }
 
     @Override
@@ -81,6 +102,8 @@ public class PositionBuilder implements ChessComponentStateManager {
                 .fen(getInitialPosition().toFen())
                 .build()
         );
+        result.setCommandResponseMsg(commandResponseMsg);
+        result.setCommandErrorMsg(commandErrorMsg);
         result.setNoMovesRecorded(true);
         return ChessComponentResponse.builder().chessComponentView(result).build();
     }
@@ -113,8 +136,15 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     @Override
     public ChessComponentResponse execChessCommand(String command) {
-        notImplemented();
-        return null;
+        commandErrorMsg = null;
+        commandResponseMsg = null;
+        String[] parsedCommand = command.trim().split("\\s");
+        if (commands.containsKey(parsedCommand[0])) {
+            commands.get(parsedCommand[0]).accept(parsedCommand);
+        } else {
+            commandErrorMsg = "Unknown command: '" + command + "'";
+        }
+        return toView();
     }
 
     @Override
@@ -238,5 +268,22 @@ public class PositionBuilder implements ChessComponentStateManager {
             }
         });
         return result[0];
+    }
+
+    private void placePiecesRandomly(String pieces) {
+        for (char ch : pieces.toCharArray()) {
+            if (!chessmenTypesMap.containsKey(ch)) {
+                commandErrorMsg = "Unknown chessman type '" + ch + "'";
+                return;
+            }
+        }
+        setPositionFromFen(EMPTY_BOARD_FEN);
+        List<CellCoords> availableCells = Stream.iterate(0, i->i+1).limit(8)
+                .flatMap(x -> Stream.iterate(0, i->i+1).limit(8).map(y -> new CellCoords(x,y)))
+                .collect(Collectors.toList());
+        Random rnd = new Random();
+        for (char ch : pieces.toCharArray()) {
+            chessBoard.placePiece(availableCells.get(rnd.nextInt(availableCells.size())), chessmenTypesMap.get(ch));
+        }
     }
 }
