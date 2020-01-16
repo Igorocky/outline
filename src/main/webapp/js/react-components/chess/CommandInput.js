@@ -5,7 +5,7 @@ const ESC_KEY_CODE = 27
 const UP_KEY_CODE = 38
 const DOWN_KEY_CODE = 40
 
-const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
+const CommandInput = ({style, onExecCommand, responseMsg, errorMsg}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
@@ -100,7 +100,7 @@ const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
             type:"text",
             ref:ref,
             autoFocus: true,
-            style: {fontSize: fontSize},
+            style: {fontSize: fontSize, ...style},
             onKeyDown: onKeyDown,
             value: commandStr?commandStr:"",
             variant: "outlined",

@@ -12,6 +12,7 @@ import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,13 +56,15 @@ public class PositionBuilder implements ChessComponentStateManager {
 
     private ChessBoardCellView[][] availablePieces;
     private int selectedCode;
-    private Map<Character,ChessmanType> chessmenTypesMap = Stream.of(ChessmanType.values())
-            .collect(Collectors.toMap(
-                    (ChessmanType ct) -> ct.getPieceColor() == ChessmanColor.WHITE
-                            ? ct.getPieceShape().getSymbol().toUpperCase().charAt(0)
-                            : ct.getPieceShape().getSymbol().toLowerCase().charAt(0),
-                    Function.identity()
-            ));
+    public static final Map<Character, ChessmanType> chessmenTypesMap = Collections.unmodifiableMap(
+            Stream.of(ChessmanType.values())
+                    .collect(Collectors.toMap(
+                            (ChessmanType ct) -> ct.getPieceColor() == ChessmanColor.WHITE
+                                    ? ct.getPieceShape().getSymbol().toUpperCase().charAt(0)
+                                    : ct.getPieceShape().getSymbol().toLowerCase().charAt(0),
+                            Function.identity()
+                    ))
+    );
     private Map<String, Consumer<String[]>> commands = new HashMap<>();
     private static final String PLACE_PIECES_RANDOMLY_CMD = "rnd";
 

@@ -1,6 +1,7 @@
 package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentResponse;
@@ -17,14 +18,19 @@ import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
-import org.igye.outline2.chess.model.ParseMoveException;
 import org.igye.outline2.chess.model.PieceShape;
 import org.igye.outline2.common.Function4;
 import org.igye.outline2.exceptions.OutlineException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,9 +40,22 @@ import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
-import static org.igye.outline2.chess.model.ChessmanType.*;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KING;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_PAWN;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.BLACK_ROOK;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_BISHOP;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KING;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
+import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
 
 public class MovesBuilder implements ChessComponentStateManager {
+    private static final Logger LOG = LoggerFactory.getLogger(MovesBuilder.class);
+
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
     private static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
     private static final String CHOOSE_CHESSMAN_TYPE_COLOR = "#0000AA";
@@ -53,6 +72,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String SET_MOVE_TIME_CMD = "t";
     private static final String TEXT_MODE_CMD = "tm";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
+    private static final String COMPARE_POSITION_CMD = "cmp";
     public static final Comparator<CellCoords> CELL_COMPARATOR =
             Comparator.comparingInt(c -> (c.getX() * 8 + c.getY()));
 
@@ -71,14 +91,15 @@ public class MovesBuilder implements ChessComponentStateManager {
         state.setCommandErrorMsg(null);
         state.setCommandResponseMsg(null);
         String[] parsedCommand = command.trim().split("\\s");
-        if (commands.containsKey(parsedCommand[0])) {
-            commands.get(parsedCommand[0]).accept(parsedCommand);
-        } else {
-            try {
+        try {
+            if (commands.containsKey(parsedCommand[0])) {
+                commands.get(parsedCommand[0]).accept(parsedCommand);
+            } else {
                 processSelectedMove(state.getCurrPosition().getMove().makeMove(processCaseInsensitiveMove(command)));
-            } catch (ParseMoveException ex) {
-                state.setCommandErrorMsg(ex.getMessage());
             }
+        } catch (OutlineException ex) {
+            LOG.error(ex.getMessage(), ex);
+            state.setCommandErrorMsg(ex.getMessage());
         }
         return toView();
     }
@@ -301,12 +322,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     private void renderTextChessboard(ChessComponentView chessComponentView) {
         StringBuilder sb = new StringBuilder();
         sb.append("Black:\n");
-        addLocationsOf(sb, "P", BLACK_PAWN);
-        addLocationsOf(sb, "N", BLACK_KNIGHT);
-        addLocationsOf(sb, "B", BLACK_BISHOP);
-        addLocationsOf(sb, "R", BLACK_ROOK);
-        addLocationsOf(sb, "Q", BLACK_QUEEN);
-        addLocationsOf(sb, "K", BLACK_KING);
+        addLocationsOf(sb, "p", BLACK_PAWN);
+        addLocationsOf(sb, "n", BLACK_KNIGHT);
+        addLocationsOf(sb, "b", BLACK_BISHOP);
+        addLocationsOf(sb, "r", BLACK_ROOK);
+        addLocationsOf(sb, "q", BLACK_QUEEN);
+        addLocationsOf(sb, "k", BLACK_KING);
         sb.append("\n\nWhite:\n");
         addLocationsOf(sb, "P", WHITE_PAWN);
         addLocationsOf(sb, "N", WHITE_KNIGHT);
@@ -400,6 +421,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         commands.put(CASE_INSENSITIVE_MODE_CMD, args -> {
             state.setCaseInsensitiveMode(!state.isCaseInsensitiveMode());
         });
+        commands.put(COMPARE_POSITION_CMD, this::comparePosition);
     }
 
     private void goToPosition(int feMoveNumber, ChessmanColor color) {
@@ -597,5 +619,69 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             return null;
         }
+    }
+
+    private void comparePosition(String[] allArgs) {
+        List<Pair<CellCoords,ChessmanType>> userPosition = parseUserPosition(allArgs);
+        int matchedCnt = 0;
+        final int[] missedCnt = {0};
+        final int[] actualNumberOfPieces = {0};
+        final Move currMove = state.getCurrPosition().getMove();
+        for (Pair<CellCoords, ChessmanType> userCell : userPosition) {
+            if (currMove.getPieceAt(userCell.getKey()) == userCell.getRight()) {
+                matchedCnt++;
+            }
+        }
+        currMove.getResultPosition().traverse((x,y,ct) -> {
+            actualNumberOfPieces[0]++;
+            List<Pair<CellCoords, ChessmanType>> matchedUSerCells = userPosition.stream()
+                    .filter(userCell -> userCell.getLeft().getX() == x && userCell.getLeft().getY() == y)
+                    .collect(Collectors.toList());
+            if (matchedUSerCells.size() == 0) {
+                missedCnt[0]++;
+            } else if (matchedUSerCells.size() > 1) {
+                throw new OutlineException(
+                        "matchedUSerCells.size() > 1 for " + ChessUtils.coordsToString(new CellCoords(x,y)));
+            }
+            return true;
+        });
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Matched ").append(matchedCnt).append(" of ").append(userPosition.size());
+        sb.append(", missed ").append(missedCnt[0]).append(" of ").append(actualNumberOfPieces[0]);
+        state.setCommandResponseMsg(sb.toString());
+    }
+
+    private List<Pair<CellCoords,ChessmanType>> parseUserPosition(String[] allArgs) {
+        List<Pair<CellCoords,ChessmanType>> result = new ArrayList<>();
+        for (int i = 1; i < allArgs.length; i++) {
+            result.addAll(parsePositionPart(allArgs[i]));
+        }
+        return result;
+    }
+
+    private List<Pair<CellCoords,ChessmanType>> parsePositionPart(String positionPart) {
+        final char chessmanTypeChar = positionPart.charAt(0);
+        ChessmanType chessmanType = PositionBuilder.chessmenTypesMap.get(chessmanTypeChar);
+        if (chessmanType == null) {
+            throw new OutlineException(
+                    "Unknown chessmanTypeChar = " + chessmanTypeChar + " in " + positionPart);
+        }
+        String positionsList = positionPart.substring(1);
+        if (positionsList.length() == 0 || positionsList.length() % 2 != 0) {
+            throw new OutlineException("incorrect positions list in " + positionPart);
+        }
+        int numOfCells = positionsList.length() / 2;
+        List<Pair<CellCoords,ChessmanType>> result = new ArrayList<>();
+        for (int i = 0; i < numOfCells; i++) {
+            result.add(Pair.of(
+                    new CellCoords(
+                            ChessUtils.strCoordToInt(positionsList.charAt(i*2)),
+                            ChessUtils.strCoordToInt(positionsList.charAt(i*2+1))
+                    ),
+                    chessmanType
+            ));
+        }
+        return result;
     }
 }

@@ -2260,4 +2260,49 @@ public class MovesBuilderTest {
         assertFalse(view.getPractiseState().isIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
+    @Test public void comparePositionProducesCorrectOutputForDifferentInputs() {
+        MovesBuilder movesBuilder = new MovesBuilder(null, initialPosition(WHITE, b->b
+                .r(a8).n(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
+                .p(a7).p(b7)._(c7)._(d7)._(e7)._(f7)._(g7)._(h7)
+                ._(a6)._(b6)._(c6)._(d6)._(e6)._(f6)._(g6)._(h6)
+                ._(a5)._(b5)._(c5)._(d5)._(e5)._(f5)._(g5)._(h5)
+                ._(a4)._(b4)._(c4)._(d4)._(e4)._(f4)._(g4)._(h4)
+                ._(a3)._(b3)._(c3)._(d3)._(e3)._(f3)._(g3)._(h3)
+                .P(a2).P(b2)._(c2)._(d2)._(e2)._(f2)._(g2)._(h2)
+                .R(a1).N(b1)._(c1)._(d1)._(e1)._(f1)._(g1)._(h1)
+        ));
+
+        ChessComponentView view = execCommand(movesBuilder, "cmp Pa2b2 Ra1 Nb1 pa7b7 ra8 nb8");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("Matched 8 of 8, missed 0 of 8", view.getCommandResponseMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2 Ra1 Nb1 pa7b7 ra8 nb8");
+        assertNull(view.getCommandErrorMsg());
+        assertEquals("Matched 7 of 7, missed 1 of 8", view.getCommandResponseMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Ra1 yb1 pa7b7 ra8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("Unknown chessmanTypeChar = y in yb1", view.getCommandErrorMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Ra1 Qb1 pa7b7c ra8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("incorrect positions list in pa7b7c", view.getCommandErrorMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Ri1 Qb1 pa7b7 ra8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("Cannot convert i to chess coordinate.", view.getCommandErrorMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Re1 Qb1 pa7b7 rI8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("Cannot convert I to chess coordinate.", view.getCommandErrorMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Re1 Qb9 pa7b7 ra8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("Cannot convert 9 to chess coordinate.", view.getCommandErrorMsg());
+
+        view = execCommand(movesBuilder, "cmp Pa2b2 Re1 Qb1 pa7b1 ra8 nb8");
+        assertNull(view.getCommandResponseMsg());
+        assertEquals("matchedUSerCells.size() > 1 for b1", view.getCommandErrorMsg());
+
+    }
 }

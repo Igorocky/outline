@@ -97,6 +97,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
 
     function renderCommandInputField() {
         return re(CommandInput, {
+            style:{width:(cellSize*8) + "px"},
             onExecCommand: commandStr => backend.call("execChessCommand", {command:commandStr}),
             errorMsg: state.commandErrorMsg, responseMsg: state.commandResponseMsg
         })

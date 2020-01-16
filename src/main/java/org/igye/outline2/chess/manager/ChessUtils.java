@@ -59,12 +59,14 @@ public class ChessUtils {
     }
 
     public static int strCoordToInt(char ch) {
-        if (ch >= 97) {
+        if (ch >= 97 && ch <= 104) {
             return ch - 97;
-        } else if (ch >= 65) {
+        } else if (ch >= 65 && ch <= 72) {
             return ch - 65;
-        } else {
+        } else if (ch >= 49 && ch <= 56) {
             return ch - 49;
+        } else {
+            throw new OutlineException("Cannot convert " + ch + " to chess coordinate.");
         }
     }
 }
