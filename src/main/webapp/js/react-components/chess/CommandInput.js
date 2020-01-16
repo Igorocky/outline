@@ -1,9 +1,17 @@
 const fontSize = "20px";
 
+const ENTER_KEY_CODE = 13
+const ESC_KEY_CODE = 27
+const UP_KEY_CODE = 38
+const DOWN_KEY_CODE = 40
+
 const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
+    const [history, setHistory] = useState([]);
+    const [historyFilter, setHistoryFilter] = useState(null);
+    const [historyIndex, setHistoryIndex] = useState(null);
 
     useEffect(() => {
         if (ref.current && (errorMsg || responseMsg)) {
@@ -13,21 +21,76 @@ const CommandInput = ({onExecCommand, responseMsg, errorMsg}) => {
         }
     }, [ref.current, errorMsg, responseMsg])
 
+    useEffect(() => {
+        if (!isCommandNotEmpty()) {
+            resetSearchHistoryState()
+        }
+    }, [commandStr])
+
+    function setNextCommandFromHistory(toBeginning, filter) {
+        const sizeOfHistory = _.size(history);
+        if (sizeOfHistory <= 0) {
+            return
+        }
+        let idx = (historyIndex!=null)?historyIndex:(toBeginning?sizeOfHistory:-1)
+        idx = idx + (toBeginning?-1:1)
+        while (toBeginning?(idx >= 0):(idx < sizeOfHistory)) {
+            let candidateCommand = history[idx]
+            if (filter==null || candidateCommand.includes(filter)) {
+                setHistoryIndex(idx)
+                setHistoryFilter(filter)
+                setCommandStr(candidateCommand)
+                return
+            }
+            idx = idx + (toBeginning?-1:1)
+        }
+    }
+
+    function isCommandNotEmpty() {
+        return commandStr && commandStr.trim().length > 0
+    }
+
+    function resetSearchHistoryState() {
+        setHistoryIndex(null)
+        setHistoryFilter(null)
+    }
+
     function execCommand() {
-        setAnchorEl(null)
-        setCommandStr(null)
-        onExecCommand(commandStr)
+        if (isCommandNotEmpty()) {
+            setAnchorEl(null)
+            setCommandStr(null)
+            resetSearchHistoryState()
+            const trimmedCommandStr = commandStr.trim();
+            setHistory([trimmedCommandStr, ...(history.filter(cmd => cmd != trimmedCommandStr))])
+            onExecCommand(trimmedCommandStr)
+        }
     }
 
     function cancel() {
-        setCommandStr(null);
+        setCommandStr(null)
+        setHistoryIndex(null)
+        setHistoryFilter(null)
+    }
+
+    function getFilter() {
+        if (historyFilter) {
+            return historyFilter
+        } else if (historyIndex == null && isCommandNotEmpty()) {
+            return commandStr
+        } else {
+            return null
+        }
     }
 
     function onKeyDown(event) {
-        if (event.keyCode == 13){
+        if (event.keyCode == ENTER_KEY_CODE){
             execCommand()
-        } else if (event.keyCode == 27) {
+        } else if (event.keyCode == ESC_KEY_CODE) {
             cancel()
+        } else if (event.keyCode == UP_KEY_CODE) {
+            setNextCommandFromHistory(false, getFilter())
+        } else if (event.keyCode == DOWN_KEY_CODE) {
+            setNextCommandFromHistory(true, getFilter())
         }
     }
 
