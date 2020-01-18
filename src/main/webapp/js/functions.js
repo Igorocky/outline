@@ -13,6 +13,8 @@ const PATH = {
     chessboard: CONTEXT_PATH + "/chessboard",
     chessboardWithPractice: CONTEXT_PATH + "/chessboard/practice/:puzzleId",
     createChessboardWithPractice: puzzleId => CONTEXT_PATH + "/chessboard/practice/" + puzzleId,
+    chessboardWithFen: CONTEXT_PATH + "/chessboard/fen/:fen",
+    createChessboardWithFen: fen => CONTEXT_PATH + "/chessboard/fen/" + fen,
     admin: CONTEXT_PATH + "/admin",
 }
 

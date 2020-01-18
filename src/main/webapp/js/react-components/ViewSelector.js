@@ -5,7 +5,7 @@ const VIEWS = [
         component: PuzzlesToRepeatReport, path: [PATH.puzzlesToRepeat, PATH.puzzlesToRepeatWithTab]},
     {name:"Chessboard",
         component: ChessComponent, props:{showPracticeTab:true, setPageTitle: true},
-        path: [PATH.chessboard, PATH.chessboardWithPractice]},
+        path: [PATH.chessboard, PATH.chessboardWithPractice, PATH.chessboardWithFen]},
     {name:"Admin",
         component: AdminView, path: [PATH.admin]},
 ]

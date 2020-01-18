@@ -204,6 +204,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (!state.isChessbordIsHidden()) {
             renderChessboard(chessComponentView);
         }
+        chessComponentView.setCurrPositionFen(state.getCurrPosition().getMove().toFen());
         chessComponentView.setHistory(createHistoryView(state.getPracticeState() != null));
         chessComponentView.setNoMovesRecorded(CollectionUtils.isEmpty(state.getInitialPosition().getChildren()));
         if (state.getCommandErrorMsg() != null) {

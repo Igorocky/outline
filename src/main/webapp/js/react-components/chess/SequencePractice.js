@@ -1,12 +1,17 @@
 "use strict";
 
-const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMove, failed, history}) => {
+const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMove, failed, history, fen}) => {
 
     function renderNextActionDescription() {
         if (waitingForNextMove) {
             return RE.Container.row.left.center({},{},
                 colorToMove + " to move.",
-                RE.Button({onClick: () => backend.call("showCorrectMove", {})}, "Show move")
+                RE.Button({onClick: () => backend.call("showCorrectMove", {})}, "Show move"),
+                RE.Button({
+                    onClick: () => window.open(
+                        PATH.createChessboardWithFen(fen.replace(/ /g,"_").replace(/\//g,"+"))
+                    )
+                }, "play")
             )
         } else {
             return null

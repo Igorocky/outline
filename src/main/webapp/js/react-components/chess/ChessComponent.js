@@ -8,6 +8,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                             setPageTitle}) => {
     const [state, setChessComponentState] = useState(null)
     const puzzleId = getByPath(match, ["params", "puzzleId"])
+    const fen = getByPath(match, ["params", "fen"])
     const [puzzleName, setPuzzleName] = useState(null)
     const [initialPgn, setInitialPgnHashCode] = useState(null)
 
@@ -30,6 +31,8 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             onBackendCreated(backend)
         } else if (puzzleId) {
             loadPuzzle(puzzleId)
+        } else if (fen) {
+            loadFen(fen)
         } else {
             backend.call("getCurrentState", {})
         }
@@ -63,6 +66,15 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 autoResponse: autoResponseEnabled,
                 commands: textModeEnabled?["tm", "ci"]:null
             })
+        })
+    }
+
+    function loadFen(fen) {
+        backend.call("loadFromFen", {
+            fen:fen,
+            tabToOpen:"MOVES",
+            autoResponse: false,
+            commands: ["tm", "ci"]
         })
     }
 
@@ -127,7 +139,9 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         if (showPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.practice] = {
                 label:"Practice",
-                render: () => re(SequencePractice,{backend:backend, ...state.practiseState, history:state.history})
+                render: () => re(SequencePractice,{
+                    backend:backend, ...state.practiseState, history:state.history, fen:state.currPositionFen
+                })
             }
         }
         return reTabs({selectedTab:state.tab, onTabSelected:handleTabChange, tabs:tabs})

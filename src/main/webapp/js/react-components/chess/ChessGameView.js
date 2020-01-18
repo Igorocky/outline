@@ -172,7 +172,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
                     RE.Icon({}, "fast_forward")),
                 RE.Button({
                         onClick: () => window.open(
-                            "https://lichess.org/analysis/standard/" + currFen.replace(" ","_")
+                            "https://lichess.org/analysis/standard/" + currFen.replace(/ /g,"_")
                         )
                     },
                     RE.Icon({}, "equalizer")),
