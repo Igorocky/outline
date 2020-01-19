@@ -321,6 +321,30 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void renderTextChessboard(ChessComponentView chessComponentView) {
         StringBuilder sb = new StringBuilder();
+        if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
+            renderBlackPieces(sb);
+            sb.append("\n\n");
+            renderWhitePieces(sb);
+        } else {
+            renderWhitePieces(sb);
+            sb.append("\n\n");
+            renderBlackPieces(sb);
+        }
+        sb.append("\n");
+        chessComponentView.setChessBoardText(sb.toString());
+    }
+
+    private void renderWhitePieces(StringBuilder sb) {
+        sb.append("White:\n");
+        addLocationsOf(sb, "P", WHITE_PAWN);
+        addLocationsOf(sb, "N", WHITE_KNIGHT);
+        addLocationsOf(sb, "B", WHITE_BISHOP);
+        addLocationsOf(sb, "R", WHITE_ROOK);
+        addLocationsOf(sb, "Q", WHITE_QUEEN);
+        addLocationsOf(sb, "K", WHITE_KING);
+    }
+
+    private void renderBlackPieces(StringBuilder sb) {
         sb.append("Black:\n");
         addLocationsOf(sb, "p", BLACK_PAWN);
         addLocationsOf(sb, "n", BLACK_KNIGHT);
@@ -328,15 +352,6 @@ public class MovesBuilder implements ChessComponentStateManager {
         addLocationsOf(sb, "r", BLACK_ROOK);
         addLocationsOf(sb, "q", BLACK_QUEEN);
         addLocationsOf(sb, "k", BLACK_KING);
-        sb.append("\n\nWhite:\n");
-        addLocationsOf(sb, "P", WHITE_PAWN);
-        addLocationsOf(sb, "N", WHITE_KNIGHT);
-        addLocationsOf(sb, "B", WHITE_BISHOP);
-        addLocationsOf(sb, "R", WHITE_ROOK);
-        addLocationsOf(sb, "Q", WHITE_QUEEN);
-        addLocationsOf(sb, "K", WHITE_KING);
-        sb.append("\n");
-        chessComponentView.setChessBoardText(sb.toString());
     }
 
     private void addLocationsOf(StringBuilder sb, String prefix, ChessmanType chessmanType) {
