@@ -4,6 +4,7 @@ import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.manager.analyse.PgnParser;
+import org.igye.outline2.chess.model.Move;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -2304,5 +2305,39 @@ public class MovesBuilderTest {
         assertNull(view.getCommandResponseMsg());
         assertEquals("matchedUSerCells.size() > 1 for b1", view.getCommandErrorMsg());
 
+    }
+    @Test public void whenInCaseInsensitiveMode_movesWithAdditionalCoordinateAreRecognized() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(
+                null, new Move("3r1r2/ppp3k1/2n2qp1/b3pbNp/2B5/2P2NQ1/PP3PPP/3RK2R b K - 7 17")
+        );
+        execCommand(movesBuilder, "ci");
+
+        //when
+        ChessComponentView view = execCommand(movesBuilder, "rde8");
+
+        //then
+        assertNull(view.getCommandErrorMsg());
+        assertEquals(
+                "4rr2/ppp3k1/2n2qp1/b3pbNp/2B5/2P2NQ1/PP3PPP/3RK2R w K - 8 18",
+                view.getCurrPositionFen()
+        );
+    }
+    @Test public void whenInCaseInsensitiveMode_bMeansBishop() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(
+                null, new Move("3r1r2/ppp3k1/2n2qp1/b3pbNp/2B5/2P2NQ1/PP3PPP/3RK2R b K - 7 17")
+        );
+        execCommand(movesBuilder, "ci");
+
+        //when
+        ChessComponentView view = execCommand(movesBuilder, "be6");
+
+        //then
+        assertNull(view.getCommandErrorMsg());
+        assertEquals(
+                "3r1r2/ppp3k1/2n1bqp1/b3p1Np/2B5/2P2NQ1/PP3PPP/3RK2R w K - 8 18",
+                view.getCurrPositionFen()
+        );
     }
 }
