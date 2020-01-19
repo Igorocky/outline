@@ -73,8 +73,10 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String TEXT_MODE_CMD = "tm";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
     private static final String COMPARE_POSITION_CMD = "cmp";
-    public static final Comparator<CellCoords> CELL_COMPARATOR =
+    public static final Comparator<CellCoords> WHITE_SIDE_CELL_COMPARATOR =
             Comparator.comparingInt(c -> (c.getX() * 8 + c.getY()));
+    public static final Comparator<CellCoords> BLACK_SIDE_CELL_COMPARATOR =
+            Comparator.comparingInt(c -> -(c.getX() * 8 + c.getY()));
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
@@ -322,42 +324,43 @@ public class MovesBuilder implements ChessComponentStateManager {
     private void renderTextChessboard(ChessComponentView chessComponentView) {
         StringBuilder sb = new StringBuilder();
         if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
-            renderBlackPieces(sb);
+            renderBlackPieces(WHITE_SIDE_CELL_COMPARATOR, sb);
             sb.append("\n\n");
-            renderWhitePieces(sb);
+            renderWhitePieces(WHITE_SIDE_CELL_COMPARATOR, sb);
         } else {
-            renderWhitePieces(sb);
+            renderWhitePieces(BLACK_SIDE_CELL_COMPARATOR, sb);
             sb.append("\n\n");
-            renderBlackPieces(sb);
+            renderBlackPieces(BLACK_SIDE_CELL_COMPARATOR, sb);
         }
         sb.append("\n");
         chessComponentView.setChessBoardText(sb.toString());
     }
 
-    private void renderWhitePieces(StringBuilder sb) {
+    private void renderWhitePieces(Comparator<CellCoords> cellComparator, StringBuilder sb) {
         sb.append("White:\n");
-        addLocationsOf(sb, "P", WHITE_PAWN);
-        addLocationsOf(sb, "N", WHITE_KNIGHT);
-        addLocationsOf(sb, "B", WHITE_BISHOP);
-        addLocationsOf(sb, "R", WHITE_ROOK);
-        addLocationsOf(sb, "Q", WHITE_QUEEN);
-        addLocationsOf(sb, "K", WHITE_KING);
+        addLocationsOf(cellComparator, sb, "P", WHITE_PAWN);
+        addLocationsOf(cellComparator, sb, "N", WHITE_KNIGHT);
+        addLocationsOf(cellComparator, sb, "B", WHITE_BISHOP);
+        addLocationsOf(cellComparator, sb, "R", WHITE_ROOK);
+        addLocationsOf(cellComparator, sb, "Q", WHITE_QUEEN);
+        addLocationsOf(cellComparator, sb, "K", WHITE_KING);
     }
 
-    private void renderBlackPieces(StringBuilder sb) {
+    private void renderBlackPieces(Comparator<CellCoords> cellComparator, StringBuilder sb) {
         sb.append("Black:\n");
-        addLocationsOf(sb, "p", BLACK_PAWN);
-        addLocationsOf(sb, "n", BLACK_KNIGHT);
-        addLocationsOf(sb, "b", BLACK_BISHOP);
-        addLocationsOf(sb, "r", BLACK_ROOK);
-        addLocationsOf(sb, "q", BLACK_QUEEN);
-        addLocationsOf(sb, "k", BLACK_KING);
+        addLocationsOf(cellComparator, sb, "p", BLACK_PAWN);
+        addLocationsOf(cellComparator, sb, "n", BLACK_KNIGHT);
+        addLocationsOf(cellComparator, sb, "b", BLACK_BISHOP);
+        addLocationsOf(cellComparator, sb, "r", BLACK_ROOK);
+        addLocationsOf(cellComparator, sb, "q", BLACK_QUEEN);
+        addLocationsOf(cellComparator, sb, "k", BLACK_KING);
     }
 
-    private void addLocationsOf(StringBuilder sb, String prefix, ChessmanType chessmanType) {
+    private void addLocationsOf(Comparator<CellCoords> cellComparator,
+                                StringBuilder sb, String prefix, ChessmanType chessmanType) {
         sb.append("\n").append(prefix).append(":");
         getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
-                .sorted(CELL_COMPARATOR)
+                .sorted(cellComparator)
                 .forEach(cell -> sb.append(" ").append(ChessUtils.coordsToString(cell)));
     }
 
