@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
@@ -70,7 +71,9 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
     private static final String SET_DEPTH_CMD = "d";
     private static final String SET_MOVE_TIME_CMD = "t";
+    private static final String GRAPHIC_MODE_CMD = "gm";
     private static final String TEXT_MODE_CMD = "tm";
+    private static final String SEQUENCE_MODE_CMD = "sm";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
     private static final String COMPARE_POSITION_CMD = "cmp";
     public static final Comparator<CellCoords> WHITE_SIDE_CELL_COMPARATOR =
@@ -314,10 +317,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void renderChessboard(ChessComponentView chessComponentView) {
-        if (state.isTextMode()) {
+        if (state.getChessboardMode() == ChessboardMode.GRAPHIC) {
+            renderGraphicalChessboard(chessComponentView);
+        } else if (state.getChessboardMode() == ChessboardMode.TEXT) {
             renderTextChessboard(chessComponentView);
         } else {
-            renderGraphicalChessboard(chessComponentView);
+            renderSequentialChessboard(chessComponentView);
         }
     }
 
@@ -334,6 +339,18 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
         sb.append("\n");
         chessComponentView.setChessBoardText(sb.toString());
+    }
+
+    private void renderSequentialChessboard(ChessComponentView chessComponentView) {
+        List<String> sequenceOfPieces = new ArrayList<>();
+        if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
+            sequenceOfPieces.addAll(listWhitePieces());
+            sequenceOfPieces.addAll(listBlackPieces());
+        } else {
+            sequenceOfPieces.addAll(listBlackPieces());
+            sequenceOfPieces.addAll(listWhitePieces());
+        }
+        chessComponentView.setChessBoardSequence(sequenceOfPieces);
     }
 
     private void renderWhitePieces(Comparator<CellCoords> cellComparator, StringBuilder sb) {
@@ -356,12 +373,36 @@ public class MovesBuilder implements ChessComponentStateManager {
         addLocationsOf(cellComparator, sb, "k", BLACK_KING);
     }
 
+    private List<String> listWhitePieces() {
+        return Stream.of(WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, WHITE_KING)
+                .flatMap(chessmanType -> listPieces(WHITE_SIDE_CELL_COMPARATOR, chessmanType))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> listBlackPieces() {
+        return Stream.of(BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING)
+                .flatMap(chessmanType -> listPieces(BLACK_SIDE_CELL_COMPARATOR, chessmanType))
+                .collect(Collectors.toList());
+    }
+
+    private Stream<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanType chessmanType) {
+        String pieceName = chessmanType.getPieceColor() == WHITE
+                ? chessmanType.getSymbol().toUpperCase()
+                : chessmanType.getSymbol().toLowerCase();
+        return findLocationsOf(cellComparator, chessmanType)
+            .map(cellCoords -> pieceName + " " + ChessUtils.coordsToString(cellCoords));
+    }
+
     private void addLocationsOf(Comparator<CellCoords> cellComparator,
                                 StringBuilder sb, String prefix, ChessmanType chessmanType) {
         sb.append("\n").append(prefix).append(":");
-        getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
-                .sorted(cellComparator)
+        findLocationsOf(cellComparator, chessmanType)
                 .forEach(cell -> sb.append(" ").append(ChessUtils.coordsToString(cell)));
+    }
+
+    private Stream<CellCoords> findLocationsOf(Comparator<CellCoords> cellComparator, ChessmanType chessmanType) {
+        return getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
+                .sorted(cellComparator);
     }
 
     private void renderGraphicalChessboard(ChessComponentView chessComponentView) {
@@ -410,36 +451,43 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void initCommandMap() {
         commands = new HashMap<>();
-        commands.put(HIDE_SHOW_CHESSBOARD_CMD, args -> hideShowChessboard());
-        commands.put(PREV_POSITION_CMD, args -> goToPrevPosition());
-        commands.put(NEXT_POSITION_CMD, args -> goToNextPosition());
-        commands.put(GENERATE_NEXT_MOVE_CMD, args -> generateNextMove());
-        commands.put(AUTO_RESPONSE_CMD, args -> setAutoresponse());
-        commands.put(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
-        commands.put(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
-        commands.put(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
-        commands.put(GO_TO_POSITION_CMD, args -> {
+        addCommand(HIDE_SHOW_CHESSBOARD_CMD, args -> hideShowChessboard());
+        addCommand(PREV_POSITION_CMD, args -> goToPrevPosition());
+        addCommand(NEXT_POSITION_CMD, args -> goToNextPosition());
+        addCommand(GENERATE_NEXT_MOVE_CMD, args -> generateNextMove());
+        addCommand(AUTO_RESPONSE_CMD, args -> setAutoresponse());
+        addCommand(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
+        addCommand(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
+        addCommand(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
+        addCommand(GO_TO_POSITION_CMD, args -> {
             final String destination = args[1];
             goToPosition(
                     Integer.parseInt(destination.substring(0, destination.length()-1)),
                     destination.charAt(destination.length()-1) == 'w' ? WHITE : BLACK
             );
         });
-        commands.put(SET_DEPTH_CMD, args -> {
+        addCommand(SET_DEPTH_CMD, args -> {
             final int depth = Integer.parseInt(args[1]);
             state.setDepth((1 <= depth && depth <= MAX_DEPTH) ? depth : MAX_DEPTH);
         });
-        commands.put(SET_MOVE_TIME_CMD, args -> {
+        addCommand(SET_MOVE_TIME_CMD, args -> {
             final int moveTime = Integer.parseInt(args[1]);
             state.setMovetimeSec((1 <= moveTime && moveTime <= MAX_MOVE_TIME) ? moveTime : MAX_MOVE_TIME);
         });
-        commands.put(TEXT_MODE_CMD, args -> {
-            state.setTextMode(!state.isTextMode());
-        });
-        commands.put(CASE_INSENSITIVE_MODE_CMD, args -> {
+        addCommand(GRAPHIC_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.GRAPHIC));
+        addCommand(TEXT_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.TEXT));
+        addCommand(SEQUENCE_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.SEQUENCE));
+        addCommand(CASE_INSENSITIVE_MODE_CMD, args -> {
             state.setCaseInsensitiveMode(!state.isCaseInsensitiveMode());
         });
-        commands.put(COMPARE_POSITION_CMD, this::comparePosition);
+        addCommand(COMPARE_POSITION_CMD, this::comparePosition);
+    }
+
+    private void addCommand(String commandName, Consumer<String[]> commandHandler) {
+        if (commands.containsKey(commandName)) {
+            throw new OutlineException("Command " + commandName + " is already registered.");
+        }
+        commands.put(commandName, commandHandler);
     }
 
     private void goToPosition(int feMoveNumber, ChessmanColor color) {

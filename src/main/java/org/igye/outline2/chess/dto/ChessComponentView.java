@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.igye.outline2.chess.manager.ChessComponentStage;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -14,8 +16,9 @@ import org.igye.outline2.chess.manager.ChessComponentStage;
 @Builder
 public class ChessComponentView {
     private ChessBoardView chessBoard;
-    private String currPositionFen;
     private String chessBoardText;
+    private List<String> chessBoardSequence;
+    private String currPositionFen;
     private ChessComponentStage tab;
     private InitialPositionView availableChessmanTypes;
     private HistoryView history;

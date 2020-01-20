@@ -98,6 +98,16 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 variant: "standard",
                 style:{width:"300px", margin:"0px 0px 10px 10px"},
             })
+        } else if (state.chessBoardSequence) {
+            return RE.TextField({
+                className: "black-text",
+                multiline: true,
+                rowsMax: 3000,
+                value: JSON.stringify(state.chessBoardSequence),
+                disabled: true,
+                variant: "standard",
+                style:{width:"300px", margin:"0px 0px 10px 10px"},
+            })
         } else {
             return null
         }
