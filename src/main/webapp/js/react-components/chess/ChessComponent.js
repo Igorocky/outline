@@ -64,7 +64,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:"PRACTICE_SEQUENCE",
                 autoResponse: autoResponseEnabled,
-                commands: textModeEnabled?["tm", "ci"]:null
+                commands: textModeEnabled?["sm", "ci"]:null
             })
         })
     }
@@ -99,15 +99,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 style:{width:"300px", margin:"0px 0px 10px 10px"},
             })
         } else if (state.chessBoardSequence) {
-            return RE.TextField({
-                className: "black-text",
-                multiline: true,
-                rowsMax: 3000,
-                value: JSON.stringify(state.chessBoardSequence),
-                disabled: true,
-                variant: "standard",
-                style:{width:"300px", margin:"0px 0px 10px 10px"},
-            })
+            return re(CellSpinner, {cells:state.chessBoardSequence})
         } else {
             return null
         }
