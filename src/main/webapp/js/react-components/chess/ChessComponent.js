@@ -74,7 +74,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             fen:fen,
             tabToOpen:"MOVES",
             autoResponse: false,
-            commands: ["tm", "ci"]
+            commands: ["b", "ci"]
         })
     }
 
@@ -99,7 +99,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 style:{width:"300px", margin:"0px 0px 10px 10px"},
             })
         } else if (state.chessBoardSequence) {
-            return re(CellSpinner, {cells:state.chessBoardSequence})
+            return re(CellIterator, {cells:state.chessBoardSequence})
         } else {
             return null
         }

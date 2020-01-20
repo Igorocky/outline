@@ -344,11 +344,11 @@ public class MovesBuilder implements ChessComponentStateManager {
     private void renderSequentialChessboard(ChessComponentView chessComponentView) {
         List<String> sequenceOfPieces = new ArrayList<>();
         if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
-            sequenceOfPieces.addAll(listWhitePieces());
-            sequenceOfPieces.addAll(listBlackPieces());
+            sequenceOfPieces.addAll(listWhitePieces(WHITE_SIDE_CELL_COMPARATOR));
+            sequenceOfPieces.addAll(listBlackPieces(WHITE_SIDE_CELL_COMPARATOR));
         } else {
-            sequenceOfPieces.addAll(listBlackPieces());
-            sequenceOfPieces.addAll(listWhitePieces());
+            sequenceOfPieces.addAll(listBlackPieces(BLACK_SIDE_CELL_COMPARATOR));
+            sequenceOfPieces.addAll(listWhitePieces(BLACK_SIDE_CELL_COMPARATOR));
         }
         chessComponentView.setChessBoardSequence(sequenceOfPieces);
     }
@@ -373,15 +373,15 @@ public class MovesBuilder implements ChessComponentStateManager {
         addLocationsOf(cellComparator, sb, "k", BLACK_KING);
     }
 
-    private List<String> listWhitePieces() {
+    private List<String> listWhitePieces(Comparator<CellCoords> cellComparator) {
         return Stream.of(WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, WHITE_KING)
-                .flatMap(chessmanType -> listPieces(WHITE_SIDE_CELL_COMPARATOR, chessmanType))
+                .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
                 .collect(Collectors.toList());
     }
 
-    private List<String> listBlackPieces() {
+    private List<String> listBlackPieces(Comparator<CellCoords> cellComparator) {
         return Stream.of(BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING)
-                .flatMap(chessmanType -> listPieces(BLACK_SIDE_CELL_COMPARATOR, chessmanType))
+                .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
                 .collect(Collectors.toList());
     }
 
