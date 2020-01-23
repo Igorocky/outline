@@ -3,6 +3,14 @@
 const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     const popupActions = []
     const chessPuzzleUrl = getTagSingleValue(node, TAG_ID.chessPuzzleUrl)
+    popupActions.push(
+        iconButton({iconName: "play_arrow",
+            onClick: e => {
+                window.open(PATH.createChessboardWithPractice(node[NODE.id]))
+                e.stopPropagation()
+            }
+        })
+    )
     if (chessPuzzleUrl) {
         popupActions.push(
             iconButton({iconName: "open_in_new",
@@ -13,7 +21,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
             })
         )
     }
-    
+
     return re(FolderComponent,{
         text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
         props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
