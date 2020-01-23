@@ -7,11 +7,6 @@ const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMo
             return RE.Container.row.left.center({},{},
                 colorToMove + " to move.",
                 RE.Button({onClick: () => backend.call("showCorrectMove", {})}, "Show move"),
-                RE.Button({
-                    onClick: () => window.open(
-                        PATH.createChessboardWithFen(fen.replace(/ /g,"_").replace(/\//g,"+"))
-                    )
-                }, "play")
             )
         } else {
             return null
@@ -35,10 +30,18 @@ const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMo
         )
     }
 
-    return RE.Container.col.top.left({},{},
-        renderProgressStatus(),
-        renderNextActionDescription(),
-        RE.span({style:{color:"red"}},incorrectMove?"Incorrect move!":""),
+    return RE.Container.row.left.top({},{style:{marginRight:"15px"}},
         re(History,{backend:backend, ...history}),
+        RE.Container.col.top.left({},{},
+            renderProgressStatus(),
+            renderNextActionDescription(),
+            RE.span({style:{color:"red"}},incorrectMove?"Incorrect move!":""),
+            RE.Button({
+                onClick: () => window.open(
+                    PATH.createChessboardWithFen(fen.replace(/ /g,"_").replace(/\//g,"+"))
+                )
+            }, "play"),
+
+        )
     )
 }
