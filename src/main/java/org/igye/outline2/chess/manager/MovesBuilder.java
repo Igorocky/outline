@@ -109,16 +109,23 @@ public class MovesBuilder implements ChessComponentStateManager {
         return toView();
     }
 
-    private final Pattern CASE_INSENSITIVE_MOVE_CMD_PATTERN = Pattern.compile("^([_kqrbn])([a-h]|[1-8])?([a-h][1-8])$");
+    private final Pattern CASE_INSENSITIVE_MOVE_CMD_PATTERN =
+            Pattern.compile("^([_kqrbnKQRBN])?([a-h]|[1-8])?([a-h][1-8])([qrbnQRBN])?$");
     private String processCaseInsensitiveMove(String moveCmd) {
         if (state.isCaseInsensitiveMode()) {
             Matcher matcher = CASE_INSENSITIVE_MOVE_CMD_PATTERN.matcher(moveCmd);
             if (matcher.matches()) {
                 String firstChar = matcher.group(1);
+                firstChar = firstChar == null ? "" : firstChar.toUpperCase();
                 firstChar = "_".equals(firstChar) ? "b" : firstChar.toUpperCase();
+
                 String additionalCoord = matcher.group(2);
                 additionalCoord = additionalCoord == null ? "" : additionalCoord;
-                return firstChar + additionalCoord + matcher.group(3);
+
+                String promotionChessman = matcher.group(4);
+                promotionChessman = promotionChessman == null ? "" : promotionChessman.toUpperCase();
+
+                return firstChar + additionalCoord + matcher.group(3) + promotionChessman;
             } else {
                 return moveCmd;
             }
@@ -328,7 +335,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void renderTextChessboard(ChessComponentView chessComponentView) {
         StringBuilder sb = new StringBuilder();
-        if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
+        if (state.getInitialPosition().getMove().getColorOfWhoToMove() == WHITE) {
             renderBlackPieces(WHITE_SIDE_CELL_COMPARATOR, sb);
             sb.append("\n\n");
             renderWhitePieces(WHITE_SIDE_CELL_COMPARATOR, sb);

@@ -2340,4 +2340,21 @@ public class MovesBuilderTest {
                 view.getCurrPositionFen()
         );
     }
+    @Test public void whenInCaseInsensitiveMode_qMeansQueenWhenPromotingAPawn() {
+        //given
+        MovesBuilder movesBuilder = new MovesBuilder(
+                null, new Move("8/4PK2/8/8/1k6/8/8/8 w - - 0 1")
+        );
+        execCommand(movesBuilder, "ci");
+
+        //when
+        ChessComponentView view = execCommand(movesBuilder, "e8q");
+
+        //then
+        assertNull(view.getCommandErrorMsg());
+        assertEquals(
+                "4Q3/5K2/8/8/1k6/8/8/8 b - - 0 1",
+                view.getCurrPositionFen()
+        );
+    }
 }
