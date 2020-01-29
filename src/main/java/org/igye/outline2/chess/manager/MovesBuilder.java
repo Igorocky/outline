@@ -448,6 +448,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 chessBoardView.setBorderColorForCell(currMove.getTo(), AVAILABLE_TO_MOVE_TO_COLOR);
             }
         }
+        chessBoardView.setBoardRotated(state.getInitialPosition().getMove().getColorOfWhoToMove() == BLACK);
     }
 
     private void putChessmanTypeToChoose(ChessBoardView chessBoard, int x, int y, ChessmanType chessmanType) {

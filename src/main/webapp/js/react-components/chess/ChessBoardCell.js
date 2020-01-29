@@ -15,7 +15,7 @@ const codeToImgArr = {
     10007:"delete-icon",
 }
 
-const ChessBoardCell = ({backend,xShift,yShift,coords,backgroundColor,borderColor,code}) => {
+const ChessBoardCell = ({backend,xShift,yShift,coords,backgroundColor,borderColor,code,boardRotated}) => {
 
     function clicked() {
         backend.call("cellLeftClicked", {coords:coords})
@@ -37,8 +37,10 @@ const ChessBoardCell = ({backend,xShift,yShift,coords,backgroundColor,borderColo
         }
     }
 
-    const cellXPos = (coords.x+(xShift?xShift:0))*cellSize
-    const cellYPos = (7-(coords.y+(yShift?yShift:0)))*cellSize
+    const coordsXAfterRotation = !boardRotated?coords.x:(7-coords.x)
+    const coordsYAfterRotation = !boardRotated?coords.y:(7-coords.y)
+    const cellXPos = (coordsXAfterRotation+(xShift?xShift:0))*cellSize
+    const cellYPos = (7-(coordsYAfterRotation+(yShift?yShift:0)))*cellSize
     return RE.Fragment({},
         SVG.rect({
             x:cellXPos, y:cellYPos, width:cellSize, height:cellSize,

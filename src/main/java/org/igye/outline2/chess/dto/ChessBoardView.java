@@ -1,13 +1,7 @@
 package org.igye.outline2.chess.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.igye.outline2.chess.model.CellCoords;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -16,6 +10,7 @@ import java.util.List;
 @Builder
 public class ChessBoardView {
     private ChessBoardCellView[][] cells;
+    private boolean boardRotated;
 
     public void setBorderColorForCell(CellCoords coords, String color) {
         getCell(coords).setBorderColor(color);

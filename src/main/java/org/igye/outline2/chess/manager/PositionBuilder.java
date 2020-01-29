@@ -94,6 +94,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     public ChessComponentResponse toView() {
         ChessComponentView result = new ChessComponentView();
         result.setChessBoard(ChessViewConverter.toDto(chessBoard));
+        result.getChessBoard().setBoardRotated(colorToMove == ChessmanColor.BLACK);
         result.setTab(ChessComponentStage.INITIAL_POSITION);
         result.setAvailableChessmanTypes(InitialPositionView.builder()
                 .availableChessmanTypes(availablePieces)
