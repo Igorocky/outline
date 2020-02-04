@@ -113,7 +113,8 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         return re(CommandInput, {
             style:{width:(cellSize*8) + "px"},
             onExecCommand: commandStr => backend.call("execChessCommand", {command:commandStr}),
-            errorMsg: state.commandErrorMsg, responseMsg: state.commandResponseMsg
+            errorMsg: state.commandErrorMsg, responseMsg: state.commandResponseMsg,
+            onClickAway: () => backend.call("hideCommandResponseMsg")
         })
     }
 

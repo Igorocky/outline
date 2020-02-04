@@ -82,14 +82,16 @@ public class RpcDispatcher {
     }
 
     private void validatePassedParams(String methodName, Parameter[] declaredParams, JsonNode passedParams) {
-        Set<String> allParamNames = OutlineUtils.mapToSet(declaredParams, Parameter::getName);
-        passedParams.fieldNames().forEachRemaining(passedParamName -> {
-            if (!allParamNames.contains(passedParamName)) {
-                throw new OutlineException(
-                        "Unknown parameter name '" + passedParamName + "' in " + methodName + ", expected are [" + StringUtils.join(allParamNames, ",") + "]"
-                );
-            }
-        });
+        if (passedParams != null) {
+            Set<String> allParamNames = OutlineUtils.mapToSet(declaredParams, Parameter::getName);
+            passedParams.fieldNames().forEachRemaining(passedParamName -> {
+                if (!allParamNames.contains(passedParamName)) {
+                    throw new OutlineException(
+                            "Unknown parameter name '" + passedParamName + "' in " + methodName + ", expected are [" + StringUtils.join(allParamNames, ",") + "]"
+                    );
+                }
+            });
+        }
     }
 
     private Object[] prepareArguments(String methodName,
@@ -100,7 +102,7 @@ public class RpcDispatcher {
             Parameter declaredParam = declaredParams[i];
             Class<?> paramType = declaredParam.getType();
             String paramName = declaredParam.getName();
-            JsonNode passedParam = passedParams.get(paramName);
+            JsonNode passedParam = passedParams != null ? passedParams.get(paramName) : null;
             if (paramType.equals(OptVal.class)) {
                 if (!passedParams.has(paramName)) {
                     arguments[i] = ABSENT_OPT_VAL;

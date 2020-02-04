@@ -202,6 +202,13 @@ public class PositionBuilder implements ChessComponentStateManager {
         return null;
     }
 
+    @Override
+    public ChessComponentResponse hideCommandResponseMsg() {
+        commandResponseMsg = null;
+        commandErrorMsg = null;
+        return toView();
+    }
+
     public Move getInitialPosition() {
         return new Move(
                 chessBoard,

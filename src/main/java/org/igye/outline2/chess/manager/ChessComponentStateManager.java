@@ -14,6 +14,7 @@ public interface ChessComponentStateManager {
     ChessComponentResponse setPositionFromFen(String fen);
     ChessComponentResponse showCorrectMove();
     ChessComponentResponse setAutoResponseForOpponent();
+    ChessComponentResponse hideCommandResponseMsg();
 
     default void notSupported() {
         throw new OutlineException("Method not supported.");

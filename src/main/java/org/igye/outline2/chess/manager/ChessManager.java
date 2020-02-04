@@ -125,6 +125,13 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
+    @Override
+    public ChessComponentResponse hideCommandResponseMsg() {
+        stateManager.hideCommandResponseMsg();
+        return toView();
+    }
+
+    @RpcMethod
     public ChessComponentResponse chessTabSelected(ChessComponentStage tab) {
         if (stateManager instanceof PositionBuilder) {
             if (tab.equals(ChessComponentStage.MOVES)) {

@@ -208,6 +208,13 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
+    public ChessComponentResponse hideCommandResponseMsg() {
+        state.setCommandResponseMsg(null);
+        state.setCommandErrorMsg(null);
+        return toView();
+    }
+
+    @Override
     public ChessComponentResponse toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(state.getPracticeState() == null

@@ -5,7 +5,7 @@ const ESC_KEY_CODE = 27
 const UP_KEY_CODE = 38
 const DOWN_KEY_CODE = 40
 
-const CommandInput = ({style, onExecCommand, responseMsg, errorMsg}) => {
+const CommandInput = ({style, onExecCommand, responseMsg, errorMsg, onClickAway}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
     const ref = React.useRef(null)
@@ -113,7 +113,7 @@ const CommandInput = ({style, onExecCommand, responseMsg, errorMsg}) => {
         anchorEl
             ? clickAwayListener({
                 key: "CommandInput-Popper",
-                onClickAway: () => setAnchorEl(null),
+                onClickAway: onClickAway,
                 children: re(Popper, {open: true, anchorEl: anchorEl, placement: 'top-start'},
                     paper(re('span',{style:{...(errorMsg?{color:"red"}:{}), fontSize: fontSize}},errorMsg?errorMsg:responseMsg))
                 )
