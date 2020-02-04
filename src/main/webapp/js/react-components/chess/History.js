@@ -18,7 +18,9 @@ const History = ({backend, startPositionSelected, rows}) => {
                         key:"w",
                         style: {backgroundColor: move.whitesMoveSelected ? "yellow" : null},
                         className:"grey-background-on-hover pointer-on-hover",
-                        onClick: () => backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "w"}),
+                        onClick: () => move.whitesMove
+                            ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "w"})
+                            :null,
                     },
                     move.whitesMove
                 ),
@@ -26,7 +28,9 @@ const History = ({backend, startPositionSelected, rows}) => {
                         key:"b",
                         style: {backgroundColor: move.blacksMoveSelected ? "yellow" : null},
                         className:"grey-background-on-hover pointer-on-hover",
-                        onClick: () => backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "b"}),
+                        onClick: () => move.blacksMove
+                            ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "b"})
+                            :null,
                     },
                     move.blacksMove
                 )
