@@ -678,6 +678,12 @@ public class MovesBuilder implements ChessComponentStateManager {
         });
         if (historyRow[0].getWhitesMove() != null) {
             historyView.getRows().add(historyRow[0]);
+        } else if (historyView.getRows().isEmpty()
+                && state.getInitialPosition().getMove().getColorOfWhoToMove() == BLACK) {
+            historyRow[0] = new HistoryRow();
+            historyRow[0].setFeMoveNumber(1);
+            historyRow[0].setWhitesMove("...");
+            historyView.getRows().add(historyRow[0]);
         }
         return historyView;
     }
