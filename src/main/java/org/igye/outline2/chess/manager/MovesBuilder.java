@@ -388,13 +388,13 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private List<String> listWhitePieces(Comparator<CellCoords> cellComparator) {
-        return Stream.of(WHITE_PAWN, WHITE_KNIGHT, WHITE_BISHOP, WHITE_ROOK, WHITE_QUEEN, WHITE_KING)
+        return Stream.of(WHITE_ROOK, WHITE_BISHOP, WHITE_QUEEN, WHITE_KNIGHT, WHITE_PAWN, WHITE_KING)
                 .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
                 .collect(Collectors.toList());
     }
 
     private List<String> listBlackPieces(Comparator<CellCoords> cellComparator) {
-        return Stream.of(BLACK_PAWN, BLACK_KNIGHT, BLACK_BISHOP, BLACK_ROOK, BLACK_QUEEN, BLACK_KING)
+        return Stream.of(BLACK_ROOK, BLACK_BISHOP, BLACK_QUEEN, BLACK_KNIGHT, BLACK_PAWN, BLACK_KING)
                 .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
                 .collect(Collectors.toList());
     }
