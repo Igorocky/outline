@@ -7,6 +7,8 @@ import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ChessViewConverter;
+import org.igye.outline2.chess.dto.ChessboardSequentialView;
+import org.igye.outline2.chess.dto.ChessmenPositionQuizCard;
 import org.igye.outline2.chess.dto.HistoryRow;
 import org.igye.outline2.chess.dto.HistoryView;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
@@ -370,7 +372,11 @@ public class MovesBuilder implements ChessComponentStateManager {
         } else {
             sequenceOfPieces = listPieces(BLACK_SIDE_CELL_COMPARATOR, BLACK);
         }
-        chessComponentView.setChessBoardSequence(sequenceOfPieces);
+        chessComponentView.setChessBoardSequence(ChessboardSequentialView.builder()
+                .positionDescription(sequenceOfPieces)
+                .quiz(createQuizCards())
+                .build()
+        );
     }
 
     private void renderWhitePieces(Comparator<CellCoords> cellComparator, StringBuilder sb) {
@@ -418,6 +424,22 @@ public class MovesBuilder implements ChessComponentStateManager {
                 : chessmanType.getSymbol().toLowerCase();
         return findLocationsOf(cellComparator, chessmanType)
             .map(cellCoords -> pieceName + " " + ChessUtils.coordsToString(cellCoords));
+    }
+
+    private List<ChessmenPositionQuizCard> createQuizCards() {
+        return Stream.of(ChessmanType.values())
+                .map(chessmanType -> {
+                    final List<String> answer = getCurrentPosition()
+                            .findAll(ct -> ct == chessmanType)
+                            .stream()
+                            .map(ChessUtils::coordsToString)
+                            .collect(Collectors.toList());
+                    return ChessmenPositionQuizCard.builder()
+                            .question(chessmanType.getSymbol())
+                            .answer(answer.isEmpty()?listOf("-"):answer)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     private void addLocationsOf(Comparator<CellCoords> cellComparator,
