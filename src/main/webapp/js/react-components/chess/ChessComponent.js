@@ -99,7 +99,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 style:{width:"300px", margin:"0px 0px 10px 10px"},
             })
         } else if (state.chessBoardSequence) {
-            return re(CellIterator, {cells:state.chessBoardSequence})
+            return re(CellIterator, {cells:state.chessBoardSequence, backend:backend})
         } else {
             return null
         }

@@ -1,9 +1,17 @@
 "use strict";
 
-const CellIterator = ({cells}) => {
+const CellIterator = ({cells, backend}) => {
     const [idx, setIdx] = useState(-1)
 
     const size = (cellSize*5) + "px"
+
+    function nextClicked() {
+        if (idx < cells.length) {
+            setIdx(oldIdx => oldIdx+1)
+        } else {
+            backend.call("execChessCommand", {command: "b"})
+        }
+    }
 
     return RE.Container.row.center.center(
         {style: {width:size, height:size}},
@@ -11,8 +19,8 @@ const CellIterator = ({cells}) => {
         RE.span({style: {fontSize:"50px"}},
             idx == -1
                 ? "Start"
-                : (idx >= cells.length ? cells.length : cells[idx])
+                : (idx >= cells.length ? (cells.length-3) : cells[idx])
         ),
-        idx >= cells.length ? null : RE.Button({onClick: () => setIdx(oldIdx => oldIdx+1)}, "next")
+        idx > cells.length ? null : RE.Button({onClick: nextClicked}, "next")
     )
 }

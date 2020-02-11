@@ -53,6 +53,13 @@ import static org.igye.outline2.chess.model.ChessmanType.WHITE_KNIGHT;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_PAWN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_QUEEN;
 import static org.igye.outline2.chess.model.ChessmanType.WHITE_ROOK;
+import static org.igye.outline2.chess.model.PieceShape.BISHOP;
+import static org.igye.outline2.chess.model.PieceShape.KING;
+import static org.igye.outline2.chess.model.PieceShape.KNIGHT;
+import static org.igye.outline2.chess.model.PieceShape.PAWN;
+import static org.igye.outline2.chess.model.PieceShape.QUEEN;
+import static org.igye.outline2.chess.model.PieceShape.ROOK;
+import static org.igye.outline2.common.OutlineUtils.listOf;
 
 public class MovesBuilder implements ChessComponentStateManager {
     private static final Logger LOG = LoggerFactory.getLogger(MovesBuilder.class);
@@ -84,6 +91,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private final String runStockfishCmd;
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
+    private static final List<PieceShape> SHAPES_TO_LIST = listOf(KING, QUEEN, ROOK, BISHOP, KNIGHT);
 
     public MovesBuilder(String runStockfishCmd, Move initialPosition) {
         this.runStockfishCmd = runStockfishCmd;
@@ -356,13 +364,11 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private void renderSequentialChessboard(ChessComponentView chessComponentView) {
-        List<String> sequenceOfPieces = new ArrayList<>();
+        List<String> sequenceOfPieces;
         if (state.getCurrPosition().getMove().getColorOfWhoToMove() == WHITE) {
-            sequenceOfPieces.addAll(listWhitePieces(WHITE_SIDE_CELL_COMPARATOR));
-            sequenceOfPieces.addAll(listBlackPieces(WHITE_SIDE_CELL_COMPARATOR));
+            sequenceOfPieces = listPieces(WHITE_SIDE_CELL_COMPARATOR, WHITE);
         } else {
-            sequenceOfPieces.addAll(listBlackPieces(BLACK_SIDE_CELL_COMPARATOR));
-            sequenceOfPieces.addAll(listWhitePieces(BLACK_SIDE_CELL_COMPARATOR));
+            sequenceOfPieces = listPieces(BLACK_SIDE_CELL_COMPARATOR, BLACK);
         }
         chessComponentView.setChessBoardSequence(sequenceOfPieces);
     }
@@ -387,14 +393,21 @@ public class MovesBuilder implements ChessComponentStateManager {
         addLocationsOf(cellComparator, sb, "k", BLACK_KING);
     }
 
-    private List<String> listWhitePieces(Comparator<CellCoords> cellComparator) {
-        return Stream.of(WHITE_ROOK, WHITE_BISHOP, WHITE_QUEEN, WHITE_KNIGHT, WHITE_PAWN, WHITE_KING)
-                .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
-                .collect(Collectors.toList());
+    private List<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanColor color) {
+        List<String> result = new ArrayList<>();
+        result.addAll(listPieces(cellComparator, color, listOf(PAWN)));
+        result.add("*");
+        result.addAll(listPieces(cellComparator, color.invert(), listOf(PAWN)));
+        result.add("*");
+        result.addAll(listPieces(cellComparator, color, SHAPES_TO_LIST));
+        result.add("*");
+        result.addAll(listPieces(cellComparator, color.invert(), SHAPES_TO_LIST));
+        return result;
     }
 
-    private List<String> listBlackPieces(Comparator<CellCoords> cellComparator) {
-        return Stream.of(BLACK_ROOK, BLACK_BISHOP, BLACK_QUEEN, BLACK_KNIGHT, BLACK_PAWN, BLACK_KING)
+    private List<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanColor color, List<PieceShape> shapes) {
+        return shapes.stream()
+                .map(shape -> ChessmanType.getByColorAndShape(color, shape))
                 .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
                 .collect(Collectors.toList());
     }
@@ -609,10 +622,10 @@ public class MovesBuilder implements ChessComponentStateManager {
                     ? yCoordClicked : (yCoordClicked + 4);
             if (4 <= shapeCodeSelected && shapeCodeSelected <= 7) {
                 final PieceShape replacementShape =
-                        shapeCodeSelected == 7 ? (whoMadeMove == WHITE ? PieceShape.QUEEN : PieceShape.KNIGHT) :
-                        shapeCodeSelected == 6 ? (whoMadeMove == WHITE ? PieceShape.ROOK : PieceShape.BISHOP) :
-                        shapeCodeSelected == 5 ? (whoMadeMove == WHITE ? PieceShape.BISHOP : PieceShape.ROOK) :
-                        shapeCodeSelected == 4 ? (whoMadeMove == WHITE ? PieceShape.KNIGHT : PieceShape.QUEEN) : null;
+                        shapeCodeSelected == 7 ? (whoMadeMove == WHITE ? QUEEN : KNIGHT) :
+                        shapeCodeSelected == 6 ? (whoMadeMove == WHITE ? ROOK : BISHOP) :
+                        shapeCodeSelected == 5 ? (whoMadeMove == WHITE ? BISHOP : ROOK) :
+                        shapeCodeSelected == 4 ? (whoMadeMove == WHITE ? KNIGHT : QUEEN) : null;
                 if (replacementShape == null) {
                     throw new OutlineException("replacementShape == null");
                 }

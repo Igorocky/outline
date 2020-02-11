@@ -53,7 +53,7 @@ public enum ChessmanType {
         return getByColorAndShape(color, shape);
     }
 
-    private static ChessmanType getByColorAndShape(ChessmanColor color, PieceShape shape) {
+    public static ChessmanType getByColorAndShape(ChessmanColor color, PieceShape shape) {
         for (ChessmanType value : values()) {
             if (value.getPieceColor().equals(color) && value.getPieceShape().equals(shape)) {
                 return value;
