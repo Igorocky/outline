@@ -12,7 +12,7 @@ const ChessPositionQuiz = ({cards}) => {
     function onKeyDown(event) {
         if (event.keyCode == ENTER_KEY_CODE){
             if ("?" == commandStr) {
-                setCommandStr(rndElemSelector.getCurrentElem().answer.join(" "))
+                setCommandStr(rndElemSelector.getCurrentElem().answer.join(""))
             } else if (isUserInputCorrect(commandStr)) {
                 setUserInputIsCorrect(true)
                 rndElemSelector.loadNextElem()
@@ -35,7 +35,7 @@ const ChessPositionQuiz = ({cards}) => {
     }
 
     function isUserInputCorrect(userInput) {
-        return compareArrays(rndElemSelector.getCurrentElem().answer, userInput.split(" "))
+        return compareArrays(rndElemSelector.getCurrentElem().answer, userInput.split(/(?<=\d)(?=\w)/))
     }
 
     function compareArrays(expected, actual) {

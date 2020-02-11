@@ -28,11 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,7 +89,8 @@ public class MovesBuilder implements ChessComponentStateManager {
     private final String runStockfishCmd;
     private MovesBuilderState state;
     private Map<String, Consumer<String[]>> commands;
-    private static final List<PieceShape> SHAPES_TO_LIST = listOf(KING, QUEEN, ROOK, BISHOP, KNIGHT);
+    private static final List<PieceShape> SHAPES_TO_LIST_P1 = listOf(KING, QUEEN, ROOK);
+    private static final List<PieceShape> SHAPES_TO_LIST_P2 = listOf(BISHOP, KNIGHT);
 
     public MovesBuilder(String runStockfishCmd, Move initialPosition) {
         this.runStockfishCmd = runStockfishCmd;
@@ -374,6 +371,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
         chessComponentView.setChessBoardSequence(ChessboardSequentialView.builder()
                 .positionDescription(sequenceOfPieces)
+                .numberOfPieces(getCurrentPosition().findAll(ct -> true).size())
                 .quiz(createQuizCards())
                 .build()
         );
@@ -401,21 +399,20 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private List<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanColor color) {
         List<String> result = new ArrayList<>();
-        result.addAll(listPieces(cellComparator, color, listOf(PAWN)));
-        result.add("*");
-        result.addAll(listPieces(cellComparator, color.invert(), listOf(PAWN)));
-        result.add("*");
-        result.addAll(listPieces(cellComparator, color, SHAPES_TO_LIST));
-        result.add("*");
-        result.addAll(listPieces(cellComparator, color.invert(), SHAPES_TO_LIST));
+        result.add(listPieces(cellComparator, color, listOf(PAWN)));
+        result.add(listPieces(cellComparator, color.invert(), listOf(PAWN)));
+        result.add(listPieces(cellComparator, color, SHAPES_TO_LIST_P1));
+        result.add(listPieces(cellComparator, color.invert(), SHAPES_TO_LIST_P1));
+        result.add(listPieces(cellComparator, color, SHAPES_TO_LIST_P2));
+        result.add(listPieces(cellComparator, color.invert(), SHAPES_TO_LIST_P2));
         return result;
     }
 
-    private List<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanColor color, List<PieceShape> shapes) {
+    private String listPieces(Comparator<CellCoords> cellComparator, ChessmanColor color, List<PieceShape> shapes) {
         return shapes.stream()
                 .map(shape -> ChessmanType.getByColorAndShape(color, shape))
                 .flatMap(chessmanType -> listPieces(cellComparator, chessmanType))
-                .collect(Collectors.toList());
+                .reduce("", (a,b) -> a.length() == 0 ? b : (a + " | " + b));
     }
 
     private Stream<String> listPieces(Comparator<CellCoords> cellComparator, ChessmanType chessmanType) {
@@ -423,23 +420,44 @@ public class MovesBuilder implements ChessComponentStateManager {
                 ? chessmanType.getSymbol().toUpperCase()
                 : chessmanType.getSymbol().toLowerCase();
         return findLocationsOf(cellComparator, chessmanType)
-            .map(cellCoords -> pieceName + " " + ChessUtils.coordsToString(cellCoords));
+            .map(cellCoords -> pieceName + ChessUtils.coordsToString(cellCoords));
     }
 
     private List<ChessmenPositionQuizCard> createQuizCards() {
-        return Stream.of(ChessmanType.values())
-                .map(chessmanType -> {
-                    final List<String> answer = getCurrentPosition()
-                            .findAll(ct -> ct == chessmanType)
-                            .stream()
-                            .map(ChessUtils::coordsToString)
-                            .collect(Collectors.toList());
-                    return ChessmenPositionQuizCard.builder()
-                            .question(chessmanType.getSymbol())
-                            .answer(answer.isEmpty()?listOf("-"):answer)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        List<ChessmenPositionQuizCard> result = new ArrayList<>();
+        final ChessBoard currentPosition = getCurrentPosition();
+        for (List<PieceShape> shapesInCard : listOf(listOf(PAWN), SHAPES_TO_LIST_P1, SHAPES_TO_LIST_P2)) {
+            for (ChessmanColor color : ChessmanColor.values()) {
+                List<ChessmanType> piecesInCard = shapesInCard.stream()
+                        .map(shape -> ChessmanType.getByColorAndShape(color, shape))
+                        .collect(Collectors.toList());
+                List<String> answer = new ArrayList<>();
+                for (ChessmanType pieceInCard : piecesInCard) {
+                    answer.addAll(
+                            currentPosition
+                                    .findAll(ct -> ct == pieceInCard)
+                                    .stream()
+                                    .map(
+                                            coords -> pieceInCard.getPieceShape() == PAWN
+                                                    ? ChessUtils.coordsToString(coords)
+                                                    : (pieceInCard.getSymbol() + ChessUtils.coordsToString(coords))
+                                    )
+                                    .collect(Collectors.toList())
+                    );
+                }
+                result.add(ChessmenPositionQuizCard.builder()
+                        .question(
+                                piecesInCard.stream()
+                                        .map(ChessmanType::getSymbol)
+                                        .reduce("", (a, b) -> a + b)
+                        )
+                        .answer(answer)
+                        .build()
+                );
+
+            }
+        }
+        return result;
     }
 
     private void addLocationsOf(Comparator<CellCoords> cellComparator,
