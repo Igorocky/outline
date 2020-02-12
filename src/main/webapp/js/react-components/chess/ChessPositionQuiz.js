@@ -35,7 +35,10 @@ const ChessPositionQuiz = ({cards}) => {
     }
 
     function isUserInputCorrect(userInput) {
-        return compareArrays(rndElemSelector.getCurrentElem().answer, userInput.split(/(?<=\d)(?=\w)/))
+        return userInput && compareArrays(
+            rndElemSelector.getCurrentElem().answer.map(e => e.toUpperCase()),
+            userInput.split(/(?<=\d)(?=\w)/).map(e => e.toUpperCase())
+        )
     }
 
     function compareArrays(expected, actual) {
@@ -52,7 +55,7 @@ const ChessPositionQuiz = ({cards}) => {
 
     return RE.Container.col.top.left({},{},
         RE.Container.row.left.top({},{style:{marginRight:"20px"}},
-            rndElemSelector.getCurrentElem().question,
+            RE.span({style:{display: "inline-block", width: "30px"}},rndElemSelector.getCurrentElem().question),
             renderTextField(),
         ),
         RE.Container.row.left.top({},{style:{marginRight:"20px"}},

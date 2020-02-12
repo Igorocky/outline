@@ -14,7 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ChessboardSequentialView {
-    private List<String> positionDescription;
     private int numberOfPieces;
     private List<ChessmenPositionQuizCard> quiz;
 }
