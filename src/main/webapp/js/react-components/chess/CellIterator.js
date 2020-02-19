@@ -11,12 +11,19 @@ const CellIterator = ({numberOfPieces, quiz, backend}) => {
         }
     }
 
+    function prevClicked() {
+        if (-1 < idx) {
+            setIdx(oldIdx => oldIdx-1)
+        }
+    }
+
     return RE.Container.col.top.left({},{},
         RE.Paper({style:{marginBottom:"15px", padding:"10px"}},re(ChessPositionQuiz, {cards:quiz})),
         RE.Paper({style:{marginBottom:"15px", paddingTop:"5px"}},RE.Container.row.left.top(
             {style: {width:size}},
             {style: {marginRight:"15px"}},
-            idx >= quiz.length ? null : RE.Button({onClick: nextClicked}, "next"),
+            RE.Button({onClick: prevClicked, disabled: idx <= -1}, "prev"),
+            RE.Button({onClick: nextClicked, disabled: quiz.length <= idx}, "next"),
             RE.span({style: {fontSize: "25px"}},
                 idx == -1
                     ? "Start"
