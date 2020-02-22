@@ -1,10 +1,5 @@
 const fontSize = "20px";
 
-const ENTER_KEY_CODE = 13
-const ESC_KEY_CODE = 27
-const UP_KEY_CODE = 38
-const DOWN_KEY_CODE = 40
-
 const CommandInput = ({style, onExecCommand, responseMsg, errorMsg, onClickAway}) => {
     const [commandStr, setCommandStr] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null);
