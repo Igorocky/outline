@@ -1,8 +1,29 @@
 'use strict'
 
 const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
+    const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const popupActions = []
     const chessPuzzleUrl = getTagSingleValue(node, TAG_ID.chessPuzzleUrl)
+
+    function createDuplicate() {
+        openConfirmActionDialog({
+            pConfirmText: "Create a duplicate?",
+            pOnCancel: closeConfirmActionDialog,
+            pStartActionBtnText: "Duplicate",
+            pStartAction: ({onDone}) => doRpcCall(
+                "rpcDuplicateChessPuzzle",
+                {basePuzzleId:node[NODE.id]},
+                () => {
+                    closeConfirmActionDialog()
+                    reloadParentNode()
+                }
+            ),
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
+        })
+    }
+
     popupActions.push(
         iconButton({iconName: "play_arrow",
             onClick: e => {
@@ -24,27 +45,24 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
     popupActions.push(
         iconButton({iconName: "control_point_duplicate",
             onClick: e => {
-                doRpcCall(
-                    "rpcDuplicateChessPuzzle",
-                    {basePuzzleId:node[NODE.id]},
-                    () => {
-                        reloadParentNode()
-                    }
-                )
+                createDuplicate()
                 e.stopPropagation()
             }
         })
     )
 
-    return re(FolderComponent,{
-        text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
-        props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
-        icon: RE.img({
-            src:"/img/chess/chess_puzzle.png",
-            style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
+    return RE.Fragment({},
+        re(FolderComponent,{
+            text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
+            props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
+            icon: RE.img({
+                src:"/img/chess/chess_puzzle.png",
+                style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
+            }),
+            popupActions: _.size(popupActions)>0?RE.Fragment({},popupActions):null
         }),
-        popupActions: _.size(popupActions)>0?RE.Fragment({},popupActions):null
-    })
+        renderConfirmActionDialog()
+    )
 }
 
 const RedGreenSwitch = withStyles({
