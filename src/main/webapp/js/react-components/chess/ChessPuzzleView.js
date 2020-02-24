@@ -21,6 +21,20 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
             })
         )
     }
+    popupActions.push(
+        iconButton({iconName: "control_point_duplicate",
+            onClick: e => {
+                doRpcCall(
+                    "rpcDuplicateChessPuzzle",
+                    {basePuzzleId:node[NODE.id]},
+                    () => {
+                        reloadParentNode()
+                    }
+                )
+                e.stopPropagation()
+            }
+        })
+    )
 
     return re(FolderComponent,{
         text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),

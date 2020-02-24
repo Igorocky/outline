@@ -7,6 +7,7 @@ import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.chess.model.CellCoords;
+import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.manager.NodeManager;
 import org.igye.outline2.manager.NodeRepository;
@@ -123,6 +124,24 @@ public class ChessPuzzleManager {
             puzzle.removeTags(TagIds.CHESS_PUZZLE_PGN);
             puzzle.removeTags(TagIds.CHESS_PUZZLE_FEN);
         }
+    }
+
+    @RpcMethod
+    @Transactional
+    public void rpcDuplicateChessPuzzle(UUID basePuzzleId) {
+        Node basePuzzle = nodeRepository.getOne(basePuzzleId);
+        UUID newPuzzleId = nodeManager.rpcCreateNode(
+                OutlineUtils.nullSafeGetter(basePuzzle, Node::getParentNode, Node::getId),
+                NodeClasses.CHESS_PUZZLE
+        );
+        Node newPuzzle = nodeRepository.getOne(newPuzzleId);
+        newPuzzle.setTagSingleValue(TagIds.NAME, "Copy of " + basePuzzle.getTagSingleValue(TagIds.NAME));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PAUSED, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_PAUSED));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_URL, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_URL));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_FEN, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_FEN));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_PGN, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_PGN));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_AUTO_RESPONSE, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_AUTO_RESPONSE));
+        newPuzzle.setTagSingleValue(TagIds.CHESS_PUZZLE_TEXT_MODE, basePuzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_TEXT_MODE));
     }
 
     private Pattern attemptDelayPattern = Pattern.compile("^(\\d+)(M|d|h|m)(r(\\d)?)?$");
