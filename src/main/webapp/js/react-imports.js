@@ -153,7 +153,7 @@ function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
 
     function callBackendStateMethod(methodName, params) {
         if (!isSocketReady) {
-            const newWebSocket = new WebSocket("ws://" + location.host + PATH.stateWebSocketUrl)
+            const newWebSocket = new WebSocket("wss://" + location.host + PATH.stateWebSocketUrl)
             newWebSocket.onmessage = event => onMessageFromBackend(JSON.parse(event.data))
             newWebSocket.onopen = () => {
                 newWebSocket.send(stateId)
