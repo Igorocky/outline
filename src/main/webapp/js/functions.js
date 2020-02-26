@@ -23,6 +23,7 @@ const PATH = {
     chessboardWithFen: CONTEXT_PATH + "/chessboard/fen/:fen",
     createChessboardWithFen: fen => CONTEXT_PATH + "/chessboard/fen/" + fen,
     admin: CONTEXT_PATH + "/admin",
+    logout: "/logout",
 }
 
 function doPost({url, data, onSuccess}) {

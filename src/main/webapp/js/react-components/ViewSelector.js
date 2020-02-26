@@ -61,6 +61,13 @@ const ViewSelector = ({}) => {
                         },
                         RE.ListItemText({},view.name)
                     )
+                ),
+                RE.ListItem({
+                        button:true,
+                        key:"Logout-button",
+                        onClick: () => window.location.href = PATH.logout
+                    },
+                    RE.ListItemText({},"Logout")
                 )
             )
         )
