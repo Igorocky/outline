@@ -8,6 +8,8 @@ const VIEWS = [
         path: [PATH.chessboard, PATH.chessboardWithPractice, PATH.chessboardWithFen]},
     {name:"Admin",
         component: AdminView, path: [PATH.admin]},
+    {name:"ChessComponentM", showOnDrawer: false,
+        component: ChessComponentM, path: [PATH.chessboardComponentM]},
 ]
 
 const ViewSelector = ({}) => {
@@ -50,7 +52,7 @@ const ViewSelector = ({}) => {
                 onKeyDown: closeSideMenu
             },
             RE.List({},
-                VIEWS.map((view,idx) =>
+                VIEWS.filter(v => !hasValue(v.showOnDrawer) || v.showOnDrawer).map((view,idx) =>
                     RE.ListItem({
                             button:true,
                             key:idx,
@@ -93,8 +95,9 @@ const ViewSelector = ({}) => {
     }
 
     if (!redirect) {
-        setRedirect(window.location.pathname)
-        return redirectTo(window.location.pathname)
+        const newRedirect = window.location.pathname + window.location.search;
+        setRedirect(newRedirect)
+        return redirectTo(newRedirect)
     } else {
         return re(BrowserRouter, {},
             renderAppBar(),

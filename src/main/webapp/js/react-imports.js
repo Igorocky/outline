@@ -26,7 +26,8 @@ const {
     BrowserRouter,
     Redirect,
     Route,
-    Switch
+    Switch,
+    useLocation
 } = window["ReactRouterDOM"]
 
 function reFactory(elemType) {
@@ -111,6 +112,10 @@ const RE = {
                 top: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.flexStart),
                 center: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.center),
             },
+            spaceBetween: {
+                top: gridFactory(DIRECTION.row, JUSTIFY.spaceBetween, ALIGN_ITEMS.flexStart),
+                center: gridFactory(DIRECTION.row, JUSTIFY.spaceBetween, ALIGN_ITEMS.center),
+            },
         },
         col: {
             top: {
@@ -142,6 +147,10 @@ function iconButton({onClick, iconName}) {
 
 function clickAwayListener({onClickAway, children, key}) {
     return re(ClickAwayListener, {key:key, onClickAway: onClickAway}, children)
+}
+
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
 }
 
 function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {

@@ -32,6 +32,15 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
             }
         })
     )
+    popupActions.push(
+        iconButton({iconName: "tap_and_play",
+            onClick: e => {
+                console.log("opening '" + PATH.createChessboardComponentM({puzzleId: node[NODE.id]}) + "'");
+                window.open(PATH.createChessboardComponentM({puzzleId: node[NODE.id]}))
+                e.stopPropagation()
+            }
+        })
+    )
     if (chessPuzzleUrl) {
         popupActions.push(
             iconButton({iconName: "open_in_new",

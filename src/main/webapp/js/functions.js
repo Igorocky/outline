@@ -22,8 +22,14 @@ const PATH = {
     createChessboardWithPractice: puzzleId => CONTEXT_PATH + "/chessboard/practice/" + puzzleId,
     chessboardWithFen: CONTEXT_PATH + "/chessboard/fen/:fen",
     createChessboardWithFen: fen => CONTEXT_PATH + "/chessboard/fen/" + fen,
+    chessboardComponentM: CONTEXT_PATH + "/chessboardm",
+    createChessboardComponentM: ({puzzleId}) => CONTEXT_PATH + "/chessboardm?" + (puzzleId?("puzzleId="+puzzleId):""),
     admin: CONTEXT_PATH + "/admin",
     logout: "/logout",
+}
+
+function hasValue(variable) {
+    return typeof variable !== 'undefined' && variable != null
 }
 
 function doPost({url, data, onSuccess}) {
