@@ -38,7 +38,7 @@ const ChessComponentM = ({}) => {
             const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
             backend.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
-                tabToOpen:"PRACTICE_SEQUENCE",
+                tabToOpen:null,
                 autoResponse: autoResponseEnabled,
                 commands: ["sm", "ci"]
             })
@@ -74,7 +74,7 @@ const ChessComponentM = ({}) => {
         if (chessboardSequence) {
             return re(ChessMoveSelectorM, {
                 onMoveSelected: ({move, onDone}) => {
-                    backend.call("execChessCommand", {command:move})
+                    backend.call("execChessCommand", {command:move==""?"nn":move})
                     onDone()
                 }
             })
@@ -83,9 +83,19 @@ const ChessComponentM = ({}) => {
         }
     }
 
+    function renderPuzzleStatus() {
+        const puzzleState = getByPath(state, ["practiseState"])
+        if (puzzleState) {
+            return re(PuzzleProgressM, {...puzzleState})
+        } else {
+            return null
+        }
+    }
+
     return RE.Container.col.top.center({},{style:{marginTop: "0.5em"}},
         renderPositionIterator(),
         renderHistory(),
+        renderPuzzleStatus(),
         renderMoveSelector(),
     )
 }

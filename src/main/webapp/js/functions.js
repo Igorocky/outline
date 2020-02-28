@@ -32,6 +32,10 @@ function hasValue(variable) {
     return typeof variable !== 'undefined' && variable != null
 }
 
+function emptyStrIfNull(str) {
+    return (str===null || str==='undefined')?"":str
+}
+
 function doPost({url, data, onSuccess}) {
     $.ajax({
         type: "POST",

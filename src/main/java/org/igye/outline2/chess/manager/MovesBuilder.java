@@ -201,7 +201,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (!expectedNextMoves.isEmpty()) {
             state.setCurrPosition(expectedNextMoves.get(0));
             state.getPracticeState().setFailed(true);
-            state.getPracticeState().setLastMoveWasIncorrect(false);
+            state.getPracticeState().setLastMoveWasIncorrect(null);
             state.setPreparedMoves(null);
             state.setChoseChessmanTypeDialogOpened(false);
         }
@@ -264,10 +264,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         return sb.toString();
     }
 
-    public void loadFromPgn(String pgn) {
+    public void loadFromPgn(ParsedPgnDto parsedPgn) {
         state.setChoseChessmanTypeDialogOpened(false);
         state.setPracticeState(null);
-        ParsedPgnDto parsedPgn = PgnParser.parsePgn(pgn);
         state.setInitialPosition(new GamePosition(new Move(parsedPgn.getInitialPositionFen())));
         state.setCurrPosition(state.getInitialPosition());
         for (List<PositionDto> fullMove : parsedPgn.getPositions()) {
@@ -298,13 +297,13 @@ public class MovesBuilder implements ChessComponentStateManager {
                 final GamePosition expectedNextGamePosition = expectedNextMoves.get(0);
                 ChessBoard expectedNextResultPosition = expectedNextGamePosition.getMove().getResultPosition();
                 if (selectedMove.getResultPosition().equalsTo(expectedNextResultPosition)) {
-                    state.getPracticeState().setLastMoveWasIncorrect(false);
+                    state.getPracticeState().setLastMoveWasIncorrect(null);
                     state.setCurrPosition(expectedNextGamePosition);
                     state.setPreparedMoves(null);
                     state.setChoseChessmanTypeDialogOpened(false);
                 } else {
                     state.getPracticeState().setFailed(true);
-                    state.getPracticeState().setLastMoveWasIncorrect(true);
+                    state.getPracticeState().setLastMoveWasIncorrect(selectedMove.getShortNotation());
                     state.setPreparedMoves(null);
                     state.setChoseChessmanTypeDialogOpened(false);
                 }
@@ -329,7 +328,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 !state.getCurrPosition().getChildren().isEmpty()
         );
         practiceStateView.setIncorrectMove(
-                state.getPracticeState().isLastMoveWasIncorrect()
+                state.getPracticeState().getLastMoveWasIncorrect()
         );
         practiceStateView.setFailed(
                 state.getPracticeState().isFailed()
@@ -565,7 +564,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (canMakeMove()) {
             final Move currMove = state.getCurrPosition().getMove();
             if (!currMove.isStaleMate() && !currMove.isCheckMate()) {
-                Move nextMove = null;
+                Move nextMove;
                 try {
                     nextMove = StockFishRunner.getNextMove(
                             runStockfishCmd, currMove, state.getDepth(), state.getMovetimeSec()

@@ -2,6 +2,8 @@ package org.igye.outline2.chess.manager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessComponentResponse;
+import org.igye.outline2.chess.dto.ParsedPgnDto;
+import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
@@ -43,7 +45,15 @@ public class ChessManager extends State implements ChessComponentStateManager {
             final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
             this.stateManager = movesBuilder;
             if (!StringUtils.isBlank(pgn)) {
-                movesBuilder.loadFromPgn(pgn);
+                final ParsedPgnDto parsedPgn = PgnParser.parsePgn(pgn);
+                movesBuilder.loadFromPgn(parsedPgn);
+                if (tabToOpen == null) {
+                    if (parsedPgn.getPositions().isEmpty()) {
+                        tabToOpen = ChessComponentStage.MOVES;
+                    } else {
+                        tabToOpen = ChessComponentStage.PRACTICE_SEQUENCE;
+                    }
+                }
             }
             chessTabSelected(tabToOpen);
             if (autoResponse) {

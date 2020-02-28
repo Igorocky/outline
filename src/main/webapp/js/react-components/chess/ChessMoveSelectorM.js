@@ -99,13 +99,12 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
         return RE.Button({
                 color: "primary",
                 variant: "contained",
-                disabled: !(xCoord && yCoord),
                 onClick: () => {
                     const ct = (chessmanType == "P" || !chessmanType) ? "" : chessmanType
-                    const ac = additionalCoord ? additionalCoord : ""
-                    const toX = xCoord ? xCoord.toLowerCase() : "-"
-                    const toY = yCoord ? yCoord.toLowerCase() : "-"
-                    const pr = promotion ? promotion : ""
+                    const ac = emptyStrIfNull(additionalCoord)
+                    const toX = emptyStrIfNull(xCoord).toLowerCase()
+                    const toY = emptyStrIfNull(yCoord).toLowerCase()
+                    const pr = emptyStrIfNull(promotion)
                     onMoveSelected({move: ct + ac + toX + toY + pr, onDone: () => clearSelection()})
                 }
             },

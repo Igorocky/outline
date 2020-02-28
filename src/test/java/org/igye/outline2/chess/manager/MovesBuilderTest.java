@@ -1726,7 +1726,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         //when/then
@@ -1744,7 +1744,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(b7);
@@ -1761,7 +1761,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(g2);
@@ -1778,7 +1778,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(c7);
@@ -1795,7 +1795,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -1812,7 +1812,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(d7);
@@ -1829,7 +1829,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f4);
@@ -1846,7 +1846,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
     @Test public void itIsPossibleToFailSequenceInTheMiddle() {
@@ -1869,7 +1869,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         //when/then
@@ -1887,7 +1887,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(b7);
@@ -1904,7 +1904,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(g2);
@@ -1921,7 +1921,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(c7);
@@ -1938,7 +1938,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -1955,7 +1955,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertTrue(view.getPractiseState().isFailed());
-        assertTrue(view.getPractiseState().isIncorrectMove());
+        assertEquals("Kg3", view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -1972,7 +1972,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertTrue(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(d7);
@@ -1989,7 +1989,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertTrue(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f4);
@@ -2006,7 +2006,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertTrue(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
     @Test public void whenInPracticeModeAndSomeNonSelectedCellWasClickedThisDoesntFailTheSequence() {
@@ -2029,7 +2029,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         //when/then
@@ -2047,7 +2047,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(b7);
@@ -2064,7 +2064,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(g2);
@@ -2081,7 +2081,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(c7);
@@ -2098,7 +2098,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -2115,7 +2115,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -2132,7 +2132,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(d7);
@@ -2149,7 +2149,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f4);
@@ -2166,7 +2166,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
     @Test public void whenInPracticeModeAutoresponseMakesMovesForTheOpponent() {
@@ -2189,7 +2189,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         //when/then
@@ -2207,7 +2207,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(g2);
@@ -2224,7 +2224,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f3);
@@ -2241,7 +2241,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertTrue(view.getPractiseState().isWaitingForNextMove());
 
         chessManager.cellLeftClicked(f4);
@@ -2258,7 +2258,7 @@ public class MovesBuilderTest {
                 .build(), view
         );
         assertFalse(view.getPractiseState().isFailed());
-        assertFalse(view.getPractiseState().isIncorrectMove());
+        assertNull(view.getPractiseState().getIncorrectMove());
         assertFalse(view.getPractiseState().isWaitingForNextMove());
     }
     @Test public void comparePositionProducesCorrectOutputForDifferentInputs() {

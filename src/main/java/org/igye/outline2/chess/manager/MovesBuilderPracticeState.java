@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MovesBuilderPracticeState {
-    private boolean lastMoveWasIncorrect;
+    private String lastMoveWasIncorrect;
     private boolean failed;
 }

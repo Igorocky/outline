@@ -2,10 +2,6 @@
 
 const HistoryM = ({backend, startPositionSelected, rows}) => {
 
-    function emptyIfNull(str) {
-        return str!=null?str:""
-    }
-
     return RE.Paper({},
         RE.span({
             key:"-1",
@@ -21,7 +17,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
                         ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "w"})
                         :null,
                 },
-                emptyIfNull(move.whitesMove) + " "
+                emptyStrIfNull(move.whitesMove) + " "
             ),
             RE.span({
                     key:"b",
@@ -30,7 +26,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
                         ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "b"})
                         :null,
                 },
-                emptyIfNull(move.blacksMove) + " "
+                emptyStrIfNull(move.blacksMove) + " "
             )
         ))
     )

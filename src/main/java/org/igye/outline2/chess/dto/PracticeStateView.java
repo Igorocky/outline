@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class PracticeStateView {
     private boolean waitingForNextMove;
-    private boolean incorrectMove;
+    private String incorrectMove;
     private boolean failed;
     private String colorToMove;
 }
