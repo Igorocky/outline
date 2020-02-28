@@ -74,7 +74,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
                                               @Default("null") List<String> commands) {
         stateManager = new MovesBuilder(
                 stockfishCmd,
-                new Move(fen.replaceAll("\\+", "/").replaceAll("_", " "))
+                new Move(fen.replaceAll("!", "/").replaceAll("_", " "))
         );
         chessTabSelected(tabToOpen);
         if (autoResponse) {

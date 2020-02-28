@@ -23,7 +23,9 @@ const PATH = {
     chessboardWithFen: CONTEXT_PATH + "/chessboard/fen/:fen",
     createChessboardWithFen: fen => CONTEXT_PATH + "/chessboard/fen/" + fen,
     chessboardComponentM: CONTEXT_PATH + "/chessboardm",
-    createChessboardComponentM: ({puzzleId}) => CONTEXT_PATH + "/chessboardm?" + (puzzleId?("puzzleId="+puzzleId):""),
+    createChessboardComponentM: ({puzzleId,fen}) => CONTEXT_PATH + "/chessboardm?"
+        + (puzzleId?("puzzleId="+puzzleId):"")
+        + (fen?("fen="+urlEncodeFen(fen)):""),
     admin: CONTEXT_PATH + "/admin",
     logout: "/logout",
 }
@@ -186,4 +188,8 @@ class RandomElemSelector {
         this.state.currentElem = _.first(elemsToAsk)
         this.state.elemsToAsk = _.rest(elemsToAsk)
     }
+}
+
+function urlEncodeFen(fen) {
+    return fen.replace(/ /g,"_").replace(/\//g,"!")
 }

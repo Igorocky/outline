@@ -4,6 +4,7 @@ const ChessComponentM = ({}) => {
     const [state, setChessComponentMState] = useState(null)
     const query = useQuery();
     const puzzleId = query.get("puzzleId")
+    const fen = query.get("fen")
     const [puzzleName, setPuzzleName] = useState(null)
 
     useEffect(() => {
@@ -17,6 +18,8 @@ const ChessComponentM = ({}) => {
     function processBackendStateCreated(backend) {
         if (puzzleId) {
             loadPuzzle(puzzleId)
+        } else if (fen) {
+            loadFen(fen)
         } else {
             backend.call("getCurrentState", {})
         }
@@ -42,6 +45,15 @@ const ChessComponentM = ({}) => {
                 autoResponse: autoResponseEnabled,
                 commands: ["sm", "ci"]
             })
+        })
+    }
+
+    function loadFen(fen) {
+        backend.call("loadFromFen", {
+            fen:fen,
+            tabToOpen:"MOVES",
+            autoResponse: false,
+            commands: ["sm", "ci"]
         })
     }
 
@@ -74,16 +86,21 @@ const ChessComponentM = ({}) => {
     }
 
     function renderControlButtons() {
+        const currentPositionFen = getByPath(state, ["currPositionFen"])
+
         function goToStart() {backend.call("execChessCommand", {command:"s"})}
         function goToEnd() {backend.call("execChessCommand", {command:"e"})}
         function goToPrev() {backend.call("execChessCommand", {command:"p"})}
         function goToNext() {backend.call("execChessCommand", {command:"n"})}
+        function analyzePosition() {window.open(PATH.createChessboardComponentM({fen:urlEncodeFen(currentPositionFen)}))}
+
         return RE.ButtonGroup({size:"small"},
             RE.Button({onClick: goToStart},RE.Icon({}, "fast_rewind")),
             RE.Button({onClick: goToPrev},RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow")),
             RE.Button({onClick: goToNext},RE.Icon({}, "play_arrow")),
             RE.Button({onClick: goToEnd},RE.Icon({}, "fast_forward")),
-            RE.Button({},RE.Icon({}, "equalizer")),
+            RE.Button({onClick: analyzePosition, disabled:!currentPositionFen},
+                RE.Icon({}, "equalizer")),
             RE.Button({},RE.Icon({}, "history")),
             RE.Button({},RE.Icon({}, "skip_next")),
         )

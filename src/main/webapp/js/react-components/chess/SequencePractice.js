@@ -38,7 +38,7 @@ const SequencePractice = ({backend, waitingForNextMove, colorToMove, incorrectMo
             RE.span({style:{color:"red"}},incorrectMove?"Incorrect move!":""),
             RE.Button({
                 onClick: () => window.open(
-                    PATH.createChessboardWithFen(fen.replace(/ /g,"_").replace(/\//g,"+"))
+                    PATH.createChessboardWithFen(urlEncodeFen(fen))
                 )
             }, "play"),
 
