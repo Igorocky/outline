@@ -8,6 +8,7 @@ import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.rpc.Default;
+import org.igye.outline2.rpc.RpcIgnore;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.websocket.State;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Component(ChessManager.CHESSBOARD)
 @Scope("prototype")
@@ -60,7 +62,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
                 movesBuilder.setAutoResponseForOpponent();
             }
             if (commands != null) {
-                commands.forEach(cmd -> execChessCommand(cmd));
+                commands.forEach(cmd -> execChessCommand(cmd, null));
             }
         }
         return toView();
@@ -79,7 +81,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
             stateManager.setAutoResponseForOpponent();
         }
         if (commands != null) {
-            commands.forEach(cmd -> execChessCommand(cmd));
+            commands.forEach(cmd -> execChessCommand(cmd, null));
         }
         return toView();
     }
@@ -93,9 +95,16 @@ public class ChessManager extends State implements ChessComponentStateManager {
 
     @RpcMethod
     @Override
-    public ChessComponentResponse execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command, @RpcIgnore Consumer<String> progressCallback) {
         if (!StringUtils.isBlank(command)) {
-            stateManager.execChessCommand(command);
+            stateManager.execChessCommand(
+                    command,
+                    progressInfo -> {
+                        ChessComponentResponse view = toView();
+                        view.getChessComponentView().setCommandProgressMsg(progressInfo);
+                        sendMessageToFe(view);
+                    }
+            );
         }
         return toView();
     }

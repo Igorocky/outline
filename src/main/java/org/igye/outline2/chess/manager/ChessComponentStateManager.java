@@ -5,10 +5,12 @@ import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.exceptions.OutlineException;
 
+import java.util.function.Consumer;
+
 public interface ChessComponentStateManager {
     ChessComponentResponse toView();
     ChessComponentResponse cellLeftClicked(CellCoords coords);
-    ChessComponentResponse execChessCommand(String command);
+    ChessComponentResponse execChessCommand(String command, Consumer<String> progressCallback);
     ChessComponentResponse setColorToMove(ChessmanColor colorToMove);
     ChessComponentResponse changeCastlingAvailability(ChessmanColor color, boolean isLong);
     ChessComponentResponse setPositionFromFen(String fen);

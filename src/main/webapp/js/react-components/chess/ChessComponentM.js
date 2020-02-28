@@ -92,10 +92,20 @@ const ChessComponentM = ({}) => {
         }
     }
 
+    function renderCommandResponses() {
+        const commandProgressMsg = getByPath(state, ["commandProgressMsg"])
+        const commandErrorMsg = getByPath(state, ["commandErrorMsg"])
+        return RE.Fragment({},
+            commandProgressMsg?RE.span({},commandProgressMsg):null,
+            commandErrorMsg?RE.span({style:{color:"red"}},commandErrorMsg):null,
+        )
+    }
+
     return RE.Container.col.top.center({},{style:{marginTop: "0.5em"}},
         renderPositionIterator(),
         renderHistory(),
         renderPuzzleStatus(),
+        renderCommandResponses(),
         renderMoveSelector(),
     )
 }

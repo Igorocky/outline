@@ -14,7 +14,6 @@ import org.igye.outline2.chess.dto.HistoryView;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.dto.PracticeStateView;
-import org.igye.outline2.chess.manager.analyse.PgnParser;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.ChessBoard;
 import org.igye.outline2.chess.model.ChessmanColor;
@@ -28,7 +27,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,7 +92,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
-    private Map<String, Consumer<String[]>> commands;
+    private Map<String, BiConsumer<String[],Consumer<String>>> commands;
     private static final List<PieceShape> SHAPES_TO_LIST_P1 = listOf(KING, QUEEN, ROOK);
     private static final List<PieceShape> SHAPES_TO_LIST_P2 = listOf(BISHOP, KNIGHT);
 
@@ -99,15 +103,18 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentResponse execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command, Consumer<String> progressCallback) {
         state.setCommandErrorMsg(null);
         state.setCommandResponseMsg(null);
         String[] parsedCommand = command.trim().split("\\s");
         try {
             if (commands.containsKey(parsedCommand[0])) {
-                commands.get(parsedCommand[0]).accept(parsedCommand);
+                commands.get(parsedCommand[0]).accept(parsedCommand, progressCallback);
             } else {
-                processSelectedMove(state.getCurrPosition().getMove().makeMove(processCaseInsensitiveMove(command)));
+                processSelectedMove(
+                        state.getCurrPosition().getMove().makeMove(processCaseInsensitiveMove(command)),
+                        progressCallback
+                );
             }
         } catch (OutlineException ex) {
             LOG.error(ex.getMessage(), ex);
@@ -146,7 +153,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (state.isChoseChessmanTypeDialogOpened()) {
             Move selectedMove = processPawnOnLastLine(coordsClicked);
             if (selectedMove != null) {
-                processSelectedMove(selectedMove);
+                processSelectedMove(selectedMove, null);
             }
         } else {
             final List<Move> preparedMoves = state.getPreparedMoves();
@@ -166,7 +173,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                         state.setPreparedMoves(movesChosen);
                         state.setChoseChessmanTypeDialogOpened(true);
                     } else {
-                        processSelectedMove(movesChosen.get(0));
+                        processSelectedMove(movesChosen.get(0), null);
                     }
                 } else {
                     state.setPreparedMoves(null);
@@ -222,7 +229,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentResponse toView() {
+    public synchronized ChessComponentResponse toView() {
         ChessComponentView chessComponentView = new ChessComponentView();
         chessComponentView.setTab(state.getPracticeState() == null
                 ? ChessComponentStage.MOVES : ChessComponentStage.PRACTICE_SEQUENCE);
@@ -272,7 +279,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         for (List<PositionDto> fullMove : parsedPgn.getPositions()) {
             for (PositionDto halfMove : fullMove) {
                 if (!"...".equals(halfMove.getNotation())) {
-                    execChessCommand(halfMove.getNotation());
+                    execChessCommand(halfMove.getNotation(), null);
                     if (!StringUtils.isBlank(state.getCommandErrorMsg())) {
                         throw new OutlineException(state.getCommandErrorMsg());
                     }
@@ -290,7 +297,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         state.setCurrPosition(state.getInitialPosition());
     }
 
-    private void processSelectedMove(Move selectedMove) {
+    private void processSelectedMove(Move selectedMove, Consumer<String> progressCallback) {
         if (state.getPracticeState() != null) {
             List<GamePosition> expectedNextMoves = state.getCurrPosition().getChildren();
             if (expectedNextMoves.size() == 1) {
@@ -318,7 +325,7 @@ public class MovesBuilder implements ChessComponentStateManager {
                 state.setChoseChessmanTypeDialogOpened(false);
             }
         }
-        generateAutoresponseIfNecessary();
+        generateAutoresponseIfNecessary(progressCallback);
     }
 
     private void setPracticeState(ChessComponentView chessComponentView) {
@@ -492,39 +499,39 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void initCommandMap() {
         commands = new HashMap<>();
-        addCommand(HIDE_SHOW_CHESSBOARD_CMD, args -> hideShowChessboard());
-        addCommand(PREV_POSITION_CMD, args -> goToPrevPosition());
-        addCommand(NEXT_POSITION_CMD, args -> goToNextPosition());
-        addCommand(GENERATE_NEXT_MOVE_CMD, args -> generateNextMove());
-        addCommand(AUTO_RESPONSE_CMD, args -> setAutoresponse());
-        addCommand(DELETE_ALL_TO_THE_RIGHT_CMD, args -> deleteAllToTheRight());
-        addCommand(GO_TO_START_POSITION_CMD, args -> goToStartPosition());
-        addCommand(GO_TO_END_POSITION_CMD, args -> goToEndPosition());
-        addCommand(GO_TO_POSITION_CMD, args -> {
+        addCommand(HIDE_SHOW_CHESSBOARD_CMD, (args, prgCallback) -> hideShowChessboard());
+        addCommand(PREV_POSITION_CMD, (args, prgCallback) -> goToPrevPosition());
+        addCommand(NEXT_POSITION_CMD, (args, prgCallback) -> goToNextPosition());
+        addCommand(GENERATE_NEXT_MOVE_CMD, (args, prgCallback) -> generateNextMove(prgCallback));
+        addCommand(AUTO_RESPONSE_CMD, (args, prgCallback) -> setAutoresponse(prgCallback));
+        addCommand(DELETE_ALL_TO_THE_RIGHT_CMD, (args, prgCallback) -> deleteAllToTheRight());
+        addCommand(GO_TO_START_POSITION_CMD, (args, prgCallback) -> goToStartPosition());
+        addCommand(GO_TO_END_POSITION_CMD, (args, prgCallback) -> goToEndPosition());
+        addCommand(GO_TO_POSITION_CMD, (args, prgCallback) -> {
             final String destination = args[1];
             goToPosition(
                     Integer.parseInt(destination.substring(0, destination.length()-1)),
                     destination.charAt(destination.length()-1) == 'w' ? WHITE : BLACK
             );
         });
-        addCommand(SET_DEPTH_CMD, args -> {
+        addCommand(SET_DEPTH_CMD, (args, prgCallback) -> {
             final int depth = Integer.parseInt(args[1]);
             state.setDepth((1 <= depth && depth <= MAX_DEPTH) ? depth : MAX_DEPTH);
         });
-        addCommand(SET_MOVE_TIME_CMD, args -> {
+        addCommand(SET_MOVE_TIME_CMD, (args, prgCallback) -> {
             final int moveTime = Integer.parseInt(args[1]);
             state.setMovetimeSec((1 <= moveTime && moveTime <= MAX_MOVE_TIME) ? moveTime : MAX_MOVE_TIME);
         });
-        addCommand(GRAPHIC_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.GRAPHIC));
-        addCommand(TEXT_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.TEXT));
-        addCommand(SEQUENCE_MODE_CMD, args -> state.setChessboardMode(ChessboardMode.SEQUENCE));
-        addCommand(CASE_INSENSITIVE_MODE_CMD, args -> {
+        addCommand(GRAPHIC_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.GRAPHIC));
+        addCommand(TEXT_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.TEXT));
+        addCommand(SEQUENCE_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.SEQUENCE));
+        addCommand(CASE_INSENSITIVE_MODE_CMD, (args, prgCallback) -> {
             state.setCaseInsensitiveMode(!state.isCaseInsensitiveMode());
         });
         addCommand(COMPARE_POSITION_CMD, this::comparePosition);
     }
 
-    private void addCommand(String commandName, Consumer<String[]> commandHandler) {
+    private void addCommand(String commandName, BiConsumer<String[],Consumer<String>> commandHandler) {
         if (commands.containsKey(commandName)) {
             throw new OutlineException("Command " + commandName + " is already registered.");
         }
@@ -560,17 +567,24 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
     }
 
-    private void generateNextMove() {
+    private void generateNextMove(Consumer<String> progressCallback) {
         if (canMakeMove()) {
             final Move currMove = state.getCurrPosition().getMove();
             if (!currMove.isStaleMate() && !currMove.isCheckMate()) {
                 Move nextMove;
                 try {
+                    if (progressCallback != null) {
+                        progressCallback.accept("Computer is thinking...");
+                    }
                     nextMove = StockFishRunner.getNextMove(
                             runStockfishCmd, currMove, state.getDepth(), state.getMovetimeSec()
                     );
                 } catch (IOException ex) {
                     throw new OutlineException(ex);
+                } finally {
+                    if (progressCallback != null) {
+                        progressCallback.accept(null);
+                    }
                 }
                 state.appendSelectedMoveToHistory(nextMove);
                 state.setCommandResponseMsg(state.getCurrPosition().getMove().getShortNotation());
@@ -596,23 +610,23 @@ public class MovesBuilder implements ChessComponentStateManager {
         state.getCurrPosition().setChildren(new ArrayList<>());
     }
 
-    private void setAutoresponse() {
+    private void setAutoresponse(Consumer<String> progressCallback) {
         if (state.getAutoResponseForColor()!=null) {
             state.setAutoResponseForColor(null);
         } else {
             if (canMakeMove()) {
                 state.setAutoResponseForColor(state.getCurrPosition().getMove().getColorOfWhoMadeMove());
-                execChessCommand(GENERATE_NEXT_MOVE_CMD);
+                execChessCommand(GENERATE_NEXT_MOVE_CMD, progressCallback);
             }
         }
     }
 
-    private void generateAutoresponseIfNecessary() {
+    private void generateAutoresponseIfNecessary(Consumer<String> progressCallback) {
         if (state.getAutoResponseForColor() == state.getCurrPosition().getMove().getColorOfWhoMadeMove().invert()) {
             if (state.getPracticeState() != null && !state.getCurrPosition().getChildren().isEmpty()) {
-                processSelectedMove(state.getCurrPosition().getChildren().get(0).getMove());
+                processSelectedMove(state.getCurrPosition().getChildren().get(0).getMove(), progressCallback);
             } else {
-                execChessCommand(GENERATE_NEXT_MOVE_CMD);
+                execChessCommand(GENERATE_NEXT_MOVE_CMD, progressCallback);
             }
         }
     }
@@ -734,7 +748,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
     }
 
-    private void comparePosition(String[] allArgs) {
+    private void comparePosition(String[] allArgs, Consumer<String> progressCallback) {
         List<Pair<CellCoords,ChessmanType>> userPosition = parseUserPosition(allArgs);
         int matchedCnt = 0;
         final int[] missedCnt = {0};

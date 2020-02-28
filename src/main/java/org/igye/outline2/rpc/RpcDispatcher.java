@@ -100,6 +100,10 @@ public class RpcDispatcher {
         Object[] arguments = new Object[declaredParams.length];
         for (int i = 0; i < declaredParams.length; i++) {
             Parameter declaredParam = declaredParams[i];
+            RpcIgnore ignoreParam = declaredParam.getAnnotation(RpcIgnore.class);
+            if (ignoreParam != null) {
+                continue;
+            }
             Class<?> paramType = declaredParam.getType();
             String paramName = declaredParam.getName();
             JsonNode passedParam = passedParams != null ? passedParams.get(paramName) : null;

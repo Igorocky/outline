@@ -23,6 +23,7 @@ public class ChessComponentView {
     private boolean noMovesRecorded;
     private String commandErrorMsg;
     private String commandResponseMsg;
+    private String commandProgressMsg;
     private PracticeStateView practiseState;
     private String pgn;
 }

@@ -139,7 +139,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     }
 
     @Override
-    public ChessComponentResponse execChessCommand(String command) {
+    public ChessComponentResponse execChessCommand(String command, Consumer<String> progressCallback) {
         commandErrorMsg = null;
         commandResponseMsg = null;
         String[] parsedCommand = command.trim().split("\\s");
