@@ -1,6 +1,6 @@
 "use strict";
 
-const ChessComponentM = ({}) => {
+const ChessComponentM = ({actionsContainerRef}) => {
     const [state, setChessComponentMState] = useState(null)
     const query = useQuery();
     const puzzleId = query.get("puzzleId")
@@ -9,14 +9,10 @@ const ChessComponentM = ({}) => {
     const [historyIsShown, setHistoryIsShown] = useState(false)
 
     useEffect(() => {
-        if (puzzleId) {
-            if (puzzleName) {
-                document.title = "Solve puzzle: " + puzzleName
-            } else {
-                document.title = "Solve Puzzle"
-            }
-        } else if (fen) {
-            document.title = "Position analysis"
+        if (puzzleName) {
+            document.title = puzzleName
+        } else {
+            document.title = "Solve puzzle"
         }
     }, [puzzleName])
 
@@ -69,7 +65,7 @@ const ChessComponentM = ({}) => {
     }, [backend.isReady, puzzleId])
 
     function renderTitle() {
-        return RE.span({}, puzzleName?puzzleName:"")
+        return RE.span({}, puzzleName)
     }
 
     function renderPositionIterator() {
@@ -154,7 +150,7 @@ const ChessComponentM = ({}) => {
     }
 
     return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
-        renderTitle(),
+        re(Portal, {container: actionsContainerRef.current}, renderTitle()),
         renderPositionIterator(),
         renderMovesHistory(),
         renderControlButtons(),
