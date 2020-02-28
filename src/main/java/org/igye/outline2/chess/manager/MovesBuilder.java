@@ -565,6 +565,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (nextPosition != null) {
             state.setCurrPosition(nextPosition);
         }
+        if (state.getPracticeState() != null) {
+            state.getPracticeState().setFailed(true);
+        }
     }
 
     private void generateNextMove(Consumer<String> progressCallback) {
@@ -599,6 +602,9 @@ public class MovesBuilder implements ChessComponentStateManager {
         }
         state.setCurrPosition(currPosition);
         state.setPreparedMoves(null);
+        if (state.getPracticeState() != null) {
+            state.getPracticeState().setFailed(true);
+        }
     }
 
     private void goToStartPosition() {

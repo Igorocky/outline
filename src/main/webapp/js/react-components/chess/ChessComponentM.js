@@ -51,6 +51,10 @@ const ChessComponentM = ({}) => {
         }
     }, [backend.isReady, puzzleId])
 
+    function renderTitle() {
+        return RE.span({}, puzzleName?puzzleName:"")
+    }
+
     function renderPositionIterator() {
         const chessboardSequence = getByPath(state, ["chessBoardSequence"])
         if (chessboardSequence) {
@@ -67,6 +71,22 @@ const ChessComponentM = ({}) => {
         } else {
             return null
         }
+    }
+
+    function renderControlButtons() {
+        function goToStart() {backend.call("execChessCommand", {command:"s"})}
+        function goToEnd() {backend.call("execChessCommand", {command:"e"})}
+        function goToPrev() {backend.call("execChessCommand", {command:"p"})}
+        function goToNext() {backend.call("execChessCommand", {command:"n"})}
+        return RE.ButtonGroup({size:"small"},
+            RE.Button({onClick: goToStart},RE.Icon({}, "fast_rewind")),
+            RE.Button({onClick: goToPrev},RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow")),
+            RE.Button({onClick: goToNext},RE.Icon({}, "play_arrow")),
+            RE.Button({onClick: goToEnd},RE.Icon({}, "fast_forward")),
+            RE.Button({},RE.Icon({}, "equalizer")),
+            RE.Button({},RE.Icon({}, "history")),
+            RE.Button({},RE.Icon({}, "skip_next")),
+        )
     }
 
     function renderMoveSelector() {
@@ -102,8 +122,10 @@ const ChessComponentM = ({}) => {
     }
 
     return RE.Container.col.top.center({},{style:{marginTop: "0.5em"}},
+        renderTitle(),
         renderPositionIterator(),
         renderHistory(),
+        renderControlButtons(),
         renderPuzzleStatus(),
         renderCommandResponses(),
         renderMoveSelector(),

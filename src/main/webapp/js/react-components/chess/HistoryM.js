@@ -9,7 +9,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
             onClick: () => backend.call("execChessCommand", {command:"s"}),
         }, "Start "),
         rows.map(move => RE.span({key:move.feMoveNumber},
-            RE.span({key:"-1"}, move.feMoveNumber + ". "),
+            RE.span({key:"-1", style:{fontWeight:"bold"}}, move.feMoveNumber + ". "),
             RE.span({
                     key:"w",
                     style: {backgroundColor: move.whitesMoveSelected ? "yellow" : null},
