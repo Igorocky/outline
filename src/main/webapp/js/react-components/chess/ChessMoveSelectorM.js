@@ -8,108 +8,183 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
     const [yCoord, setYCoord] = useState(null)
     const [promotion, setPromotion] = useState(null)
 
+    useEffect(() => {
+        if (additionalCoord) {
+            setAdditionalCoordType(null)
+        }
+    }, [additionalCoord])
+
     function renderChessmanTypeSelector() {
-        return RE.ButtonGroup({variant:"contained", size:"small"},
-            ["K","Q","R","B","N","P"].map(ct => RE.Button(
-                {
-                    key:ct,
-                    color:chessmanType==ct ? "primary" : "default",
-                    onClick: () => setChessmanType(ct)
-                },
-                ct
-            ))
-        )
+        return re(KeyPad, {
+            keys: [
+                [
+                    {symbol:"K", onClick: () => setChessmanType("K")},
+                    {symbol:"Q", onClick: () => setChessmanType("Q")},
+                    {symbol:"R", onClick: () => setChessmanType("R")},
+                ],
+                [
+                    {symbol:"B", onClick: () => setChessmanType("B")},
+                    {symbol:"N", onClick: () => setChessmanType("N")},
+                    {symbol:"P", onClick: () => setChessmanType("P")},
+                ],
+            ]
+        })
     }
 
     function renderAdditionalCoordSelector() {
-        if (additionalCoordType) {
-            const possibleAdditionalCoords = additionalCoordType == "x"
-                ? ["a", "b", "c", "d", "e", "f", "g", "h"]
-                : ["1", "2", "3", "4", "5", "6", "7", "8"];
-            return RE.ButtonGroup({variant:"contained", size:"small"},
-                RE.Button(
-                    {
-                        key:"*",
-                        color:"default",
-                        onClick: () => {
-                            setAdditionalCoordType(additionalCoordType=="x"?"y":"x")
-                            setAdditionalCoord(null)
-                        }
-                    },
-                    "*"
-                ),
-                possibleAdditionalCoords.map(ac => RE.Button(
-                    {
-                        key:ac,
-                        color:additionalCoord==ac ? "primary" : "default",
-                        onClick: () => setAdditionalCoord(ac)
-                    },
-                    ac
-                ))
-            )
-        } else {
-            return null
-        }
+        const pac = additionalCoordType == "x"
+            ? ["a", "b", "c", "d", "e", "f", "g", "h"]
+            : ["1", "2", "3", "4", "5", "6", "7", "8"];
+        return re(KeyPad, {
+            keys: [
+                [
+                    {symbol:pac[0], onClick: () => setAdditionalCoord(pac[0])},
+                    {symbol:pac[1], onClick: () => setAdditionalCoord(pac[1])},
+                    {symbol:pac[2], onClick: () => setAdditionalCoord(pac[2])},
+                ],
+                [
+                    {symbol:pac[3], onClick: () => setAdditionalCoord(pac[3])},
+                    {symbol:pac[4], onClick: () => setAdditionalCoord(pac[4])},
+                    {symbol:pac[5], onClick: () => setAdditionalCoord(pac[5])},
+                ],
+                [
+                    {symbol:pac[6], onClick: () => setAdditionalCoord(pac[6])},
+                    {symbol:pac[7], onClick: () => setAdditionalCoord(pac[7])},
+                    {symbol:"*", onClick: () => setAdditionalCoordType(additionalCoordType=="x"?"y":"x")},
+                ],
+            ]
+        })
     }
 
     function renderXCoordSelector() {
-        return RE.ButtonGroup({variant:"contained", size:"small"},
-            ["a","b","c","d","e","f","g","h"].map(coord => RE.Button(
-                {
-                    key:coord,
-                    color:xCoord==coord ? "primary" : "default",
-                    onClick: () => setXCoord(coord)
-                },
-                coord
-            ))
-        )
+        return re(KeyPad, {
+            keys: [
+                [
+                    {symbol:"a", onClick: () => setXCoord("a")},
+                    {symbol:"b", onClick: () => setXCoord("b")},
+                    {symbol:"c", onClick: () => setXCoord("c")},
+                ],
+                [
+                    {symbol:"d", onClick: () => setXCoord("d")},
+                    {symbol:"e", onClick: () => setXCoord("e")},
+                    {symbol:"f", onClick: () => setXCoord("f")},
+                ],
+                [
+                    {symbol:"g", onClick: () => setXCoord("g")},
+                    {symbol:"h", onClick: () => setXCoord("h")},
+                    {symbol:"", onClick: () => null},
+                ],
+            ]
+        })
     }
 
     function renderYCoordSelector() {
-        return RE.ButtonGroup({variant:"contained", size:"small"},
-            ["1","2","3","4","5","6","7","8"].map(coord => RE.Button(
-                {
-                    key:coord,
-                    color:yCoord==coord ? "primary" : "default",
-                    onClick: () => setYCoord(coord)
-                },
-                coord
-            ))
-        )
+        return re(KeyPad, {
+            keys: [
+                [
+                    {symbol:"1", onClick: () => setYCoord("1")},
+                    {symbol:"2", onClick: () => setYCoord("2")},
+                    {symbol:"3", onClick: () => setYCoord("3")},
+                ],
+                [
+                    {symbol:"4", onClick: () => setYCoord("4")},
+                    {symbol:"5", onClick: () => setYCoord("5")},
+                    {symbol:"6", onClick: () => setYCoord("6")},
+                ],
+                [
+                    {symbol:"7", onClick: () => setYCoord("7")},
+                    {symbol:"8", onClick: () => setYCoord("8")},
+                    {symbol:"", onClick: () => null},
+                ],
+            ]
+        })
     }
 
     function renderPromotionSelector() {
-        if ((yCoord == "1" || yCoord == "8") && chessmanType == "P") {
-            return RE.ButtonGroup({variant:"contained", size:"small"},
-                ["Q","R","B","N"].map(prom => RE.Button(
-                    {
-                        key:prom,
-                        color:promotion==prom ? "primary" : "default",
-                        onClick: () => setPromotion(prom)
-                    },
-                    prom
-                ))
-            )
+        return re(KeyPad, {
+            keys: [
+                [
+                    {symbol:"Q", onClick: () => setPromotion("Q")},
+                    {symbol:"R", onClick: () => setPromotion("R")},
+                    {symbol:"B", onClick: () => setPromotion("B")},
+                    {symbol:"N", onClick: () => setPromotion("N")},
+                ],
+            ]
+        })
+    }
+
+    function getSelectedMove() {
+        if (!chessmanType) {
+            return ""
         } else {
-            return null
+            const ct = chessmanType == "P" ? "" : chessmanType
+            const ac = emptyStrIfNull(additionalCoord)
+            const toX = emptyStrIfNull(xCoord).toLowerCase()
+            const toY = emptyStrIfNull(yCoord).toLowerCase()
+            const pr = emptyStrIfNull(promotion)
+            return ct + ac + toX + toY + pr
         }
     }
+
+    const selectedMove = getSelectedMove()
 
     function renderGoButton() {
         return RE.Button({
                 color: "primary",
                 variant: "contained",
                 onClick: () => {
-                    const ct = (chessmanType == "P" || !chessmanType) ? "" : chessmanType
-                    const ac = emptyStrIfNull(additionalCoord)
-                    const toX = emptyStrIfNull(xCoord).toLowerCase()
-                    const toY = emptyStrIfNull(yCoord).toLowerCase()
-                    const pr = emptyStrIfNull(promotion)
-                    onMoveSelected({move: ct + ac + toX + toY + pr, onDone: () => clearSelection()})
+                    onMoveSelected({move: selectedMove, onDone: () => clearSelection()})
                 }
             },
             "Go"
         )
+    }
+
+    function renderKeyPad() {
+        if (!chessmanType) {
+            return renderChessmanTypeSelector()
+        } else if (additionalCoordType) {
+            return renderAdditionalCoordSelector()
+        } else if (!xCoord) {
+            return renderXCoordSelector()
+        } else if (!yCoord) {
+            return renderYCoordSelector()
+        } else if (!promotion && chessmanType == "P" && (yCoord == "1" || yCoord == "8")) {
+            return renderPromotionSelector()
+        } else {
+            return null
+        }
+    }
+
+    function renderSelectedMoveAndControlButtons() {
+        return RE.Container.row.right.center({},{style:{marginLeft:"0.5em"}},
+            RE.span({style: {fontSize: "x-large"}},selectedMove),
+            RE.ButtonGroup({size:"small"},
+                RE.Button({onClick: doBackspace, disabled: !chessmanType},RE.Icon({}, "backspace")),
+                RE.Button({
+                        onClick: fromButtonClicked,
+                        disabled: !(chessmanType && !xCoord && !additionalCoord),
+                        style: {color:additionalCoordType?"blue":""}
+                    },
+                    RE.Icon({}, "gps_fixed")
+                ),
+            )
+        )
+    }
+
+    function doBackspace() {
+        if (promotion) {
+            setPromotion(null)
+        } else if (yCoord) {
+            setYCoord(null)
+        } else if (xCoord) {
+            setXCoord(null)
+        } else if (additionalCoord) {
+            setAdditionalCoord(null)
+            setAdditionalCoordType(null)
+        } else if (chessmanType) {
+            setChessmanType(null)
+        }
     }
 
     function clearSelection() {
@@ -130,20 +205,10 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
         setAdditionalCoord(null)
     }
 
-    return RE.Paper({},
-        RE.Container.col.top.right({},{style:{marginTop:"0.5em"}},
-            RE.Container.row.spaceBetween.center({style:{width:"100%"}},{xs:"auto"},
-                "Select move",
-                RE.ButtonGroup({size:"small"},
-                    RE.Button({onClick: fromButtonClicked},"From"),
-                    RE.Button({onClick: clearSelection},"Clear"),
-                )
-            ),
-            renderChessmanTypeSelector(),
-            renderAdditionalCoordSelector(),
-            renderXCoordSelector(),
-            renderYCoordSelector(),
-            renderPromotionSelector(),
+    return RE.Container.row.right.top({},{style:{marginLeft:"0.5em"}},
+        renderSelectedMoveAndControlButtons(),
+        RE.Container.col.top.right({},{style:{marginBottom:"0.5em"}},
+            renderKeyPad(),
             renderGoButton(),
         )
     )
