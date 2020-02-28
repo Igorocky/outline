@@ -153,7 +153,7 @@ const ChessComponentM = ({}) => {
         }
     }
 
-    return RE.Container.col.top.center({},{style:{marginTop: "0.5em"}},
+    return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
         renderTitle(),
         renderPositionIterator(),
         renderMovesHistory(),

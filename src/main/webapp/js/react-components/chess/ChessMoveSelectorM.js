@@ -131,7 +131,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
     }
 
     return RE.Paper({},
-        RE.Container.col.top.left({},{style:{marginTop:"0.5em"}},
+        RE.Container.col.top.right({},{style:{marginTop:"0.5em"}},
             RE.Container.row.spaceBetween.center({style:{width:"100%"}},{xs:"auto"},
                 "Select move",
                 RE.ButtonGroup({size:"small"},
