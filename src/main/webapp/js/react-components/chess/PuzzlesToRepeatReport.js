@@ -28,20 +28,39 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
     }
 
     function renderStartPuzzle(puzzleId, url, hasPgn) {
-        return re(PuzzlesToRepeatReport_IconButtonWithMemory,{onClick: () => {
+        return re(PuzzlesToRepeatReport_IconButtonWithMemory,{
+            iconNameBeforeClick:"play_circle_outline",
+            iconNameAfterClick:"play_circle_filled",
+            onClick: () => {
                 window.open(PATH.createNodeWithIdPath(puzzleId))
                 if (hasPgn == 1) {
                     window.open(PATH.createChessboardWithPractice(puzzleId))
                 } else {
                     window.open(url)
                 }
-        }})
+            }
+        })
+    }
+
+    function renderStartPuzzleM(puzzleId, hasPgn) {
+        if (hasPgn == 1) {
+            return re(PuzzlesToRepeatReport_IconButtonWithMemory, {
+                iconNameBeforeClick:"tap_and_play",
+                iconNameAfterClick:"tap_and_play",
+                onClick: () => {
+                    window.open(PATH.createChessboardComponentM({puzzleId:puzzleId}))
+                }
+            })
+        } else {
+            return null
+        }
     }
 
     function renderReport() {
         return re(ReportResult, {...reportData, actions: {
                 navigateToPuzzle: navigateToPuzzle,
                 renderStartPuzzle: renderStartPuzzle,
+                renderStartPuzzleM: renderStartPuzzleM,
         }})
     }
 
@@ -78,16 +97,16 @@ const PuzzlesToRepeatReport = ({match, redirect}) => {
     }
 }
 
-const PuzzlesToRepeatReport_IconButtonWithMemory = ({onClick}) => {
+const PuzzlesToRepeatReport_IconButtonWithMemory = ({onClick,iconNameBeforeClick,iconNameAfterClick}) => {
     const [clicked, setClicked] = useState(false)
     const [hovered, setHovered] = useState(false);
 
     function getColor() {
-        return clicked?"green":(hovered?"yellow":"grey")
+        return clicked?"limegreen":(hovered?"yellow":"grey")
     }
 
     function getIconName() {
-        return clicked?"play_circle_filled":"play_circle_outline"
+        return clicked?iconNameAfterClick:iconNameBeforeClick
     }
 
     return RE.IconButton({

@@ -81,7 +81,7 @@ const ChessComponentM = ({}) => {
         }
     }
 
-    function renderHistory() {
+    function renderMovesHistory() {
         const history = getByPath(state, ["history"])
         if (history) {
             return re(HistoryM, {backend: backend, ...history})
@@ -107,7 +107,6 @@ const ChessComponentM = ({}) => {
             RE.Button({onClick: analyzePosition, disabled:!currentPositionFen},
                 RE.Icon({}, "equalizer")),
             RE.Button({onClick: () => setHistoryIsShown(true)},RE.Icon({}, "history")),
-            RE.Button({},RE.Icon({}, "skip_next")),
         )
     }
 
@@ -143,7 +142,7 @@ const ChessComponentM = ({}) => {
         )
     }
 
-    function renderHistory() {
+    function renderPuzzleHistory() {
         if (puzzleId && historyIsShown) {
             return RE.Dialog({fullScreen:true, open:true},
                 RE.Button({color:"primary", onClick: () => setHistoryIsShown(false)}, "Close"),
@@ -157,11 +156,11 @@ const ChessComponentM = ({}) => {
     return RE.Container.col.top.center({},{style:{marginTop: "0.5em"}},
         renderTitle(),
         renderPositionIterator(),
-        renderHistory(),
+        renderMovesHistory(),
         renderControlButtons(),
         renderPuzzleStatus(),
         renderCommandResponses(),
         renderMoveSelector(),
-        renderHistory(),
+        renderPuzzleHistory(),
     )
 }

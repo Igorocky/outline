@@ -55,7 +55,7 @@ order by sort_by desc
   },
   {
     "name": "delay",
-    "title": "Overdue%/Wait"
+    "title": "Wait"
   },
   {
     "name": "id",
@@ -72,6 +72,12 @@ order by sort_by desc
     "title": "",
     "renderFunction": "renderStartPuzzle",
     "renderFunctionArgs": ["id", "url", "has_pgn"]
+  },
+  {
+    "name": "urlM",
+    "title": "",
+    "renderFunction": "renderStartPuzzleM",
+    "renderFunctionArgs": ["id", "has_pgn"]
   }
 ]
 columns*/
