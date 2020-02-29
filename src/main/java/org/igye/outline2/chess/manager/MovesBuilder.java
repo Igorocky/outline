@@ -574,14 +574,17 @@ public class MovesBuilder implements ChessComponentStateManager {
                     if (progressCallback != null) {
                         progressCallback.accept(COMPUTER_IS_THINKING);
                     }
+                    final long[] lastUpdateSentAt = {System.currentTimeMillis()};
                     nextMove = StockFishRunner.getNextMove(
                             runStockfishCmd,
                             currMove,
                             state.getDepth(),
                             depthInfo -> {
-                                if (progressCallback != null && depthInfo.getLeft() >= 15) {
+                                if (progressCallback != null && System.currentTimeMillis() - lastUpdateSentAt[0] >= 5000) {
+                                    lastUpdateSentAt[0] = System.currentTimeMillis();
                                     progressCallback.accept(
-                                            COMPUTER_IS_THINKING + " " + depthInfo.getLeft() + "/" + depthInfo.getRight()
+                                            COMPUTER_IS_THINKING + " "
+                                                    + depthInfo.getLeft() + "/" + depthInfo.getRight()
                                     );
                                 }
                             }
