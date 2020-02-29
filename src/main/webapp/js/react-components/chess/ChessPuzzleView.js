@@ -179,6 +179,51 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
         )
     }
 
+    function renderDepth() {
+        const puzzleDepth = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_DEPTH);
+        return RE.Container.row.left.center({},{},
+            "Depth",
+            re(EditableTextField,{
+                key:"puzzle-depth-" + getCurrPuzzleId(),
+                inlineActions: true,
+                initialValue: puzzleDepth,
+                spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                textFieldStyle: {width:"100px", margin:"0px 10px"},
+                onSave: ({newValue, onSaved}) => {
+                    if (/^\d+$/.test(newValue)) {
+                        setSingleTagForNode(
+                            getCurrPuzzleId(),
+                            TAG_ID.CHESS_PUZZLE_DEPTH,
+                            newValue,
+                            () => {
+                                onSaved()
+                                navigateToNodeId(getCurrPuzzleId())
+                            }
+                        )
+                    } else if (newValue.trim() == "") {
+                        removeTagFromNode(
+                            getCurrPuzzleId(),
+                            TAG_ID.CHESS_PUZZLE_DEPTH,
+                            () => {
+                                onSaved()
+                                navigateToNodeId(getCurrPuzzleId())
+                            }
+                        )
+                    }
+                },
+                placeholder: "Depth",
+            })
+        )
+    }
+
+    function renderPgnSettings() {
+        return RE.Container.col.top.left({},{},
+            renderAutoResponseIsEnabled(),
+            renderTextModeIsEnabled(),
+            renderDepth()
+        )
+    }
+
     function renderPgn() {
         const puzzlePgn = getTagSingleValue(curNode, TAG_ID.CHESS_PUZZLE_PGN);
         return RE.Paper(
@@ -186,7 +231,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 style:{paddingLeft:"5px", paddingRight:"5px", marginBottom:"10px"},
                 onDoubleClick: () => window.scrollTo(0, fenRef.current.offsetTop)
             },
-            RE.Container.row.left.center({style:{padding:"5px"}},{},
+            RE.Container.row.left.top({style:{padding:"5px"}},{},
                 "PGN",
                 re(EditablePgnViewer, {
                     value:puzzlePgn,
@@ -205,8 +250,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                         iconButton({iconName: "delete", onClick: deletePgn}),
                     ):null,
                 }),
-                renderAutoResponseIsEnabled(),
-                renderTextModeIsEnabled(),
+                renderPgnSettings()
             )
         )
     }
@@ -325,8 +369,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderPaused() {
         return RE.Container.row.left.center({},{},
-            RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}},
-                isPaused()?"Paused":"Active"),
+            RE.span({style:{color: isPaused()?"red":"green"}}, isPaused()?"Paused":"Active"),
             RE.Switch({
                 checked: isPaused(),
                 onChange: togglePaused,
@@ -341,8 +384,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 onChange: toggleAutoResponse,
                 style:{color:isAutoResponseEnabled()?"limegreen":"lightgrey"}
             }),
-            RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey", cursor:"pointer"}},
-                "Auto-response")
+            RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey"}}, "Auto-response")
         )
     }
 
@@ -353,8 +395,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 onChange: toggleTextMode,
                 style:{color:isTextModeEnabled()?"limegreen":"lightgrey"}
             }),
-            RE.span({style:{color: isTextModeEnabled()?"limegreen":"lightgrey", cursor:"pointer"}},
-                "Text-mode")
+            RE.span({style:{color: isTextModeEnabled()?"limegreen":"lightgrey"}}, "Text-mode")
         )
     }
 

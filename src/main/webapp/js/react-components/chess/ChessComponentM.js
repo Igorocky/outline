@@ -8,6 +8,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
     const fen = query.get("fen")
     const [puzzleName, setPuzzleName] = useState(null)
     const [historyIsShown, setHistoryIsShown] = useState(false)
+    const [settingsIsShown, setSettingsIsShown] = useState(false)
 
     useEffect(() => {
         if (puzzleName) {
@@ -45,6 +46,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:null,
                 autoResponse: autoResponseEnabled,
+                depth:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_DEPTH),
                 commands: ["sm", "ci"]
             })
         })
@@ -102,6 +104,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
             RE.Button({onClick: goToNext},RE.Icon({}, "play_arrow")),
             RE.Button({onClick: goToEnd},RE.Icon({}, "fast_forward")),
             RE.Button({onClick: deleteAllMovesToTheRight},RE.Icon({}, "delete_forever")),
+            RE.Button({onClick: () => setSettingsIsShown(true)},RE.Icon({}, "settings")),
             RE.Button({onClick: analyzePosition, disabled:!currentPositionFen},
                 RE.Icon({}, "equalizer")),
             RE.Button({onClick: () => setHistoryIsShown(true)},RE.Icon({}, "history")),
@@ -151,6 +154,38 @@ const ChessComponentM = ({actionsContainerRef}) => {
         }
     }
 
+    function renderDepthSetting() {
+        const depth = getByPath(state, ["depth"])
+        return RE.Container.row.left.center({},{},
+            "Depth",
+            re(EditableTextField,{
+                inlineActions: true,
+                initialValue: depth,
+                spanStyle: {margin:"0px 10px", fontSize:"18px"},
+                textFieldStyle: {width:"100px", margin:"0px 10px"},
+                onSave: ({newValue, onSaved}) => {
+                    if (/^\d+$/.test(newValue)) {
+                        backend.call("execChessCommand", {command: "d " + newValue})
+                        onSaved()
+                    }
+                }
+            })
+        )
+    }
+
+    function renderSettings() {
+        if (settingsIsShown) {
+            return RE.Dialog({fullScreen:true, open:true},
+                RE.Button({color:"primary", onClick: () => setSettingsIsShown(false)}, "Close"),
+                RE.Container.col.top.right({},{},
+                    renderDepthSetting()
+                )
+            )
+        } else {
+            return null
+        }
+    }
+
     function deleteAllMovesToTheRight() {
         openConfirmActionDialog({
             pConfirmText: "Delete all moves to the right?",
@@ -175,6 +210,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
         renderCommandResponses(),
         renderMoveSelector(),
         renderPuzzleHistory(),
+        renderSettings(),
         renderConfirmActionDialog()
     )
 }

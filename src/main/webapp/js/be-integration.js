@@ -35,6 +35,7 @@ const TAG_ID = {
     chessPuzzleUrl: "chess_puzzle_url",
     CHESS_PUZZLE_FEN: "chess_puzzle_fen",
     CHESS_PUZZLE_PGN: "chess_puzzle_pgn",
+    CHESS_PUZZLE_DEPTH: "chess_puzzle_depth",
     CHESS_PUZZLE_PAUSED: "chess_puzzle_paused",
     CHESS_PUZZLE_COMMENT_TEXT: "chess_puzzle_comment_text",
     CHESS_PUZZLE_AUTO_RESPONSE: "chess_puzzle_auto_response",

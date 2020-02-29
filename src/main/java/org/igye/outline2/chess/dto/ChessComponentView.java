@@ -25,5 +25,6 @@ public class ChessComponentView {
     private String commandResponseMsg;
     private String commandProgressMsg;
     private PracticeStateView practiseState;
+    private Integer depth;
     private String pgn;
 }

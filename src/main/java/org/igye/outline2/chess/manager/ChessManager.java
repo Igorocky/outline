@@ -19,6 +19,8 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.igye.outline2.chess.manager.MovesBuilder.SET_DEPTH_CMD;
+
 @Component(ChessManager.CHESSBOARD)
 @Scope("prototype")
 public class ChessManager extends State implements ChessComponentStateManager {
@@ -39,9 +41,11 @@ public class ChessManager extends State implements ChessComponentStateManager {
     }
 
     @RpcMethod
-    public synchronized ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn, ChessComponentStage tabToOpen,
-                                              @Default("false") boolean autoResponse,
-                                              @Default("null") List<String> commands) {
+    public synchronized ChessComponentResponse loadFromPgn(@Default("\"\"") String pgn,
+                                                           @Default("null") ChessComponentStage tabToOpen,
+                                                           @Default("false") boolean autoResponse,
+                                                           @Default("null") Integer depth,
+                                                           @Default("null") List<String> commands) {
         boolean samePgn = stateManager instanceof MovesBuilder && pgn.equals(((MovesBuilder) stateManager).toPgn());
         if (!samePgn) {
             final MovesBuilder movesBuilder = new MovesBuilder(stockfishCmd, new Move(EMPTY_BOARD_FEN));
@@ -60,6 +64,9 @@ public class ChessManager extends State implements ChessComponentStateManager {
             chessTabSelected(tabToOpen);
             if (autoResponse) {
                 movesBuilder.setAutoResponseForOpponent();
+            }
+            if (depth != null) {
+                execChessCommand(SET_DEPTH_CMD + " " + depth, null);
             }
             if (commands != null) {
                 commands.forEach(cmd -> execChessCommand(cmd, null));

@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class MovesBuilderState {
-    public static final int MAX_DEPTH = 30;
+    public static final int MAX_DEPTH = 99;
 
     private GamePosition initialPosition;
     private GamePosition currPosition;
@@ -22,7 +22,7 @@ public class MovesBuilderState {
     private String commandResponseMsg;
     private ChessmanColor autoResponseForColor;
     private boolean chessbordIsHidden;
-    private int depth = MAX_DEPTH;
+    private int depth = 30;
     private MovesBuilderPracticeState practiceState;
     private ChessboardMode chessboardMode = ChessboardMode.GRAPHIC;
     private boolean caseInsensitiveMode;

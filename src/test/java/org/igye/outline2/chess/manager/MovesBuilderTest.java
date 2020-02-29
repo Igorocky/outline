@@ -1712,7 +1712,7 @@ public class MovesBuilderTest {
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
                 ChessComponentStage.PRACTICE_SEQUENCE,
-                false, null
+                false, null, null
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -1855,7 +1855,7 @@ public class MovesBuilderTest {
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
                 ChessComponentStage.PRACTICE_SEQUENCE,
-                false, null
+                false, null, null
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -2015,7 +2015,7 @@ public class MovesBuilderTest {
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
                 ChessComponentStage.PRACTICE_SEQUENCE,
-                false, null
+                false, null, null
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)
@@ -2175,7 +2175,7 @@ public class MovesBuilderTest {
         ChessComponentView view = chessManager.loadFromPgn(
                 "[FEN \"8/1k6/8/8/8/5R2/6K1/8 w - - 0 1\"]\n[White \"white\"]\n[Black \"black\"]\n\n\n1. Rf6 Kc7 2. Kf3 Kd7 3. Kf4 Ke7 4. Kf5 ",
                 ChessComponentStage.PRACTICE_SEQUENCE,
-                true, null
+                true, null, null
         ).getChessComponentView();
         assertEqualsByChessmenTypes(chessBoardBuilder()
                 ._(a8)._(b8)._(c8)._(d8)._(e8)._(f8)._(g8)._(h8)

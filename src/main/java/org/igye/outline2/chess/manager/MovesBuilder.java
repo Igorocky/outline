@@ -68,6 +68,8 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String PREPARED_TO_MOVE_COLOR = "#FFFF00";
     private static final String AVAILABLE_TO_MOVE_TO_COLOR = "#90EE90";
     private static final String CHOOSE_CHESSMAN_TYPE_COLOR = "#0000AA";
+
+    public static final String SET_DEPTH_CMD = "d";
     private static final String PREV_POSITION_CMD = "p";
     private static final String NEXT_POSITION_CMD = "n";
     private static final String GO_TO_POSITION_CMD = "g";
@@ -77,12 +79,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GENERATE_NEXT_MOVE_CMD = "nn";
     private static final String AUTO_RESPONSE_CMD = "aa";
     private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
-    private static final String SET_DEPTH_CMD = "d";
     private static final String GRAPHIC_MODE_CMD = "gm";
     private static final String TEXT_MODE_CMD = "tm";
     private static final String SEQUENCE_MODE_CMD = "sm";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
     private static final String COMPARE_POSITION_CMD = "cmp";
+
     public static final Comparator<CellCoords> WHITE_SIDE_CELL_COMPARATOR =
             Comparator.comparingInt(c -> (c.getX() * 8 + c.getY()));
     public static final Comparator<CellCoords> BLACK_SIDE_CELL_COMPARATOR =
@@ -247,6 +249,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         if (state.getPracticeState() != null) {
             setPracticeState(chessComponentView);
         }
+        chessComponentView.setDepth(state.getDepth());
         return ChessComponentResponse.builder().chessComponentView(chessComponentView).build();
     }
 
@@ -515,7 +518,11 @@ public class MovesBuilder implements ChessComponentStateManager {
         });
         addCommand(SET_DEPTH_CMD, (args, prgCallback) -> {
             final int depth = Integer.parseInt(args[1]);
-            state.setDepth((1 <= depth && depth <= MAX_DEPTH) ? depth : MAX_DEPTH);
+            if (1 <= depth && depth <= MAX_DEPTH) {
+                state.setDepth(depth);
+            } else {
+                state.setCommandErrorMsg("Incorrect value of depth: " + depth);
+            }
         });
         addCommand(GRAPHIC_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.GRAPHIC));
         addCommand(TEXT_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.TEXT));
