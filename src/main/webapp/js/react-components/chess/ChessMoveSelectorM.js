@@ -16,6 +16,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     function renderChessmanTypeSelector() {
         return re(KeyPad, {
+            componentKey: "ChessmanTypeSelector",
             keys: [
                 [
                     {symbol:"K", onClick: () => setChessmanType("K")},
@@ -36,6 +37,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
             ? ["a", "b", "c", "d", "e", "f", "g", "h"]
             : ["1", "2", "3", "4", "5", "6", "7", "8"];
         return re(KeyPad, {
+            componentKey: "additionalCoordType",
             keys: [
                 [
                     {symbol:pac[0], onClick: () => setAdditionalCoord(pac[0])},
@@ -58,6 +60,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     function renderXCoordSelector() {
         return re(KeyPad, {
+            componentKey: "XCoordSelector",
             keys: [
                 [
                     {symbol:"a", onClick: () => setXCoord("a")},
@@ -80,6 +83,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     function renderYCoordSelector() {
         return re(KeyPad, {
+            componentKey: "YCoordSelector",
             keys: [
                 [
                     {symbol:"1", onClick: () => setYCoord("1")},
@@ -102,10 +106,13 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     function renderPromotionSelector() {
         return re(KeyPad, {
+            componentKey: "PromotionSelector",
             keys: [
                 [
                     {symbol:"Q", onClick: () => setPromotion("Q")},
                     {symbol:"R", onClick: () => setPromotion("R")},
+                ],
+                [
                     {symbol:"B", onClick: () => setPromotion("B")},
                     {symbol:"N", onClick: () => setPromotion("N")},
                 ],

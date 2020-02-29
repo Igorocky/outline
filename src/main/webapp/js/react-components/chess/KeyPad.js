@@ -1,8 +1,8 @@
 "use strict";
 
-const KeyPad = ({keys}) => {
-    return RE.Container.col.top.left({}, {style: {marginBottom:"1px"}},
-        keys.map((row,ri) => RE.ButtonGroup({key:ri, variant:"contained"},
+const KeyPad = ({keys, componentKey}) => {
+    return RE.Container.col.top.left({key:componentKey}, {style: {marginBottom:"1px"}},
+        keys.map((row,ri) => RE.ButtonGroup({key:ri, variant:"contained", size:"large"},
             row.map((key,ki) => RE.Button({
                     key:ki,
                     style:{width:"1em"},

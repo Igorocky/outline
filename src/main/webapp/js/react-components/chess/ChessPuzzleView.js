@@ -325,7 +325,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
 
     function renderPaused() {
         return RE.Container.row.left.center({},{},
-            RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}, onClick: togglePaused},
+            RE.span({style:{color: isPaused()?"red":"green", cursor:"pointer"}},
                 isPaused()?"Paused":"Active"),
             RE.Switch({
                 checked: isPaused(),
@@ -341,8 +341,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 onChange: toggleAutoResponse,
                 style:{color:isAutoResponseEnabled()?"limegreen":"lightgrey"}
             }),
-            RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey", cursor:"pointer"},
-                    onClick: toggleAutoResponse},
+            RE.span({style:{color: isAutoResponseEnabled()?"limegreen":"lightgrey", cursor:"pointer"}},
                 "Auto-response")
         )
     }
@@ -354,8 +353,7 @@ const ChessPuzzleFullView = ({curNode, actionsContainerRef, navigateToNodeId}) =
                 onChange: toggleTextMode,
                 style:{color:isTextModeEnabled()?"limegreen":"lightgrey"}
             }),
-            RE.span({style:{color: isTextModeEnabled()?"limegreen":"lightgrey", cursor:"pointer"},
-                    onClick: toggleTextMode},
+            RE.span({style:{color: isTextModeEnabled()?"limegreen":"lightgrey", cursor:"pointer"}},
                 "Text-mode")
         )
     }
