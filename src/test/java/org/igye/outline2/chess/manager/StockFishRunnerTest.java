@@ -116,6 +116,6 @@ public class StockFishRunnerTest {
         Move nextMove = StockFishRunner.getNextMove(STOCKFISH_CMD, move, 5, null);
 
         //then
-        Assert.assertTrue(nextMove.getPieceAt(g8) == ChessmanType.WHITE_ROOK);
+        Assert.assertTrue(nextMove.getPieceAt(g8) == ChessmanType.WHITE_QUEEN);
     }
 }

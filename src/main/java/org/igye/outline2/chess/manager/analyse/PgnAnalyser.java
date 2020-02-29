@@ -120,8 +120,11 @@ public class PgnAnalyser {
                                 fenToAnalyse,
                                 fenAnalyser.analyseFen(
                                         fenToAnalyse,
-                                        depth,
-                                        moveTimeSec,
+                                        FenAnalyzerOptions.builder()
+                                                .depth(depth)
+                                                .moveTimeSec(moveTimeSec)
+                                                .multiPV(5)
+                                                .build(),
                                         fenProgress -> updateProgressInfo(
                                                 progressCallback,
                                                 pgnProgressInfo,

@@ -3,6 +3,7 @@ package org.igye.outline2.chess.manager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.outline2.chess.dto.PositionAnalysisDto;
 import org.igye.outline2.chess.manager.analyse.FenAnalyser;
+import org.igye.outline2.chess.manager.analyse.FenAnalyzerOptions;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.PieceShape;
@@ -21,8 +22,7 @@ public class StockFishRunner {
             final Long[] maxDepth = {0L};
             PositionAnalysisDto analysisResults = fenAnalyser.analyseFen(
                     currPosition.toFen(),
-                    depth,
-                    null,
+                    FenAnalyzerOptions.builder().depth(depth).build(),
                     progressInfo -> {
                         if (progressInfo.getDepth() != null && progressInfo.getDepth() > maxDepth[0]) {
                             if (depthChangeCallback != null) {

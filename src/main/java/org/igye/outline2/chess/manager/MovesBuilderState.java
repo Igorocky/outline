@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class MovesBuilderState {
-    public static final int MAX_DEPTH = 20;
+    public static final int MAX_DEPTH = 30;
 
     private GamePosition initialPosition;
     private GamePosition currPosition;

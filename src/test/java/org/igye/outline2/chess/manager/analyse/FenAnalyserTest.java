@@ -190,8 +190,7 @@ public class FenAnalyserTest {
             //when
             PositionAnalysisDto positionAnalysisDto = fenAnalyser.analyseFen(
                     "rn3rk1/p4ppp/2p4n/8/1p1q1P2/1P1P2P1/P1PQR1BP/2KR4 w - - 0 18",
-                    15,
-                    null,
+                    FenAnalyzerOptions.builder().depth(15).multiPV(5).build(),
                     null
             );
 

@@ -56,18 +56,20 @@ public class FenAnalyser implements Closeable {
         stockfish.readTill(contains("Stockfish"));
         stockfish.send("uci");
         stockfish.readTill(contains("uciok"));
-        stockfish.send("setoption name MultiPV value 5");
         stockfish.send("setoption name UCI_AnalyseMode value true");
     }
 
-    public synchronized PositionAnalysisDto analyseFen(String fen, Integer depth, Integer moveTimeSec,
+    public synchronized PositionAnalysisDto analyseFen(String fen, FenAnalyzerOptions options,
                                           Consumer<FenAnalysisProgressInfo> progressCallback) throws IOException {
         stockfish.send("ucinewgame");
+        if (options.getMultiPV() != null) {
+            stockfish.send("setoption name MultiPV value " + options.getMultiPV());
+        }
         stockfish.send("position fen " + fen);
         stockfish.send(
                 "go"
-                        + (depth != null?(" depth " + depth):"")
-                        + (moveTimeSec != null?(" movetime " + moveTimeSec*1000):"")
+                        + (options.getDepth() != null?(" depth " + options.getDepth()):"")
+                        + (options.getMoveTimeSec() != null?(" movetime " + options.getMoveTimeSec()*1000):"")
         );
         return collectAnalysisData(isBlackToMove(fen), progressCallback);
     }
