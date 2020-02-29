@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_DEPTH;
-import static org.igye.outline2.chess.manager.MovesBuilderState.MAX_MOVE_TIME;
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
 import static org.igye.outline2.chess.model.ChessmanType.BLACK_BISHOP;
@@ -79,7 +78,6 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String AUTO_RESPONSE_CMD = "aa";
     private static final String HIDE_SHOW_CHESSBOARD_CMD = "b";
     private static final String SET_DEPTH_CMD = "d";
-    private static final String SET_MOVE_TIME_CMD = "t";
     private static final String GRAPHIC_MODE_CMD = "gm";
     private static final String TEXT_MODE_CMD = "tm";
     private static final String SEQUENCE_MODE_CMD = "sm";
@@ -89,6 +87,7 @@ public class MovesBuilder implements ChessComponentStateManager {
             Comparator.comparingInt(c -> (c.getX() * 8 + c.getY()));
     public static final Comparator<CellCoords> BLACK_SIDE_CELL_COMPARATOR =
             Comparator.comparingInt(c -> -(c.getX() * 8 + c.getY()));
+    private static final String COMPUTER_IS_THINKING = "Computer is thinking...";
 
     private final String runStockfishCmd;
     private MovesBuilderState state;
@@ -518,10 +517,6 @@ public class MovesBuilder implements ChessComponentStateManager {
             final int depth = Integer.parseInt(args[1]);
             state.setDepth((1 <= depth && depth <= MAX_DEPTH) ? depth : MAX_DEPTH);
         });
-        addCommand(SET_MOVE_TIME_CMD, (args, prgCallback) -> {
-            final int moveTime = Integer.parseInt(args[1]);
-            state.setMovetimeSec((1 <= moveTime && moveTime <= MAX_MOVE_TIME) ? moveTime : MAX_MOVE_TIME);
-        });
         addCommand(GRAPHIC_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.GRAPHIC));
         addCommand(TEXT_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.TEXT));
         addCommand(SEQUENCE_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.SEQUENCE));
@@ -577,10 +572,19 @@ public class MovesBuilder implements ChessComponentStateManager {
                 Move nextMove;
                 try {
                     if (progressCallback != null) {
-                        progressCallback.accept("Computer is thinking...");
+                        progressCallback.accept(COMPUTER_IS_THINKING);
                     }
                     nextMove = StockFishRunner.getNextMove(
-                            runStockfishCmd, currMove, state.getDepth(), state.getMovetimeSec()
+                            runStockfishCmd,
+                            currMove,
+                            state.getDepth(),
+                            depthInfo -> {
+                                if (progressCallback != null && depthInfo.getLeft() >= 15) {
+                                    progressCallback.accept(
+                                            COMPUTER_IS_THINKING + " " + depthInfo.getLeft() + "/" + depthInfo.getRight()
+                                    );
+                                }
+                            }
                     );
                 } catch (IOException ex) {
                     throw new OutlineException(ex);

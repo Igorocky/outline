@@ -38,13 +38,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.igye.outline2.chess.manager.StockFishRunner.BEST_MOVE_ANS_PATTERN;
 import static org.igye.outline2.common.OutlineUtils.contains;
 import static org.igye.outline2.common.OutlineUtils.toJson;
 
 public class FenAnalyser implements Closeable {
 
     public static final Pattern MOVE_PATTERN = Pattern.compile("^([a-h][1-8]){2}[qrbn]?$");
+    public static final Pattern BEST_MOVE_ANS_PATTERN = Pattern.compile("^bestmove (([a-h])([1-8])([a-h])([1-8])([nbrq]?)).*");
     private static final String SCORE_OPTION = ScoreStockfishInfoOption.class.getSimpleName();
     private static final String DEPTH_OPTION = DepthStockfishInfoOption.class.getSimpleName();
     private static final String PV_OPTION = PvStockfishInfoOption.class.getSimpleName();
@@ -92,7 +92,9 @@ public class FenAnalyser implements Closeable {
                 if (moveInfo != null) {
                     foundMoves.put(moveInfo.getMove(), moveInfo);
                     if (progressCallback != null) {
-                        progressCallback.accept(progressInfo.withLastUpdated(Instant.now()));
+                        progressCallback.accept(
+                                progressInfo.withLastUpdated(Instant.now()).withDepth(moveInfo.getDepth())
+                        );
                     }
                 }
             } else if (line.startsWith("bestmove ")) {

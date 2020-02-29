@@ -12,8 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class MovesBuilderState {
-    public static final int MAX_DEPTH = 30;
-    public static final int MAX_MOVE_TIME = 10;
+    public static final int MAX_DEPTH = 20;
 
     private GamePosition initialPosition;
     private GamePosition currPosition;
@@ -24,7 +23,6 @@ public class MovesBuilderState {
     private ChessmanColor autoResponseForColor;
     private boolean chessbordIsHidden;
     private int depth = MAX_DEPTH;
-    private int movetimeSec = MAX_MOVE_TIME;
     private MovesBuilderPracticeState practiceState;
     private ChessboardMode chessboardMode = ChessboardMode.GRAPHIC;
     private boolean caseInsensitiveMode;

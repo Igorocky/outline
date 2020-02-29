@@ -1,41 +1,52 @@
 package org.igye.outline2.chess.manager;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.igye.outline2.chess.dto.PositionAnalysisDto;
+import org.igye.outline2.chess.manager.analyse.FenAnalyser;
 import org.igye.outline2.chess.model.CellCoords;
 import org.igye.outline2.chess.model.Move;
 import org.igye.outline2.chess.model.PieceShape;
-import org.igye.outline2.common.ConsoleAppRunner;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.Consumer;
 
 import static org.igye.outline2.chess.manager.ChessUtils.strCoordToInt;
-import static org.igye.outline2.common.OutlineUtils.contains;
 import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
 
 public class StockFishRunner {
 
-    public static final Pattern BEST_MOVE_ANS_PATTERN = Pattern.compile("^bestmove (([a-h])([1-8])([a-h])([1-8])([nbrq]?)).*");
-
-    public static Move getNextMove(String runStockfishCmd, Move currPosition, int depth, int seconds) throws IOException {
-        ConsoleAppRunner stockfish = new ConsoleAppRunner(runStockfishCmd);
-
-        stockfish.readTill(contains("Stockfish"));
-        stockfish.send("uci");
-        stockfish.readTill(contains("uciok"));
-        stockfish.send("position fen " + currPosition.toFen());
-        stockfish.send("go depth " + depth + " movetime " + seconds*1000);
-        Matcher matcher = stockfish.readTill(BEST_MOVE_ANS_PATTERN);
-        CellCoords from = new CellCoords(strCoordToInt(matcher.group(2)), strCoordToInt(matcher.group(3)));
-        CellCoords to = new CellCoords(strCoordToInt(matcher.group(4)), strCoordToInt(matcher.group(5)));
-        PieceShape replacement = nullSafeGetter(
-                matcher.group(6),
-                s -> StringUtils.isBlank(s)?null:s.toUpperCase(),
-                PieceShape::fromSymbol
-        );
-        Move result = currPosition.makeMove(from, to, replacement);
-        stockfish.destroy();
-        return result;
+    public static Move getNextMove(String runStockfishCmd, Move currPosition, int depth,
+                                   Consumer<Pair<Integer,Integer>> depthChangeCallback) throws IOException {
+        try (FenAnalyser fenAnalyser = new FenAnalyser(runStockfishCmd)) {
+            final Long[] maxDepth = {0L};
+            PositionAnalysisDto analysisResults = fenAnalyser.analyseFen(
+                    currPosition.toFen(),
+                    depth,
+                    null,
+                    progressInfo -> {
+                        if (progressInfo.getDepth() != null && progressInfo.getDepth() > maxDepth[0]) {
+                            if (depthChangeCallback != null) {
+                                depthChangeCallback.accept(Pair.of(Math.toIntExact(progressInfo.getDepth()), depth));
+                            }
+                            maxDepth[0] = progressInfo.getDepth();
+                        }
+                    }
+            );
+            String bestMoveStr = analysisResults.getPossibleMoves().get(0).getMove();
+            CellCoords from = new CellCoords(
+                    strCoordToInt(bestMoveStr.substring(0,1)),
+                    strCoordToInt(bestMoveStr.substring(1,2))
+            );
+            CellCoords to = new CellCoords(
+                    strCoordToInt(bestMoveStr.substring(2,3)),
+                    strCoordToInt(bestMoveStr.substring(3,4))
+            );
+            PieceShape replacement = nullSafeGetter(
+                    bestMoveStr.length() > 4 ? bestMoveStr.substring(4,5) : null,
+                    s -> s.toUpperCase(),
+                    PieceShape::fromSymbol
+            );
+            return currPosition.makeMove(from, to, replacement);
+        }
     }
 }
