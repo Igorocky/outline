@@ -167,7 +167,7 @@ public class ChessManager extends State implements ChessComponentStateManager {
         } else if (stateManager instanceof MovesBuilder) {
             final MovesBuilder movesBuilder = (MovesBuilder) this.stateManager;
             if (tab.equals(ChessComponentStage.INITIAL_POSITION)) {
-                stateManager = new PositionBuilder(movesBuilder.getInitialPosition());
+                stateManager = new PositionBuilder(movesBuilder.getInitialPositionFen());
             } else if (tab.equals(ChessComponentStage.PRACTICE_SEQUENCE)) {
                 movesBuilder.setPracticeMode(true);
             } else if (tab.equals(ChessComponentStage.MOVES)) {

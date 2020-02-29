@@ -253,7 +253,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         return ChessComponentResponse.builder().chessComponentView(chessComponentView).build();
     }
 
-    public String getInitialPosition() {
+    public String getInitialPositionFen() {
         return state.getInitialPosition().getMove().toFen();
     }
 
@@ -372,7 +372,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void renderSequentialChessboard(ChessComponentView chessComponentView) {
         chessComponentView.setChessBoardSequence(ChessboardSequentialView.builder()
-                .numberOfPieces(getCurrentPosition().findAll(ct -> true).size())
+                .numberOfPieces(getStartPosition().getMove().getResultPosition().findAll(ct -> true).size())
                 .quiz(createQuizCards())
                 .build()
         );
@@ -400,7 +400,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private List<ChessmenPositionQuizCard> createQuizCards() {
         List<ChessmenPositionQuizCard> result = new ArrayList<>();
-        final ChessmanColor color = state.getCurrPosition().getMove().getColorOfWhoToMove();
+        final ChessmanColor color = getStartPosition().getMove().getColorOfWhoToMove();
         final Comparator<CellCoords> comparator = color == WHITE
                 ? WHITE_SIDE_CELL_COMPARATOR
                 : BLACK_SIDE_CELL_COMPARATOR;
@@ -421,7 +421,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         List<String> answer = new ArrayList<>();
         for (ChessmanType pieceInCard : piecesInCard) {
             answer.addAll(
-                    getCurrentPosition()
+                    getStartPosition().getMove().getResultPosition()
                             .findAll(ct -> ct == pieceInCard)
                             .stream()
                             .sorted(comparator)
@@ -450,12 +450,12 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private Stream<CellCoords> findLocationsOf(Comparator<CellCoords> cellComparator, ChessmanType chessmanType) {
-        return getCurrentPosition().findAll(ct -> ct == chessmanType).stream()
+        return getCurrentPosition().getMove().getResultPosition().findAll(ct -> ct == chessmanType).stream()
                 .sorted(cellComparator);
     }
 
     private void renderGraphicalChessboard(ChessComponentView chessComponentView) {
-        chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition()));
+        chessComponentView.setChessBoard(ChessViewConverter.toDto(getCurrentPosition().getMove().getResultPosition()));
         final Move currMove = state.getCurrPosition().getMove();
         final ChessBoardView chessBoardView = chessComponentView.getChessBoard();
         if (/*state.getAutoResponseForColor() != null*/1 == 2) {
@@ -689,8 +689,12 @@ public class MovesBuilder implements ChessComponentStateManager {
                 .get();
     }
 
-    private ChessBoard getCurrentPosition() {
-        return state.getCurrPosition().getMove().getResultPosition();
+    private GamePosition getCurrentPosition() {
+        return state.getCurrPosition();
+    }
+
+    private GamePosition getStartPosition() {
+        return state.getInitialPosition();
     }
 
     private void traverseHistory(Function4<GamePosition, Integer, Move, Boolean, Boolean> moveVisitor) {
