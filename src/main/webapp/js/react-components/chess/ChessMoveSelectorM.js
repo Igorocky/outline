@@ -8,12 +8,6 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
     const [yCoord, setYCoord] = useState(null)
     const [promotion, setPromotion] = useState(null)
 
-    useEffect(() => {
-        if (additionalCoord) {
-            setAdditionalCoordType(null)
-        }
-    }, [additionalCoord])
-
     function renderChessmanTypeSelector() {
         return re(KeyPad, {
             componentKey: "ChessmanTypeSelector",
@@ -32,6 +26,11 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
         })
     }
 
+    function additionalCoordSelected(selectedAddCoord) {
+        setAdditionalCoord(selectedAddCoord)
+        setAdditionalCoordType(null)
+    }
+
     function renderAdditionalCoordSelector() {
         const pac = additionalCoordType == "x"
             ? ["a", "b", "c", "d", "e", "f", "g", "h"]
@@ -40,19 +39,19 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
             componentKey: "additionalCoordType",
             keys: [
                 [
-                    {symbol:pac[0], onClick: () => setAdditionalCoord(pac[0])},
-                    {symbol:pac[1], onClick: () => setAdditionalCoord(pac[1])},
-                    {symbol:pac[2], onClick: () => setAdditionalCoord(pac[2])},
+                    {symbol:pac[0], onClick: () => additionalCoordSelected(pac[0])},
+                    {symbol:pac[1], onClick: () => additionalCoordSelected(pac[1])},
+                    {symbol:pac[2], onClick: () => additionalCoordSelected(pac[2])},
                 ],
                 [
-                    {symbol:pac[3], onClick: () => setAdditionalCoord(pac[3])},
-                    {symbol:pac[4], onClick: () => setAdditionalCoord(pac[4])},
-                    {symbol:pac[5], onClick: () => setAdditionalCoord(pac[5])},
+                    {symbol:pac[3], onClick: () => additionalCoordSelected(pac[3])},
+                    {symbol:pac[4], onClick: () => additionalCoordSelected(pac[4])},
+                    {symbol:pac[5], onClick: () => additionalCoordSelected(pac[5])},
                 ],
                 [
-                    {symbol:pac[6], onClick: () => setAdditionalCoord(pac[6])},
-                    {symbol:pac[7], onClick: () => setAdditionalCoord(pac[7])},
-                    {symbol:"*", onClick: () => setAdditionalCoordType(additionalCoordType=="x"?"y":"x")},
+                    {symbol:pac[6], onClick: () => additionalCoordSelected(pac[6])},
+                    {symbol:pac[7], onClick: () => additionalCoordSelected(pac[7])},
+                    {icon: RE.Icon({}, "gps_fixed"), style:{color:"blue"}, onClick: fromButtonClicked},
                 ],
             ]
         })
@@ -75,7 +74,9 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
                 [
                     {symbol:"g", onClick: () => setXCoord("g")},
                     {symbol:"h", onClick: () => setXCoord("h")},
-                    {symbol:"", onClick: () => null},
+                    (chessmanType && !xCoord && !additionalCoord)
+                        ? {icon: RE.Icon({}, "gps_fixed"), onClick: fromButtonClicked}
+                        : {symbol:""},
                 ],
             ]
         })
@@ -98,7 +99,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
                 [
                     {symbol:"7", onClick: () => setYCoord("7")},
                     {symbol:"8", onClick: () => setYCoord("8")},
-                    {symbol:"", onClick: () => null},
+                    {symbol:""},
                 ],
             ]
         })
@@ -168,13 +169,6 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
             RE.span({style: {fontSize: "x-large"}},selectedMove),
             RE.ButtonGroup({size:"small"},
                 RE.Button({onClick: doBackspace, disabled: !chessmanType},RE.Icon({}, "backspace")),
-                RE.Button({
-                        onClick: fromButtonClicked,
-                        disabled: !(chessmanType && !xCoord && !additionalCoord),
-                        style: {color:additionalCoordType?"blue":""}
-                    },
-                    RE.Icon({}, "gps_fixed")
-                ),
             )
         )
     }
@@ -206,10 +200,11 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
     function fromButtonClicked() {
         if (!additionalCoordType) {
             setAdditionalCoordType("x")
+        } else if (additionalCoordType == "x") {
+            setAdditionalCoordType("y")
         } else {
             setAdditionalCoordType(null)
         }
-        setAdditionalCoord(null)
     }
 
     return RE.Container.row.right.top({},{style:{marginLeft:"0.5em"}},

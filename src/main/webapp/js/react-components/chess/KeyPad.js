@@ -5,10 +5,10 @@ const KeyPad = ({keys, componentKey}) => {
         keys.map((row,ri) => RE.ButtonGroup({key:ri, variant:"contained", size:"large"},
             row.map((key,ki) => RE.Button({
                     key:ki,
-                    style:{width:"1em"},
-                    onClick: key.onClick,
+                    style:{width:"1em", ...(key.style?key.style:{})},
+                    onClick: () => key.onClick?key.onClick():null,
                 },
-                key.symbol
+                hasValue(key.symbol)?key.symbol:key.icon
             ))
         ))
     )
