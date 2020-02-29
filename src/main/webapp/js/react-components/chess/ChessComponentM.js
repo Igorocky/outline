@@ -1,6 +1,7 @@
 "use strict";
 
 const ChessComponentM = ({actionsContainerRef}) => {
+    const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [state, setChessComponentMState] = useState(null)
     const query = useQuery();
     const puzzleId = query.get("puzzleId")
@@ -100,6 +101,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
             RE.Button({onClick: goToPrev},RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow")),
             RE.Button({onClick: goToNext},RE.Icon({}, "play_arrow")),
             RE.Button({onClick: goToEnd},RE.Icon({}, "fast_forward")),
+            RE.Button({onClick: deleteAllMovesToTheRight},RE.Icon({}, "delete_forever")),
             RE.Button({onClick: analyzePosition, disabled:!currentPositionFen},
                 RE.Icon({}, "equalizer")),
             RE.Button({onClick: () => setHistoryIsShown(true)},RE.Icon({}, "history")),
@@ -149,6 +151,21 @@ const ChessComponentM = ({actionsContainerRef}) => {
         }
     }
 
+    function deleteAllMovesToTheRight() {
+        openConfirmActionDialog({
+            pConfirmText: "Delete all moves to the right?",
+            pOnCancel: closeConfirmActionDialog,
+            pStartActionBtnText: "Delete",
+            pStartAction: ({onDone}) => {
+                backend.call("execChessCommand", {command:"rr"})
+                closeConfirmActionDialog()
+            },
+            pActionDoneText: "not used",
+            pActionDoneBtnText: "not used",
+            pOnActionDoneBtnClick: closeConfirmActionDialog
+        })
+    }
+
     return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
         re(Portal, {container: actionsContainerRef.current}, renderTitle()),
         renderPositionIterator(),
@@ -158,5 +175,6 @@ const ChessComponentM = ({actionsContainerRef}) => {
         renderCommandResponses(),
         renderMoveSelector(),
         renderPuzzleHistory(),
+        renderConfirmActionDialog()
     )
 }
