@@ -15,15 +15,17 @@ const CellIteratorM = ({numberOfPieces, quiz}) => {
         }
     }
 
-    return RE.Paper({},
-        RE.Container.row.center.center({}, {},
-            iconButton({iconName: "arrow_back_ios", onClick: prevClicked}),
-            RE.span({style: {fontSize: "large"}},
-                idx == -1
-                    ? "Start"
-                    : (idx < quiz.length ? (quiz[idx].question + " : " + quiz[idx].answer) : numberOfPieces)
-            ),
-            iconButton({iconName: "arrow_forward_ios", onClick: nextClicked}),
+    return RE.Container.row.right.bottom({}, {style:{marginLeft:"1em"}},
+        RE.span({style: {fontSize: "large"}},
+            idx == -1
+                ? "Start"
+                : (idx < quiz.length ? (quiz[idx].question + " : " + quiz[idx].answer) : numberOfPieces)
+        ),
+        RE.Paper({},
+            RE.Container.col.top.right({},{},
+                iconButton({iconName: "arrow_back_ios", onClick: prevClicked}),
+                iconButton({iconName: "arrow_forward_ios", onClick: nextClicked}),
+            )
         )
     )
 }

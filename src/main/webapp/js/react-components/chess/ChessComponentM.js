@@ -138,7 +138,9 @@ const ChessComponentM = ({actionsContainerRef}) => {
         const commandProgressMsg = getByPath(state, ["commandProgressMsg"])
         const commandErrorMsg = getByPath(state, ["commandErrorMsg"])
         return RE.Fragment({},
-            commandProgressMsg?RE.span({},commandProgressMsg):null,
+            commandProgressMsg
+                ?RE.span({},commandProgressMsg)
+                :RE.span({style:{color:"white"}},"."),
             commandErrorMsg?RE.span({style:{color:"red"}},commandErrorMsg):null,
         )
     }
@@ -203,11 +205,11 @@ const ChessComponentM = ({actionsContainerRef}) => {
 
     return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
         re(Portal, {container: actionsContainerRef.current}, renderTitle()),
-        renderPositionIterator(),
         renderMovesHistory(),
         renderControlButtons(),
         renderPuzzleStatus(),
         renderCommandResponses(),
+        renderPositionIterator(),
         renderMoveSelector(),
         renderPuzzleHistory(),
         renderSettings(),

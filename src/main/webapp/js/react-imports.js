@@ -111,6 +111,7 @@ const RE = {
             right: {
                 top: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.flexStart),
                 center: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.center),
+                bottom: gridFactory(DIRECTION.row, JUSTIFY.flexEnd, ALIGN_ITEMS.flexEnd),
             },
             spaceBetween: {
                 top: gridFactory(DIRECTION.row, JUSTIFY.spaceBetween, ALIGN_ITEMS.flexStart),
