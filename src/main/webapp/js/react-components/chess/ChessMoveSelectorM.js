@@ -140,6 +140,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
         return RE.Button({
                 color: "primary",
                 variant: "contained",
+                disabled: !(selectedMove == "" || yCoord != null),
                 onClick: () => {
                     onMoveSelected({move: selectedMove, onDone: () => clearSelection()})
                 }

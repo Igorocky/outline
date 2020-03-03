@@ -219,7 +219,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
             return RE.Button({
                     style: actionButtonsStyle, variant: "contained",
                     onClick: cancelReordering
-                }, "Cancel reordering"
+                }, "Complete reordering"
             )
         } else {
             return null
