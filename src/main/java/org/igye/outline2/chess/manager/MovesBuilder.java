@@ -405,10 +405,10 @@ public class MovesBuilder implements ChessComponentStateManager {
                 ? WHITE_SIDE_CELL_COMPARATOR
                 : BLACK_SIDE_CELL_COMPARATOR;
         result.add(createQuizCard(listOf(PAWN), color, false, comparator));
-        result.add(createQuizCard(listOf(PAWN), color.invert(), false, comparator));
         result.add(createQuizCard(SHAPES_TO_LIST_P1, color, true, comparator));
-        result.add(createQuizCard(SHAPES_TO_LIST_P1, color.invert(), true, comparator));
         result.add(createQuizCard(SHAPES_TO_LIST_P2, color, true, comparator));
+        result.add(createQuizCard(listOf(PAWN), color.invert(), false, comparator));
+        result.add(createQuizCard(SHAPES_TO_LIST_P1, color.invert(), true, comparator));
         result.add(createQuizCard(SHAPES_TO_LIST_P2, color.invert(), true, comparator));
         return result;
     }
