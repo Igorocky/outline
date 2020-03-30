@@ -136,11 +136,13 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     const selectedMove = getSelectedMove()
 
+    const promotionIsNeeded = chessmanType == "P" && (yCoord == "1" || yCoord == "8")
+
     function renderGoButton() {
         return RE.Button({
                 color: "primary",
                 variant: "contained",
-                disabled: !(selectedMove == "" || yCoord != null),
+                disabled: !(selectedMove == "" || (yCoord != null && !promotionIsNeeded) || promotion),
                 onClick: () => {
                     onMoveSelected({move: selectedMove, onDone: () => clearSelection()})
                 }
@@ -158,7 +160,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
             return renderXCoordSelector()
         } else if (!yCoord) {
             return renderYCoordSelector()
-        } else if (!promotion && chessmanType == "P" && (yCoord == "1" || yCoord == "8")) {
+        } else if (!promotion && promotionIsNeeded) {
             return renderPromotionSelector()
         } else {
             return null
