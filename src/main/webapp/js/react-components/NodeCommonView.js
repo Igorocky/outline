@@ -128,7 +128,7 @@ const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
 
     function renderPageContent() {
         if (curNode) {
-            return RE.Fragment({},
+            return RE.Container.col.top.left({},{classes: {item: "NodeCommonView-item"}},
                 renderPathToCurrNode(),
                 renderCurrNodeName(),
                 renderNodeContent()

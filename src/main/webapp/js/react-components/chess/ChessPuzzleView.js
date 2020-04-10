@@ -62,6 +62,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
 
     return RE.Fragment({},
         re(FolderComponent,{
+            keyVal:node[NODE.id],
             text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
             props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
             icon: RE.img({

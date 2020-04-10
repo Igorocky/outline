@@ -32,8 +32,8 @@ public class ImageManager {
     private DtoConverter dtoConverter;
 
     @Transactional
-    public NodeDto createImage(UUID parentId, MultipartFile file) throws IOException {
-        Node image = createNewImage(parentId);
+    public NodeDto createImage(UUID parentId, MultipartFile file, boolean isNodeIcon) throws IOException {
+        Node image = createNewImage(parentId, isNodeIcon);
 
         File imgFile = getImgFile(imagesLocation, UUID.fromString(image.getTagSingleValue(TagIds.IMG_ID)));
         File parentDir = imgFile.getParentFile();
@@ -46,13 +46,15 @@ public class ImageManager {
     }
 
     @Transactional
-    public Node createNewImage(UUID parentId) {
+    public Node createNewImage(UUID parentId, boolean isNodeIcon) {
         Node image = new Node();
-        image.setClazz(NodeClasses.IMAGE);
+        image.setClazz(isNodeIcon ? NodeClasses.NODE_ICON : NodeClasses.IMAGE);
         image.setCreatedWhen(clock.instant());
         image.setTagSingleValue(TagIds.IMG_ID, UUID.randomUUID().toString());
         if (parentId != null) {
-            nodeRepository.getOne(parentId).addChild(image);
+            final Node parentNode = nodeRepository.getOne(parentId);
+            parentNode.addChild(image);
+            parentNode.setTagSingleValue(TagIds.NODE_ICON_IMG_ID, image.getTagSingleValue(TagIds.IMG_ID));
         } else {
             nodeRepository.save(image);
         }

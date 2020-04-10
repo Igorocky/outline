@@ -1,7 +1,6 @@
 
-const FolderComponent = ({text, props, textProps, icon, popupActions}) => {
+const FolderComponent = ({keyVal, text, props, textProps, icon, userIcon, popupActions}) => {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [iconIsHovered, setIconIsHovered] = useState(false);
 
     function stopPropagation(e) {
         e.stopPropagation()
@@ -11,22 +10,31 @@ const FolderComponent = ({text, props, textProps, icon, popupActions}) => {
         setAnchorEl(e.currentTarget)
         stopPropagation(e)
     }
-
     return RE.Container.row.left.center(
         {
+            key:keyVal,
             className:"grey-background-on-hover pointer-on-hover",
-            style:{backgroundColor: anchorEl?"rgb(215, 215, 215)":"", padding:"5px 0px", height:"60px"},
+            classes: {root: "FolderComponent-root"},
+            style:{
+                backgroundColor: anchorEl?"rgb(215, 215, 215)":"",
+                width:"100%"
+            },
             ...props
         },
         {style: {marginRight:"7px"}},
-        popupActions
-            ?RE.IconButton({edge: "start", color: "inherit", onClick: openPopup, onMouseUp: stopPropagation,
-                style:{marginLeft: "15px"},
-                onMouseEnter: () => setIconIsHovered(true), onMouseLeave: () => setIconIsHovered(false)},
-            iconIsHovered
-                ?RE.Icon({style: {fontSize: "24px"}}, "more_vert")
-                :icon
-        ):icon,
+        icon,
+        popupActions?RE.Icon({
+                style: {
+                    fontSize: "24px",
+                    borderRadius: "10px"
+                },
+                className:"more-options-btn",
+                onClick: openPopup,
+                onMouseUp: stopPropagation,
+            },
+            "more_vert"
+        ):null,
+        userIcon,
         RE.Typography({key: "folder-name", variant: "body1", ...textProps}, text),
         anchorEl
             ? clickAwayListener({

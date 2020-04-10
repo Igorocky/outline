@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.igye.outline2.common.OutlineUtils.ifPresent;
 import static org.igye.outline2.common.OutlineUtils.map;
-import static org.igye.outline2.common.OutlineUtils.mapOf;
 import static org.igye.outline2.common.OutlineUtils.mapToMap;
 import static org.igye.outline2.common.OutlineUtils.mapToSet;
 import static org.igye.outline2.common.OutlineUtils.nullSafeGetter;
@@ -174,6 +174,18 @@ public class NodeManager {
             node.getParentNode().detachChild(node);
         }
         nodeRepository.deleteById(nodeId);
+    }
+
+    @RpcMethod
+    @Transactional
+    public void rpcRemoveNodeIconForNode(UUID nodeId) {
+        Node node = nodeRepository.getOne(nodeId);
+        Set<UUID> idsToRemove = node.getChildNodes().stream()
+                .filter(ch -> NodeClasses.NODE_ICON.equals(ch.getClazz()))
+                .map(Node::getId)
+                .collect(Collectors.toSet());
+        idsToRemove.forEach(this::rpcRemoveNode);
+        node.removeTags(TagIds.NODE_ICON_IMG_ID);
     }
 
     private void patchTag(Node node, TagDto tagDto) {

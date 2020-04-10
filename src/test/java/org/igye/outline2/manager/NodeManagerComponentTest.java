@@ -4,9 +4,12 @@ import org.igye.outline2.controllers.ControllerComponentTestBase;
 import org.igye.outline2.controllers.NodeTreeBuilder;
 import org.igye.outline2.controllers.ObjectHolder;
 import org.igye.outline2.pm.Node;
+import org.igye.outline2.pm.NodeClasses;
 import org.igye.outline2.pm.Tag;
+import org.igye.outline2.pm.TagIds;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.script.ScriptException;
 import java.util.List;
@@ -19,6 +22,9 @@ import static org.igye.outline2.controllers.OutlineTestUtils.assertNodeInDatabas
 import static org.igye.outline2.controllers.OutlineTestUtils.saveNodeTreeToDatabase;
 
 public class NodeManagerComponentTest extends ControllerComponentTestBase {
+    @Autowired
+    protected NodeManager nodeManager;
+
     @Test public void rpcPatchNode_its_possible_to_change_node_class_from_nonNull_to_nonNull() throws ScriptException, NoSuchMethodException {
         //given
         Consumer<Node> randomNode = randomNode();
@@ -195,6 +201,32 @@ public class NodeManagerComponentTest extends ControllerComponentTestBase {
         invokeJsRpcFunction("setSingleTagForNode", node.get().getId(), expectedTagId, newTagValue);
 
         //then
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+    }
+    @Test public void rpcRemoveNodeIconForNode_removesIconNodeAndTag() throws Exception {
+        //given
+        Consumer<Node> randomNode = randomNode();
+        ObjectHolder<List<Node>> rootNodes = new ObjectHolder<>();
+        ObjectHolder<Node> folder = new ObjectHolder<>();
+        new NodeTreeBuilder().storeTree(rootNodes)
+                .node(randomNode, n->n.setTagSingleValue(TagIds.NODE_ICON_IMG_ID, "img_id")).storeNode(folder)
+                .children(b1->b1
+                        .node(randomNode, n->n.setClazz(NodeClasses.NODE_ICON))
+                        .node(randomNode)
+                        .node(randomNode, n->n.setClazz(NodeClasses.NODE_ICON))
+                )
+        ;
+        saveNodeTreeToDatabase(nodeRepository, rootNodes);
+        assertNodeInDatabase(jdbcTemplate, rootNodes);
+
+        //when
+        nodeManager.rpcRemoveNodeIconForNode(folder.get().getId());
+
+        //then
+        folder.get().getChildNodes().removeIf(node ->
+                NodeClasses.NODE_ICON.equals(node.getClazz())
+        );
+        folder.get().removeTags(TagIds.NODE_ICON_IMG_ID);
         assertNodeInDatabase(jdbcTemplate, rootNodes);
     }
 }

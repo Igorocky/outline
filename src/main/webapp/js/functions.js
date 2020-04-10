@@ -91,8 +91,16 @@ function extractFileFromEvent(event) {
     return blob;
 }
 
-function uploadImage({file, parentId, onSuccess}) {
-    uploadFile({url: "/be/uploadImage", file, params:{parentId:parentId?parentId:null}, onSuccess})
+function uploadImage({file, parentId, isNodeIcon, onSuccess}) {
+    uploadFile({
+        url: "/be/uploadImage",
+        file,
+        params:{
+            parentId:parentId?parentId:null,
+            isNodeIcon:isNodeIcon?true:false
+        },
+        onSuccess
+    })
 }
 
 function uploadImportFile({file, parentId, onSuccess}) {

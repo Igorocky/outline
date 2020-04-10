@@ -40,8 +40,13 @@ public class BeController {
     @PostMapping("/uploadImage")
     @ResponseBody
     public NodeDto uploadImage(@RequestParam("file") MultipartFile file,
-                               @RequestParam("parentId") String parentId) throws IOException {
-        return imageManager.createImage("null".equals(parentId)?null:UUID.fromString(parentId), file);
+                               @RequestParam("parentId") String parentId,
+                               @RequestParam("isNodeIcon") boolean isNodeIcon) throws IOException {
+        return imageManager.createImage(
+                "null".equals(parentId)?null:UUID.fromString(parentId),
+                file,
+                isNodeIcon
+        );
     }
 
     @GetMapping("/image/{id}")

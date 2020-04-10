@@ -1,11 +1,60 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
 const ContainerShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
-    return re(FolderComponent,{
-        text:getTagSingleValue(node, TAG_ID.name),
-        props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
-        icon: RE.Icon({style: {fontSize: "24px", marginTop: "5px", marginLeft: "5px"}}, "folder")
-    })
+    const [uploadNodeIconDialogOpened, setUploadNodeIconDialogOpened] = useState(false)
+
+    const nodeId = node[NODE.id]
+
+    const popupActions = RE.Fragment({},
+        iconButton({iconName: "insert_photo",
+            onClick: () => setUploadNodeIconDialogOpened(true)
+        })
+    )
+
+    function renderUploadNodeIconDialog() {
+        if (uploadNodeIconDialogOpened) {
+            return re(UploadNodeIconDialog, {
+                parentId: nodeId,
+                onUploaded: () => {
+                    setUploadNodeIconDialogOpened(false)
+                    reloadParentNode()
+                },
+                onDelete: () => doRpcCall(
+                    "rpcRemoveNodeIconForNode",
+                    {nodeId:nodeId},
+                    () => {
+                        setUploadNodeIconDialogOpened(false)
+                        reloadParentNode()
+                    }
+                ),
+                onCancel: () => setUploadNodeIconDialogOpened(false)
+            })
+        } else {
+            return null
+        }
+    }
+
+    function getUserIcon() {
+        const nodeIconImgId = getTagSingleValue(node, TAG_ID.NODE_ICON_IMG_ID)
+        if (nodeIconImgId) {
+            return RE.img({
+                src:"/be/image/" + nodeIconImgId,
+                style: {maxWidth:"85px", maxHeight:"85px", borderRadius: "20px"}
+            })
+        }
+    }
+
+    return RE.Fragment({},
+        re(FolderComponent,{
+            keyVal:nodeId,
+            text:getTagSingleValue(node, TAG_ID.name),
+            props: createLink(PATH.createNodeWithIdPath(nodeId)),
+            icon: RE.Icon({style: {fontSize: "24px", marginTop: "5px", marginLeft: "5px"}}, "folder"),
+            userIcon: getUserIcon(),
+            popupActions: popupActions
+        }),
+        renderUploadNodeIconDialog()
+    )
 }
 
 const OBJECT_CLASS_TO_SHORT_VIEW_MAP = {
@@ -38,23 +87,19 @@ const ChildItemLeftButton = ({checkMode, checked, onChecked, reorderMode,
     }
 
     return RE.Fragment({},
-        checkMode ? RE.ListItemIcon({},
-            RE.Checkbox({
-                edge: "start",
-                checked: checked,
-                onClick: onChecked,
-                tabIndex: -1, disableRipple: true
-            })
-        ) : null,
-        reorderMode?RE.ListItemIcon({},
-            iconButton({
-                onClick: e => {
-                    setAnchorEl(e.currentTarget)
-                    e.stopPropagation()
-                },
-                iconName: "more_vert"
-            })
-        ):null,
+        checkMode ? RE.Checkbox({
+            edge: "start",
+            checked: checked,
+            onClick: onChecked,
+            tabIndex: -1, disableRipple: true
+        }) : null,
+        reorderMode?iconButton({
+            onClick: e => {
+                setAnchorEl(e.currentTarget)
+                e.stopPropagation()
+            },
+            iconName: "more_vert"
+        }):null,
         anchorEl
             ? clickAwayListener({
                 onClickAway: () => setAnchorEl(null),
@@ -150,16 +195,20 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
     }
 
     function renderCurrNodeChildren() {
-        return RE.List({key:"List"+getCurrNodeId()}, curNode[NODE.childNodes].map(childNode =>
-            RE.ListItem({key:childNode[NODE.id], dense:true},
+        return RE.Container.col.top.left(
+            {classes: {root: "NodeChildren-root"}},
+            {classes: {item: (!checkedNodes && !reorderMode)?"NodeChildren-item":""}},
+            curNode[NODE.childNodes].map(childNode => RE.Container.row.left.center(
+                {classes: {root: "NodeChildren-inner-root"}},
+                {classes: {root: "NodeChildren-inner-item"}},
                 re(ChildItemLeftButton, {
                     checkMode: checkedNodes, checked: checkedNodes && isNodeChecked(childNode),
                     onChecked: checkNode(childNode),
                     reorderMode: reorderMode, ...createMoveDeleteActions(childNode)
                 }),
-                RE.ListItemText({}, renderChildNodeShortView(childNode))
-            )
-        ))
+                renderChildNodeShortView(childNode)
+            ))
+        )
     }
 
     function unselectAllItems() {
