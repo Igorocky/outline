@@ -1,45 +1,22 @@
 const actionButtonsStyle = {marginRight: "10px"}
 
 const ContainerShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
-    const [uploadNodeIconDialogOpened, setUploadNodeIconDialogOpened] = useState(false)
-
     const nodeId = node[NODE.id]
+    const {renderChangeNodeIconDialog, openChangeNodeIconDialog} = useChangeNodeIconDialog({
+        nodeId,
+        onChanged: reloadParentNode
+    })
 
     const popupActions = RE.Fragment({},
-        iconButton({iconName: "insert_photo",
-            onClick: () => setUploadNodeIconDialogOpened(true)
-        })
+        iconButton({iconName: "insert_photo", onClick: openChangeNodeIconDialog})
     )
-
-    function renderUploadNodeIconDialog() {
-        if (uploadNodeIconDialogOpened) {
-            return re(UploadNodeIconDialog, {
-                parentId: nodeId,
-                onUploaded: () => {
-                    setUploadNodeIconDialogOpened(false)
-                    reloadParentNode()
-                },
-                onDelete: () => doRpcCall(
-                    "rpcRemoveNodeIconForNode",
-                    {nodeId:nodeId},
-                    () => {
-                        setUploadNodeIconDialogOpened(false)
-                        reloadParentNode()
-                    }
-                ),
-                onCancel: () => setUploadNodeIconDialogOpened(false)
-            })
-        } else {
-            return null
-        }
-    }
 
     function getUserIcon() {
         const nodeIconImgId = getTagSingleValue(node, TAG_ID.NODE_ICON_IMG_ID)
         if (nodeIconImgId) {
             return RE.img({
                 src:"/be/image/" + nodeIconImgId,
-                style: {maxWidth:"85px", maxHeight:"85px", borderRadius: "20px"}
+                style: {maxWidth:"85px", maxHeight:"85px"}
             })
         }
     }
@@ -53,7 +30,7 @@ const ContainerShortView = ({node, navigateToNodeId, reloadParentNode, createLin
             userIcon: getUserIcon(),
             popupActions: popupActions
         }),
-        renderUploadNodeIconDialog()
+        renderChangeNodeIconDialog()
     )
 }
 

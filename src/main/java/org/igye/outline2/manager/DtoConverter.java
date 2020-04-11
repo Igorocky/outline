@@ -59,7 +59,12 @@ public class DtoConverter {
 
         if (depth > 0) {
             if (!CollectionUtils.isEmpty(node.getChildNodes())) {
-                nodeDto.setChildNodes(map(node.getChildNodes(), n -> toDto(n,depth-1,tagFilter)));
+                nodeDto.setChildNodes(
+                        node.getChildNodes().stream()
+                        .filter(n -> !NodeClasses.NODE_ICON.equals(n.getClazz()))
+                        .map(n -> toDto(n,depth-1,tagFilter))
+                        .collect(Collectors.toList())
+                );
             } else {
                 nodeDto.setChildNodes(Collections.emptyList());
             }

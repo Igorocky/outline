@@ -1,6 +1,6 @@
 "use strict";
 
-const UploadNodeIconDialog = ({parentId,onUploaded,onCancel,onDelete}) => {
+const ChangeNodeIconDialog = ({nodeId, onUploaded,onCancel,onDelete}) => {
     const TAB_UPLOAD = "TAB_UPLOAD"
     const TAB_DELETE = "TAB_DELETE"
 
@@ -10,7 +10,7 @@ const UploadNodeIconDialog = ({parentId,onUploaded,onCancel,onDelete}) => {
 
     function startUploading() {
         setIsUploading(true)
-        uploadImage({file: fileInputRef.current.files[0], parentId, isNodeIcon:true, onSuccess: onUploaded})
+        uploadImage({file: fileInputRef.current.files[0], parentId: nodeId, isNodeIcon:true, onSuccess: onUploaded})
     }
 
     function renderDialogContent() {

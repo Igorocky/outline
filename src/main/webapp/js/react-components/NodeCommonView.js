@@ -10,6 +10,11 @@ const OBJECT_CLASS_TO_FULL_VIEW_MAP = {
 const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
     const [curNode, setCurNode] = useState(null)
     const pageTitle = getPageTitle()
+    const nodeIconImgId = curNode ? getTagSingleValue(curNode, TAG_ID.NODE_ICON_IMG_ID) : undefined
+    const {renderChangeNodeIconDialog, openChangeNodeIconDialog} = useChangeNodeIconDialog({
+        nodeId:getCurrNodeId(),
+        onChanged: () => reloadCurrNode()
+    })
 
     useEffect(() => {
         document.title = pageTitle
@@ -99,9 +104,23 @@ const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
                         reloadCurrNode()
                     }
                 ),
-                placeholder: "Enter node name here"
+                placeholder: "Enter node name here",
+                popupActions: RE.Fragment({},
+                    iconButton({iconName: "insert_photo", onClick: openChangeNodeIconDialog})
+                )
             }
         )
+    }
+
+    function renderCurrNodeIcon() {
+        if (nodeIconImgId) {
+            return re(NodeIcon, {
+                imgId:nodeIconImgId,
+                popupActions: RE.Fragment({},
+                    iconButton({iconName: "edit", onClick: openChangeNodeIconDialog})
+                )
+            })
+        }
     }
 
     function renderNodeContent() {
@@ -131,6 +150,7 @@ const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
             return RE.Container.col.top.left({},{classes: {item: "NodeCommonView-item"}},
                 renderPathToCurrNode(),
                 renderCurrNodeName(),
+                renderCurrNodeIcon(),
                 renderNodeContent()
             )
         } else {
@@ -140,6 +160,39 @@ const NodeCommonView = ({actionsContainerRef, match, redirect, createLink}) => {
 
 
     return RE.Fragment({},
-        renderPageContent()
+        renderPageContent(),
+        renderChangeNodeIconDialog()
     )
+}
+
+function useChangeNodeIconDialog({nodeId, onChanged}) {
+    const [dialogOpened, setDialogOpened] = useState(false)
+
+    function renderChangeNodeIconDialog() {
+        if (dialogOpened) {
+            return re(ChangeNodeIconDialog, {
+                nodeId,
+                onUploaded: () => {
+                    setDialogOpened(false)
+                    onChanged()
+                },
+                onDelete: () => doRpcCall(
+                    "rpcRemoveNodeIconForNode",
+                    {nodeId},
+                    () => {
+                        setDialogOpened(false)
+                        onChanged()
+                    }
+                ),
+                onCancel: () => setDialogOpened(false)
+            })
+        } else {
+            return null
+        }
+    }
+
+    return {
+        renderChangeNodeIconDialog,
+        openChangeNodeIconDialog: () => setDialogOpened(true)
+    }
 }
