@@ -1,5 +1,10 @@
 'use strict'
 
+const CHESS_GAME_ICON = RE.img({
+    src:"/img/chess/Chess_ndt45.svg",
+    style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
+})
+
 const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     const popupActions = []
     const chessGameUrl = getTagSingleValue(node, TAG_ID.CHESS_GAME_URL)
@@ -17,10 +22,7 @@ const ChessGameShortView = ({node, navigateToNodeId, reloadParentNode, createLin
         keyVal:node[NODE.id],
         text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
         props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
-        icon: RE.img({
-            src:"/img/chess/Chess_ndt45.svg",
-            style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
-        }),
+        icon: CHESS_GAME_ICON,
         popupActions: _.size(popupActions)>0?RE.Fragment({},popupActions):null
     })
 }

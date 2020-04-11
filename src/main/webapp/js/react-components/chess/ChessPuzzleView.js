@@ -1,5 +1,10 @@
 'use strict'
 
+const CHESS_PUZZLE_ICON = RE.img({
+    src:"/img/chess/chess_puzzle.png",
+    style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
+})
+
 const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const popupActions = []
@@ -65,10 +70,7 @@ const ChessPuzzleShortView = ({node, navigateToNodeId, reloadParentNode, createL
             keyVal:node[NODE.id],
             text:getTagSingleValue(node, TAG_ID.name, node[NODE.objectClass]),
             props: createLink(PATH.createNodeWithIdPath(node[NODE.id])),
-            icon: RE.img({
-                src:"/img/chess/chess_puzzle.png",
-                style: {width:"24px", height:"24px", marginTop: "5px", marginLeft: "5px"}
-            }),
+            icon: CHESS_PUZZLE_ICON,
             popupActions: _.size(popupActions)>0?RE.Fragment({},popupActions):null
         }),
         renderConfirmActionDialog()

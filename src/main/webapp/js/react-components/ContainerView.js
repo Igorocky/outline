@@ -126,13 +126,41 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
         })
     }
 
+    function orderIsReversed() {
+        return getTagSingleValue(curNode, TAG_ID.NODE_ORDER)
+    }
+
     function createMoveDeleteActions(node) {
         const nodeId = node[NODE.id];
         return {
-            onMoveToStart: () => moveNodeToStart(nodeId,reloadCurrNode),
-            onMoveUp: () => moveNodeUp(nodeId,reloadCurrNode),
-            onMoveDown: () => moveNodeDown(nodeId,reloadCurrNode),
-            onMoveToEnd: () => moveNodeToEnd(nodeId,reloadCurrNode),
+            onMoveToStart: () => {
+                if (!orderIsReversed()) {
+                    moveNodeToStart(nodeId,reloadCurrNode)
+                } else {
+                    moveNodeToEnd(nodeId,reloadCurrNode)
+                }
+            },
+            onMoveUp: () => {
+                if (!orderIsReversed()) {
+                    moveNodeUp(nodeId,reloadCurrNode)
+                } else {
+                    moveNodeDown(nodeId,reloadCurrNode)
+                }
+            },
+            onMoveDown: () => {
+                if (!orderIsReversed()) {
+                    moveNodeDown(nodeId,reloadCurrNode)
+                } else {
+                    moveNodeUp(nodeId,reloadCurrNode)
+                }
+            },
+            onMoveToEnd: () => {
+                if (!orderIsReversed()) {
+                    moveNodeToEnd(nodeId,reloadCurrNode)
+                } else {
+                    moveNodeToStart(nodeId,reloadCurrNode)
+                }
+            },
             onDelete: () => deleteNode(nodeId),
         }
     }
@@ -271,29 +299,35 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
         setReorderMode(false)
     }
 
-    const defaultAction = {text: "New Folder", onClick: () => createChildNode(curNode, OBJECT_CLASS.container, navigateToNodeId)}
+    const defaultAction = {
+        text: "New Folder",
+        iconName: "create_new_folder",
+        onClick: () => createChildNode(curNode, OBJECT_CLASS.container, navigateToNodeId)
+    }
     const actions = [
         defaultAction,
-        {text: "New Sibling Folder", onClick: () => null},
-        {text: "New Chess Puzzle", onClick: () => createChildNode(curNode, OBJECT_CLASS.chessPuzzle, navigateToNodeId)},
-        {text: "New Chess Game", onClick: () => createChildNode(curNode, OBJECT_CLASS.CHESS_GAME, navigateToNodeId)},
-        {text: "Select items", onClick: () => {cancelReordering(); unselectAllItems();}},
-        {text: "Reorder items", onClick: () => {cancelSelection();setReorderMode(true);}},
-        {text: "Reverse children", onClick: () => {
+        {text: "New Sibling Folder", iconName: "library_add", onClick: () => null},
+        {text: "New Chess Puzzle", icon: CHESS_PUZZLE_ICON,
+            onClick: () => createChildNode(curNode, OBJECT_CLASS.chessPuzzle, navigateToNodeId)},
+        {text: "New Chess Game", icon: CHESS_GAME_ICON,
+            onClick: () => createChildNode(curNode, OBJECT_CLASS.CHESS_GAME, navigateToNodeId)},
+        {text: "Select items", iconName: "check_box", onClick: () => {cancelReordering(); unselectAllItems();}},
+        {text: "Reorder items", iconName: "import_export", onClick: () => {cancelSelection();setReorderMode(true);}},
+        {text: "Reverse children", iconName: "filter_list", onClick: () => {
             if (getTagSingleValue(curNode, TAG_ID.NODE_ORDER)) {
                 removeTagFromNode(getCurrNodeId(), TAG_ID.NODE_ORDER, reloadCurrNode)
             } else {
                 setSingleTagForNode(getCurrNodeId(), TAG_ID.NODE_ORDER, "rev", reloadCurrNode)
             }
         }},
-        {text: "Import", onClick: openImportDialog},
-        {text: "Export", onClick: ()=>openExportDialog(getCurrNodeId())},
+        {text: "Import", iconName: "system_update_alt", onClick: openImportDialog},
+        {text: "Export", iconName: "unarchive", onClick: ()=>openExportDialog(getCurrNodeId())},
     ]
     function renderActions() {
         return RE.Fragment({},
             re(ContainerFullViewActions,{defaultAction: defaultAction, actions: actions}),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
-            getTagSingleValue(curNode, TAG_ID.NODE_ORDER)
+            orderIsReversed()
                 ?RE.Icon({style: {fontSize: "24px"}}, "filter_list")
                 :null,
             renderCancelSelectionBtnIfNecessary(),

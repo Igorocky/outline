@@ -1,3 +1,4 @@
+"use strict";
 
 const ContainerFullViewActions = ({defaultAction, actions}) => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -7,11 +8,22 @@ const ContainerFullViewActions = ({defaultAction, actions}) => {
         action.onClick()
     }
 
+    function getActionIcon(action) {
+        if (action.iconName) {
+            return RE.Icon({/*style:{fontSize: "30px"}*/}, action.iconName)
+        } else if (action.icon) {
+            return action.icon
+        } else {
+            return null
+        }
+    }
+
     function renderMenu() {
         return paper(RE.MenuList({},
             actions.map(action=>
-                    RE.MenuItem({key:action.text, onClick:() => processAction(action)},
-                    action.text
+                RE.MenuItem({key:action.text, onClick:() => processAction(action)},
+                    getActionIcon(action),
+                    RE.span({style: {marginLeft: "5px"}}, action.text)
                 )
             )
         ))
@@ -30,7 +42,10 @@ const ContainerFullViewActions = ({defaultAction, actions}) => {
 
     return RE.Fragment({},
         RE.ButtonGroup({variant:"contained"},
-            RE.Button({variant:"contained", onClick: ()=>processAction(defaultAction)}, defaultAction.text),
+            RE.Button({variant:"contained", onClick: ()=>processAction(defaultAction)},
+                getActionIcon(defaultAction),
+                RE.span({style: {marginLeft: "5px"}}, defaultAction.text)
+            ),
             RE.Button({variant:"contained", size:"small", onClick: openDropdown, onKeyDown: onKeyDown},
                 RE.Icon({style: {fontSize: "24px"}}, "arrow_drop_down")
             )
