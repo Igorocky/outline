@@ -1,4 +1,4 @@
-const actionButtonsStyle = {marginRight: "10px"}
+const actionButtonsStyle = {marginLeft: "10px"}
 
 const ContainerShortView = ({node, navigateToNodeId, reloadParentNode, createLink}) => {
     const nodeId = node[NODE.id]
@@ -141,6 +141,7 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
         const shortView = OBJECT_CLASS_TO_SHORT_VIEW_MAP[node[NODE.objectClass]]
         if (shortView) {
             return re(shortView,{
+                key:node[NODE.id],
                 node:node,
                 navigateToNodeId:navigateToNodeId,
                 reloadParentNode:reloadCurrNode,
@@ -278,6 +279,13 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
         {text: "New Chess Game", onClick: () => createChildNode(curNode, OBJECT_CLASS.CHESS_GAME, navigateToNodeId)},
         {text: "Select items", onClick: () => {cancelReordering(); unselectAllItems();}},
         {text: "Reorder items", onClick: () => {cancelSelection();setReorderMode(true);}},
+        {text: "Reverse children", onClick: () => {
+            if (getTagSingleValue(curNode, TAG_ID.NODE_ORDER)) {
+                removeTagFromNode(getCurrNodeId(), TAG_ID.NODE_ORDER, reloadCurrNode)
+            } else {
+                setSingleTagForNode(getCurrNodeId(), TAG_ID.NODE_ORDER, "rev", reloadCurrNode)
+            }
+        }},
         {text: "Import", onClick: openImportDialog},
         {text: "Export", onClick: ()=>openExportDialog(getCurrNodeId())},
     ]
@@ -285,6 +293,9 @@ const ContainerFullView = ({curNode, actionsContainerRef, navigateToNodeId, crea
         return RE.Fragment({},
             re(ContainerFullViewActions,{defaultAction: defaultAction, actions: actions}),
             re(NewTextInput, {key:"NewTextInput"+getCurrNodeId(), onSave: appendTextNode}),
+            getTagSingleValue(curNode, TAG_ID.NODE_ORDER)
+                ?RE.Icon({style: {fontSize: "24px"}}, "filter_list")
+                :null,
             renderCancelSelectionBtnIfNecessary(),
             renderCancelReorderingBtnIfNecessary(),
             renderCutBtnIfNecessary(),

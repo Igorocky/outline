@@ -68,6 +68,9 @@ public class DtoConverter {
             } else {
                 nodeDto.setChildNodes(Collections.emptyList());
             }
+            if (node.getTagSingleValue(TagIds.NODE_ORDER) != null) {
+                Collections.reverse(nodeDto.getChildNodes());
+            }
         }
         try {
             enrich(nodeDto, node);

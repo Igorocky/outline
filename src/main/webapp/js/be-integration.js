@@ -33,6 +33,7 @@ const TAG_ID = {
     text: "text",
     imgId: "imgId",
     NODE_ICON_IMG_ID: "node_icon_img_id",
+    NODE_ORDER: "node_order",
     chessPuzzleUrl: "chess_puzzle_url",
     CHESS_PUZZLE_FEN: "chess_puzzle_fen",
     CHESS_PUZZLE_PGN: "chess_puzzle_pgn",
