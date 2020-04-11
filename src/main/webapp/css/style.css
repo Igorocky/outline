@@ -18,6 +18,11 @@
     background-color: rgb(215, 215, 215);
 }
 
+.chess-move-m:hover {
+    cursor: pointer;
+    outline: 1px solid chocolate;
+}
+
 .more-options-btn:hover {
     background-color: rgb(150, 150, 150);
 }

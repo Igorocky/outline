@@ -6,6 +6,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
         RE.span({
             key:"-1",
             style: {backgroundColor: startPositionSelected ? "yellow" : null},
+            className:"chess-move-m",
             onClick: () => backend.call("execChessCommand", {command:"s"}),
         }, "Start "),
         rows.map(move => RE.span({key:move.feMoveNumber},
@@ -13,6 +14,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
             RE.span({
                     key:"w",
                     style: {backgroundColor: move.whitesMoveSelected ? "yellow" : null},
+                    className:"chess-move-m",
                     onClick: () => move.whitesMove
                         ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "w"})
                         :null,
@@ -22,6 +24,7 @@ const HistoryM = ({backend, startPositionSelected, rows}) => {
             RE.span({
                     key:"b",
                     style: {backgroundColor: move.blacksMoveSelected ? "yellow" : null},
+                    className:"chess-move-m",
                     onClick: () => move.blacksMove
                         ?backend.call("execChessCommand", {command:"g " + move.feMoveNumber + "b"})
                         :null,
