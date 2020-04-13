@@ -31,7 +31,7 @@ const PATH = {
 }
 
 function hasValue(variable) {
-    return typeof variable !== 'undefined' && variable != null
+    return variable !== undefined && variable !== null
 }
 
 function emptyStrIfNull(str) {

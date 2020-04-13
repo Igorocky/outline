@@ -1,21 +1,23 @@
 "use strict";
 
+const CHESSMAN_TYPE_CODES = {
+    "WHITE" : {"P": 9817, "N": 9816, "B": 9815, "R": 9814, "Q": 9813, "K": 9812},
+    "BLACK" : {"P": 9823, "N": 9822, "B": 9821, "R": 9820, "Q": 9819, "K": 9818}
+}
+
 const ChessComponentM = ({actionsContainerRef}) => {
     const [openConfirmActionDialog, closeConfirmActionDialog, renderConfirmActionDialog] = useConfirmActionDialog()
     const [state, setChessComponentMState] = useState(null)
-    const query = useQuery();
+    const query = useQuery()
     const puzzleId = query.get("puzzleId")
     const fen = query.get("fen")
     const [puzzleName, setPuzzleName] = useState(null)
     const [historyIsShown, setHistoryIsShown] = useState(false)
     const [settingsIsShown, setSettingsIsShown] = useState(false)
+    const [showMoreControlButtons, setShowMoreControlButtons] = useState(false)
 
     useEffect(() => {
-        if (puzzleName) {
-            document.title = puzzleName
-        } else {
-            document.title = "Solve puzzle"
-        }
+        document.title = getPageTitle()
     }, [puzzleName])
 
     function processBackendStateCreated(backend) {
@@ -37,6 +39,16 @@ const ChessComponentM = ({actionsContainerRef}) => {
             }
         }
     })
+
+    function getPageTitle() {
+        if (puzzleName) {
+            return puzzleName
+        } else if (puzzleId) {
+            return "Solve puzzle"
+        } else {
+            return "Play Chess"
+        }
+    }
 
     function loadPuzzle(puzzleId) {
         getNode({id:puzzleId}, puzzle => {
@@ -68,7 +80,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
     }, [backend.isReady, puzzleId])
 
     function renderTitle() {
-        return RE.span({}, puzzleName)
+        return RE.span({}, getPageTitle())
     }
 
     function renderPositionIterator() {
@@ -98,17 +110,30 @@ const ChessComponentM = ({actionsContainerRef}) => {
         function goToNext() {backend.call("execChessCommand", {command:"n"})}
         function analyzePosition() {window.open(PATH.createChessboardComponentM({fen:urlEncodeFen(currentPositionFen)}))}
 
-        return RE.ButtonGroup({size:"small"},
-            RE.Button({onClick: goToStart},RE.Icon({}, "fast_rewind")),
-            RE.Button({onClick: goToPrev},RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow")),
-            RE.Button({onClick: goToNext},RE.Icon({}, "play_arrow")),
-            RE.Button({onClick: goToEnd},RE.Icon({}, "fast_forward")),
-            RE.Button({onClick: deleteAllMovesToTheRight},RE.Icon({}, "delete_forever")),
-            RE.Button({onClick: () => setSettingsIsShown(true)},RE.Icon({}, "settings")),
-            RE.Button({onClick: analyzePosition, disabled:!currentPositionFen},
-                RE.Icon({}, "equalizer")),
-            RE.Button({onClick: () => setHistoryIsShown(true)},RE.Icon({}, "history")),
-        )
+        const buttons = [[
+                {iconName:"fast_rewind", onClick: goToStart},
+                {icon:RE.Icon({style:{transform: "scaleX(-1)"}}, "play_arrow"), onClick: goToPrev},
+                {iconName:"play_arrow", onClick: goToNext},
+                {iconName:"fast_forward", onClick: goToEnd},
+                {iconName:"delete_forever", onClick: deleteAllMovesToTheRight},
+                {iconName:"settings", onClick: () => setSettingsIsShown(true)},
+                {iconName:"equalizer", onClick: analyzePosition},
+                {iconName:"more_horiz", onClick: () => setShowMoreControlButtons(!showMoreControlButtons)},
+        ]]
+        if (showMoreControlButtons) {
+            buttons.push([
+                {iconName:"history", disabled: !puzzleId, onClick: () => setHistoryIsShown(true)},
+                {iconName:"flip_to_back", disabled: !state.noMovesRecorded, onClick: () => backend.call(
+                    "chessTabSelected", {tab:CHESS_COMPONENT_STAGE.initialPosition}
+                )},
+            ])
+        }
+
+        return re(KeyPad, {
+            componentKey: "controlButtons",
+            keys: buttons,
+            variant: "outlined",
+        })
     }
 
     function renderMoveSelector() {
@@ -123,6 +148,57 @@ const ChessComponentM = ({actionsContainerRef}) => {
         } else {
             return null
         }
+    }
+
+    function getSelectedChessmanType(move) {
+        if (move.length == 2) {
+            return "P"
+        } else {
+            return move.substr(0,1)
+        }
+    }
+
+    function getSelectedCellName(move) {
+        if (move.length == 2) {
+            return move
+        } else {
+            return move.substr(1,2)
+        }
+    }
+
+    function getCoordsOfSelectedCell(move) {
+        const selectedCellName = getSelectedCellName(move)
+        const x = selectedCellName.charCodeAt(0)-97
+        const y = selectedCellName.charCodeAt(1)-49
+        return {x:x, y:y}
+    }
+
+    function getCoordsOfSelectedPiece(move) {
+        const codeOfSelectedChessmanType =
+            CHESSMAN_TYPE_CODES[state.availableChessmanTypes.colorToMove][getSelectedChessmanType(move)]
+        const arr = state.availableChessmanTypes.availableChessmanTypes
+        for (let i = 0; i < arr.length; i++) {
+            for (let j = 0; j < arr[i].length; j++) {
+                if (codeOfSelectedChessmanType == arr[i][j].code) {
+                    return arr[i][j].coords
+                }
+            }
+        }
+    }
+
+    function renderMoveSelectorForPositionBuilder() {
+        return re(ChessMoveSelectorM, {
+            disablePromotion: true,
+            onMoveSelected: ({move, onDone}) => {
+                if (move) {
+                    backend.call("cellLeftClicked", {coords:getCoordsOfSelectedPiece(move)})
+                    backend.call("cellLeftClicked", {coords:getCoordsOfSelectedCell(move)})
+                } else {
+                    loadFen(state.availableChessmanTypes.fen)
+                }
+                onDone()
+            }
+        })
     }
 
     function renderPuzzleStatus() {
@@ -203,16 +279,114 @@ const ChessComponentM = ({actionsContainerRef}) => {
         })
     }
 
-    return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
-        re(Portal, {container: actionsContainerRef.current}, renderTitle()),
-        renderMovesHistory(),
-        renderControlButtons(),
-        renderPuzzleStatus(),
-        renderCommandResponses(),
-        renderPositionIterator(),
-        renderMoveSelector(),
-        renderPuzzleHistory(),
-        renderSettings(),
-        renderConfirmActionDialog()
-    )
+    function renderTextChessboard() {
+        return RE.TextField({
+            className: "black-text",
+            multiline: true,
+            rowsMax: 3000,
+            value: state.chessBoardText,
+            disabled: true,
+            variant: "standard",
+            style:{width:"300px"},
+        })
+    }
+
+    function renderColorToMoveSelector() {
+        return RE.Container.col.top.center({}, {},
+            RE.RadioGroup({
+                    row: true,
+                    value: state.availableChessmanTypes.colorToMove,
+                    onChange: event => backend.call("setColorToMove", {colorToMove:event.target.value})
+                },
+                RE.FormControlLabel({label: "White to move", value: "WHITE", control: RE.Radio({})}),
+                RE.FormControlLabel({label: "Black to move", value: "BLACK", control: RE.Radio({})}),
+            )
+        )
+    }
+
+    function renderCastlingAvailability({
+                                            blackLongCastlingIsAvailable,
+                                            blackShortCastlingIsAvailable,
+                                            whiteLongCastlingIsAvailable,
+                                            whiteShortCastlingIsAvailable,
+    }) {
+        return RE.Container.col.top.left({},{},
+            RE.Container.row.left.top({},{},
+                RE.FormControlLabel({
+                    labelPlacement:"start",
+                    label:"Black O-O-O",
+                    control: RE.Checkbox({
+                        checked: blackLongCastlingIsAvailable,
+                        onClick: () => backend.call("changeCastlingAvailability", {color:"BLACK", isLong: true}),
+                    }),
+                    style:{marginRight:"20px"}
+                }),
+                RE.FormControlLabel({
+                    labelPlacement:"end",
+                    label:"O-O",
+                    control: RE.Checkbox({
+                        checked: blackShortCastlingIsAvailable,
+                        onClick: () => backend.call("changeCastlingAvailability", {color:"BLACK", isLong: false}),
+                    })
+                }),
+            ),
+            RE.Container.row.left.top({},{},
+                RE.FormControlLabel({
+                    labelPlacement:"start",
+                    label:"White O-O-O",
+                    control: RE.Checkbox({
+                        checked: whiteLongCastlingIsAvailable,
+                        onClick: () => backend.call("changeCastlingAvailability", {color:"WHITE", isLong: true}),
+                    }),
+                    style:{marginRight:"20px"}
+                }),
+                RE.FormControlLabel({
+                    labelPlacement:"end",
+                    label:"O-O",
+                    control: RE.Checkbox({
+                        checked: whiteShortCastlingIsAvailable,
+                        onClick: () => backend.call("changeCastlingAvailability", {color:"WHITE", isLong: false}),
+                    })
+                }),
+            )
+        )
+    }
+
+    function renderPositionBuilderControlButtons() {
+        return RE.Fragment({},
+            renderColorToMoveSelector(),
+            renderMoveSelectorForPositionBuilder(),
+            renderCastlingAvailability({...state.availableChessmanTypes})
+        )
+    }
+
+    function renderPositionBuilderTab() {
+        return RE.Container.col.top.right({},{style:{}},
+            re(Portal, {container: actionsContainerRef.current}, renderTitle()),
+            renderTextChessboard(),
+            renderPositionBuilderControlButtons(),
+            renderMoveSelector(),
+        )
+    }
+
+    function renderMovesTab() {
+        return RE.Container.col.top.right({},{style:{marginTop: "0.5em"}},
+            re(Portal, {container: actionsContainerRef.current}, renderTitle()),
+            renderMovesHistory(),
+            renderControlButtons(),
+            renderPuzzleStatus(),
+            renderCommandResponses(),
+            renderPositionIterator(),
+            renderMoveSelector(),
+            renderPuzzleHistory(),
+            renderSettings(),
+            renderConfirmActionDialog()
+        )
+    }
+
+    if (state && state.tab == "INITIAL_POSITION") {
+        return renderPositionBuilderTab()
+    } else {
+        return renderMovesTab()
+    }
 }

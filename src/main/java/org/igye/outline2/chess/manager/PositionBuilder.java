@@ -43,6 +43,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     private static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
     private ChessBoard chessBoard;
+    private String chessBoardText;
     private ChessmanColor colorToMove;
     private boolean whiteLongCastlingIsAvailable;
     private boolean whiteShortCastlingIsAvailable;
@@ -94,6 +95,7 @@ public class PositionBuilder implements ChessComponentStateManager {
     public ChessComponentResponse toView() {
         ChessComponentView result = new ChessComponentView();
         result.setChessBoard(ChessViewConverter.toDto(chessBoard));
+        result.setChessBoardText(ChessUtils.renderTextChessboard(chessBoard, colorToMove));
         result.getChessBoard().setBoardRotated(colorToMove == ChessmanColor.BLACK);
         result.setTab(ChessComponentStage.INITIAL_POSITION);
         result.setAvailableChessmanTypes(InitialPositionView.builder()

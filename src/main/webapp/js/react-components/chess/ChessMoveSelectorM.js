@@ -1,6 +1,6 @@
 "use strict";
 
-const ChessMoveSelectorM = ({onMoveSelected}) => {
+const ChessMoveSelectorM = ({onMoveSelected, disablePromotion}) => {
     const [chessmanType, setChessmanType] = useState(null)
     const [additionalCoordType, setAdditionalCoordType] = useState(null)
     const [additionalCoord, setAdditionalCoord] = useState(null)
@@ -136,7 +136,7 @@ const ChessMoveSelectorM = ({onMoveSelected}) => {
 
     const selectedMove = getSelectedMove()
 
-    const promotionIsNeeded = chessmanType == "P" && (yCoord == "1" || yCoord == "8")
+    const promotionIsNeeded = !disablePromotion && chessmanType == "P" && (yCoord == "1" || yCoord == "8")
 
     function renderGoButton() {
         return RE.Button({
