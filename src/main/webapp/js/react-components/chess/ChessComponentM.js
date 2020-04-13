@@ -15,6 +15,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
     const [historyIsShown, setHistoryIsShown] = useState(false)
     const [settingsIsShown, setSettingsIsShown] = useState(false)
     const [showMoreControlButtons, setShowMoreControlButtons] = useState(false)
+    const [speechComponentActive, setSpeechComponentActive] = useState(false)
 
     useEffect(() => {
         document.title = getPageTitle()
@@ -126,6 +127,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                 {iconName:"flip_to_back", disabled: !state.noMovesRecorded, onClick: () => backend.call(
                     "chessTabSelected", {tab:CHESS_COMPONENT_STAGE.initialPosition}
                 )},
+                {iconName:"record_voice_over", onClick: () => setSpeechComponentActive(true)},
             ])
         }
 
@@ -384,9 +386,13 @@ const ChessComponentM = ({actionsContainerRef}) => {
         )
     }
 
-    if (state && state.tab == "INITIAL_POSITION") {
-        return renderPositionBuilderTab()
+    if (speechComponentActive) {
+        return re(SpeechChessComponent, {state})
     } else {
-        return renderMovesTab()
+        if (state && state.tab == "INITIAL_POSITION") {
+            return renderPositionBuilderTab()
+        } else {
+            return renderMovesTab()
+        }
     }
 }
