@@ -83,6 +83,152 @@ function useListReader() {
     return {init, onSymbolsChanged}
 }
 
+function useSpeechMoveSelector() {
+    const SAY = "SAY"
+    const TITLE = "TITLE"
+    const ON_MOVE_SELECTED = "ON_MOVE_SELECTED"
+    const ON_UNEXPECTED_SYMBOL = "ON_UNEXPECTED_SYMBOL"
+
+    const CHESSMAN_TYPE = "CHESSMAN_TYPE"
+    const ADDITIONAL_COORD_TYPE = "ADDITIONAL_COORD_TYPE"
+    const ADDITIONAL_COORD = "ADDITIONAL_COORD"
+    const X_COORD = "X_COORD"
+    const Y_COORD = "Y_COORD"
+    const PROMOTION = "PROMOTION"
+
+    const [state, setState] = useState(() => createState({}))
+
+    function createState({prevState, newState}) {
+        return {
+            [SAY]: firstDefined(SAY, newState, prevState, str => console.log("SAY: " + str)),
+            [TITLE]: firstDefined(TITLE, newState, prevState, "No title was set."),
+            [ON_MOVE_SELECTED]: firstDefined(ON_MOVE_SELECTED, newState, prevState, () => null),
+            [ON_UNEXPECTED_SYMBOL]: firstDefined(ON_UNEXPECTED_SYMBOL, newState, prevState, () => null),
+            [CHESSMAN_TYPE]: firstDefined(CHESSMAN_TYPE, newState, prevState),
+            [ADDITIONAL_COORD_TYPE]: firstDefined(ADDITIONAL_COORD_TYPE, newState, prevState),
+            [ADDITIONAL_COORD]: firstDefined(ADDITIONAL_COORD, newState, prevState),
+            [X_COORD]: firstDefined(X_COORD, newState, prevState),
+            [Y_COORD]: firstDefined(Y_COORD, newState, prevState),
+            [PROMOTION]: firstDefined(PROMOTION, newState, prevState),
+        }
+    }
+
+    function init({say, title, onMoveSelected, onUnexpectedSymbol}) {
+        if (say !== undefined) {
+            setState(old => createState({prevState:old, newState:{[SAY]:say}}))
+        }
+        if (title !== undefined) {
+            setState(old => {
+                const newState = createState({prevState:old, newState:{[TITLE]:title}})
+                old[SAY](title)
+                return newState
+            })
+        }
+        if (onMoveSelected !== undefined) {
+            setState(old => createState({prevState:old, newState:{[ON_MOVE_SELECTED]:onMoveSelected}}))
+        }
+        if (onUnexpectedSymbol !== undefined) {
+            setState(old => createState({prevState:old, newState:{[ON_UNEXPECTED_SYMBOL]:onUnexpectedSymbol}}))
+        }
+    }
+
+    const promotionIsNeeded = state[CHESSMAN_TYPE] == "P"
+        && (state[Y_COORD] == "1" || state[Y_COORD] == "8")
+        && !state[PROMOTION]
+    const CHESSMAN_TYPES = {"P": "Pawn", "N": "Knight", "B": "Bishop", "R": "Rook", "Q": "Queen", "K": "King",}
+    function onSymbolsChanged(symbols) {
+        if (symbols.length) {
+            const last = symbols[symbols.length-1]
+            if (!state[CHESSMAN_TYPE] && last.symbol == "start") {
+                go()
+            } else if (!state[CHESSMAN_TYPE]) {
+                const chessmanTypeToRead = CHESSMAN_TYPES[last.symbol]
+                if (chessmanTypeToRead !== undefined) {
+                    state[SAY](chessmanTypeToRead)
+                    setState(old => set(old, CHESSMAN_TYPE, last.symbol))
+                } else {
+                    state[ON_UNEXPECTED_SYMBOL](symbols)
+                }
+            } else if (!state[X_COORD] && !state[ADDITIONAL_COORD] && (last.symbol == "X" || last.symbol == "Y")) {
+                setState(old => set(old, ADDITIONAL_COORD_TYPE, last.symbol))
+                state[SAY]("Enter additional " + last.symbol + " coordinate.")
+            } else if (state[ADDITIONAL_COORD_TYPE]) {
+                setState(old => set(old, ADDITIONAL_COORD, last.symbol))
+                setState(old => set(old, ADDITIONAL_COORD_TYPE, null))
+                state[SAY](last.codeInfo.word)
+            } else if (!state[X_COORD]) {
+                setState(old => set(old, X_COORD, last.symbol))
+                state[SAY](last.symbol)
+            } else if (!state[Y_COORD]) {
+                setState(old => set(old, Y_COORD, last.symbol))
+                state[SAY](last.symbol, () => {
+                    if (promotionIsNeeded) {
+                        state[SAY]("Enter promotion")
+                    }
+                })
+            } else if (promotionIsNeeded) {
+                const chessmanTypeToRead = CHESSMAN_TYPES[last.symbol]
+                if (chessmanTypeToRead !== undefined) {
+                    state[SAY](chessmanTypeToRead)
+                    setState(old => set(old, PROMOTION, last.symbol))
+                } else {
+                    state[ON_UNEXPECTED_SYMBOL](symbols)
+                }
+            } else if (last.symbol == "start") {
+                go()
+            } else {
+                state[ON_UNEXPECTED_SYMBOL](symbols)
+            }
+            return [last]
+        }
+        return symbols
+    }
+
+    function go() {
+        state[ON_MOVE_SELECTED](getSelectedMove(), () => clearSelection())
+    }
+
+    function getSelectedMove() {
+        if (!state[CHESSMAN_TYPE]) {
+            return ""
+        } else {
+            const ct = state[CHESSMAN_TYPE] == "P" ? "" : state[CHESSMAN_TYPE]
+            const ac = emptyStrIfNull(state[ADDITIONAL_COORD])
+            const toX = emptyStrIfNull(state[X_COORD]).toLowerCase()
+            const toY = emptyStrIfNull(state[Y_COORD]).toLowerCase()
+            const pr = emptyStrIfNull(state[PROMOTION])
+            return ct + ac + toX + toY + pr
+        }
+    }
+
+    function saySelectedMove() {
+        if (!state[CHESSMAN_TYPE]) {
+            return "Nothing was entered."
+        } else {
+            const wordsToSay = [
+
+            ]
+            const ct = state[CHESSMAN_TYPE] == "P" ? "" : state[CHESSMAN_TYPE]
+            const ac = emptyStrIfNull(state[ADDITIONAL_COORD])
+            const toX = emptyStrIfNull(state[X_COORD]).toLowerCase()
+            const toY = emptyStrIfNull(state[Y_COORD]).toLowerCase()
+            const pr = emptyStrIfNull(state[PROMOTION])
+            return ct + ac + toX + toY + pr
+        }
+    }
+
+    function clearSelection() {
+        setState(old => set(old, CHESSMAN_TYPE, null))
+        setState(old => set(old, ADDITIONAL_COORD_TYPE, null))
+        setState(old => set(old, ADDITIONAL_COORD, null))
+        setState(old => set(old, X_COORD, null))
+        setState(old => set(old, Y_COORD, null))
+        setState(old => set(old, PROMOTION, null))
+    }
+
+    return {init, onSymbolsChanged}
+}
+
 function useSpeechComponent() {
     const LOCAL_STORAGE_KEY = "MorseChessComponent.SpeechSettings"
     const VOICE_URI = "VOICE_URI"
@@ -280,11 +426,26 @@ function useSpeechComponent() {
 const SpeechChessComponent = ({state}) => {
     const {say, renderSettings: renderSpeechSettings, symbolDelay, dotDuration, openSpeechSettings} = useSpeechComponent()
     const {init: initListReader, onSymbolsChanged: listReaderOnSymbolsChanged} = useListReader()
+    const {init: initMoveSelector, onSymbolsChanged: moveSelectorOnSymbolsChanged} = useSpeechMoveSelector()
 
     const STAGE_MOVE = "STAGE_MOVE"
     const STAGE_CONTROL_COMMAND = "STAGE_CONTROL_COMMAND"
     const STAGE_READ_INITIAL_POSITION = "STAGE_READ_INITIAL_POSITION"
     const [stage, setStage] = useState(STAGE_MOVE)
+
+    useEffect(() => initMoveSelectorInner(), [])
+
+    function initMoveSelectorInner() {
+        initMoveSelector({
+            say,
+            title: "Enter next move.",
+            onUnexpectedSymbol: onSymbolsChanged,
+            onMoveSelected: (move, onDone) => {
+                console.log("Selected move: " + move)
+                onDone()
+            }
+        })
+    }
 
     function onSymbolsChanged(symbols) {
         if (symbols.length) {
@@ -306,13 +467,16 @@ const SpeechChessComponent = ({state}) => {
                         ],
                         onExit: () => {
                             setStage(STAGE_MOVE)
-                            say("Enter next move")
+                            initMoveSelectorInner()
                         }
                     })
                 }
                 return [last]
             } else if (stage == STAGE_READ_INITIAL_POSITION) {
                 return listReaderOnSymbolsChanged(symbols)
+            } else {
+                say("Unexpected symbol: " + last.word)
+                return [last]
             }
         }
         return symbols
@@ -324,7 +488,13 @@ const SpeechChessComponent = ({state}) => {
         re(MorseTouchDiv, {
             dotDuration,
             symbolDelay,
-            onSymbolsChange: onSymbolsChanged,
+            onSymbolsChange: symbols => {
+                if (stage == STAGE_MOVE) {
+                    return moveSelectorOnSymbolsChanged(symbols)
+                } else {
+                    return onSymbolsChanged(symbols)
+                }
+            },
             bgColor:"white",
             textColor,
             controls: RE.Container.row.left.center({},{},
