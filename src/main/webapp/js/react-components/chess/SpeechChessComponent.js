@@ -1,7 +1,8 @@
 "use strict";
 
 const SpeechChessComponent = ({state}) => {
-    const {say, renderSettings: renderSpeechSettings, symbolDelay, dotDuration, openSpeechSettings} = useSpeechComponent()
+    const {say, renderSettings: renderSpeechSettings, symbolDelay, dotDuration, openSpeechSettings,
+            printState: printSpeechComponentState} = useSpeechComponent()
     const {init: initListReader, onSymbolsChanged: listReaderOnSymbolsChanged} = useListReader()
     const {init: initMoveSelector, onSymbolsChanged: moveSelectorOnSymbolsChanged} = useSpeechMoveSelector()
 
@@ -22,7 +23,7 @@ const SpeechChessComponent = ({state}) => {
             },
             userInputFallback: symbols => {
                 if (symbols.length) {
-                    if (symbols[symbols.length - 1].symbol == ":") {
+                    if (symbols[symbols.length - 1].symbol == "'") {
                         say("Enter control command")
                         setStage(STAGE_CONTROL_COMMAND)
                     }
@@ -43,8 +44,8 @@ const SpeechChessComponent = ({state}) => {
                 setStage(STAGE_READ_INITIAL_POSITION)
                 initListReader({
                     say, title: "Reading initial position.", elems: [
-                        () => say("The first elem"),
-                        () => say("The second elem"),
+                        "The first elem",
+                        "The second elem",
                     ],
                     onExit: () => {
                         setStage(STAGE_MOVE)
@@ -71,7 +72,8 @@ const SpeechChessComponent = ({state}) => {
             bgColor:"white",
             textColor,
             controls: RE.Container.row.left.center({},{},
-                RE.Button({style:{color:textColor}, onClick: openSpeechSettings}, "Settings")
+                RE.Button({style:{color:textColor}, onClick: openSpeechSettings}, "Settings"),
+                RE.Button({style:{color:textColor}, onClick: printSpeechComponentState}, "State"),
             )
         }),
         renderSpeechSettings()

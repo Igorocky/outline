@@ -189,6 +189,10 @@ function useSpeechComponent() {
     }
 
     return {say, renderSettings,
+        printState: () => {
+            console.log("useSpeechComponent.state")
+            console.log(state)
+        },
         symbolDelay: state[SYMBOL_DELAY], dotDuration: state[DOT_DURATION],
         openSpeechSettings: () => openCloseSettingsDialog(true)
     }

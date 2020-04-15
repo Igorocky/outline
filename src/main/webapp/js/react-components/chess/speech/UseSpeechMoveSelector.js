@@ -3,8 +3,8 @@
 function useSpeechMoveSelector() {
     const [say, setSay] = useState(() => nullSafeSay(null))
     const [title, setTitle] = useState(null)
-    const [onMoveSelected, setOnMoveSelected] = useState(() => () => null)
-    const [userInputFallback, setUserInputFallback] = useState(() => symbols => symbols)
+    const [onMoveSelected, setOnMoveSelected] = useState(() => (() => null))
+    const [userInputFallback, setUserInputFallback] = useState(() => (symbols => symbols))
 
     const [chessmanType, setChessmanType] = useState(null)
     const [additionalCoordType, setAdditionalCoordType] = useState(null)
@@ -15,25 +15,26 @@ function useSpeechMoveSelector() {
     const [saySelectedMove, setSaySelectedMove] = useState(false)
 
     useEffect(() => {
-        if (dosaySelectedMove) {
+        if (saySelectedMove) {
             doSaySelectedMove()
             setSaySelectedMove(false)
         }
     }, [saySelectedMove])
 
     function init({say, title, onMoveSelected, userInputFallback}) {
+        clearSelection()
         if (say !== undefined) {
-            setSay(nullSafeSay(say))
+            setSay(() => nullSafeSay(say))
         }
         if (title !== undefined) {
             setTitle(title)
             nullSafeSay(say)(title)
         }
         if (onMoveSelected !== undefined) {
-            setOnMoveSelected(onMoveSelected?onMoveSelected:() => null)
+            setOnMoveSelected(() => onMoveSelected?onMoveSelected:(() => null))
         }
         if (userInputFallback !== undefined) {
-            setUserInputFallback(userInputFallback?userInputFallback:symbols => symbols)
+            setUserInputFallback(() => userInputFallback?userInputFallback:(symbols => symbols))
         }
     }
 
@@ -84,7 +85,7 @@ function useSpeechMoveSelector() {
             setSaySelectedMove(true)
         } else if (last.symbol == "?") {
             say(title, doSaySelectedMove)
-        } else if (!chessmanType && last.symbol == "start") {
+        } else if (last.symbol == "start") {
             go()
         } else if (!chessmanType && CHESSMAN_TYPES[last.symbol]) {
             setChessmanType(last.symbol)
@@ -102,12 +103,13 @@ function useSpeechMoveSelector() {
         } else if (!yCoord && isYCoord(last.symbol)) {
             setYCoord(last.symbol)
             say(last.symbol, () => {
-                if (isPromotionNeeded(last.symbol)) {
+                if (!isPromotionNeeded(last.symbol)) {
                     setSaySelectedMove(true)
                 }
             })
         } else if (!promotion && promotionIsNeeded && CHESSMAN_TYPES[last.symbol]) {
             setPromotion(last.symbol)
+            setSaySelectedMove(true)
         } else {
             userInputFallback(symbols)
         }
@@ -119,8 +121,8 @@ function useSpeechMoveSelector() {
     }
 
     function doSaySelectedMove() {
-        if (chessmanType) {
-            return "Nothing was entered."
+        if (!chessmanType) {
+            say("Nothing was entered.")
         } else {
             const wordsToSay = []
             if (chessmanType) {

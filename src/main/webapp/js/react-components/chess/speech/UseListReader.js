@@ -5,11 +5,11 @@ function useListReader() {
     const [title, setTitle] = useState(null)
     const [elems, setElems] = useState([])
     const [currElemIdx, setCurrElemIdx] = useState(0)
-    const [onExit, setOnExit] = useState(() => () => null)
+    const [onExit, setOnExit] = useState(() => (() => null))
 
     function init({say, title, elems, onExit}) {
         if (say !== undefined) {
-            setSay(nullSafeSay(say))
+            setSay(() => nullSafeSay(say))
         }
         if (title !== undefined) {
             setTitle(title)
@@ -18,9 +18,12 @@ function useListReader() {
         if (elems !== undefined) {
             setElems(elems)
             setCurrElemIdx(0)
+            if (elems.length) {
+                say(elems[0])
+            }
         }
         if (onExit !== undefined) {
-            setOnExit(onExit?onExit:() => null)
+            setOnExit(() => onExit?onExit:(() => null))
         }
     }
 
