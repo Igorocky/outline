@@ -13,6 +13,14 @@ const CellIteratorM = ({numberOfPieces, quiz}) => {
         }
     }
 
+    function renderQuizCard(card) {
+        if (card.question) {
+            return card.question + " : " + card.answer
+        } else {
+            return card.answer
+        }
+    }
+
     if (idx > quiz.length) {
         return RE.Button({onClick: () => setIdx(0)}, numberOfPieces)
     } else {
@@ -20,7 +28,7 @@ const CellIteratorM = ({numberOfPieces, quiz}) => {
             RE.span({style: {fontSize: "large"}},
                 idx == -1
                     ? "Start"
-                    : (idx < quiz.length ? (quiz[idx].question + " : " + quiz[idx].answer) : numberOfPieces)
+                    : (idx < quiz.length ? renderQuizCard(quiz[idx]) : numberOfPieces)
             ),
             RE.Paper({},
                 RE.Container.col.top.right({},{},

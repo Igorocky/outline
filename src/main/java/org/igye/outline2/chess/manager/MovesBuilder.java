@@ -365,6 +365,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         final Comparator<CellCoords> comparator = color == WHITE
                 ? WHITE_SIDE_CELL_COMPARATOR
                 : BLACK_SIDE_CELL_COMPARATOR;
+        result.add(createSummaryQuizCard(color));
         result.add(createQuizCard(listOf(PAWN), color, false, comparator));
         result.add(createQuizCard(SHAPES_TO_LIST_P1, color, true, comparator));
         result.add(createQuizCard(SHAPES_TO_LIST_P2, color, true, comparator));
@@ -400,6 +401,35 @@ public class MovesBuilder implements ChessComponentStateManager {
                                 .reduce("", (a, b) -> a + b)
                 )
                 .answer(answer.isEmpty()?listOf("-"):answer)
+                .build();
+    }
+
+    private String createSummaryOfPosition(ChessmanColor color) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(color == WHITE ? "W" : "B").append(":")
+                .append(countPieces(ChessmanType.getByColorAndShape(color, PAWN)))
+                .append("-")
+                .append(countPieces(ChessmanType.getByColorAndShape(color, QUEEN)) == 0 ? "" : "*")
+                .append(countPieces(ChessmanType.getByColorAndShape(color, ROOK)))
+                .append("-")
+                .append(countPieces(ChessmanType.getByColorAndShape(color, BISHOP)))
+                .append(countPieces(ChessmanType.getByColorAndShape(color, KNIGHT)));
+        return sb.toString();
+    }
+
+    private long countPieces(ChessmanType chessmanType) {
+        return getStartPosition().getMove().getResultPosition()
+                .findAll(ct -> ct == chessmanType)
+                .stream()
+                .count();
+    }
+
+    private ChessmenPositionQuizCard createSummaryQuizCard(ChessmanColor firstColor) {
+        return ChessmenPositionQuizCard.builder()
+                .question("")
+                .answer(listOf(
+                        createSummaryOfPosition(firstColor) + " " + createSummaryOfPosition(firstColor.invert())
+                ))
                 .build();
     }
 
