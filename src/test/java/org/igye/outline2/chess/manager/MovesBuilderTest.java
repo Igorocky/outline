@@ -4,6 +4,7 @@ import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.chess.dto.ParsedPgnDto;
 import org.igye.outline2.chess.dto.PositionDto;
 import org.igye.outline2.chess.manager.analyse.PgnParser;
+import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.chess.model.Move;
 import org.junit.Test;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 import static org.igye.outline2.chess.model.ChessmanColor.BLACK;
 import static org.igye.outline2.chess.model.ChessmanColor.WHITE;
+import static org.igye.outline2.common.OutlineUtils.listOf;
 import static org.igye.outline2.common.OutlineUtils.setOf;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a1;
 import static org.igye.outline2.controllers.chess.CellCoordsConstants.a2;
@@ -87,6 +89,7 @@ import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardBuild
 import static org.igye.outline2.controllers.chess.ChessTestUtils.chessBoardView;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.execCommand;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getLastMove;
+import static org.igye.outline2.controllers.chess.ChessTestUtils.getPositionSummary;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.getSelectedMove;
 import static org.igye.outline2.controllers.chess.ChessTestUtils.initialPosition;
 import static org.junit.Assert.assertEquals;
@@ -2356,5 +2359,31 @@ public class MovesBuilderTest {
                 "4Q3/5K2/8/8/1k6/8/8/8 b - - 0 1",
                 view.getCurrPositionFen()
         );
+    }
+    @Test public void startPositionSummaryIsCorrectForDifferentNumberOfPieces() {
+        final ChessmanType wQ = ChessmanType.WHITE_QUEEN;
+        final ChessmanType wR = ChessmanType.WHITE_ROOK;
+        final ChessmanType wB = ChessmanType.WHITE_BISHOP;
+        final ChessmanType wN = ChessmanType.WHITE_KNIGHT;
+        final ChessmanType bP = ChessmanType.BLACK_PAWN;
+
+        assertEquals("W:0-- B:0--", getPositionSummary(WHITE, listOf()));
+
+        assertEquals("W:0-*- B:0--", getPositionSummary(WHITE, listOf(wQ)));
+        assertEquals("W:0-**- B:0--", getPositionSummary(WHITE, listOf(wQ,wQ)));
+
+        assertEquals("W:0-T- B:0--", getPositionSummary(WHITE, listOf(wR)));
+        assertEquals("W:0-H- B:0--", getPositionSummary(WHITE, listOf(wR,wR)));
+        assertEquals("W:0-TTT- B:0--", getPositionSummary(WHITE, listOf(wR,wR,wR)));
+
+        assertEquals("W:0--/ B:0--", getPositionSummary(WHITE, listOf(wB)));
+        assertEquals("W:0--X B:0--", getPositionSummary(WHITE, listOf(wB,wB)));
+        assertEquals("W:0--/// B:0--", getPositionSummary(WHITE, listOf(wB,wB,wB)));
+
+        assertEquals("W:0--o B:0--", getPositionSummary(WHITE, listOf(wN)));
+        assertEquals("W:0--8 B:0--", getPositionSummary(WHITE, listOf(wN,wN)));
+        assertEquals("W:0--ooo B:0--", getPositionSummary(WHITE, listOf(wN,wN,wN)));
+
+        assertEquals("B:4-- W:0--", getPositionSummary(BLACK, listOf(bP,bP,bP,bP)));
     }
 }

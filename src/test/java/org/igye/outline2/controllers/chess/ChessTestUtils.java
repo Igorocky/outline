@@ -77,6 +77,18 @@ public class ChessTestUtils {
         return new Move(initialBoard, whoToMove);
     }
 
+    public static String getPositionSummary(ChessmanColor colorToMove, List<ChessmanType> pieces) {
+        ChessBoard initialBoard = new ChessBoard();
+        for (int i = 0; i < pieces.size(); i++) {
+            int x = i % 7;
+            int y = i / 7;
+            initialBoard.placePiece(x, y, pieces.get(i));
+        }
+        MovesBuilder movesBuilder = new MovesBuilder(null, new Move(initialBoard, colorToMove));
+        movesBuilder.execChessCommand("sm", null);
+        return movesBuilder.toView().getChessComponentView().getChessBoardSequence().getQuiz().get(0).getAnswer().get(0);
+    }
+
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {
         final ChessBoardBuilder chessBoardBuilder = chessBoardBuilder();
         chessBoardBuilderConsumer.accept(chessBoardBuilder);

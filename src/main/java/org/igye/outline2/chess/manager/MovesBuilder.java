@@ -405,20 +405,38 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private String createSummaryOfPosition(ChessmanColor color) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(color == WHITE ? "W" : "B").append(":")
+        final int numOfRooks = countPieces(ChessmanType.getByColorAndShape(color, ROOK));
+        final int numOfBishops = countPieces(ChessmanType.getByColorAndShape(color, BISHOP));
+        final int numOgKnights = countPieces(ChessmanType.getByColorAndShape(color, KNIGHT));
+        return new StringBuilder()
+                .append(color == WHITE ? "W" : "B").append(":")
                 .append(countPieces(ChessmanType.getByColorAndShape(color, PAWN)))
                 .append("-")
-                .append(countPieces(ChessmanType.getByColorAndShape(color, QUEEN)) == 0 ? "" : "*")
-                .append(countPieces(ChessmanType.getByColorAndShape(color, ROOK)))
+                .append(StringUtils.repeat('*', countPieces(ChessmanType.getByColorAndShape(color, QUEEN))))
+                .append(
+                        numOfRooks == 0 ? ""
+                                : numOfRooks == 1 ? "T"
+                                : numOfRooks == 2 ? "H"
+                                : StringUtils.repeat('T', numOfRooks)
+                )
                 .append("-")
-                .append(countPieces(ChessmanType.getByColorAndShape(color, BISHOP)))
-                .append(countPieces(ChessmanType.getByColorAndShape(color, KNIGHT)));
-        return sb.toString();
+                .append(
+                        numOfBishops == 0 ? ""
+                                : numOfBishops == 1 ? "/"
+                                : numOfBishops == 2 ? "X"
+                                : StringUtils.repeat('/', numOfBishops)
+                )
+                .append(
+                        numOgKnights == 0 ? ""
+                                : numOgKnights == 1 ? "o"
+                                : numOgKnights == 2 ? "8"
+                                : StringUtils.repeat('o', numOgKnights)
+                )
+                .toString();
     }
 
-    private long countPieces(ChessmanType chessmanType) {
-        return getStartPosition().getMove().getResultPosition()
+    private int countPieces(ChessmanType chessmanType) {
+        return (int) getStartPosition().getMove().getResultPosition()
                 .findAll(ct -> ct == chessmanType)
                 .stream()
                 .count();
