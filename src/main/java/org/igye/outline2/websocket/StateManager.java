@@ -51,15 +51,17 @@ public class StateManager {
     public List<StateInfoDto> listBeStates() {
         return states.entrySet().stream()
                 .sorted(Comparator.comparing(uuidStateEntry -> uuidStateEntry.getValue().getCreatedAt()))
-                .map(uuidStateEntry -> StateInfoDto.builder()
-                        .stateId(uuidStateEntry.getKey())
-                        .stateType(uuidStateEntry.getValue().getClass().getSimpleName())
-                        .createdAt(uuidStateEntry.getValue().getCreatedAt().toString())
-                        .lastInMsgAt(uuidStateEntry.getValue().getLastInMsgAt().toString())
-                        .lastOutMsgAt(uuidStateEntry.getValue().getLastOutMsgAt().toString())
-                        .viewRepresentation(uuidStateEntry.getValue().getViewRepresentation())
-                        .build()
-                ).collect(Collectors.toList());
+                .map(uuidStateEntry -> {
+                        final State state = uuidStateEntry.getValue();
+                        return StateInfoDto.builder()
+                                .stateId(uuidStateEntry.getKey())
+                                .stateType(state.getClass().getSimpleName())
+                                .createdAt(state.getCreatedAt().toString())
+                                .lastInMsgAt(state.getLastInMsgAt() == null ? null : state.getLastInMsgAt().toString())
+                                .lastOutMsgAt(state.getLastOutMsgAt() == null ? null : state.getLastOutMsgAt().toString())
+                                .viewRepresentation(state.getViewRepresentation())
+                                .build();
+                }).collect(Collectors.toList());
     }
 
     @RpcMethod

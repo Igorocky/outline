@@ -23,6 +23,7 @@ const PATH = {
     chessboardWithFen: CONTEXT_PATH + "/chessboard/fen/:fen",
     createChessboardWithFen: fen => CONTEXT_PATH + "/chessboard/fen/" + fen,
     chessboardComponentM: CONTEXT_PATH + "/chessboardm",
+    ChessManagerAudio: CONTEXT_PATH + "/chess-manager-audio",
     createChessboardComponentM: ({puzzleId,fen}) => CONTEXT_PATH + "/chessboardm?"
         + (puzzleId?("puzzleId="+puzzleId):"")
         + (fen?("fen="+urlEncodeFen(fen)):""),

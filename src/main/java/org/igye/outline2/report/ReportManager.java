@@ -2,8 +2,8 @@ package org.igye.outline2.report;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.igye.outline2.common.OutlineUtils;
+import org.igye.outline2.exceptions.OutlineException;
 import org.igye.outline2.rpc.Default;
 import org.igye.outline2.rpc.RpcMethod;
 import org.igye.outline2.rpc.RpcMethodsCollection;
@@ -12,14 +12,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -43,8 +39,13 @@ public class ReportManager {
 
     @RpcMethod
     @Transactional
-    public ResultSetDto rpcRunReport(String name, @Default("{}") Map<String,Object> params) throws IOException {
-        ReportConfig reportConfig = loadReportFromSqlFile("/reports/" + name + ".sql");
+    public ResultSetDto rpcRunReport(String name, @Default("{}") Map<String,Object> params) {
+        ReportConfig reportConfig = null;
+        try {
+            reportConfig = loadReportFromSqlFile("/reports/" + name + ".sql");
+        } catch (IOException e) {
+            throw new OutlineException(e);
+        }
         final ResultSetDto resultSetDto = new ResultSetDto();
         resultSetDto.setColumns(reportConfig.getColumns());
         final List<Map<String, Object>> data = executeQuery(reportConfig.getSqlQuery(), params);

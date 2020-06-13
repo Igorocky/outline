@@ -2367,23 +2367,23 @@ public class MovesBuilderTest {
         final ChessmanType wN = ChessmanType.WHITE_KNIGHT;
         final ChessmanType bP = ChessmanType.BLACK_PAWN;
 
-        assertEquals("W:0-- B:0--", getPositionSummary(WHITE, listOf()));
+        assertEquals("W B", getPositionSummary(WHITE, listOf()));
 
-        assertEquals("W:0-*- B:0--", getPositionSummary(WHITE, listOf(wQ)));
-        assertEquals("W:0-**- B:0--", getPositionSummary(WHITE, listOf(wQ,wQ)));
+        assertEquals("W* B", getPositionSummary(WHITE, listOf(wQ)));
+        assertEquals("W** B", getPositionSummary(WHITE, listOf(wQ,wQ)));
 
-        assertEquals("W:0-T- B:0--", getPositionSummary(WHITE, listOf(wR)));
-        assertEquals("W:0-H- B:0--", getPositionSummary(WHITE, listOf(wR,wR)));
-        assertEquals("W:0-TTT- B:0--", getPositionSummary(WHITE, listOf(wR,wR,wR)));
+        assertEquals("WT B", getPositionSummary(WHITE, listOf(wR)));
+        assertEquals("WH B", getPositionSummary(WHITE, listOf(wR,wR)));
+        assertEquals("WTTT B", getPositionSummary(WHITE, listOf(wR,wR,wR)));
 
-        assertEquals("W:0--/ B:0--", getPositionSummary(WHITE, listOf(wB)));
-        assertEquals("W:0--X B:0--", getPositionSummary(WHITE, listOf(wB,wB)));
-        assertEquals("W:0--/// B:0--", getPositionSummary(WHITE, listOf(wB,wB,wB)));
+        assertEquals("W/ B", getPositionSummary(WHITE, listOf(wB)));
+        assertEquals("WX B", getPositionSummary(WHITE, listOf(wB,wB)));
+        assertEquals("W/// B", getPositionSummary(WHITE, listOf(wB,wB,wB)));
 
-        assertEquals("W:0--o B:0--", getPositionSummary(WHITE, listOf(wN)));
-        assertEquals("W:0--8 B:0--", getPositionSummary(WHITE, listOf(wN,wN)));
-        assertEquals("W:0--ooo B:0--", getPositionSummary(WHITE, listOf(wN,wN,wN)));
+        assertEquals("Wo B", getPositionSummary(WHITE, listOf(wN)));
+        assertEquals("W8 B", getPositionSummary(WHITE, listOf(wN,wN)));
+        assertEquals("Wooo B", getPositionSummary(WHITE, listOf(wN,wN,wN)));
 
-        assertEquals("B:4-- W:0--", getPositionSummary(BLACK, listOf(bP,bP,bP,bP)));
+        assertEquals("B4 W", getPositionSummary(BLACK, listOf(bP,bP,bP,bP)));
     }
 }

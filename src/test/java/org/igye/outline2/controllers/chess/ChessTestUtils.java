@@ -1,5 +1,6 @@
 package org.igye.outline2.controllers.chess;
 
+import org.apache.commons.lang3.StringUtils;
 import org.igye.outline2.chess.dto.ChessBoardCellView;
 import org.igye.outline2.chess.dto.ChessBoardView;
 import org.igye.outline2.chess.dto.ChessComponentView;
@@ -86,7 +87,8 @@ public class ChessTestUtils {
         }
         MovesBuilder movesBuilder = new MovesBuilder(null, new Move(initialBoard, colorToMove));
         movesBuilder.execChessCommand("sm", null);
-        return movesBuilder.toView().getChessComponentView().getChessBoardSequence().getQuiz().get(0).getAnswer().get(0);
+        final List<String> positionComponents = movesBuilder.toView().getChessComponentView().getChessBoardSequence().getQuiz().get(0).getAnswer();
+        return StringUtils.join(positionComponents, "");
     }
 
     public static ChessBoard chessBoard(Consumer<ChessBoardBuilder> chessBoardBuilderConsumer) {

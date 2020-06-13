@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.igye.outline2.chess.manager.ChessUtils.BLACK_SIDE_CELL_COMPARATOR;
 import static org.igye.outline2.chess.manager.ChessUtils.WHITE_SIDE_CELL_COMPARATOR;
@@ -79,6 +80,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String GRAPHIC_MODE_CMD = "gm";
     private static final String TEXT_MODE_CMD = "tm";
     private static final String SEQUENCE_MODE_CMD = "sm";
+    public static final String AUDIO_MODE_CMD = "am";
     private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
     private static final String COMPARE_POSITION_CMD = "cmp";
 
@@ -346,56 +348,69 @@ public class MovesBuilder implements ChessComponentStateManager {
                     getCurrentPosition().getMove().getResultPosition(),
                     state.getInitialPosition().getMove().getColorOfWhoToMove()
             ));
-        } else {
-            renderSequentialChessboard(chessComponentView);
+        } else if (state.getChessboardMode() == ChessboardMode.SEQUENCE) {
+            renderSequentialChessboard(chessComponentView, false);
+        } else if (state.getChessboardMode() == ChessboardMode.AUDIO) {
+            renderSequentialChessboard(chessComponentView, true);
         }
     }
 
-    private void renderSequentialChessboard(ChessComponentView chessComponentView) {
+    private void renderSequentialChessboard(ChessComponentView chessComponentView, boolean audioMode) {
         chessComponentView.setChessBoardSequence(ChessboardSequentialView.builder()
                 .numberOfPieces(getStartPosition().getMove().getResultPosition().findAll(ct -> true).size())
-                .quiz(createQuizCards())
+                .quiz(createQuizCards(audioMode))
                 .build()
         );
     }
 
-    private List<ChessmenPositionQuizCard> createQuizCards() {
+    private List<ChessmenPositionQuizCard> createQuizCards(boolean audioMode) {
         List<ChessmenPositionQuizCard> result = new ArrayList<>();
-        final ChessmanColor color = getStartPosition().getMove().getColorOfWhoToMove();
-        final Comparator<CellCoords> comparator = color == WHITE
+        final ChessmanColor firstColor = getStartPosition().getMove().getColorOfWhoToMove();
+        final ChessmanColor secondColor = firstColor.invert();
+        final Comparator<CellCoords> comparator = firstColor == WHITE
                 ? WHITE_SIDE_CELL_COMPARATOR
                 : BLACK_SIDE_CELL_COMPARATOR;
-        result.add(createSummaryQuizCard(color));
-        result.add(createQuizCard(listOf(PAWN), color, false, comparator));
-        result.add(createQuizCard(SHAPES_TO_LIST_P1, color, true, comparator));
-        result.add(createQuizCard(SHAPES_TO_LIST_P2, color, true, comparator));
-        result.add(createQuizCard(listOf(PAWN), color.invert(), false, comparator));
-        result.add(createQuizCard(SHAPES_TO_LIST_P1, color.invert(), true, comparator));
-        result.add(createQuizCard(SHAPES_TO_LIST_P2, color.invert(), true, comparator));
+        result.add(createSummaryQuizCard(firstColor, audioMode));
+        result.add(createQuizCard(listOf(PAWN), firstColor, false, comparator, audioMode?(firstColor + " pawns positions"):null));
+        result.add(createQuizCard(SHAPES_TO_LIST_P1, firstColor, true, comparator, audioMode?(firstColor + " generals positions"):null));
+        result.add(createQuizCard(SHAPES_TO_LIST_P2, firstColor, true, comparator, audioMode?(firstColor + " officers positions"):null));
+        result.add(createQuizCard(listOf(PAWN), secondColor, false, comparator, audioMode?(secondColor + " pawns positions"):null));
+        result.add(createQuizCard(SHAPES_TO_LIST_P1, secondColor, true, comparator, audioMode?(secondColor + " generals positions"):null));
+        result.add(createQuizCard(SHAPES_TO_LIST_P2, secondColor, true, comparator, audioMode?(secondColor + " officers positions"):null));
         return result;
     }
 
     private ChessmenPositionQuizCard createQuizCard(
-            List<PieceShape> shapesInCard, ChessmanColor color, boolean putSymbol, Comparator<CellCoords> comparator) {
+            List<PieceShape> shapesInCard, ChessmanColor color, boolean putSymbol, Comparator<CellCoords> comparator,
+            String question) {
         List<ChessmanType> piecesInCard = shapesInCard.stream()
                 .map(shape -> ChessmanType.getByColorAndShape(color, shape))
                 .collect(Collectors.toList());
         List<String> answer = new ArrayList<>();
         for (ChessmanType pieceInCard : piecesInCard) {
-            answer.addAll(
-                    getStartPosition().getMove().getResultPosition()
-                            .findAll(ct -> ct == pieceInCard)
-                            .stream()
-                            .sorted(comparator)
-                            .map(
-                                    coords -> (putSymbol ? pieceInCard.getSymbol() : "")
-                                            + ChessUtils.coordsToString(coords)
-                            )
-                            .collect(Collectors.toList())
-            );
+            final Stream<CellCoords> answerStream = getStartPosition().getMove().getResultPosition()
+                    .findAll(ct -> ct == pieceInCard)
+                    .stream()
+                    .sorted(comparator);
+            if (question == null) {
+                answer.addAll(
+                        answerStream.map(
+                                coords -> (putSymbol ? pieceInCard.getSymbol() : "")
+                                        + ChessUtils.coordsToString(coords)
+                        ).collect(Collectors.toList())
+                );
+            } else {
+                answer.addAll(
+                        answerStream.map(
+                                coords -> (putSymbol ? (pieceInCard.getPieceShape() + " ") : "")
+                                        + ChessUtils.coordsToMorse(coords)
+                        ).collect(Collectors.toList())
+                );
+            }
         }
         return ChessmenPositionQuizCard.builder()
                 .question(
+                        question != null ? question :
                         piecesInCard.stream()
                                 .map(ChessmanType::getSymbol)
                                 .reduce("", (a, b) -> a + b)
@@ -404,35 +419,53 @@ public class MovesBuilder implements ChessComponentStateManager {
                 .build();
     }
 
-    private String createSummaryOfPosition(ChessmanColor color) {
+    private List<String> createSummaryOfPosition(ChessmanColor color, boolean audioMode) {
+        final int numOfPawns = countPieces(ChessmanType.getByColorAndShape(color, PAWN));
+        final int numOfQueens = countPieces(ChessmanType.getByColorAndShape(color, QUEEN));
         final int numOfRooks = countPieces(ChessmanType.getByColorAndShape(color, ROOK));
         final int numOfBishops = countPieces(ChessmanType.getByColorAndShape(color, BISHOP));
-        final int numOgKnights = countPieces(ChessmanType.getByColorAndShape(color, KNIGHT));
-        return new StringBuilder()
-                .append(color == WHITE ? "W" : "B").append(":")
-                .append(countPieces(ChessmanType.getByColorAndShape(color, PAWN)))
-                .append("-")
-                .append(StringUtils.repeat('*', countPieces(ChessmanType.getByColorAndShape(color, QUEEN))))
-                .append(
-                        numOfRooks == 0 ? ""
-                                : numOfRooks == 1 ? "T"
-                                : numOfRooks == 2 ? "H"
-                                : StringUtils.repeat('T', numOfRooks)
-                )
-                .append("-")
-                .append(
-                        numOfBishops == 0 ? ""
-                                : numOfBishops == 1 ? "/"
-                                : numOfBishops == 2 ? "X"
-                                : StringUtils.repeat('/', numOfBishops)
-                )
-                .append(
-                        numOgKnights == 0 ? ""
-                                : numOgKnights == 1 ? "o"
-                                : numOgKnights == 2 ? "8"
-                                : StringUtils.repeat('o', numOgKnights)
-                )
-                .toString();
+        final int numOfKnights = countPieces(ChessmanType.getByColorAndShape(color, KNIGHT));
+
+        final ArrayList<String> result = new ArrayList<>();
+        if (!audioMode) {
+            result.add(color == WHITE ? "W" : "B");
+            result.add((numOfPawns==0?"":numOfPawns) +"");
+            result.add(StringUtils.repeat('*', numOfQueens));
+            result.add(
+                    numOfRooks == 0 ? ""
+                            : numOfRooks == 1 ? "T"
+                            : numOfRooks == 2 ? "H"
+                            : StringUtils.repeat('T', numOfRooks)
+
+            );
+            result.add(
+                    numOfBishops == 0 ? ""
+                            : numOfBishops == 1 ? "/"
+                            : numOfBishops == 2 ? "X"
+                            : StringUtils.repeat('/', numOfBishops)
+            );
+            result.add(
+                    numOfKnights == 0 ? ""
+                            : numOfKnights == 1 ? "o"
+                            : numOfKnights == 2 ? "8"
+                            : StringUtils.repeat('o', numOfKnights)
+            );
+        } else {
+            result.add((color == WHITE ? "White" : "Black") + " pieces");
+            addNumberOfPieces(result, numOfPawns, "pawn");
+            addNumberOfPieces(result, numOfQueens, "queen");
+            addNumberOfPieces(result, numOfRooks, "rook");
+            addNumberOfPieces(result, numOfBishops, "bishop");
+            addNumberOfPieces(result, numOfKnights, "knight");
+        }
+
+        return result;
+    }
+
+    private void addNumberOfPieces(ArrayList<String> result, int numOfPieces, String name) {
+        if (numOfPieces > 0) {
+            result.add(numOfPieces + " " + name + (numOfPieces > 1 ? "s" : ""));
+        }
     }
 
     private int countPieces(ChessmanType chessmanType) {
@@ -442,12 +475,16 @@ public class MovesBuilder implements ChessComponentStateManager {
                 .count();
     }
 
-    private ChessmenPositionQuizCard createSummaryQuizCard(ChessmanColor firstColor) {
+    private ChessmenPositionQuizCard createSummaryQuizCard(ChessmanColor firstColor, boolean audioMode) {
+        final ArrayList<String> answer = new ArrayList<>();
+        answer.addAll(createSummaryOfPosition(firstColor, audioMode));
+        if (!audioMode) {
+            answer.add(" ");
+        }
+        answer.addAll(createSummaryOfPosition(firstColor.invert(), audioMode));
         return ChessmenPositionQuizCard.builder()
-                .question("")
-                .answer(listOf(
-                        createSummaryOfPosition(firstColor) + " " + createSummaryOfPosition(firstColor.invert())
-                ))
+                .question(audioMode ? "Start position summary" : "")
+                .answer(answer)
                 .build();
     }
 
@@ -524,6 +561,7 @@ public class MovesBuilder implements ChessComponentStateManager {
         addCommand(GRAPHIC_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.GRAPHIC));
         addCommand(TEXT_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.TEXT));
         addCommand(SEQUENCE_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.SEQUENCE));
+        addCommand(AUDIO_MODE_CMD, (args, prgCallback) -> state.setChessboardMode(ChessboardMode.AUDIO));
         addCommand(CASE_INSENSITIVE_MODE_CMD, (args, prgCallback) -> {
             state.setCaseInsensitiveMode(!state.isCaseInsensitiveMode());
         });

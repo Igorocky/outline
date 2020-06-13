@@ -6,6 +6,7 @@ import org.igye.outline2.chess.model.ChessmanColor;
 import org.igye.outline2.chess.model.ChessmanType;
 import org.igye.outline2.exceptions.OutlineException;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Array;
 import java.util.Comparator;
 import java.util.function.BiFunction;
@@ -50,6 +51,20 @@ public class ChessUtils {
         } else {
             return "--";
         }
+    }
+
+    public static String coordsToMorse(@NotNull CellCoords coords) {
+        final int x = coords.getX();
+        String xStr = x == 0 ? "alpha"
+                : x == 1 ? "bravo"
+                : x == 2 ? "charlie"
+                : x == 3 ? "delta"
+                : x == 4 ? "echo"
+                : x == 5 ? "foxtrot"
+                : x == 6 ? "golf"
+                : x == 7 ? "hotel"
+                : ("unexpected x coordinate " + x);
+        return xStr + " " + (coords.getY()+1);
     }
 
     public static byte[] mult(byte[] v, float[][] m) {
