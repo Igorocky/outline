@@ -194,4 +194,9 @@ public class ChessManager extends State implements ChessComponentStateManager {
             return ((MovesBuilder)stateManager).toPgn();
         }
     }
+
+    @Override
+    protected Object getViewRepresentation() {
+        return toView();
+    }
 }

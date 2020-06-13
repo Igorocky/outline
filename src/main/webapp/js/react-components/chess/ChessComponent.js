@@ -38,7 +38,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         }
     }
 
-    const backend = useBackend({
+    const backendState = useBackendState({
         stateType: "chessboard",
         onBackendStateCreated: processBackendStateCreated,
         onMessageFromBackend: chessComponentResponse => {
@@ -60,7 +60,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
             setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
             const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
             const textModeEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_TEXT_MODE);
-            backend.call("loadFromPgn", {
+            backendState.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:"PRACTICE_SEQUENCE",
                 autoResponse: autoResponseEnabled,
@@ -70,7 +70,7 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     }
 
     function loadFen(fen) {
-        backend.call("loadFromFen", {
+        backendState.call("loadFromFen", {
             fen:fen,
             tabToOpen:"MOVES",
             autoResponse: false,
@@ -79,14 +79,14 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
     }
 
     useEffect(() => {
-        if (backend.isReady && puzzleId) {
+        if (backendState.isReady && puzzleId) {
             loadPuzzle(puzzleId)
         }
-    }, [backend.isReady, puzzleId])
+    }, [backendState.isReady, puzzleId])
 
     function renderChessBoard() {
         if (state.chessBoard) {
-            return re(ChessBoard,{key:"ChessBoard", backend:backend,
+            return re(ChessBoard,{key:"ChessBoard", backend:backendState,
                 ...state.chessBoard})
         } else if (state.chessBoardText) {
             return RE.TextField({
@@ -99,22 +99,22 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
                 style:{width:"300px", margin:"0px 0px 10px 10px"},
             })
         } else if (state.chessBoardSequence) {
-            return re(CellIterator, {...state.chessBoardSequence, backend:backend})
+            return re(CellIterator, {...state.chessBoardSequence, backend:backendState})
         } else {
             return null
         }
     }
 
     function handleTabChange(newValue) {
-        backend.call("chessTabSelected", {tab:newValue})
+        backendState.call("chessTabSelected", {tab:newValue})
     }
 
     function renderCommandInputField() {
         return re(CommandInput, {
             style:{width:(cellSize*8) + "px"},
-            onExecCommand: commandStr => backend.call("execChessCommand", {command:commandStr}),
+            onExecCommand: commandStr => backendState.call("execChessCommand", {command:commandStr}),
             errorMsg: state.commandErrorMsg, responseMsg: state.commandResponseMsg,
-            onClickAway: () => backend.call("hideCommandResponseMsg")
+            onClickAway: () => backendState.call("hideCommandResponseMsg")
         })
     }
 
@@ -130,20 +130,20 @@ const ChessComponent = ({match, showPracticeTab, showOnlyPracticeTab, onBackendC
         if (state.noMovesRecorded && !showOnlyPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.initialPosition] = {
                 label:"Initial position",
-                render: () => re(InitialPosition,{backend:backend, ...state.availableChessmanTypes})
+                render: () => re(InitialPosition,{backend:backendState, ...state.availableChessmanTypes})
             }
         }
         if (!showOnlyPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.moves] = {
                 label:"Moves",
-                render: () => re(History,{backend:backend, ...state.history})
+                render: () => re(History,{backend:backendState, ...state.history})
             }
         }
         if (showPracticeTab) {
             tabs[CHESS_COMPONENT_STAGE.practice] = {
                 label:"Practice",
                 render: () => re(SequencePractice,{
-                    backend:backend, ...state.practiseState, history:state.history, fen:state.currPositionFen
+                    backend:backendState, ...state.practiseState, history:state.history, fen:state.currPositionFen
                 })
             }
         }

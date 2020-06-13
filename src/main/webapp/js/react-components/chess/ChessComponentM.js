@@ -31,7 +31,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
         }
     }
 
-    const backend = useBackend({
+    const backendState = useBackendState({
         stateType: "chessboard",
         onBackendStateCreated: processBackendStateCreated,
         onMessageFromBackend: chessComponentResponse => {
@@ -55,7 +55,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
         getNode({id:puzzleId}, puzzle => {
             setPuzzleName(getTagSingleValue(puzzle, TAG_ID.name))
             const autoResponseEnabled = "true" == getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_AUTO_RESPONSE);
-            backend.call("loadFromPgn", {
+            backendState.call("loadFromPgn", {
                 pgn:getTagSingleValue(puzzle, TAG_ID.CHESS_PUZZLE_PGN),
                 tabToOpen:null,
                 autoResponse: autoResponseEnabled,
@@ -66,7 +66,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
     }
 
     function loadFen(fen) {
-        backend.call("loadFromFen", {
+        backendState.call("loadFromFen", {
             fen:fen,
             tabToOpen:"MOVES",
             autoResponse: false,
@@ -75,10 +75,10 @@ const ChessComponentM = ({actionsContainerRef}) => {
     }
 
     useEffect(() => {
-        if (backend.isReady && puzzleId) {
+        if (backendState.isReady && puzzleId) {
             loadPuzzle(puzzleId)
         }
-    }, [backend.isReady, puzzleId])
+    }, [backendState.isReady, puzzleId])
 
     function renderTitle() {
         return RE.span({}, getPageTitle())
@@ -96,7 +96,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
     function renderMovesHistory() {
         const history = getByPath(state, ["history"])
         if (history) {
-            return re(HistoryM, {backend: backend, ...history})
+            return re(HistoryM, {backend: backendState, ...history})
         } else {
             return null
         }
@@ -105,10 +105,10 @@ const ChessComponentM = ({actionsContainerRef}) => {
     function renderControlButtons() {
         const currentPositionFen = getByPath(state, ["currPositionFen"])
 
-        function goToStart() {backend.call("execChessCommand", {command:"s"})}
-        function goToEnd() {backend.call("execChessCommand", {command:"e"})}
-        function goToPrev() {backend.call("execChessCommand", {command:"p"})}
-        function goToNext() {backend.call("execChessCommand", {command:"n"})}
+        function goToStart() {backendState.call("execChessCommand", {command:"s"})}
+        function goToEnd() {backendState.call("execChessCommand", {command:"e"})}
+        function goToPrev() {backendState.call("execChessCommand", {command:"p"})}
+        function goToNext() {backendState.call("execChessCommand", {command:"n"})}
         function analyzePosition() {window.open(PATH.createChessboardComponentM({fen:urlEncodeFen(currentPositionFen)}))}
 
         const buttons = [[
@@ -124,7 +124,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
         if (showMoreControlButtons) {
             buttons.push([
                 {iconName:"history", disabled: !puzzleId, onClick: () => setHistoryIsShown(true)},
-                {iconName:"flip_to_back", disabled: !state.noMovesRecorded, onClick: () => backend.call(
+                {iconName:"flip_to_back", disabled: !state.noMovesRecorded, onClick: () => backendState.call(
                     "chessTabSelected", {tab:CHESS_COMPONENT_STAGE.initialPosition}
                 )},
                 {iconName:"record_voice_over", onClick: () => setSpeechComponentActive(true)},
@@ -143,7 +143,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
         if (chessboardSequence) {
             return re(ChessMoveSelectorM, {
                 onMoveSelected: ({move, onDone}) => {
-                    backend.call("execChessCommand", {command:move==""?"nn":move})
+                    backendState.call("execChessCommand", {command:move==""?"nn":move})
                     onDone()
                 }
             })
@@ -193,8 +193,8 @@ const ChessComponentM = ({actionsContainerRef}) => {
             disablePromotion: true,
             onMoveSelected: ({move, onDone}) => {
                 if (move) {
-                    backend.call("cellLeftClicked", {coords:getCoordsOfSelectedPiece(move)})
-                    backend.call("cellLeftClicked", {coords:getCoordsOfSelectedCell(move)})
+                    backendState.call("cellLeftClicked", {coords:getCoordsOfSelectedPiece(move)})
+                    backendState.call("cellLeftClicked", {coords:getCoordsOfSelectedCell(move)})
                 } else {
                     loadFen(state.availableChessmanTypes.fen)
                 }
@@ -245,7 +245,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                 textFieldStyle: {width:"100px", margin:"0px 10px"},
                 onSave: ({newValue, onSaved}) => {
                     if (/^\d+$/.test(newValue)) {
-                        backend.call("execChessCommand", {command: "d " + newValue})
+                        backendState.call("execChessCommand", {command: "d " + newValue})
                         onSaved()
                     }
                 }
@@ -272,7 +272,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
             pOnCancel: closeConfirmActionDialog,
             pStartActionBtnText: "Delete",
             pStartAction: ({onDone}) => {
-                backend.call("execChessCommand", {command:"rr"})
+                backendState.call("execChessCommand", {command:"rr"})
                 closeConfirmActionDialog()
             },
             pActionDoneText: "not used",
@@ -298,7 +298,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
             RE.RadioGroup({
                     row: true,
                     value: state.availableChessmanTypes.colorToMove,
-                    onChange: event => backend.call("setColorToMove", {colorToMove:event.target.value})
+                    onChange: event => backendState.call("setColorToMove", {colorToMove:event.target.value})
                 },
                 RE.FormControlLabel({label: "White to move", value: "WHITE", control: RE.Radio({})}),
                 RE.FormControlLabel({label: "Black to move", value: "BLACK", control: RE.Radio({})}),
@@ -319,7 +319,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                     label:"Black O-O-O",
                     control: RE.Checkbox({
                         checked: blackLongCastlingIsAvailable,
-                        onClick: () => backend.call("changeCastlingAvailability", {color:"BLACK", isLong: true}),
+                        onClick: () => backendState.call("changeCastlingAvailability", {color:"BLACK", isLong: true}),
                     }),
                     style:{marginRight:"20px"}
                 }),
@@ -328,7 +328,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                     label:"O-O",
                     control: RE.Checkbox({
                         checked: blackShortCastlingIsAvailable,
-                        onClick: () => backend.call("changeCastlingAvailability", {color:"BLACK", isLong: false}),
+                        onClick: () => backendState.call("changeCastlingAvailability", {color:"BLACK", isLong: false}),
                     })
                 }),
             ),
@@ -338,7 +338,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                     label:"White O-O-O",
                     control: RE.Checkbox({
                         checked: whiteLongCastlingIsAvailable,
-                        onClick: () => backend.call("changeCastlingAvailability", {color:"WHITE", isLong: true}),
+                        onClick: () => backendState.call("changeCastlingAvailability", {color:"WHITE", isLong: true}),
                     }),
                     style:{marginRight:"20px"}
                 }),
@@ -347,7 +347,7 @@ const ChessComponentM = ({actionsContainerRef}) => {
                     label:"O-O",
                     control: RE.Checkbox({
                         checked: whiteShortCastlingIsAvailable,
-                        onClick: () => backend.call("changeCastlingAvailability", {color:"WHITE", isLong: false}),
+                        onClick: () => backendState.call("changeCastlingAvailability", {color:"WHITE", isLong: false}),
                     })
                 }),
             )

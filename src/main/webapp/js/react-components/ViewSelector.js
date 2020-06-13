@@ -11,6 +11,8 @@ const VIEWS = [
         path: [PATH.chessboardComponentM]},
     {name:"Admin",
         component: AdminView, path: [PATH.admin]},
+    {name:"BE States",
+        component: BeStatesView, path: [PATH.beStates]},
     {name:"ChessComponentM", showOnDrawer: false,
         component: ChessComponentM, path: [PATH.chessboardComponentM]},
 ]

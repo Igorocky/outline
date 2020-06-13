@@ -495,7 +495,7 @@ const ChessGameFullView = ({curNode, actionsContainerRef, navigateToNodeId}) => 
 
 const GameAnalysisWindow = ({gameId, depth, numberOfThreads, onPgnUpdated, onDone}) => {
     const [analysisProgressInfo, setAnalysisProgressInfo] = useState({})
-    useBackend({
+    useBackendState({
         stateType: "PgnAnalyser",
         onBackendStateCreated: backend => backend.call("analyseGame", {
             gameId:gameId,

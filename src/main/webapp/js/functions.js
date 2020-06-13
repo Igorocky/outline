@@ -27,6 +27,7 @@ const PATH = {
         + (puzzleId?("puzzleId="+puzzleId):"")
         + (fen?("fen="+urlEncodeFen(fen)):""),
     admin: CONTEXT_PATH + "/admin",
+    beStates: CONTEXT_PATH + "/bestates",
     logout: "/logout",
 }
 

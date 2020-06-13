@@ -46,4 +46,8 @@ public class PgnAnalyserState extends State {
         sendMessageToFe("done");
     }
 
+    @Override
+    protected Object getViewRepresentation() {
+        return null;
+    }
 }

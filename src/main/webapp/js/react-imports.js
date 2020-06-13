@@ -160,7 +160,7 @@ function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
-function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
+function useBackendState({stateType, onBackendStateCreated, onMessageFromBackend}) {
     const [stateId, setStateId] = useState(null)
     const [isReady, setIsReady] = useState(false)
     const [webSocket, setWebSocket] = useState(null)
@@ -206,6 +206,28 @@ function useBackend({stateType, onBackendStateCreated, onMessageFromBackend}) {
     }, [stateId])
 
     return backend
+}
+
+function usePageTitle({pageTitleProvider, listenFor}) {
+    const [prevTitle, setPrevTitle] = useState(null)
+
+    useEffect(() => {
+        let prevTitleVar
+        const newTitle = pageTitleProvider()
+        if (hasValue(newTitle)) {
+            if (prevTitle == null) {
+                prevTitleVar = document.title
+                setPrevTitle(prevTitleVar)
+            }
+            document.title = newTitle
+        }
+        if (prevTitleVar != null) {
+            return () => {document.title = prevTitleVar}
+        }
+        if (prevTitle != null) {
+            return () => {document.title = prevTitle}
+        }
+    }, listenFor)
 }
 
 function useConfirmActionDialog() {

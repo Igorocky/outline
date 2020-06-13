@@ -11,12 +11,18 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Map;
 
 public abstract class State {
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
     private Map<String, Pair<Object, Method>> methodMap;
+    private Instant createdAt;
+    private Instant lastInMsgAt;
+    private Instant lastOutMsgAt;
     private WebSocketSession session;
+    private Clock clock = Clock.systemUTC();
 
     @Autowired
     private ObjectMapper mapper;
@@ -44,7 +50,32 @@ public abstract class State {
         session = null;
     }
 
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getLastInMsgAt() {
+        return lastInMsgAt;
+    }
+
+    public void setLastInMsgAt(Instant lastInMsgAt) {
+        this.lastInMsgAt = lastInMsgAt;
+    }
+
+    public Instant getLastOutMsgAt() {
+        return lastOutMsgAt;
+    }
+
+    public void setLastOutMsgAt(Instant lastOutMsgAt) {
+        this.lastOutMsgAt = lastOutMsgAt;
+    }
+
     protected synchronized void sendMessageToFe(Object msg) {
+        setLastOutMsgAt(clock.instant());
         if (session != null && session.isOpen()) {
             try {
                 session.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
@@ -53,4 +84,6 @@ public abstract class State {
             }
         }
     }
+
+    abstract protected Object getViewRepresentation();
 }
