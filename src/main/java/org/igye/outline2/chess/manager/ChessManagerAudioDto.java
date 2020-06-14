@@ -1,13 +1,12 @@
 package org.igye.outline2.chess.manager;
 
-import lombok.Builder;
-import lombok.Data;
-import org.igye.outline2.chess.dto.ChessmenPositionQuizCard;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.List;
-
-@Data
-@Builder
-public class ChessManagerAudioDto {
-    private List<ChessmenPositionQuizCard> startPosition;
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ChessManagerAudioStateDto.class, name = "state"),
+        @JsonSubTypes.Type(value = ChessManagerAudioMsgDto.class, name = "msg")
+})
+public interface ChessManagerAudioDto {
 }

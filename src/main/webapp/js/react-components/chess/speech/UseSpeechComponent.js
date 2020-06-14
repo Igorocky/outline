@@ -1,7 +1,7 @@
 "use strict";
 
 function useSpeechComponent() {
-    const LOCAL_STORAGE_KEY = "MorseChessComponent.SpeechSettings"
+    const LOCAL_STORAGE_KEY = "SpeechComponent.SpeechSettings"
     const VOICE_URI = "VOICE_URI"
     const VOICE_OBJ = "VOICE_OBJ"
     const RATE = "RATE"
@@ -9,36 +9,41 @@ function useSpeechComponent() {
     const VOLUME = "VOLUME"
     const SYMBOL_DELAY = "SYMBOL_DELAY"
     const DOT_DURATION = "DOT_DURATION"
+    const DASH_DURATION = "DASH_DURATION"
 
-    const ATTRS_TO_SAVE_TO_LOC_STORAGE = [VOICE_URI, RATE, PITCH, VOLUME, SYMBOL_DELAY, DOT_DURATION]
+    const ATTRS_TO_SAVE_TO_LOC_STORAGE = [VOICE_URI, RATE, PITCH, VOLUME, SYMBOL_DELAY, DOT_DURATION, DASH_DURATION]
 
     const [state, setState] = useState(() => createState({}))
     const [settings, setSettings] = useState(null)
 
-    useEffect(
-        () => updateStateFromSettings(readSettingsFromLocalStorage(
-            {localStorageKey: LOCAL_STORAGE_KEY, attrsToRead: ATTRS_TO_SAVE_TO_LOC_STORAGE}
-        )), []
-    )
+    useEffect(refreshStateFromSettings, [])
 
     useEffect(() => {
         window.speechSynthesis.onvoiceschanged = () => setState(old => createState({prevState:old}))
     }, [])
 
-    function createState({prevState, newState}) {
-        const voiceUri = firstDefined(VOICE_URI, newState, prevState)
+    function createState({prevState, params}) {
+        const voiceUri = firstDefined(VOICE_URI, params, prevState)
         return {
             [VOICE_URI]: voiceUri,
             [VOICE_OBJ]: getVoiceObj(voiceUri),
-            [RATE]: firstDefined(RATE, newState, prevState, 1),
-            [PITCH]: firstDefined(PITCH, newState, prevState, 1),
-            [VOLUME]: firstDefined(VOLUME, newState, prevState, 1),
-            [SYMBOL_DELAY]:firstDefined(SYMBOL_DELAY, newState, prevState, 350),
-            [DOT_DURATION]:firstDefined(DOT_DURATION, newState, prevState, 150),
+            [RATE]: firstDefined(RATE, params, prevState, 1),
+            [PITCH]: firstDefined(PITCH, params, prevState, 1),
+            [VOLUME]: firstDefined(VOLUME, params, prevState, 1),
+            [SYMBOL_DELAY]:firstDefined(SYMBOL_DELAY, params, prevState, 350),
+            [DOT_DURATION]:firstDefined(DOT_DURATION, params, prevState, 150),
+            [DASH_DURATION]:firstDefined(DASH_DURATION, params, prevState, 2000),
         }
     }
 
-    function say(text, onend) {
+    function refreshStateFromSettings() {
+        updateStateFromSettings(readSettingsFromLocalStorage(
+            {localStorageKey: LOCAL_STORAGE_KEY, attrsToRead: ATTRS_TO_SAVE_TO_LOC_STORAGE}
+        ))
+    }
+
+    function say(text, onEnd) {
+        // console.log("say: " + text)
         const msg = new SpeechSynthesisUtterance()
         msg.voice = state[VOICE_OBJ]
         msg.rate = state[RATE]
@@ -46,7 +51,7 @@ function useSpeechComponent() {
         msg.volume = state[VOLUME]
         msg.text = text
         msg.lang = "en"
-        msg.onend = onend
+        msg.onend = onEnd
         speechSynthesis.speak(msg);
     }
 
@@ -58,7 +63,7 @@ function useSpeechComponent() {
     }
 
     function updateStateFromSettings(settings) {
-        setState(old => createState({prevState:old, newState: settings}))
+        setState(old => createState({prevState:old, params: settings}))
     }
 
     function saveSettings() {
@@ -108,6 +113,16 @@ function useSpeechComponent() {
                                     settings[DOT_DURATION],
                                     renderSlider({min:50, max:500, step: 25, value:settings[DOT_DURATION],
                                         setValue: newValue => setSettings(old => set(old, DOT_DURATION, newValue))})
+                                )
+                            ),
+                        ),
+                        RE.tr({},
+                            RE.td({},"Dash duration"),
+                            RE.td({},
+                                RE.Container.col.top.left({},{},
+                                    settings[DASH_DURATION],
+                                    renderSlider({min:500, max:4000, step: 100, value:settings[DASH_DURATION],
+                                        setValue: newValue => setSettings(old => set(old, DASH_DURATION, newValue))})
                                 )
                             ),
                         ),
@@ -188,12 +203,12 @@ function useSpeechComponent() {
         )
     }
 
-    return {say, renderSettings,
+    return {say, renderSettings, refreshStateFromSettings,
         printState: () => {
             console.log("useSpeechComponent.state")
             console.log(state)
         },
-        symbolDelay: state[SYMBOL_DELAY], dotDuration: state[DOT_DURATION],
-        openSpeechSettings: () => openCloseSettingsDialog(true)
+        symbolDelay: state[SYMBOL_DELAY], dotDuration: state[DOT_DURATION], dashDuration: state[DASH_DURATION],
+        openSpeechSettings: () => openCloseSettingsDialog(true),
     }
 }

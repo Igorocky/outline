@@ -29,7 +29,7 @@ public class AssetsController {
     @Autowired
     ServletContext servletContext;
 
-    @GetMapping("/" + AssetsController.ASSETS + "/{assetType:js|css|img}/**")
+    @GetMapping("/" + AssetsController.ASSETS + "/{assetType:js|css|img|sound}/**")
     @ResponseBody
     public ResponseEntity<byte[]> versionedAssets(HttpServletRequest request) throws IOException {
 
@@ -53,6 +53,8 @@ public class AssetsController {
             return MediaType.valueOf("text/css;charset=UTF-8");
         } else if (path.endsWith(".png")) {
             return MediaType.valueOf("image/png");
+        } else if (path.endsWith(".mp3")) {
+            return MediaType.valueOf("audio/mpeg");
         } else {
             throw new OutlineException("Cannot determine MediaType for path '" + path + "'");
         }

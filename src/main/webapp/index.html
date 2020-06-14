@@ -4,6 +4,11 @@
     <title>@config.name@</title>
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no">
 
+    <script>
+        const APP_CONFIG_NAME = "@config.name@"
+        const APP_VERSION = "@app.version@"
+    </script>
+
     <script src="/js/libs/jquery-3.3.1.min.js" ></script>
     <script src="/js/libs/underscore-min-1.9.1.js"></script>
     <script src="/js/libs/react.development-16.8.6.js"></script>
@@ -41,7 +46,7 @@
     <script src="/assets/js/@app.version@/react-components/TextView.js"></script>
     <script src="/assets/js/@app.version@/react-components/ImageView.js"></script>
     <script src="/assets/js/@app.version@/react-components/chess/KeyPad.js"></script>
-    <script src="/assets/js/@app.version@/react-components/chess/MorseTouchDiv.js"></script>
+    <script src="/assets/js/@app.version@/react-components/chess/speech/MorseTouchDiv.js"></script>
     <script src="/assets/js/@app.version@/react-components/chess/speech/UseListReader.js"></script>
     <script src="/assets/js/@app.version@/react-components/chess/speech/UseSpeechComponent.js"></script>
     <script src="/assets/js/@app.version@/react-components/chess/speech/UseSpeechMoveSelector.js"></script>
@@ -82,9 +87,6 @@
 <body onmousedown="disableScrollOnMouseDown(event)">
 <div id="react-container"></div>
 
-<script>
-    const APP_CONFIG_NAME = "@config.name@"
-</script>
 <script src="/assets/js/@app.version@/index.js"></script>
 </body>
 </html>

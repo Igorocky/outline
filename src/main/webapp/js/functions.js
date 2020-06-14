@@ -258,3 +258,7 @@ function beep({durationMillis, frequencyHz, volume, type, callback}) {
 function set(obj, attrName, newValue) {
     return {...obj, [attrName]:newValue}
 }
+
+function soundUrl(fileRelPath) {
+    return "/assets/sound/" + APP_VERSION + "/" + fileRelPath
+}

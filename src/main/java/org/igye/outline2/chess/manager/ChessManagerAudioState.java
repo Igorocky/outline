@@ -27,6 +27,7 @@ public class ChessManagerAudioState extends State {
     @Autowired
     private ReportManager reportManager;
 
+    private UUID puzzleId;
     @Autowired
     private ChessManager chessManager;
 
@@ -39,9 +40,10 @@ public class ChessManagerAudioState extends State {
     }
 
     @RpcMethod
-    public ChessManagerAudioDto getCurrentState() {
+    public ChessManagerAudioStateDto getCurrentState() {
         List<ChessmenPositionQuizCard> quiz = chessManager.toView().getChessComponentView().getChessBoardSequence().getQuiz();
-        return ChessManagerAudioDto.builder()
+        return ChessManagerAudioStateDto.builder()
+                .puzzleId(puzzleId)
                 .startPosition(quiz)
                 .build();
     }
@@ -71,5 +73,6 @@ public class ChessManagerAudioState extends State {
                 puzzleDepthStr == null ? null : Integer.parseInt(puzzleDepthStr),
                 OutlineUtils.listOf(MovesBuilder.AUDIO_MODE_CMD)
         );
+        this.puzzleId = puzzleId;
     }
 }
