@@ -53,7 +53,7 @@ public class ChessUtils {
         }
     }
 
-    public static String coordsToMorse(@NotNull CellCoords coords) {
+    public static String coordsToPhonetic(@NotNull CellCoords coords) {
         final int x = coords.getX();
         String xStr = x == 0 ? "alpha"
                 : x == 1 ? "bravo"
@@ -64,7 +64,7 @@ public class ChessUtils {
                 : x == 6 ? "golf"
                 : x == 7 ? "hotel"
                 : ("unexpected x coordinate " + x);
-        return xStr + " " + (coords.getY()+1);
+        return xStr + ", " + (coords.getY()+1);
     }
 
     public static byte[] mult(byte[] v, float[][] m) {

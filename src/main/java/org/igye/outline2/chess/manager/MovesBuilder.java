@@ -402,8 +402,8 @@ public class MovesBuilder implements ChessComponentStateManager {
             } else {
                 answer.addAll(
                         answerStream.map(
-                                coords -> (putSymbol ? (pieceInCard.getPieceShape() + " ") : "")
-                                        + ChessUtils.coordsToMorse(coords)
+                                coords -> (putSymbol ? (pieceShapeToPhoneticWord(pieceInCard.getPieceShape()) + ", ") : "")
+                                        + ChessUtils.coordsToPhonetic(coords)
                         ).collect(Collectors.toList())
                 );
             }
@@ -417,6 +417,25 @@ public class MovesBuilder implements ChessComponentStateManager {
                 )
                 .answer(answer.isEmpty()?listOf("-"):answer)
                 .build();
+    }
+
+    private String pieceShapeToPhoneticWord(PieceShape pieceShape) {
+        switch (pieceShape) {
+            case PAWN:
+                return "papa";
+            case KNIGHT:
+                return "november";
+            case BISHOP:
+                return "bravo";
+            case ROOK:
+                return "romeo";
+            case QUEEN:
+                return "quebec";
+            case KING:
+                return "kilo";
+            default:
+                return "unexpected piece shape";
+        }
     }
 
     private List<String> createSummaryOfPosition(ChessmanColor color, boolean audioMode) {
@@ -452,11 +471,11 @@ public class MovesBuilder implements ChessComponentStateManager {
             );
         } else {
             result.add((color == WHITE ? "White" : "Black") + " pieces");
-            addNumberOfPieces(result, numOfPawns, "pawn");
-            addNumberOfPieces(result, numOfQueens, "queen");
-            addNumberOfPieces(result, numOfRooks, "rook");
-            addNumberOfPieces(result, numOfBishops, "bishop");
-            addNumberOfPieces(result, numOfKnights, "knight");
+            addNumberOfPieces(result, numOfPawns, ", papa");
+            addNumberOfPieces(result, numOfQueens, ", quebec");
+            addNumberOfPieces(result, numOfRooks, ", romeo");
+            addNumberOfPieces(result, numOfBishops, ", bravo");
+            addNumberOfPieces(result, numOfKnights, ", november");
         }
 
         return result;
@@ -464,7 +483,7 @@ public class MovesBuilder implements ChessComponentStateManager {
 
     private void addNumberOfPieces(ArrayList<String> result, int numOfPieces, String name) {
         if (numOfPieces > 0) {
-            result.add(numOfPieces + " " + name + (numOfPieces > 1 ? "s" : ""));
+            result.add(numOfPieces + " " + name);
         }
     }
 

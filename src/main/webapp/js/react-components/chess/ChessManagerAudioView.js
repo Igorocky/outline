@@ -41,7 +41,7 @@ const ChessManagerAudioView = ({}) => {
 
     function startNewPuzzle({feState, beState}) {
         feState = set(feState, PHASE, PHASE_READ_START_POSITION)
-        reInitStartPositionListReader({beState, cardIdx:0, readAnswer:false})
+        reInitStartPositionListReader({beState, cardIdx:0, readAnswer:true})
         return feState
     }
 
