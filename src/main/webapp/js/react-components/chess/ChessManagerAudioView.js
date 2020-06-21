@@ -14,7 +14,6 @@ const ChessManagerAudioView = ({}) => {
     const [beState, setBeState] = useState(null)
     const STARTED = "STARTED"
     const PHASE = "PHASE"
-    const QUIZ_CARD_IDX = "QUIZ_CARD_IDX"
     const [feState, setFeState] = useState({[STARTED]: false})
 
     useEffect(() => {
@@ -42,21 +41,44 @@ const ChessManagerAudioView = ({}) => {
 
     function startNewPuzzle({feState, beState}) {
         feState = set(feState, PHASE, PHASE_READ_START_POSITION)
-        feState = set(feState, QUIZ_CARD_IDX, 0)
-        return initStartPositionListReader({feState, beState})
+        reInitStartPositionListReader({beState, cardIdx:0, readAnswer:false})
+        return feState
     }
 
-    function initStartPositionListReader({feState, beState}) {
-        const card = beState.startPosition[feState[QUIZ_CARD_IDX]];
+    function reInitStartPositionListReader({beState, cardIdx, readAnswer}) {
+        const card = beState.startPosition[cardIdx]
         initListReader({
             say,
             title: {
-                say: () => say(card.question),
+                say: () => say(readAnswer ? card.question : "Start position"),
             },
-            sayFirstElem: true,
-            elems: card.answer.map(ans => ({say: () => say(ans)}))
+            sayCurrentElem: true,
+            currElemIdx: readAnswer ? 0 : cardIdx,
+            elems: createElemsForStartPositionListReader({beState, cardIdx, readAnswer, card})
         })
-        return feState
+    }
+
+    function createElemsForStartPositionListReader({beState, cardIdx, readAnswer, card}) {
+        if (!readAnswer) {
+            return beState.startPosition.map((card, idx) => ({
+                say: () => say(card.question),
+                onEnter: () => reInitStartPositionListReader({beState, cardIdx:idx, readAnswer:true})
+            }))
+        } else {
+            return [
+                {
+                    say: () => say("Reading " + card.question),
+                    onBack: () => reInitStartPositionListReader({beState, cardIdx:cardIdx, readAnswer:false})
+                },
+                ...card.answer.map((ans, idx) => ({
+                    say: () => say(ans),
+                    onEnter: idx < card.answer.length-1 ? null :
+                        cardIdx >= beState.startPosition.length-1 ? null :
+                            () => reInitStartPositionListReader({beState, cardIdx:cardIdx+1, readAnswer:true}),
+                    onBack: () => reInitStartPositionListReader({beState, cardIdx:cardIdx, readAnswer:false})
+                }))
+            ]
+        }
     }
 
 

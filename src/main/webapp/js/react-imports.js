@@ -213,7 +213,7 @@ function usePageTitle({pageTitleProvider, listenFor}) {
 
     useEffect(() => {
         let prevTitleVar
-        const newTitle = pageTitleProvider()
+        const newTitle = pageTitleProvider(listenFor)
         if (hasValue(newTitle)) {
             if (prevTitle == null) {
                 prevTitleVar = document.title

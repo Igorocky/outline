@@ -19,32 +19,33 @@ function useListReader() {
         audio.play().then(window.setTimeout(callback,500))
     }
 
-    function init({say:sayParam, title, elems, sayFirstElem}) {
+    function init({say:sayParam, title, elems, sayCurrentElem, currElemIdx:currElemIdxParam}) {
         if (sayParam !== undefined) {
             setSay(() => nullSafeSay(sayParam))
         }
         if (title !== undefined) {
             setTitle(title)
             if (title.say) {
-                if (!sayFirstElem) {
+                if (!sayCurrentElem) {
                     title.say()
                 }
             } else {
                 say("Title is not defined.")
             }
         }
+        const newCurrElemIdx = currElemIdxParam !== undefined ? currElemIdxParam : 0
+        setCurrElemIdx(newCurrElemIdx)
         if (elems !== undefined) {
             setElems(elems)
-            setCurrElemIdx(0)
-            if (sayFirstElem) {
+            if (sayCurrentElem) {
                 if (elems.length == 0) {
                     say("List is empty.")
                 } else {
-                    const action = elems[0]["say"]
+                    const action = elems[newCurrElemIdx]["say"]
                     if (action) {
                         action()
                     } else {
-                        say("Say on the first elem is not defined.")
+                        say("Say is not defined on current elem.")
                     }
                 }
             }
