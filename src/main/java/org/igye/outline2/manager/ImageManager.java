@@ -33,6 +33,9 @@ public class ImageManager {
 
     @Transactional
     public NodeDto createImage(UUID parentId, MultipartFile file, boolean isNodeIcon) throws IOException {
+        if (isNodeIcon && parentId == null) {
+            throw new OutlineException("parentId should be specified to save a node icon.");
+        }
         Node image = createNewImage(parentId, isNodeIcon);
 
         File imgFile = getImgFile(imagesLocation, UUID.fromString(image.getTagSingleValue(TagIds.IMG_ID)));
@@ -54,7 +57,9 @@ public class ImageManager {
         if (parentId != null) {
             final Node parentNode = nodeRepository.getOne(parentId);
             parentNode.addChild(image);
-            parentNode.setTagSingleValue(TagIds.NODE_ICON_IMG_ID, image.getTagSingleValue(TagIds.IMG_ID));
+            if (isNodeIcon) {
+                parentNode.setTagSingleValue(TagIds.NODE_ICON_IMG_ID, image.getTagSingleValue(TagIds.IMG_ID));
+            }
         } else {
             nodeRepository.save(image);
         }
