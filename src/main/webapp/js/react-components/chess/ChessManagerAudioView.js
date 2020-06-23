@@ -10,6 +10,7 @@ const ChessManagerAudioView = ({}) => {
         printState:printSpeechComponentState} = useSpeechComponent()
 
     const {init:initListReader, onSymbolsChanged:onSymbolsChangedInListReader} = useListReader()
+    const {init:initTextInput, onSymbolsChanged:onSymbolsChangedInTextInput} = useMorseTextInput()
 
     const [beState, setBeState] = useState(null)
     const STARTED = "STARTED"
@@ -55,6 +56,20 @@ const ChessManagerAudioView = ({}) => {
             sayCurrentElem: true,
             currElemIdx: readAnswer ? 0 : cardIdx,
             elems: createElemsForStartPositionListReader({beState, cardIdx, readAnswer, card})
+        })
+    }
+
+    function reInitTextInput({title, onEnter, onEscape}) {
+        initTextInput({say, title, onEnter, onEscape})
+    }
+
+    function reInitTextInputTest() {
+        reInitTextInput({
+            title: "Enter text.",
+            onEnter: userInput => {
+                console.table(userInput)
+                reInitTextInputTest()
+            }
         })
     }
 

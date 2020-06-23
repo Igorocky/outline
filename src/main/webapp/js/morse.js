@@ -50,7 +50,7 @@ const MORSE = {
     parenthesis_open: {sym: "(", code: "-.--.", word:"Parenthesis Open"},
     parenthesis_close: {sym: ")", code: "-.--.-", word:"Parenthesis Close"},
     ampersand: {sym: "&", code: ".-...", word:"Ampersand"},
-    colon: {sym: ":", code: "-.-.-.", word:"Colon"},
+    colon: {sym: ":", code: "---...", word:"Colon"},
     semicolon: {sym: ";", code: "-.-.-.", word:"Semicolon"},
     equals: {sym: "=", code: "-...-", word:"Equals"},
     plus: {sym: "+", code: ".-.-.", word:"Plus"},
