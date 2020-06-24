@@ -48,6 +48,12 @@ public class ChessManagerAudioState extends State {
                 .build();
     }
 
+    @RpcMethod
+    public ChessManagerAudioStateDto execChessCommand(String command) {
+        chessManager.execChessCommand(command, null);
+        return getCurrentState();
+    }
+
     @Override
     protected Object getViewRepresentation() {
         return getCurrentState();
@@ -61,6 +67,9 @@ public class ChessManagerAudioState extends State {
                 puzzleId = (UUID) row.get("ID");
             }
         }
+
+        puzzleId = UUID.fromString("d9efff53-30e6-46ad-8b04-61e6c081f925");
+
         if (puzzleId == null) {
             throw new OutlineException("Cannot find next puzzle to load.");
         }
@@ -71,7 +80,7 @@ public class ChessManagerAudioState extends State {
                 ChessComponentStage.MOVES,
                 false,
                 puzzleDepthStr == null ? null : Integer.parseInt(puzzleDepthStr),
-                OutlineUtils.listOf(MovesBuilder.AUDIO_MODE_CMD)
+                OutlineUtils.listOf(MovesBuilder.AUDIO_MODE_CMD, MovesBuilder.CASE_INSENSITIVE_MODE_CMD)
         );
         this.puzzleId = puzzleId;
     }

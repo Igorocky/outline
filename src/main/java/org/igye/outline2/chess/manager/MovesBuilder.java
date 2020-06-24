@@ -81,7 +81,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     private static final String TEXT_MODE_CMD = "tm";
     private static final String SEQUENCE_MODE_CMD = "sm";
     public static final String AUDIO_MODE_CMD = "am";
-    private static final String CASE_INSENSITIVE_MODE_CMD = "ci";
+    public static final String CASE_INSENSITIVE_MODE_CMD = "ci";
     private static final String COMPARE_POSITION_CMD = "cmp";
 
     private static final String COMPUTER_IS_THINKING = "Computer is thinking...";

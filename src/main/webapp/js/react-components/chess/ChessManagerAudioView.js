@@ -1,7 +1,11 @@
 "use strict";
 
 const ChessManagerAudioView = ({}) => {
-    const PHASE_READ_START_POSITION = "read_start_position"
+    const PHASE_PUZZLE_MENU = "PHASE_PUZZLE_MENU"
+    const PHASE_READ_START_POSITION = "PHASE_READ_START_POSITION"
+    const PHASE_READ_HISTORY = "PHASE_READ_HISTORY"
+    const PHASE_ENTER_USER_COMMAND = "PHASE_ENTER_USER_COMMAND"
+    const PHASE_ENTER_DELAY = "PHASE_ENTER_DELAY"
 
     usePageTitle({pageTitleProvider: () => "ChessManagerAudioView", listenFor:[]})
 
@@ -41,12 +45,14 @@ const ChessManagerAudioView = ({}) => {
     })
 
     function startNewPuzzle({feState, beState}) {
-        feState = set(feState, PHASE, PHASE_READ_START_POSITION)
-        reInitStartPositionListReader({beState, cardIdx:0, readAnswer:true})
+        feState = set(feState, PHASE, PHASE_PUZZLE_MENU)
+        reInitListReaderForPuzzle({beState})
         return feState
     }
 
-    function reInitStartPositionListReader({beState, cardIdx, readAnswer}) {
+    function reInitListReaderForStartPosition({beState, cardIdx:cardIdxParam, readAnswer:readAnswerParam}) {
+        const cardIdx = hasValue(cardIdxParam) ? cardIdxParam : 0
+        const readAnswer = hasValue(readAnswerParam) ? readAnswerParam : false
         const card = beState.startPosition[cardIdx]
         initListReader({
             say,
@@ -59,16 +65,48 @@ const ChessManagerAudioView = ({}) => {
         })
     }
 
+    function reInitListReaderForPuzzle({beState}) {
+        initListReader({
+            say,
+            title: {
+                say: () => say("Puzzle menu"),
+            },
+            elems: [
+                {
+                    say: () => "Start position",
+                    onEnter: () => {
+                        setFeState(old => set(old, PHASE, PHASE_READ_START_POSITION))
+                        reInitListReaderForStartPosition({beState})
+                    }
+                },
+                {
+                    say: () => "History",
+                },
+                {
+                    say: () => "Execute command",
+                    onEnter: () => {
+                        setFeState(old => set(old, PHASE, PHASE_ENTER_USER_COMMAND))
+                        reInitTextInputForUserCommand()
+                    }
+                },
+            ]
+        })
+    }
+
     function reInitTextInput({title, onEnter, onEscape}) {
         initTextInput({say, title, onEnter, onEscape})
     }
 
-    function reInitTextInputTest() {
+    function reInitTextInputForUserCommand() {
         reInitTextInput({
-            title: "Enter text.",
+            title: "Enter command",
+            onEscape: () => {
+                setFeState(old => set(old, PHASE, PHASE_PUZZLE_MENU))
+                reInitListReaderForStartPosition({beState})
+            },
             onEnter: userInput => {
-                console.table(userInput)
-                reInitTextInputTest()
+                backendState.call("execChessCommand", {command: userInput.map(({sym}) => sym).join("")})
+                reInitTextInputForUserCommand()
             }
         })
     }
@@ -77,25 +115,42 @@ const ChessManagerAudioView = ({}) => {
         if (!readAnswer) {
             return beState.startPosition.map((card, idx) => ({
                 say: () => say(card.question),
-                onEnter: () => reInitStartPositionListReader({beState, cardIdx:idx, readAnswer:true})
+                onEnter: () => reInitListReaderForStartPosition({beState, cardIdx:idx, readAnswer:true}),
+                onBack: () => {
+                    setFeState(old => set(old, PHASE, PHASE_PUZZLE_MENU))
+                    reInitListReaderForPuzzle({beState})
+                }
             }))
         } else {
             return [
                 {
                     say: () => say("Reading " + card.question),
-                    onBack: () => reInitStartPositionListReader({beState, cardIdx:cardIdx, readAnswer:false})
+                    onBack: () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx, readAnswer:false})
                 },
                 ...card.answer.map((ans, idx) => ({
                     say: () => say(ans),
                     onEnter: idx < card.answer.length-1 ? null :
                         cardIdx >= beState.startPosition.length-1 ? null :
-                            () => reInitStartPositionListReader({beState, cardIdx:cardIdx+1, readAnswer:true}),
-                    onBack: () => reInitStartPositionListReader({beState, cardIdx:cardIdx, readAnswer:false})
+                            () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx+1, readAnswer:true}),
+                    onBack: () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx, readAnswer:false})
                 }))
             ]
         }
     }
 
+    function selectOnSymbolsChangeToUse() {
+        if (feState[PHASE] == PHASE_PUZZLE_MENU) {
+            return onSymbolsChangedInListReader
+        } else if (feState[PHASE] == PHASE_READ_START_POSITION) {
+            return onSymbolsChangedInListReader
+        } else if (feState[PHASE] == PHASE_READ_HISTORY) {
+            return onSymbolsChangedInListReader
+        } else if (feState[PHASE] == PHASE_ENTER_USER_COMMAND) {
+            return onSymbolsChangedInTextInput
+        } else if (feState[PHASE] == PHASE_ENTER_DELAY) {
+            return onSymbolsChangedInTextInput
+        }
+    }
 
     if (feState[STARTED]) {
         const textColor = "white"
@@ -105,7 +160,7 @@ const ChessManagerAudioView = ({}) => {
                 dotDuration,
                 dashDuration,
                 symbolDelay,
-                onSymbolsChange: onSymbolsChangedInListReader,
+                onSymbolsChange: selectOnSymbolsChangeToUse(),
                 bgColor,
                 textColor,
                 controls: RE.Container.row.left.center({},{},
