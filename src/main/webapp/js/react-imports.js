@@ -230,6 +230,14 @@ function usePageTitle({pageTitleProvider, listenFor}) {
     }, listenFor)
 }
 
+function usePrevious(value) {
+    const ref = useRef()
+    useEffect(() => {
+        ref.current = value
+    });
+    return ref.current
+}
+
 function useConfirmActionDialog() {
     const [confirmActionDialogData, setConfirmActionDialogData] = useState(null)
 

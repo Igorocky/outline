@@ -1,6 +1,6 @@
 package org.igye.outline2.chess.manager;
 
-import org.igye.outline2.chess.dto.ChessmenPositionQuizCard;
+import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
 import org.igye.outline2.exceptions.OutlineException;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,10 +40,11 @@ public class ChessManagerAudioState extends State {
 
     @RpcMethod
     public ChessManagerAudioStateDto getCurrentState() {
-        List<ChessmenPositionQuizCard> quiz = chessManager.toView().getChessComponentView().getChessBoardSequence().getQuiz();
+        final ChessComponentView chessComponentView = chessManager.toView().getChessComponentView();
         return ChessManagerAudioStateDto.builder()
                 .puzzleId(puzzleId)
-                .startPosition(quiz)
+                .startPosition(chessComponentView.getChessBoardSequence().getQuiz())
+                .history(chessComponentView.getHistory().getRows())
                 .build();
     }
 
@@ -77,7 +77,7 @@ public class ChessManagerAudioState extends State {
         final String puzzleDepthStr = puzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_DEPTH);
         chessManager.loadFromPgn(
                 puzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_PGN),
-                ChessComponentStage.MOVES,
+                ChessComponentStage.PRACTICE_SEQUENCE,
                 false,
                 puzzleDepthStr == null ? null : Integer.parseInt(puzzleDepthStr),
                 OutlineUtils.listOf(MovesBuilder.AUDIO_MODE_CMD, MovesBuilder.CASE_INSENSITIVE_MODE_CMD)
