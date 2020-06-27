@@ -120,7 +120,7 @@ public class MovesBuilder implements ChessComponentStateManager {
     }
 
     private final Pattern CASE_INSENSITIVE_MOVE_CMD_PATTERN =
-            Pattern.compile("^([_kqrbnKQRBN])?([a-h]|[1-8])?([a-h][1-8])([qrbnQRBN])?$");
+            Pattern.compile("^([_kqrbnKQRBN])?([a-hA-H]|[1-8])?([a-hA-H][1-8])([qrbnQRBN])?$");
     private String processCaseInsensitiveMove(String moveCmd) {
         if (state.isCaseInsensitiveMode()) {
             Matcher matcher = CASE_INSENSITIVE_MOVE_CMD_PATTERN.matcher(moveCmd);
@@ -130,12 +130,12 @@ public class MovesBuilder implements ChessComponentStateManager {
                 firstChar = "_".equals(firstChar) ? "b" : firstChar.toUpperCase();
 
                 String additionalCoord = matcher.group(2);
-                additionalCoord = additionalCoord == null ? "" : additionalCoord;
+                additionalCoord = additionalCoord == null ? "" : additionalCoord.toLowerCase();
 
                 String promotionChessman = matcher.group(4);
                 promotionChessman = promotionChessman == null ? "" : promotionChessman.toUpperCase();
 
-                return firstChar + additionalCoord + matcher.group(3) + promotionChessman;
+                return firstChar + additionalCoord + matcher.group(3).toLowerCase() + promotionChessman;
             } else {
                 return moveCmd;
             }
