@@ -1,5 +1,29 @@
 "use strict";
 
+function useMessagesToSay({say}) {
+    const messagesToSay = useRef([])
+    const [msgCnt, setMsgCnt] = useState(0)
+
+    useEffect(() => {
+        sayAllMessagesIfAny()
+    })
+
+    function addMessageToSay({id, msg}) {
+        messagesToSay.current.push({id, msg})
+        setMsgCnt(msgCnt+1)
+    }
+
+    function sayAllMessagesIfAny() {
+        if (messagesToSay.current.length) {
+            const sayFn = messagesToSay.current.reduceRight((prev,cur) => () => say(cur.msg, prev), () => null)
+            messagesToSay.current = []
+            sayFn()
+        }
+    }
+
+    return {addMessageToSay}
+}
+
 const ChessManagerAudioView = ({}) => {
     const PHASES = {
         PUZZLE_MENU: "PUZZLE_MENU",
@@ -27,17 +51,21 @@ const ChessManagerAudioView = ({}) => {
     const prevPuzzleStatus = usePrevious(getPuzzleStatus())
     const [feState, setFeState] = useState({[FE_STATE.STARTED]: false})
 
+    const {addMessageToSay} = useMessagesToSay({say})
+
     function getPuzzleStatus() {
         if (!beState) {
             return null
-        } if (beState.puzzleStatus.waitingForNextMove) {
+        }
+        const puzzleStatus = beState.puzzleStatus;
+        if (puzzleStatus.waitingForNextMove) {
             return "In progress. "
-                + (beState.puzzleStatus.incorrectMove
-                        ?"Incorrect move: " + moveToPhonetic(beState.puzzleStatus.incorrectMove)
+                + (puzzleStatus.incorrectMove
+                        ?"Incorrect move: " + moveToPhonetic(puzzleStatus.incorrectMove)
                         :""
                 )
         } else {
-            if (failed) {
+            if (puzzleStatus.failed) {
                 return "FAILED"
             } else {
                 return "PASSED"
@@ -58,21 +86,17 @@ const ChessManagerAudioView = ({}) => {
     useEffect(() => {
         const history = getHistory()
         if (prevHistory != null && history != null && prevHistory.length < history.length) {
-            say(
-                "Moves history changed.",
-                history
-                    .filter((h,i)=>prevHistory.length<=i)
-                    .reduceRight((prev,cur) => () => say(cur, prev), () => null)
-            )
+            addMessageToSay({msg:"Moves history changed."})
+            for (let i = prevHistory.length; i < history.length; i++) {
+                addMessageToSay({msg:history[i]})
+            }
         }
     })
 
     useEffect(() => {
         const puzzleStatus = getPuzzleStatus()
         if (prevPuzzleStatus != null && puzzleStatus != null && prevPuzzleStatus != puzzleStatus) {
-            say(
-                "Puzzle status changed. " + puzzleStatus
-            )
+            addMessageToSay({msg:"Puzzle status changed. " + puzzleStatus})
         }
     })
 
