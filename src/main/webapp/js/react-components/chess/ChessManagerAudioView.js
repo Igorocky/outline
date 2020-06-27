@@ -30,35 +30,6 @@ const ChessManagerAudioView = ({}) => {
         return historyToAudioList(beState?(beState.history?beState.history:[]):[])
     }
 
-    // const history = [
-    //     {
-    //         "feMoveNumber": 1,
-    //         "whitesMove": "...",
-    //         "whitesMoveSelected": false,
-    //         "blacksMove": "Ra3",
-    //         "blacksMoveSelected": false
-    //     },
-    //     {
-    //         "feMoveNumber": 2,
-    //         "whitesMove": "Re1",
-    //         "whitesMoveSelected": false,
-    //         "blacksMove": "a1=Q",
-    //         "blacksMoveSelected": false
-    //     },
-    //     {
-    //         "feMoveNumber": 3,
-    //         "whitesMove": "Rxa1",
-    //         "whitesMoveSelected": false,
-    //         "blacksMove": "Re3#",
-    //         "blacksMoveSelected": false
-    //     }
-    // ]
-
-
-
-    // console.log("historyToAudioList(history)")
-    // console.log(historyToAudioList(history))
-
     useEffect(() => {
         if (feState[FE_STATE.STARTED] && beState.puzzleId != null) {
             setFeState(old => startNewPuzzle({feState:old, beState}))
@@ -104,25 +75,22 @@ const ChessManagerAudioView = ({}) => {
         initListReader({
             say,
             title: {
-                say: () => say("Puzzle menu"),
+                say: () => say("Reading puzzle menu."),
             },
             sayCurrentElem: true,
             elems: [
                 {
-                    say: () => say("Reading puzzle menu"),
-                },
-                {
-                    say: () => say("Start position"),
+                    say: () => say("Start position."),
                     onEnter: () => {
                         setFeState(old => set(old, FE_STATE.PHASE, PHASES.READ_START_POSITION))
                         reInitListReaderForStartPosition({beState})
                     }
                 },
                 {
-                    say: () => say("History"),
+                    say: () => say("History."),
                 },
                 {
-                    say: () => say("Execute command"),
+                    say: () => say("Execute command."),
                     onEnter: () => {
                         setFeState(old => set(old, FE_STATE.PHASE, PHASES.ENTER_USER_COMMAND))
                         reInitTextInputForUserCommand()
@@ -139,7 +107,7 @@ const ChessManagerAudioView = ({}) => {
         initListReader({
             say,
             title: {
-                say: () => say(readAnswer ? card.question : "Start position cards"),
+                say: () => say("Reading " + (readAnswer ? card.question : "start position cards")),
             },
             sayCurrentElem: true,
             currElemIdx: readAnswer ? 0 : cardIdx,
@@ -158,19 +126,13 @@ const ChessManagerAudioView = ({}) => {
                 }
             }))
         } else {
-            return [
-                {
-                    say: () => say("Reading " + card.question),
-                    onBack: () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx, readAnswer:false})
-                },
-                ...card.answer.map((ans, idx) => ({
-                    say: () => say(ans),
-                    onEnter: idx < card.answer.length-1 ? null :
-                        cardIdx >= beState.startPosition.length-1 ? null :
-                            () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx+1, readAnswer:true}),
-                    onBack: () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx, readAnswer:false})
-                }))
-            ]
+            return card.answer.map((ans, idx) => ({
+                say: () => say(ans),
+                onEnter: idx < card.answer.length-1 ? null :
+                    cardIdx >= beState.startPosition.length-1 ? null :
+                        () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx+1, readAnswer:true}),
+                onBack: () => reInitListReaderForStartPosition({beState, cardIdx:cardIdx, readAnswer:false})
+            }))
         }
     }
 

@@ -49,8 +49,20 @@ public class ChessManagerAudioState extends State {
     }
 
     @RpcMethod
-    public ChessManagerAudioStateDto execChessCommand(String command) {
-        chessManager.execChessCommand(command, null);
+    public ChessManagerAudioDto execChessCommand(String command) {
+        try {
+            chessManager.execChessCommand(command, null);
+        } catch (Exception ex) {
+            return ChessManagerAudioMsgDto.builder()
+                    .msg(ex.getMessage())
+                    .build();
+        }
+        String errorMsg = chessManager.getCurrentState().getChessComponentView().getCommandErrorMsg();
+        if (errorMsg != null) {
+            sendMessageToFe(ChessManagerAudioMsgDto.builder()
+                    .msg(errorMsg)
+                    .build());
+        }
         return getCurrentState();
     }
 
@@ -68,17 +80,18 @@ public class ChessManagerAudioState extends State {
             }
         }
 
-        puzzleId = UUID.fromString("d9efff53-30e6-46ad-8b04-61e6c081f925");
+//        puzzleId = UUID.fromString("d9efff53-30e6-46ad-8b04-61e6c081f925");
 
         if (puzzleId == null) {
             throw new OutlineException("Cannot find next puzzle to load.");
         }
         NodeDto puzzle = nodeManager.rpcGetNode(puzzleId, 0, false, false);
         final String puzzleDepthStr = puzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_DEPTH);
+        final boolean autoResponse = "true".equals(puzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_AUTO_RESPONSE));
         chessManager.loadFromPgn(
                 puzzle.getTagSingleValue(TagIds.CHESS_PUZZLE_PGN),
                 ChessComponentStage.PRACTICE_SEQUENCE,
-                false,
+                autoResponse,
                 puzzleDepthStr == null ? null : Integer.parseInt(puzzleDepthStr),
                 OutlineUtils.listOf(MovesBuilder.AUDIO_MODE_CMD, MovesBuilder.CASE_INSENSITIVE_MODE_CMD)
         );

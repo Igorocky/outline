@@ -8,8 +8,14 @@ const USE_LIST_READER_ENTER_SOUND = soundUrl("on-enter2.mp3")
 const USE_LIST_READER_BACKSPACE_SOUND = soundUrl("on-backspace.mp3")
 const USE_LIST_READER_ESCAPE_SOUND = soundUrl("on-escape.mp3")
 
+const AUDIO_FILES_CACHE = {}
+
 function withSound(audioFileName, callback) {
-    const audio = new Audio(audioFileName);
+    let audio = AUDIO_FILES_CACHE[audioFileName]
+    if (!audio) {
+        audio = new Audio(audioFileName)
+        AUDIO_FILES_CACHE[audioFileName] = audio
+    }
     audio.play().then(window.setTimeout(callback,500))
 }
 
@@ -20,7 +26,7 @@ function useListReader() {
     const [actionsOnEmptyList, setActionsOnEmptyList] = useState({})
     const [currElemIdx, setCurrElemIdx] = useState(0)
 
-    function init({say:sayParam, title, elems, sayCurrentElem, currElemIdx:currElemIdxParam, actionsOnEmptyList:actionsOnEmptyListParam}) {
+    function init({say:sayParam, title, elems, sayTitle, sayCurrentElem, currElemIdx:currElemIdxParam, actionsOnEmptyList:actionsOnEmptyListParam}) {
         const newCurrElemIdx = currElemIdxParam !== undefined ? currElemIdxParam : 0
         setCurrElemIdx(newCurrElemIdx)
         if (sayParam !== undefined) {
@@ -29,7 +35,7 @@ function useListReader() {
         if (title !== undefined) {
             setTitle(title)
             if (title.say) {
-                if (!sayCurrentElem) {
+                if (!hasValue(sayTitle) || sayTitle) {
                     title.say({currElemIdx:newCurrElemIdx})
                 }
             } else {
