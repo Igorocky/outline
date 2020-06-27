@@ -1,5 +1,6 @@
 package org.igye.outline2.chess.manager;
 
+import org.igye.outline2.chess.dto.ChessComponentResponse;
 import org.igye.outline2.chess.dto.ChessComponentView;
 import org.igye.outline2.common.OutlineUtils;
 import org.igye.outline2.dto.NodeDto;
@@ -45,19 +46,21 @@ public class ChessManagerAudioState extends State {
                 .puzzleId(puzzleId)
                 .startPosition(chessComponentView.getChessBoardSequence().getQuiz())
                 .history(chessComponentView.getHistory().getRows())
+                .puzzleStatus(chessComponentView.getPractiseState())
                 .build();
     }
 
     @RpcMethod
     public ChessManagerAudioDto execChessCommand(String command) {
+        ChessComponentResponse response;
         try {
-            chessManager.execChessCommand(command, null);
+            response = chessManager.execChessCommand(command, null);
         } catch (Exception ex) {
             return ChessManagerAudioMsgDto.builder()
                     .msg(ex.getMessage())
                     .build();
         }
-        String errorMsg = chessManager.getCurrentState().getChessComponentView().getCommandErrorMsg();
+        String errorMsg = response.getChessComponentView().getCommandErrorMsg();
         if (errorMsg != null) {
             sendMessageToFe(ChessManagerAudioMsgDto.builder()
                     .msg(errorMsg)

@@ -24,7 +24,26 @@ const ChessManagerAudioView = ({}) => {
 
     const [beState, setBeState] = useState(null)
     const prevHistory = usePrevious(getHistory())
+    const prevPuzzleStatus = usePrevious(getPuzzleStatus())
     const [feState, setFeState] = useState({[FE_STATE.STARTED]: false})
+
+    function getPuzzleStatus() {
+        if (!beState) {
+            return null
+        } if (beState.puzzleStatus.waitingForNextMove) {
+            return "In progress. "
+                + (beState.puzzleStatus.incorrectMove
+                        ?"Incorrect move: " + moveToPhonetic(beState.puzzleStatus.incorrectMove)
+                        :""
+                )
+        } else {
+            if (failed) {
+                return "FAILED"
+            } else {
+                return "PASSED"
+            }
+        }
+    }
 
     function getHistory() {
         return historyToAudioList(beState?(beState.history?beState.history:[]):[])
@@ -44,6 +63,15 @@ const ChessManagerAudioView = ({}) => {
                 history
                     .filter((h,i)=>prevHistory.length<=i)
                     .reduceRight((prev,cur) => () => say(cur, prev), () => null)
+            )
+        }
+    })
+
+    useEffect(() => {
+        const puzzleStatus = getPuzzleStatus()
+        if (prevPuzzleStatus != null && puzzleStatus != null && prevPuzzleStatus != puzzleStatus) {
+            say(
+                "Puzzle status changed. " + puzzleStatus
             )
         }
     })
