@@ -31,6 +31,7 @@ const ChessManagerAudioView = ({}) => {
         READ_HISTORY: "READ_HISTORY",
         ENTER_USER_COMMAND: "ENTER_USER_COMMAND",
         ENTER_DELAY: "ENTER_DELAY",
+        ENTER_SHORTCUT: "ENTER_SHORTCUT",
     }
 
     const FE_STATE = {
@@ -45,6 +46,7 @@ const ChessManagerAudioView = ({}) => {
         printState:printSpeechComponentState} = useSpeechComponent()
     const {init:initListReader, onSymbolsChanged:onSymbolsChangedInListReader} = useListReader()
     const {init:initTextInput, onSymbolsChanged:onSymbolsChangedInTextInput} = useMorseTextInput()
+    const {init:initShortcutsExecutor, onSymbolsChanged:onSymbolsChangedInShortcutsExecutor} = useShortcutsExecutor()
 
     const [beState, setBeState] = useState(null)
     const prevHistory = usePrevious(getHistory())
@@ -206,6 +208,24 @@ const ChessManagerAudioView = ({}) => {
         })
     }
 
+    function reInitShortcutExecutor() {
+        initShortcutsExecutor({
+            say,
+            title: "Enter shortcut",
+            actions: [
+                {
+                    char: "i",
+                    descr: "Puzzle status.",
+                    action: () => {
+                        say(getPuzzleStatus())
+                        setFeState(old => set(old, FE_STATE.PHASE, PHASES.ENTER_USER_COMMAND))
+                        reInitTextInputForUserCommand()
+                    }
+                }
+            ]
+        })
+    }
+
     function selectOnSymbolsChangeToUse() {
         if (feState[FE_STATE.PHASE] == PHASES.PUZZLE_MENU) {
             return onSymbolsChangedInListReader
@@ -217,6 +237,8 @@ const ChessManagerAudioView = ({}) => {
             return onSymbolsChangedInTextInput
         } else if (feState[FE_STATE.PHASE] == PHASES.ENTER_DELAY) {
             return onSymbolsChangedInTextInput
+        } else if (feState[FE_STATE.PHASE] == PHASES.ENTER_SHORTCUT) {
+            return onSymbolsChangedInShortcutsExecutor
         }
     }
 

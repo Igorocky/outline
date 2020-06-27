@@ -12,25 +12,25 @@ function useMorseTextInput() {
     const [title, setTitle] = useState(null)
     const [onEnter, setOnEnter] = useState(() => NULL_FUNCTION)
     const [onEscape, setOnEscape] = useState(() => NULL_FUNCTION)
+    const [onCommand, setOnCommand] = useState(() => NULL_FUNCTION)
 
     const [userInput, setUserInput] = useState([])
 
     const {init:initListReader, onSymbolsChanged:onSymbolsChangedInListReader} = useListReader()
 
-    function init({say, title, onEnter, onEscape}) {
+    function init({say, title, onEnter, onEscape, onCommand}) {
         if (say !== undefined) {
             setSay(() => nullSafeSay(say))
+        } else {
+            setSay(() => nullSafeSay(null))
         }
+        setTitle(title)
         if (title !== undefined) {
-            setTitle(title)
             nullSafeSay(say)(title)
         }
-        if (onEnter !== undefined) {
-            setOnEnter(() => onEnter?onEnter:(NULL_FUNCTION))
-        }
-        if (onEscape !== undefined) {
-            setOnEscape(() => onEscape?onEscape:(NULL_FUNCTION))
-        }
+        setOnEnter(() => onEnter?onEnter:(NULL_FUNCTION))
+        setOnEscape(() => onEscape?onEscape:(NULL_FUNCTION))
+        setOnCommand(() => onEscape?onEscape:(NULL_FUNCTION))
         setMode(MODE_APPEND)
         setUserInput([])
     }
@@ -77,6 +77,14 @@ function useMorseTextInput() {
                 if (onEscape) {
                     withSound(USE_LIST_READER_ESCAPE_SOUND, () => {
                         onEscape(userInput)
+                    })
+                } else {
+                    say("On escape is not defined.")
+                }
+            } else if (last.sym == MORSE.colon.sym) {//enter command
+                if (onCommand) {
+                    withSound(USE_LIST_READER_ESCAPE_SOUND, () => {
+                        onCommand(userInput)
                     })
                 } else {
                     say("On escape is not defined.")
